@@ -1,14 +1,17 @@
 import { useAuth } from "@/hooks/use-auth";
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Navigate } from "react-router";
 import { Loader2, Users, CreditCard, FileText, AlertCircle, TrendingUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 
 export default function AdminDashboard() {
   const { isLoading, isAuthenticated, user } = useAuth();
   const stats = useQuery(api.analytics.getDashboardStats);
+  const makeAdmin = useMutation(api.users.makeCurrentUserAdmin);
 
   if (isLoading) {
     return (
@@ -18,8 +21,43 @@ export default function AdminDashboard() {
     );
   }
 
-  if (!isAuthenticated || user?.role !== "admin") {
+  if (!isAuthenticated) {
     return <Navigate to="/auth" />;
+  }
+
+  // If user is authenticated but not an admin, show a button to make them admin
+  if (user?.role !== "admin") {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10 max-w-md">
+          <CardHeader>
+            <CardTitle className="text-white text-center">Admin Access Required</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4 text-center">
+            <p className="text-white/70">
+              You need admin privileges to access this dashboard.
+            </p>
+            <Button
+              onClick={async () => {
+                try {
+                  await makeAdmin();
+                  toast.success("Admin access granted! Refreshing...");
+                  setTimeout(() => window.location.reload(), 1000);
+                } catch (error) {
+                  toast.error("Failed to grant admin access");
+                }
+              }}
+              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+            >
+              Make Me Admin
+            </Button>
+            <p className="text-xs text-white/50">
+              Click this button to grant yourself admin access
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   const statCards = [
