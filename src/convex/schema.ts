@@ -111,7 +111,7 @@ const schema = defineSchema(
 
     // AI Generated Questions
     questions: defineTable({
-      contentId: v.id("content"),
+      contentId: v.optional(v.id("content")),
       topicId: v.optional(v.id("topics")),
       type: questionTypeValidator,
       question: v.string(),
@@ -122,10 +122,14 @@ const schema = defineSchema(
       reviewedBy: v.optional(v.id("users")),
       reviewedAt: v.optional(v.number()),
       difficulty: v.optional(v.string()), // "easy", "medium", "hard"
+      source: v.optional(v.string()), // "manual", "ai", "pyq"
+      year: v.optional(v.number()), // for PYQ questions
+      createdBy: v.optional(v.id("users")),
     })
       .index("by_content", ["contentId"])
       .index("by_status", ["status"])
-      .index("by_topic", ["topicId"]),
+      .index("by_topic", ["topicId"])
+      .index("by_source", ["source"]),
 
     // User Subscriptions
     subscriptions: defineTable({

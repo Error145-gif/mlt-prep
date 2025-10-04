@@ -39,11 +39,11 @@ export const getQuestions = query({
     // Enrich with content and topic info
     const enrichedQuestions = await Promise.all(
       questions.map(async (q) => {
-        const content = await ctx.db.get(q.contentId);
+        const content = q.contentId ? await ctx.db.get(q.contentId) : null;
         const topic = q.topicId ? await ctx.db.get(q.topicId) : null;
         return {
           ...q,
-          contentTitle: content?.title || "Unknown",
+          contentTitle: content?.title || "N/A",
           topicName: topic?.name || "Unassigned",
         };
       })
@@ -78,7 +78,7 @@ export const reviewQuestion = mutation({
 // Create question manually
 export const createQuestion = mutation({
   args: {
-    contentId: v.id("content"),
+    contentId: v.optional(v.id("content")),
     topicId: v.optional(v.id("topics")),
     type: v.string(),
     question: v.string(),
@@ -86,6 +86,8 @@ export const createQuestion = mutation({
     correctAnswer: v.string(),
     explanation: v.optional(v.string()),
     difficulty: v.optional(v.string()),
+    source: v.optional(v.string()),
+    year: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
@@ -98,6 +100,34 @@ export const createQuestion = mutation({
       type: args.type as any,
       status: "approved",
       reviewedBy: user._id,
+      reviewedAt: Date.now(),
+      createdBy: user._id,
+      source: args.source || "manual",
+    });
+  },
+});
+
+// Internal mutation for batch creation (used by actions)
+export const createQuestionInternal = mutation({
+  args: {
+    contentId: v.optional(v.id("content")),
+    topicId: v.optional(v.id("topics")),
+    type: v.string(),
+    question: v.string(),
+    options: v.optional(v.array(v.string())),
+    correctAnswer: v.string(),
+    explanation: v.optional(v.string()),
+    difficulty: v.optional(v.string()),
+    source: v.optional(v.string()),
+    year: v.optional(v.number()),
+    createdBy: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db.insert("questions", {
+      ...args,
+      type: args.type as any,
+      status: "approved",
+      reviewedBy: args.createdBy,
       reviewedAt: Date.now(),
     });
   },
