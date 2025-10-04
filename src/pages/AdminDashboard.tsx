@@ -25,35 +25,32 @@ export default function AdminDashboard() {
     return <Navigate to="/auth" />;
   }
 
-  // If user is authenticated but not an admin, show a button to make them admin
+  // If user is authenticated but not admin, show button to become admin
   if (user?.role !== "admin") {
     return (
       <div className="min-h-screen flex items-center justify-center p-6">
-        <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10 max-w-md">
+        <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10 max-w-md w-full">
           <CardHeader>
             <CardTitle className="text-white text-center">Admin Access Required</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4 text-center">
-            <p className="text-white/70">
+          <CardContent className="space-y-4">
+            <p className="text-white/70 text-center">
               You need admin privileges to access this dashboard.
             </p>
             <Button
               onClick={async () => {
                 try {
                   await makeAdmin();
-                  toast.success("Admin access granted! Refreshing...");
-                  setTimeout(() => window.location.reload(), 1000);
+                  toast.success("Admin access granted!");
+                  window.location.reload();
                 } catch (error) {
                   toast.error("Failed to grant admin access");
                 }
               }}
               className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
             >
-              Make Me Admin
+              Grant Admin Access
             </Button>
-            <p className="text-xs text-white/50">
-              Click this button to grant yourself admin access
-            </p>
           </CardContent>
         </Card>
       </div>
