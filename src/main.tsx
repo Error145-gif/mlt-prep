@@ -10,11 +10,16 @@ import { BrowserRouter, Route, Routes, useLocation } from "react-router";
 import "./index.css";
 import Landing from "./pages/Landing.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import AdminDashboard from "./pages/AdminDashboard.tsx";
+import ContentManagement from "./pages/ContentManagement.tsx";
+import QuestionManagement from "./pages/QuestionManagement.tsx";
+import UserAnalytics from "./pages/UserAnalytics.tsx";
+import SubscriptionManagement from "./pages/SubscriptionManagement.tsx";
+import NotificationCenter from "./pages/NotificationCenter.tsx";
+import AdminSidebar from "./components/AdminSidebar.tsx";
 import "./types/global.d.ts";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
-
-
 
 function RouteSyncer() {
   const location = useLocation();
@@ -39,6 +44,14 @@ function RouteSyncer() {
   return null;
 }
 
+function AdminLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex min-h-screen">
+      <AdminSidebar />
+      <main className="flex-1 lg:ml-64">{children}</main>
+    </div>
+  );
+}
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -49,7 +62,13 @@ createRoot(document.getElementById("root")!).render(
           <RouteSyncer />
           <Routes>
             <Route path="/" element={<Landing />} />
-            <Route path="/auth" element={<AuthPage redirectAfterAuth="/" />} /> {/* TODO: change redirect after auth to correct page */}
+            <Route path="/auth" element={<AuthPage redirectAfterAuth="/admin" />} />
+            <Route path="/admin" element={<AdminLayout><AdminDashboard /></AdminLayout>} />
+            <Route path="/admin/content" element={<AdminLayout><ContentManagement /></AdminLayout>} />
+            <Route path="/admin/questions" element={<AdminLayout><QuestionManagement /></AdminLayout>} />
+            <Route path="/admin/analytics" element={<AdminLayout><UserAnalytics /></AdminLayout>} />
+            <Route path="/admin/subscriptions" element={<AdminLayout><SubscriptionManagement /></AdminLayout>} />
+            <Route path="/admin/notifications" element={<AdminLayout><NotificationCenter /></AdminLayout>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
