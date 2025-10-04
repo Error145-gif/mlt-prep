@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { mutation, query, internalMutation } from "./_generated/server";
 import { getCurrentUser } from "./users";
 
 // Get questions with filters
@@ -108,7 +108,7 @@ export const createQuestion = mutation({
 });
 
 // Internal mutation for batch creation (used by actions)
-export const createQuestionInternal = mutation({
+export const createQuestionInternal = internalMutation({
   args: {
     contentId: v.optional(v.id("content")),
     topicId: v.optional(v.id("topics")),
