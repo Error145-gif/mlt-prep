@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router";
 import { useAuth } from "@/hooks/use-auth";
-import { BookOpen, Brain, Award, TrendingUp, Sparkles, ArrowRight } from "lucide-react";
+import { BookOpen, Brain, Award, TrendingUp, Sparkles, ArrowRight, Shield } from "lucide-react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
@@ -14,11 +14,11 @@ export default function Landing() {
 
   const handleMakeAdmin = async () => {
     try {
-      await makeAdmin();
+      await makeAdmin({});
       toast.success("You are now an admin! Redirecting...");
       setTimeout(() => navigate("/admin"), 1000);
     } catch (error) {
-      toast.error("Failed to make you an admin");
+      toast.error("Failed to make you an admin. Please try again.");
     }
   };
 
@@ -64,30 +64,29 @@ export default function Landing() {
           <div className="flex items-center gap-4">
             {isAuthenticated ? (
               <>
-                {user?.role === "admin" ? (
+                {user?.role !== "admin" && (
+                  <Button
+                    onClick={handleMakeAdmin}
+                    className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
+                  >
+                    <Shield className="h-4 w-4 mr-2" />
+                    Become Admin
+                  </Button>
+                )}
+                {user?.role === "admin" && (
                   <Button
                     onClick={() => navigate("/admin")}
                     className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700"
                   >
                     Admin Panel
                   </Button>
-                ) : (
-                  <>
-                    <Button
-                      onClick={handleMakeAdmin}
-                      variant="outline"
-                      className="border-white/20 text-white hover:bg-white/10"
-                    >
-                      Become Admin
-                    </Button>
-                    <Button
-                      onClick={() => navigate("/dashboard")}
-                      className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
-                    >
-                      Dashboard
-                    </Button>
-                  </>
                 )}
+                <Button
+                  onClick={() => navigate("/dashboard")}
+                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                >
+                  Dashboard
+                </Button>
               </>
             ) : (
               <Button

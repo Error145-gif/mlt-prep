@@ -10,7 +10,10 @@ import { toast } from "sonner";
 
 export default function AdminDashboard() {
   const { isLoading, isAuthenticated, user } = useAuth();
-  const stats = useQuery(api.analytics.getDashboardStats);
+  const stats = useQuery(
+    api.analytics.getDashboardStats,
+    user?.role === "admin" ? {} : "skip"
+  );
   const makeAdmin = useMutation(api.users.makeCurrentUserAdmin);
 
   if (isLoading) {
