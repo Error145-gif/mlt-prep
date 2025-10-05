@@ -23,6 +23,7 @@ export default function QuestionManagement() {
   const [showManualForm, setShowManualForm] = useState(false);
   const [showAIUpload, setShowAIUpload] = useState(false);
   const [showPYQUpload, setShowPYQUpload] = useState(false);
+  const [pyqYear, setPyqYear] = useState<number>(new Date().getFullYear());
   
   const questions = useQuery(api.questions.getQuestions, { status: activeTab === "all" ? undefined : activeTab });
   const topics = useQuery(api.topics.getAllTopics);
@@ -288,15 +289,114 @@ export default function QuestionManagement() {
               </DialogContent>
             </Dialog>
 
-            <Button className="bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/30">
-              <Upload className="h-4 w-4 mr-2" />
-              AI Generate
-            </Button>
+            <Dialog open={showAIUpload} onOpenChange={setShowAIUpload}>
+              <DialogTrigger asChild>
+                <Button className="bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/30">
+                  <Upload className="h-4 w-4 mr-2" />
+                  AI Generate
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="glass-card border-white/20 backdrop-blur-xl bg-white/10 max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle className="text-white">Generate Questions from PDF</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-white">Upload PDF</Label>
+                    <Input
+                      type="file"
+                      accept=".pdf"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleAIUpload(file);
+                      }}
+                      className="bg-white/5 border-white/10 text-white"
+                      disabled={uploadingFile}
+                    />
+                    {uploadingFile && (
+                      <div className="flex items-center gap-2 mt-2 text-white/60">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>Processing PDF...</span>
+                      </div>
+                    )}
+                  </div>
+                  {aiQuestions.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-white font-medium">{aiQuestions.length} questions generated</p>
+                      <Button
+                        onClick={() => {
+                          setShowAIUpload(false);
+                          setAiQuestions([]);
+                        }}
+                        className="w-full bg-green-500/20 hover:bg-green-500/30 text-green-300 border border-green-500/30"
+                      >
+                        Close
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </DialogContent>
+            </Dialog>
 
-            <Button className="bg-orange-500/20 hover:bg-orange-500/30 text-orange-300 border border-orange-500/30">
-              <FileText className="h-4 w-4 mr-2" />
-              Upload PYQ
-            </Button>
+            <Dialog open={showPYQUpload} onOpenChange={setShowPYQUpload}>
+              <DialogTrigger asChild>
+                <Button className="bg-orange-500/20 hover:bg-orange-500/30 text-orange-300 border border-orange-500/30">
+                  <FileText className="h-4 w-4 mr-2" />
+                  Upload PYQ
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="glass-card border-white/20 backdrop-blur-xl bg-white/10 max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle className="text-white">Extract PYQ from PDF</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-white">Year</Label>
+                    <Input
+                      type="number"
+                      value={pyqYear}
+                      onChange={(e) => setPyqYear(parseInt(e.target.value))}
+                      className="bg-white/5 border-white/10 text-white"
+                      min={2000}
+                      max={new Date().getFullYear()}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-white">Upload PDF</Label>
+                    <Input
+                      type="file"
+                      accept=".pdf"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handlePYQUpload(file, pyqYear);
+                      }}
+                      className="bg-white/5 border-white/10 text-white"
+                      disabled={uploadingFile}
+                    />
+                    {uploadingFile && (
+                      <div className="flex items-center gap-2 mt-2 text-white/60">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>Extracting PYQ...</span>
+                      </div>
+                    )}
+                  </div>
+                  {pyqQuestions.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-white font-medium">{pyqQuestions.length} PYQ questions extracted</p>
+                      <Button
+                        onClick={() => {
+                          setShowPYQUpload(false);
+                          setPyqQuestions([]);
+                        }}
+                        className="w-full bg-green-500/20 hover:bg-green-500/30 text-green-300 border border-green-500/30"
+                      >
+                        Close
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
 
