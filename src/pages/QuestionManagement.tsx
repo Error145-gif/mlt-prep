@@ -128,58 +128,124 @@ export default function QuestionManagement() {
         return;
       }
       
-      const parsedQuestions = questionBlocks.map((block, index) => {
-        const lines = block.split('\n').filter(line => line.trim());
-        const question: any = {
-          type: "mcq",
-          difficulty: "medium",
-          source: "manual"
-        };
-        
-        lines.forEach(line => {
-          const trimmedLine = line.trim();
-          if (trimmedLine.startsWith('Q:')) {
-            question.question = trimmedLine.substring(2).trim();
-          } else if (trimmedLine.startsWith('A:')) {
-            question.correctAnswer = trimmedLine.substring(2).trim();
-          } else if (trimmedLine.startsWith('Options:')) {
-            question.options = trimmedLine.substring(8).split('|').map(opt => opt.trim());
-          } else if (trimmedLine.startsWith('Subject:')) {
-            question.subject = trimmedLine.substring(8).trim();
-          } else if (trimmedLine.startsWith('Topic:')) {
-            const topicName = trimmedLine.substring(6).trim();
-            // Find topic ID by name
-            const matchingTopic = topics?.find(t => t.name.toLowerCase() === topicName.toLowerCase());
-            if (matchingTopic) {
-              question.topicId = matchingTopic._id;
+      const parsedQuestions = [];
+      const errors = [];
+      
+      for (let index = 0; index < questionBlocks.length; index++) {
+        const block = questionBlocks[index];
+        try {
+          const lines = block.split('\n').filter(line => line.trim());
+          const question: any = {
+            type: "mcq",
+            difficulty: "medium",
+            source: "manual"
+          };
+          
+          lines.forEach(line => {
+            const trimmedLine = line.trim();
+            const colonIndex = trimmedLine.indexOf(':');
+            
+            if (colonIndex === -1) return;
+            
+            const key = trimmedLine.substring(0, colonIndex).trim().toLowerCase();
+            const value = trimmedLine.substring(colonIndex + 1).trim();
+            
+            if (!value) return;
+            
+            switch (key) {
+              case 'q':
+              case 'question':
+                question.question = value;
+                break;
+              case 'a':
+              case 'answer':
+              case 'correct answer':
+                question.correctAnswer = value;
+                break;
+              case 'options':
+              case 'option':
+                question.options = value.split('|').map(opt => opt.trim()).filter(opt => opt);
+                break;
+              case 'subject':
+                question.subject = value;
+                break;
+              case 'topic':
+                const matchingTopic = topics?.find(t => 
+                  t.name.toLowerCase() === value.toLowerCase()
+                );
+                if (matchingTopic) {
+                  question.topicId = matchingTopic._id;
+                }
+                break;
+              case 'difficulty':
+                const diff = value.toLowerCase();
+                question.difficulty = ['easy', 'medium', 'hard'].includes(diff) ? diff : 'medium';
+                break;
+              case 'type':
+                const typeStr = value.toLowerCase().replace(/[^a-z]/g, '');
+                if (typeStr === 'truefalse' || typeStr === 'tf') {
+                  question.type = 'true_false';
+                } else if (typeStr === 'shortanswer' || typeStr === 'sa') {
+                  question.type = 'short_answer';
+                } else {
+                  question.type = 'mcq';
+                }
+                break;
+              case 'explanation':
+                question.explanation = value;
+                break;
+              case 'exam':
+              case 'exam name':
+                question.examName = value;
+                break;
             }
-          } else if (trimmedLine.startsWith('Difficulty:')) {
-            question.difficulty = trimmedLine.substring(11).trim().toLowerCase();
-          } else if (trimmedLine.startsWith('Type:')) {
-            const typeStr = trimmedLine.substring(5).trim().toLowerCase();
-            question.type = typeStr === 'true/false' || typeStr === 'truefalse' ? 'true_false' : 
-                           typeStr === 'short answer' || typeStr === 'shortanswer' ? 'short_answer' : 'mcq';
-          } else if (trimmedLine.startsWith('Explanation:')) {
-            question.explanation = trimmedLine.substring(12).trim();
-          } else if (trimmedLine.startsWith('Exam:')) {
-            question.examName = trimmedLine.substring(5).trim();
+          });
+          
+          // Validate required fields
+          if (!question.question) {
+            throw new Error(`Missing question text`);
           }
-        });
-        
-        // Validate required fields
-        if (!question.question || !question.correctAnswer) {
-          throw new Error(`Question ${index + 1} is missing required fields (Q: or A:)`);
+          if (!question.correctAnswer) {
+            throw new Error(`Missing correct answer`);
+          }
+          if (!question.subject) {
+            question.subject = "General";
+          }
+          
+          // Validate MCQ has options
+          if (question.type === 'mcq' && (!question.options || question.options.length < 2)) {
+            throw new Error(`MCQ must have at least 2 options`);
+          }
+          
+          parsedQuestions.push(question);
+        } catch (error) {
+          errors.push(`Question ${index + 1}: ${error instanceof Error ? error.message : 'Invalid format'}`);
         }
-        
-        return question;
-      });
+      }
+      
+      if (parsedQuestions.length === 0) {
+        toast.error("No valid questions found. Please check your format.");
+        if (errors.length > 0) {
+          console.error("Parsing errors:", errors);
+          toast.error(`Errors: ${errors.slice(0, 3).join('; ')}`);
+        }
+        return;
+      }
       
       await batchCreateQuestions({ questions: parsedQuestions });
-      toast.success(`${parsedQuestions.length} questions added successfully!`);
+      
+      if (errors.length > 0) {
+        toast.warning(`${parsedQuestions.length} questions added. ${errors.length} questions had errors.`);
+        console.error("Parsing errors:", errors);
+      } else {
+        toast.success(`${parsedQuestions.length} questions added successfully!`);
+      }
+      
       setShowBulkManualForm(false);
       setBulkQuestionsText("");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to parse questions. Please check your format.");
+      toast.error(error instanceof Error ? error.message : "Failed to add questions. Please try again.");
+      console.error("Bulk add error:", error);
     }
   };
 
