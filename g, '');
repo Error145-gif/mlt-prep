@@ -1,30 +1,26 @@
-      
-      // Parse the JSON response
-      let questions;
-      try {
-        questions = JSON.parse(responseText);
-      } catch (error) {
-        console.error("Error parsing JSON response:", error);
-        throw new Error("Failed to parse AI-generated questions");
-      }
+const generateQuestions = async (prompt, model) => {
+  try {
+    const completion = await model.generate(prompt);
+    
+    const responseText = completion.choices[0].message.content || "[]";
+    
+    // Clean up response text - remove markdown code blocks if present
+    let cleanedText = responseText.trim();
+    cleanedText = cleanedText.replace(/```json/g, '');
+    cleanedText = cleanedText.replace(/```/g, '');
+    
+    // Parse the JSON response
+    let questions;
+    try {
+      questions = JSON.parse(cleanedText);
+    } catch (error) {
+      console.error("Error parsing JSON response:", error);
+      throw new Error("Failed to parse AI-generated questions");
+    }
 
-      return questions;
-=======
-Generate ${args.questionCount} questions now.`;
-      
-      // Generate content with OpenRouter (using Claude)
-      const completion = await openai.chat.completions.create({
-        model: "anthropic/claude-3-haiku",
-        messages: [
-          {
-            role: "user",
-            content: prompt,
-          },
-        ],
-        temperature: 0.7,
-      });
-      
-      const responseText = completion.choices[0].message.content || "[]";
-      
-      // Clean up response text - remove markdown code blocks if present
-      let cleanedText = responseText.replace(/
+    return questions;
+  } catch (error) {
+    console.error("Error generating questions from AI:", error);
+    throw new Error(`Failed to generate questions: ${error instanceof Error ? error.message : "Unknown error"}`);
+  }
+};

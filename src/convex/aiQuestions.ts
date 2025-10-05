@@ -16,13 +16,14 @@ export const generateQuestionsFromPDF = action({
   },
   handler: async (ctx, args) => {
     try {
-      // Initialize OpenRouter client
-      if (!process.env.OPENROUTER_API_KEY) {
+      // Initialize OpenRouter client inside handler to ensure env vars are available
+      const apiKey = process.env.OPENROUTER_API_KEY;
+      if (!apiKey) {
         throw new Error("OPENROUTER_API_KEY environment variable is not set. Please add it in the API Keys tab.");
       }
       
       const openai = new OpenAI({
-        apiKey: process.env.OPENROUTER_API_KEY,
+        apiKey: apiKey,
         baseURL: "https://openrouter.ai/api/v1",
       });
 
@@ -82,7 +83,7 @@ Generate ${args.questionCount || 10} questions now.`;
       const responseText = completion.choices[0].message.content || "[]";
       
       // Clean up response text - remove markdown code blocks if present
-      let cleanedText = responseText.replace(/```json/g, '').replace(/```/g, '');
+      let cleanedText = responseText.replace(/```json/g, "").replace(/```/g, "");
       
       // Parse the JSON response
       let questions;
@@ -173,13 +174,14 @@ export const generateQuestionsFromAI = action({
   },
   handler: async (ctx, args) => {
     try {
-      // Initialize OpenRouter client
-      if (!process.env.OPENROUTER_API_KEY) {
+      // Initialize OpenRouter client inside handler to ensure env vars are available
+      const apiKey = process.env.OPENROUTER_API_KEY;
+      if (!apiKey) {
         throw new Error("OPENROUTER_API_KEY environment variable is not set. Please add it in the API Keys tab.");
       }
       
       const openai = new OpenAI({
-        apiKey: process.env.OPENROUTER_API_KEY,
+        apiKey: apiKey,
         baseURL: "https://openrouter.ai/api/v1",
       });
 
@@ -242,7 +244,7 @@ Generate ${args.questionCount} questions now.`;
       const responseText = completion.choices[0].message.content || "[]";
       
       // Clean up response text - remove markdown code blocks if present
-      let cleanedText = responseText.replace(/```json/g, '').replace(/```/g, '');
+      let cleanedText = responseText.replace(/```json/g, "").replace(/```/g, "");
       
       // Parse the JSON response
       let questions;

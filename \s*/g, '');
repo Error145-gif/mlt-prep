@@ -1,0 +1,36 @@
+      cleanedText = cleanedText.trim();
+      
+      // Parse the JSON response
+      let questions;
+      try {
+        questions = JSON.parse(cleanedText);
+        
+        // Validate that we got an array
+        if (!Array.isArray(questions)) {
+          console.error("AI response is not an array:", questions);
+          throw new Error("AI did not return a valid array of questions");
+        }
+        
+        // Validate each question has required fields
+        questions = questions.filter(q => 
+          q.question && q.correctAnswer && q.type
+        );
+        
+        if (questions.length === 0) {
+          throw new Error("No valid questions were generated");
+        }
+        
+      } catch (error) {
+        console.error("Error parsing JSON response:", error);
+        console.error("Raw response:", responseText);
+        console.error("Cleaned text:", cleanedText);
+        throw new Error(`Failed to parse AI-generated questions: ${error instanceof Error ? error.message : "Unknown error"}`);
+      }
+
+      return questions;
+    } catch (error) {
+      console.error("Error generating questions from AI:", error);
+      throw new Error(`Failed to generate questions: ${error instanceof Error ? error.message : "Unknown error"}`);
+    }
+  },
+});
