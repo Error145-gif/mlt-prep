@@ -4,7 +4,7 @@ import { v } from "convex/values";
 import { action, internalQuery } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { Id } from "./_generated/dataModel";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import OpenAI from "openai";
 import { getAuthUserId } from "@convex-dev/auth/server";
 
 // Generate questions from PDF using AI
@@ -16,24 +16,23 @@ export const generateQuestionsFromPDF = action({
   },
   handler: async (ctx, args) => {
     try {
-      // Initialize Google Gemini AI
-      if (!process.env.GEMINI_API_KEY) {
-        throw new Error("GEMINI_API_KEY environment variable is not set");
+      // Initialize OpenRouter client
+      if (!process.env.OPENROUTER_API_KEY) {
+        throw new Error("OPENROUTER_API_KEY environment variable is not set. Please add it in the API Keys tab.");
       }
-      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-
-      // Note: Direct PDF content extraction in Convex is limited
-      // The AI will generate questions based on common MLT topics
-      // For actual PDF parsing, an external OCR/PDF service would be needed
       
+      const openai = new OpenAI({
+        apiKey: process.env.OPENROUTER_API_KEY,
+        baseURL: "https://openrouter.ai/api/v1",
+      });
+
       // Get file URL to verify it exists
       const fileUrl = await ctx.storage.getUrl(args.fileId);
       if (!fileUrl) {
         throw new Error("File not found");
       }
 
-      // Create prompt for Gemini to generate MLT questions
+      // Create prompt for AI to generate MLT questions
       const prompt = `You are an expert Medical Lab Technology (MLT) educator. Generate ${args.questionCount || 10} high-quality multiple-choice questions covering various Medical Lab Technology topics.
 
 For each question, provide:
@@ -68,15 +67,27 @@ Make sure questions are clear, unambiguous, and educationally valuable. Return O
 
 Generate ${args.questionCount || 10} questions now.`;
       
-      // Generate content with Gemini
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const responseText = response.text();
+      // Generate content with OpenRouter (using Claude)
+      const completion = await openai.chat.completions.create({
+        model: "anthropic/claude-3-haiku",
+        messages: [
+          {
+            role: "user",
+            content: prompt,
+          },
+        ],
+        temperature: 0.7,
+      });
+      
+      const responseText = completion.choices[0].message.content || "[]";
+      
+      // Clean up response text - remove markdown code blocks if present
+      let cleanedText = responseText.replace(/```json/g, '').replace(/```/g, '');
       
       // Parse the JSON response
       let questions;
       try {
-        questions = JSON.parse(responseText);
+        questions = JSON.parse(cleanedText);
       } catch (error) {
         console.error("Error parsing JSON response:", error);
         throw new Error("Failed to parse AI-generated questions");
@@ -162,12 +173,15 @@ export const generateQuestionsFromAI = action({
   },
   handler: async (ctx, args) => {
     try {
-      // Initialize Google Gemini AI
-      if (!process.env.GEMINI_API_KEY) {
-        throw new Error("GEMINI_API_KEY environment variable is not set");
+      // Initialize OpenRouter client
+      if (!process.env.OPENROUTER_API_KEY) {
+        throw new Error("OPENROUTER_API_KEY environment variable is not set. Please add it in the API Keys tab.");
       }
-      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+      
+      const openai = new OpenAI({
+        apiKey: process.env.OPENROUTER_API_KEY,
+        baseURL: "https://openrouter.ai/api/v1",
+      });
 
       const difficultyFilter = args.difficulty 
         ? `Focus on ${args.difficulty} difficulty questions.` 
@@ -213,18 +227,27 @@ Make sure questions are clear, unambiguous, and educationally valuable. Return O
 
 Generate ${args.questionCount} questions now.`;
       
-      // Generate content with Gemini
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      let responseText = response.text();
+      // Generate content with OpenRouter (using Claude)
+      const completion = await openai.chat.completions.create({
+        model: "anthropic/claude-3-haiku",
+        messages: [
+          {
+            role: "user",
+            content: prompt,
+          },
+        ],
+        temperature: 0.7,
+      });
+      
+      const responseText = completion.choices[0].message.content || "[]";
       
       // Clean up response text - remove markdown code blocks if present
-      responseText = responseText.replace(/```json/g, '').replace(/```/g, '');
+      let cleanedText = responseText.replace(/```json/g, '').replace(/```/g, '');
       
       // Parse the JSON response
       let questions;
       try {
-        questions = JSON.parse(responseText);
+        questions = JSON.parse(cleanedText);
       } catch (error) {
         console.error("Error parsing JSON response:", error);
         throw new Error("Failed to parse AI-generated questions");
