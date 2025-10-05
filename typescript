@@ -1,1 +1,3 @@
-import { AutoGenerateQuestionsDialog } from "@/components/AutoGenerateQuestionsDialog";
+if (!isAuthenticated || user?.role !== "admin") {
+  return <Navigate to="/auth" />;
+}
