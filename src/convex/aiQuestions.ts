@@ -44,28 +44,59 @@ export const extractPYQFromPDF = action({
     year: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    // Get file URL
-    const fileUrl = await ctx.storage.getUrl(args.fileId);
-    if (!fileUrl) {
-      throw new Error("File not found");
+    try {
+      // Get file URL
+      const fileUrl = await ctx.storage.getUrl(args.fileId);
+      if (!fileUrl) {
+        throw new Error("File not found");
+      }
+
+      // For now, we'll use OCR or manual text extraction
+      // This is a placeholder that returns structured mock data
+      // In production, integrate with an OCR service or PDF text extraction API
+      
+      // Simulate processing delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Return sample extracted questions
+      const mockQuestions = [
+        {
+          type: "mcq",
+          question: "What is the normal range of hemoglobin in adult males?",
+          options: ["10-12 g/dL", "13-17 g/dL", "18-20 g/dL", "8-10 g/dL"],
+          correctAnswer: "13-17 g/dL",
+          explanation: "Normal hemoglobin range for adult males is 13-17 g/dL",
+          difficulty: "medium",
+          source: "pyq",
+          year: args.year || new Date().getFullYear(),
+        },
+        {
+          type: "mcq",
+          question: "Which of the following is a gram-positive bacteria?",
+          options: ["E. coli", "Staphylococcus aureus", "Salmonella", "Pseudomonas"],
+          correctAnswer: "Staphylococcus aureus",
+          explanation: "Staphylococcus aureus is a gram-positive bacteria",
+          difficulty: "easy",
+          source: "pyq",
+          year: args.year || new Date().getFullYear(),
+        },
+        {
+          type: "mcq",
+          question: "What is the primary function of platelets?",
+          options: ["Oxygen transport", "Blood clotting", "Immune response", "Nutrient transport"],
+          correctAnswer: "Blood clotting",
+          explanation: "Platelets are primarily responsible for blood clotting",
+          difficulty: "easy",
+          source: "pyq",
+          year: args.year || new Date().getFullYear(),
+        },
+      ];
+      
+      return mockQuestions;
+    } catch (error) {
+      console.error("Error extracting PYQ from PDF:", error);
+      throw new Error(`Failed to extract questions: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
-
-    // TODO: Integrate with AI service to extract PYQ questions
-    // For now, return mock data structure
-    const mockPYQs = [
-      {
-        type: "mcq",
-        question: "Sample PYQ question extracted from PDF?",
-        options: ["Option A", "Option B", "Option C", "Option D"],
-        correctAnswer: "Option A",
-        explanation: "PYQ explanation",
-        difficulty: "medium",
-        source: "pyq",
-        year: args.year || new Date().getFullYear(),
-      },
-    ];
-
-    return mockPYQs;
   },
 });
 
