@@ -49,6 +49,7 @@ export default function QuestionManagement() {
   const [aiQuestions, setAiQuestions] = useState<any[]>([]);
   const [pyqQuestions, setPyqQuestions] = useState<any[]>([]);
   const [uploadingFile, setUploadingFile] = useState(false);
+  const [savingQuestions, setSavingQuestions] = useState(false);
 
   if (isLoading) {
     return (
@@ -134,6 +135,21 @@ export default function QuestionManagement() {
       toast.error("Failed to extract PYQ");
     } finally {
       setUploadingFile(false);
+    }
+  };
+
+  const handleSavePYQQuestions = async () => {
+    try {
+      setSavingQuestions(true);
+      const batchCreate = useAction(api.aiQuestions.batchCreateQuestions);
+      await batchCreate({ questions: pyqQuestions });
+      toast.success(`${pyqQuestions.length} PYQ questions saved successfully!`);
+      setPyqQuestions([]);
+      setShowPYQUpload(false);
+    } catch (error) {
+      toast.error("Failed to save PYQ questions");
+    } finally {
+      setSavingQuestions(false);
     }
   };
 
@@ -345,7 +361,7 @@ export default function QuestionManagement() {
                   Upload PYQ
                 </Button>
               </DialogTrigger>
-              <DialogContent className="glass-card border-white/20 backdrop-blur-xl bg-white/10 max-w-2xl">
+              <DialogContent className="glass-card border-white/20 backdrop-blur-xl bg-white/10 max-w-4xl max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle className="text-white">Extract PYQ from PDF</DialogTitle>
                 </DialogHeader>
@@ -368,7 +384,17 @@ export default function QuestionManagement() {
                       accept=".pdf"
                       onChange={(e) => {
                         const file = e.target.files?.[0];
-                        if (file) handlePYQUpload(file, pyqYear);
+                        if (file) {
+                          if (file.type !== "application/pdf") {
+                            toast.error("Please upload a PDF file");
+                            return;
+                          }
+                          if (file.size > 10 * 1024 * 1024) {
+                            toast.error("File size must be less than 10MB");
+                            return;
+                          }
+                          handlePYQUpload(file, pyqYear);
+                        }
                       }}
                       className="bg-white/5 border-white/10 text-white"
                       disabled={uploadingFile}
@@ -381,17 +407,52 @@ export default function QuestionManagement() {
                     )}
                   </div>
                   {pyqQuestions.length > 0 && (
-                    <div className="space-y-2">
-                      <p className="text-white font-medium">{pyqQuestions.length} PYQ questions extracted</p>
-                      <Button
-                        onClick={() => {
-                          setShowPYQUpload(false);
-                          setPyqQuestions([]);
-                        }}
-                        className="w-full bg-green-500/20 hover:bg-green-500/30 text-green-300 border border-green-500/30"
-                      >
-                        Close
-                      </Button>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <p className="text-white font-medium">{pyqQuestions.length} PYQ questions extracted</p>
+                        <Button
+                          onClick={handleSavePYQQuestions}
+                          disabled={savingQuestions}
+                          className="bg-green-500/20 hover:bg-green-500/30 text-green-300 border border-green-500/30"
+                        >
+                          {savingQuestions ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Saving...
+                            </>
+                          ) : (
+                            "Save All Questions"
+                          )}
+                        </Button>
+                      </div>
+                      <div className="space-y-3 max-h-96 overflow-y-auto">
+                        {pyqQuestions.map((q, idx) => (
+                          <div key={idx} className="p-4 rounded-lg bg-white/5 border border-white/10">
+                            <p className="text-white font-medium mb-2">{q.question}</p>
+                            {q.options && (
+                              <div className="space-y-1 mb-2">
+                                {q.options.map((opt: string, optIdx: number) => (
+                                  <div
+                                    key={optIdx}
+                                    className={`text-sm p-2 rounded ${
+                                      opt === q.correctAnswer
+                                        ? "bg-green-500/20 text-green-300"
+                                        : "text-white/70"
+                                    }`}
+                                  >
+                                    {opt}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            <div className="flex gap-2 text-xs text-white/60">
+                              <span>Year: {q.year}</span>
+                              <span>•</span>
+                              <span className="capitalize">{q.difficulty}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
