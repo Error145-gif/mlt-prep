@@ -217,11 +217,11 @@ export default function QuestionManagement() {
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold tracking-tight text-white">Question Management</h1>
           <div className="flex gap-2">
-            <Dialog open={showManualForm} onOpenChange={setShowManualForm}>
+            <Dialog open={showPYQUpload} onOpenChange={setShowPYQUpload}>
               <DialogTrigger asChild>
-                <Button className="bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/30">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Manual Entry
+                <Button className="bg-orange-500/20 hover:bg-orange-500/30 text-orange-300 border border-orange-500/30">
+                  <FileText className="h-4 w-4 mr-2" />
+                  Upload PYQ
                 </Button>
               </DialogTrigger>
               <DialogContent className="glass-card border-white/20 backdrop-blur-xl bg-white/10 max-w-2xl max-h-[80vh] overflow-y-auto">
