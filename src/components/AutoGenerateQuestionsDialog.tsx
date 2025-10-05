@@ -19,13 +19,13 @@ export function AutoGenerateQuestionsDialog({
 }: AutoGenerateQuestionsDialogProps) {
   const [questionCount, setQuestionCount] = useState(500);
   const [difficulty, setDifficulty] = useState<string>("all");
-  const [selectedTopicId, setSelectedTopicId] = useState<string>("");
+  const [selectedTopicId, setSelectedTopicId] = useState<string>("all_topics");
 
   const handleGenerate = async () => {
     await onGenerate(
       questionCount,
       difficulty === "all" ? undefined : difficulty,
-      selectedTopicId ? (selectedTopicId as Id<"topics">) : undefined
+      selectedTopicId && selectedTopicId !== "all_topics" ? (selectedTopicId as Id<"topics">) : undefined
     );
   };
 
@@ -70,7 +70,7 @@ export function AutoGenerateQuestionsDialog({
               <SelectValue placeholder="All Topics" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Topics</SelectItem>
+              <SelectItem value="all_topics">All Topics</SelectItem>
               {topics?.map((topic) => (
                 <SelectItem key={topic._id} value={topic._id}>
                   {topic.name}
