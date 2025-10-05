@@ -78,7 +78,7 @@ createRoot(document.getElementById("root")!).render(
           <RouteSyncer />
           <Routes>
             <Route path="/" element={<Landing />} />
-            <Route path="/auth" element={<AuthPage redirectAfterAuth="/dashboard" />} />
+            <Route path="/auth" element={<AuthPage />} />
             <Route path="/dashboard" element={<StudentLayout><StudentDashboard /></StudentLayout>} />
             <Route path="/subscription" element={<StudentLayout><SubscriptionPlans /></StudentLayout>} />
             <Route path="/tests/mock" element={<StudentLayout><MockTests /></StudentLayout>} />

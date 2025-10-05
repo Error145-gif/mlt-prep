@@ -1,3 +1,1 @@
-if (!isAuthenticated || user?.role !== "admin") {
-  return <Navigate to="/auth" />;
-}
+<Route path="/auth" element={<AuthPage redirectAfterAuth="/dashboard" />} />
