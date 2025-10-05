@@ -584,17 +584,9 @@ export default function QuestionManagement() {
             <TabsTrigger value="all" className="data-[state=active]:bg-white/20">
               All Questions
             </TabsTrigger>
-            <TabsTrigger value="pending" className="data-[state=active]:bg-white/20">
-              <AlertCircle className="h-4 w-4 mr-2" />
-              Pending
-            </TabsTrigger>
             <TabsTrigger value="approved" className="data-[state=active]:bg-white/20">
               <CheckCircle className="h-4 w-4 mr-2" />
               Approved
-            </TabsTrigger>
-            <TabsTrigger value="rejected" className="data-[state=active]:bg-white/20">
-              <XCircle className="h-4 w-4 mr-2" />
-              Rejected
             </TabsTrigger>
           </TabsList>
 
