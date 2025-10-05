@@ -131,6 +131,48 @@ const schema = defineSchema(
       .index("by_topic", ["topicId"])
       .index("by_source", ["source"]),
 
+    // Test Sessions - Track active and completed tests
+    testSessions: defineTable({
+      userId: v.id("users"),
+      testType: v.string(), // "mock", "pyq", "practice"
+      topicId: v.optional(v.id("topics")),
+      year: v.optional(v.number()), // for PYQ tests
+      questionIds: v.array(v.id("questions")),
+      answers: v.optional(v.array(v.object({
+        questionId: v.id("questions"),
+        answer: v.string(),
+        isCorrect: v.boolean(),
+      }))),
+      status: v.string(), // "in_progress", "completed", "abandoned"
+      startedAt: v.number(),
+      completedAt: v.optional(v.number()),
+      timeSpent: v.optional(v.number()), // in seconds
+      score: v.optional(v.number()), // percentage
+    })
+      .index("by_user", ["userId"])
+      .index("by_status", ["status"])
+      .index("by_user_and_status", ["userId", "status"])
+      .index("by_test_type", ["testType"]),
+
+    // Test Results - Detailed results storage
+    testResults: defineTable({
+      userId: v.id("users"),
+      sessionId: v.id("testSessions"),
+      testType: v.string(), // "mock", "pyq", "practice"
+      topicId: v.optional(v.id("topics")),
+      year: v.optional(v.number()),
+      totalQuestions: v.number(),
+      correctAnswers: v.number(),
+      incorrectAnswers: v.number(),
+      skippedAnswers: v.number(),
+      score: v.number(), // percentage
+      timeSpent: v.number(),
+      weakTopics: v.optional(v.array(v.string())),
+    })
+      .index("by_user", ["userId"])
+      .index("by_session", ["sessionId"])
+      .index("by_test_type", ["testType"]),
+
     // User Subscriptions
     subscriptions: defineTable({
       userId: v.id("users"),

@@ -18,6 +18,11 @@ import SubscriptionManagement from "./pages/SubscriptionManagement.tsx";
 import NotificationCenter from "./pages/NotificationCenter.tsx";
 import AdminSidebar from "./components/AdminSidebar.tsx";
 import "./types/global.d.ts";
+import StudentNav from "./components/StudentNav.tsx";
+import StudentDashboard from "./pages/StudentDashboard.tsx";
+import MockTests from "./pages/MockTests.tsx";
+import PYQSets from "./pages/PYQSets.tsx";
+import Practice from "./pages/Practice.tsx";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
@@ -44,6 +49,15 @@ function RouteSyncer() {
   return null;
 }
 
+function StudentLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex min-h-screen">
+      <StudentNav />
+      <main className="flex-1 lg:ml-64">{children}</main>
+    </div>
+  );
+}
+
 function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen">
@@ -62,7 +76,11 @@ createRoot(document.getElementById("root")!).render(
           <RouteSyncer />
           <Routes>
             <Route path="/" element={<Landing />} />
-            <Route path="/auth" element={<AuthPage redirectAfterAuth="/admin" />} />
+            <Route path="/auth" element={<AuthPage redirectAfterAuth="/dashboard" />} />
+            <Route path="/dashboard" element={<StudentLayout><StudentDashboard /></StudentLayout>} />
+            <Route path="/tests/mock" element={<StudentLayout><MockTests /></StudentLayout>} />
+            <Route path="/tests/pyq" element={<StudentLayout><PYQSets /></StudentLayout>} />
+            <Route path="/practice" element={<StudentLayout><Practice /></StudentLayout>} />
             <Route path="/admin" element={<AdminLayout><AdminDashboard /></AdminLayout>} />
             <Route path="/admin/content" element={<AdminLayout><ContentManagement /></AdminLayout>} />
             <Route path="/admin/questions" element={<AdminLayout><QuestionManagement /></AdminLayout>} />
