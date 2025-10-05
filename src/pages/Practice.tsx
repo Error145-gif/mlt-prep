@@ -101,16 +101,18 @@ export default function Practice() {
               </div>
 
               <div className="space-y-2">
-                <Label className="text-white">Number of Questions</Label>
+                <Label className="text-white">Number of Questions (10-100)</Label>
                 <Select value={questionLimit.toString()} onValueChange={(v) => setQuestionLimit(parseInt(v))}>
                   <SelectTrigger className="bg-white/5 border-white/10 text-white">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="5">5 Questions</SelectItem>
                     <SelectItem value="10">10 Questions</SelectItem>
                     <SelectItem value="20">20 Questions</SelectItem>
+                    <SelectItem value="30">30 Questions</SelectItem>
                     <SelectItem value="50">50 Questions</SelectItem>
+                    <SelectItem value="75">75 Questions</SelectItem>
+                    <SelectItem value="100">100 Questions</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

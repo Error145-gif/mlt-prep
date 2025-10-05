@@ -218,6 +218,9 @@ export const getPracticeQuestions = query({
       throw new Error("Not authenticated");
     }
 
+    // Enforce 10-100 question limit
+    const limit = args.limit ? Math.min(Math.max(args.limit, 10), 100) : 10;
+
     let questions = await ctx.db
       .query("questions")
       .filter((q) => q.eq(q.field("status"), "approved"))
@@ -231,12 +234,11 @@ export const getPracticeQuestions = query({
       questions = questions.filter((q) => q.difficulty === args.difficulty);
     }
 
-    // Shuffle questions
+    // Shuffle questions to ensure random distribution from all sources
     questions = questions.sort(() => Math.random() - 0.5);
 
-    if (args.limit) {
-      questions = questions.slice(0, args.limit);
-    }
+    // Take the requested number of questions (enforcing 10-100 limit)
+    questions = questions.slice(0, limit);
 
     return questions;
   },
