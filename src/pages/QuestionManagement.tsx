@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { Id } from "@/convex/_generated/dataModel";
+import { AutoGenerateQuestionsDialog } from "@/components/AutoGenerateQuestionsDialog";
 
 export default function QuestionManagement() {
   const { isLoading, isAuthenticated, user } = useAuth();
