@@ -33,6 +33,7 @@ export default function QuestionManagement() {
   const generateUploadUrl = useMutation(api.content.generateUploadUrl);
   const generateAIQuestions = useAction(api.aiQuestions.generateQuestionsFromPDF);
   const extractPYQ = useAction(api.aiQuestions.extractPYQFromPDF);
+  const batchCreateQuestions = useAction(api.aiQuestions.batchCreateQuestions);
 
   // Manual question form state
   const [manualQuestion, setManualQuestion] = useState({
@@ -141,8 +142,7 @@ export default function QuestionManagement() {
   const handleSavePYQQuestions = async () => {
     try {
       setSavingQuestions(true);
-      const batchCreate = useAction(api.aiQuestions.batchCreateQuestions);
-      await batchCreate({ questions: pyqQuestions });
+      await batchCreateQuestions({ questions: pyqQuestions });
       toast.success(`${pyqQuestions.length} PYQ questions saved successfully!`);
       setPyqQuestions([]);
       setShowPYQUpload(false);
