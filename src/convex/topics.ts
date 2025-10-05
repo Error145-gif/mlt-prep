@@ -62,3 +62,28 @@ export const deleteTopic = mutation({
     return args.id;
   },
 });
+
+// Batch create topics (for initial setup)
+export const batchCreateTopics = mutation({
+  args: {
+    topics: v.array(v.object({
+      name: v.string(),
+      description: v.optional(v.string()),
+      order: v.number(),
+    })),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user || user.role !== "admin") {
+      throw new Error("Unauthorized");
+    }
+
+    const results = [];
+    for (const topic of args.topics) {
+      const id = await ctx.db.insert("topics", topic);
+      results.push(id);
+    }
+
+    return results;
+  },
+});
