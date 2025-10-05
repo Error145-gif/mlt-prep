@@ -121,6 +121,53 @@ export const getMockTests = query({
   },
 });
 
+// Get AI-generated questions
+export const getAIQuestions = query({
+  args: {
+    topicId: v.optional(v.id("topics")),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) {
+      throw new Error("Not authenticated");
+    }
+
+    let questions = await ctx.db
+      .query("questions")
+      .withIndex("by_source", (q) => q.eq("source", "ai"))
+      .filter((q) => q.eq(q.field("status"), "approved"))
+      .collect();
+
+    if (args.topicId) {
+      questions = questions.filter((q) => q.topicId === args.topicId);
+    }
+
+    // Group by topic
+    const testsByTopic = new Map<string, typeof questions>();
+    for (const q of questions) {
+      const topicId = q.topicId || "general";
+      if (!testsByTopic.has(topicId)) {
+        testsByTopic.set(topicId, []);
+      }
+      testsByTopic.get(topicId)!.push(q);
+    }
+
+    const tests = await Promise.all(
+      Array.from(testsByTopic.entries()).map(async ([topicId, qs]) => {
+        const topic = topicId !== "general" ? await ctx.db.get(topicId as any) : null;
+        return {
+          topicId,
+          topicName: (topic as any)?.name || "General",
+          questionCount: qs.length,
+          difficulty: "mixed",
+        };
+      })
+    );
+
+    return tests;
+  },
+});
+
 // Get PYQ sets (organized by year)
 export const getPYQSets = query({
   args: {},

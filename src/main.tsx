@@ -24,6 +24,7 @@ import MockTests from "./pages/MockTests.tsx";
 import PYQSets from "./pages/PYQSets.tsx";
 import Practice from "./pages/Practice.tsx";
 import SubscriptionPlans from "./pages/SubscriptionPlans.tsx";
+import AIQuestions from "./pages/AIQuestions.tsx";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
@@ -82,6 +83,7 @@ createRoot(document.getElementById("root")!).render(
             <Route path="/subscription" element={<StudentLayout><SubscriptionPlans /></StudentLayout>} />
             <Route path="/tests/mock" element={<StudentLayout><MockTests /></StudentLayout>} />
             <Route path="/tests/pyq" element={<StudentLayout><PYQSets /></StudentLayout>} />
+            <Route path="/tests/ai" element={<StudentLayout><AIQuestions /></StudentLayout>} />
             <Route path="/practice" element={<StudentLayout><Practice /></StudentLayout>} />
             <Route path="/admin" element={<AdminLayout><AdminDashboard /></AdminLayout>} />
             <Route path="/admin/content" element={<AdminLayout><ContentManagement /></AdminLayout>} />
