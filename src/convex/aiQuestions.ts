@@ -348,6 +348,8 @@ export const batchCreateQuestions = action({
         source: v.string(),
         topicId: v.optional(v.id("topics")),
         year: v.optional(v.number()),
+        examName: v.optional(v.string()),
+        subject: v.optional(v.string()),
       })
     ),
   },

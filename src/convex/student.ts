@@ -168,7 +168,7 @@ export const getAIQuestions = query({
   },
 });
 
-// Get PYQ sets (organized by year)
+// Get PYQ sets (organized by exam and year)
 export const getPYQSets = query({
   args: {},
   handler: async (ctx) => {
@@ -183,22 +183,28 @@ export const getPYQSets = query({
       .filter((q) => q.eq(q.field("status"), "approved"))
       .collect();
 
-    // Group by year
-    const setsByYear = new Map<number, typeof pyqQuestions>();
+    // Group by exam name and year
+    const setsByExamYear = new Map<string, typeof pyqQuestions>();
     for (const q of pyqQuestions) {
+      const examName = q.examName || "General";
       const year = q.year || 0;
-      if (!setsByYear.has(year)) {
-        setsByYear.set(year, []);
+      const key = `${examName}_${year}`;
+      if (!setsByExamYear.has(key)) {
+        setsByExamYear.set(key, []);
       }
-      setsByYear.get(year)!.push(q);
+      setsByExamYear.get(key)!.push(q);
     }
 
-    const sets = Array.from(setsByYear.entries())
-      .map(([year, qs]) => ({
-        year,
-        questionCount: qs.length,
-        subjects: [...new Set(qs.map((q) => q.topicId).filter(Boolean))].length,
-      }))
+    const sets = Array.from(setsByExamYear.entries())
+      .map(([key, qs]) => {
+        const [examName, yearStr] = key.split("_");
+        return {
+          examName,
+          year: parseInt(yearStr),
+          questionCount: qs.length,
+          subjects: [...new Set(qs.map((q) => q.subject).filter(Boolean))],
+        };
+      })
       .sort((a, b) => b.year - a.year);
 
     return sets;

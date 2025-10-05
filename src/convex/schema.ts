@@ -124,12 +124,16 @@ const schema = defineSchema(
       difficulty: v.optional(v.string()), // "easy", "medium", "hard"
       source: v.optional(v.string()), // "manual", "ai", "pyq"
       year: v.optional(v.number()), // for PYQ questions
+      examName: v.optional(v.string()), // for PYQ questions (e.g., "RRB Section Officer", "AIIMS MLT")
+      subject: v.optional(v.string()), // subject name (e.g., "Hematology", "Microbiology")
       createdBy: v.optional(v.id("users")),
     })
       .index("by_content", ["contentId"])
       .index("by_status", ["status"])
       .index("by_topic", ["topicId"])
-      .index("by_source", ["source"]),
+      .index("by_source", ["source"])
+      .index("by_exam", ["examName"])
+      .index("by_year", ["year"]),
 
     // Test Sessions - Track active and completed tests
     testSessions: defineTable({

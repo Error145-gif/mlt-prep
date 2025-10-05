@@ -88,6 +88,8 @@ export const createQuestion = mutation({
     difficulty: v.optional(v.string()),
     source: v.optional(v.string()),
     year: v.optional(v.number()),
+    examName: v.optional(v.string()),
+    subject: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
@@ -107,6 +109,55 @@ export const createQuestion = mutation({
   },
 });
 
+// Batch create questions (for bulk manual entry)
+export const batchCreateQuestions = mutation({
+  args: {
+    questions: v.array(
+      v.object({
+        contentId: v.optional(v.id("content")),
+        topicId: v.optional(v.id("topics")),
+        type: v.string(),
+        question: v.string(),
+        options: v.optional(v.array(v.string())),
+        correctAnswer: v.string(),
+        explanation: v.optional(v.string()),
+        difficulty: v.optional(v.string()),
+        source: v.optional(v.string()),
+        year: v.optional(v.number()),
+        examName: v.optional(v.string()),
+        subject: v.optional(v.string()),
+      })
+    ),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user || user.role !== "admin") {
+      throw new Error("Unauthorized");
+    }
+
+    // Limit to 50 questions per batch
+    if (args.questions.length > 50) {
+      throw new Error("Cannot add more than 50 questions at once");
+    }
+
+    const ids = [];
+    for (const question of args.questions) {
+      const id = await ctx.db.insert("questions", {
+        ...question,
+        type: question.type as any,
+        status: "approved",
+        reviewedBy: user._id,
+        reviewedAt: Date.now(),
+        createdBy: user._id,
+        source: question.source || "manual",
+      });
+      ids.push(id);
+    }
+
+    return ids;
+  },
+});
+
 // Internal mutation for batch creation (used by actions)
 export const createQuestionInternal = internalMutation({
   args: {
@@ -120,6 +171,8 @@ export const createQuestionInternal = internalMutation({
     difficulty: v.optional(v.string()),
     source: v.optional(v.string()),
     year: v.optional(v.number()),
+    examName: v.optional(v.string()),
+    subject: v.optional(v.string()),
     createdBy: v.id("users"),
   },
   handler: async (ctx, args) => {
