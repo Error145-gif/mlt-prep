@@ -22,21 +22,25 @@ export default function QuestionManagement() {
   const { isLoading, isAuthenticated, user } = useAuth();
   const [activeTab, setActiveTab] = useState("all");
   const [showManualForm, setShowManualForm] = useState(false);
+  const [showBulkManualForm, setShowBulkManualForm] = useState(false);
+  const [showPYQManualForm, setShowPYQManualForm] = useState(false);
   const [showAIUpload, setShowAIUpload] = useState(false);
   const [showPYQUpload, setShowPYQUpload] = useState(false);
   const [showAutoGenerate, setShowAutoGenerate] = useState(false);
   const [pyqYear, setPyqYear] = useState<number>(new Date().getFullYear());
+  const [pyqExamName, setPyqExamName] = useState<string>("");
   
   const questions = useQuery(api.questions.getQuestions, { status: activeTab === "all" ? undefined : activeTab });
   const topics = useQuery(api.topics.getAllTopics);
   const reviewQuestion = useMutation(api.questions.reviewQuestion);
   const createQuestion = useMutation(api.questions.createQuestion);
   const deleteQuestion = useMutation(api.questions.deleteQuestion);
+  const batchCreateQuestions = useMutation(api.questions.batchCreateQuestions);
   const generateUploadUrl = useMutation(api.content.generateUploadUrl);
   const generateAIQuestions = useAction(api.aiQuestions.generateQuestionsFromAI);
   const generateAIQuestionsFromPDF = useAction(api.aiQuestions.generateQuestionsFromPDF);
   const extractPYQ = useAction(api.aiQuestions.extractPYQFromPDF);
-  const batchCreateQuestions = useAction(api.aiQuestions.batchCreateQuestions);
+  const batchCreateQuestionsAction = useAction(api.aiQuestions.batchCreateQuestions);
 
   // Manual question form state
   const [manualQuestion, setManualQuestion] = useState({
@@ -47,7 +51,12 @@ export default function QuestionManagement() {
     explanation: "",
     difficulty: "medium",
     topicId: "",
+    subject: "",
+    examName: "",
   });
+
+  // Bulk manual entry state
+  const [bulkQuestionsText, setBulkQuestionsText] = useState("");
 
   // AI generated questions preview
   const [aiQuestions, setAiQuestions] = useState<any[]>([]);
@@ -83,6 +92,8 @@ export default function QuestionManagement() {
         topicId: manualQuestion.topicId ? (manualQuestion.topicId as Id<"topics">) : undefined,
         options: manualQuestion.type === "mcq" ? manualQuestion.options : undefined,
         source: "manual",
+        examName: manualQuestion.examName || undefined,
+        subject: manualQuestion.subject || undefined,
       });
       toast.success("Question created successfully!");
       setShowManualForm(false);
@@ -94,9 +105,68 @@ export default function QuestionManagement() {
         explanation: "",
         difficulty: "medium",
         topicId: "",
+        subject: "",
+        examName: "",
       });
     } catch (error) {
       toast.error("Failed to create question");
+    }
+  };
+
+  const handleBulkManualSubmit = async () => {
+    try {
+      // Parse bulk questions from text (expecting JSON array format)
+      const parsedQuestions = JSON.parse(bulkQuestionsText);
+      
+      if (!Array.isArray(parsedQuestions)) {
+        toast.error("Please provide a valid JSON array of questions");
+        return;
+      }
+      
+      if (parsedQuestions.length > 50) {
+        toast.error("Cannot add more than 50 questions at once");
+        return;
+      }
+      
+      await batchCreateQuestions({ questions: parsedQuestions });
+      toast.success(`${parsedQuestions.length} questions added successfully!`);
+      setShowBulkManualForm(false);
+      setBulkQuestionsText("");
+    } catch (error) {
+      toast.error("Failed to parse or create questions. Please check your JSON format.");
+    }
+  };
+
+  const handlePYQManualSubmit = async () => {
+    try {
+      // Parse PYQ questions from text
+      const parsedQuestions = JSON.parse(bulkQuestionsText);
+      
+      if (!Array.isArray(parsedQuestions)) {
+        toast.error("Please provide a valid JSON array of questions");
+        return;
+      }
+      
+      if (parsedQuestions.length > 50) {
+        toast.error("Cannot add more than 50 questions at once");
+        return;
+      }
+      
+      // Add PYQ metadata to all questions
+      const pyqQuestions = parsedQuestions.map(q => ({
+        ...q,
+        source: "pyq",
+        examName: pyqExamName,
+        year: pyqYear,
+      }));
+      
+      await batchCreateQuestions({ questions: pyqQuestions });
+      toast.success(`${pyqQuestions.length} PYQ questions added successfully!`);
+      setShowPYQManualForm(false);
+      setBulkQuestionsText("");
+      setPyqExamName("");
+    } catch (error) {
+      toast.error("Failed to parse or create PYQ questions. Please check your JSON format.");
     }
   };
 
@@ -170,7 +240,7 @@ export default function QuestionManagement() {
   const handleSavePYQQuestions = async () => {
     try {
       setSavingQuestions(true);
-      await batchCreateQuestions({ questions: pyqQuestions });
+      await batchCreateQuestionsAction({ questions: pyqQuestions });
       toast.success(`${pyqQuestions.length} PYQ questions saved successfully!`);
       setPyqQuestions([]);
       setShowPYQUpload(false);
@@ -216,12 +286,12 @@ export default function QuestionManagement() {
       >
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold tracking-tight text-white">Question Management</h1>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Dialog open={showManualForm} onOpenChange={setShowManualForm}>
               <DialogTrigger asChild>
                 <Button className="bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/30">
                   <Plus className="h-4 w-4 mr-2" />
-                  Manual Entry
+                  Add Single Question
                 </Button>
               </DialogTrigger>
               <DialogContent className="glass-card border-white/20 backdrop-blur-xl bg-white/10 max-w-2xl max-h-[80vh] overflow-y-auto">
@@ -229,6 +299,26 @@ export default function QuestionManagement() {
                   <DialogTitle className="text-white">Add Question Manually</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
+                  <div>
+                    <Label className="text-white">Subject</Label>
+                    <Input
+                      value={manualQuestion.subject}
+                      onChange={(e) => setManualQuestion({ ...manualQuestion, subject: e.target.value })}
+                      className="bg-white/5 border-white/10 text-white"
+                      placeholder="e.g., Hematology, Microbiology"
+                    />
+                  </div>
+
+                  <div>
+                    <Label className="text-white">Exam Name (Optional)</Label>
+                    <Input
+                      value={manualQuestion.examName}
+                      onChange={(e) => setManualQuestion({ ...manualQuestion, examName: e.target.value })}
+                      className="bg-white/5 border-white/10 text-white"
+                      placeholder="e.g., RRB Section Officer"
+                    />
+                  </div>
+                  
                   <div>
                     <Label className="text-white">Question Type</Label>
                     <Select value={manualQuestion.type} onValueChange={(v) => setManualQuestion({ ...manualQuestion, type: v })}>
@@ -333,11 +423,105 @@ export default function QuestionManagement() {
               </DialogContent>
             </Dialog>
 
-            <Dialog open={showPYQUpload} onOpenChange={setShowPYQUpload}>
+            <Dialog open={showBulkManualForm} onOpenChange={setShowBulkManualForm}>
+              <DialogTrigger asChild>
+                <Button className="bg-green-500/20 hover:bg-green-500/30 text-green-300 border border-green-500/30">
+                  <Upload className="h-4 w-4 mr-2" />
+                  Bulk Add (Up to 50)
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="glass-card border-white/20 backdrop-blur-xl bg-white/10 max-w-4xl max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="text-white">Bulk Add Questions (Up to 50)</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-white">Paste Questions as JSON Array</Label>
+                    <p className="text-white/60 text-sm mb-2">
+                      Format: [{"{"}"type":"mcq","question":"...","options":["..."],"correctAnswer":"...","subject":"...","topic":"...","difficulty":"easy"{"}"}]
+                    </p>
+                    <Textarea
+                      value={bulkQuestionsText}
+                      onChange={(e) => setBulkQuestionsText(e.target.value)}
+                      className="bg-white/5 border-white/10 text-white font-mono text-sm"
+                      rows={15}
+                      placeholder='[{"type":"mcq","question":"What is EDTA?","options":["Anticoagulant","Stain","Buffer","Enzyme"],"correctAnswer":"Anticoagulant","subject":"Hematology","difficulty":"easy"}]'
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button onClick={handleBulkManualSubmit} className="flex-1 bg-green-500/20 hover:bg-green-500/30 text-green-300 border border-green-500/30">
+                      Add All Questions
+                    </Button>
+                    <Button onClick={() => setShowBulkManualForm(false)} variant="outline" className="flex-1">
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog open={showPYQManualForm} onOpenChange={setShowPYQManualForm}>
               <DialogTrigger asChild>
                 <Button className="bg-orange-500/20 hover:bg-orange-500/30 text-orange-300 border border-orange-500/30">
                   <FileText className="h-4 w-4 mr-2" />
-                  Upload PYQ
+                  Add PYQ Questions
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="glass-card border-white/20 backdrop-blur-xl bg-white/10 max-w-4xl max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="text-white">Add PYQ Questions (Up to 50)</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-white">Exam Name</Label>
+                    <Input
+                      value={pyqExamName}
+                      onChange={(e) => setPyqExamName(e.target.value)}
+                      className="bg-white/5 border-white/10 text-white"
+                      placeholder="e.g., RRB Section Officer, AIIMS MLT"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-white">Year</Label>
+                    <Input
+                      type="number"
+                      value={pyqYear}
+                      onChange={(e) => setPyqYear(parseInt(e.target.value))}
+                      className="bg-white/5 border-white/10 text-white"
+                      min={2000}
+                      max={new Date().getFullYear()}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-white">Paste Questions as JSON Array</Label>
+                    <p className="text-white/60 text-sm mb-2">
+                      Format: [{"{"}"type":"mcq","question":"...","options":["..."],"correctAnswer":"...","subject":"...","topic":"...","difficulty":"easy"{"}"}]
+                    </p>
+                    <Textarea
+                      value={bulkQuestionsText}
+                      onChange={(e) => setBulkQuestionsText(e.target.value)}
+                      className="bg-white/5 border-white/10 text-white font-mono text-sm"
+                      rows={12}
+                      placeholder='[{"type":"mcq","question":"What is EDTA?","options":["Anticoagulant","Stain","Buffer","Enzyme"],"correctAnswer":"Anticoagulant","subject":"Hematology","difficulty":"easy"}]'
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button onClick={handlePYQManualSubmit} className="flex-1 bg-green-500/20 hover:bg-green-500/30 text-green-300 border border-green-500/30">
+                      Add All PYQ Questions
+                    </Button>
+                    <Button onClick={() => setShowPYQManualForm(false)} variant="outline" className="flex-1">
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog open={showPYQUpload} onOpenChange={setShowPYQUpload}>
+              <DialogTrigger asChild>
+                <Button className="bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/30">
+                  <Upload className="h-4 w-4 mr-2" />
+                  Extract PYQ from PDF
                 </Button>
               </DialogTrigger>
               <DialogContent className="glass-card border-white/20 backdrop-blur-xl bg-white/10 max-w-4xl max-h-[80vh] overflow-y-auto">
