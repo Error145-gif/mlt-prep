@@ -55,8 +55,8 @@ export default function QuestionManagement() {
     examName: "",
   });
 
-  // Bulk manual entry state
-  const [bulkQuestionsText, setBulkQuestionsText] = useState("");
+  // Bulk manual entry state - 20 separate sections
+  const [bulkQuestions, setBulkQuestions] = useState<string[]>(Array(20).fill(""));
 
   // AI generated questions preview
   const [aiQuestions, setAiQuestions] = useState<any[]>([]);
@@ -115,16 +115,11 @@ export default function QuestionManagement() {
 
   const handleBulkManualSubmit = async () => {
     try {
-      // Parse bulk questions from plain text format
-      const questionBlocks = bulkQuestionsText.split('---').filter(block => block.trim());
+      // Filter out empty question blocks
+      const questionBlocks = bulkQuestions.filter(block => block.trim());
       
       if (questionBlocks.length === 0) {
         toast.error("No questions found. Please paste questions in the correct format.");
-        return;
-      }
-      
-      if (questionBlocks.length > 50) {
-        toast.error("Cannot add more than 50 questions at once");
         return;
       }
       
@@ -249,7 +244,7 @@ export default function QuestionManagement() {
       }
       
       setShowBulkManualForm(false);
-      setBulkQuestionsText("");
+      setBulkQuestions(Array(20).fill(""));
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to add questions. Please try again.");
       console.error("Bulk add error:", error);
@@ -259,7 +254,7 @@ export default function QuestionManagement() {
   const handlePYQManualSubmit = async () => {
     try {
       // Parse PYQ questions from plain text format
-      const questionBlocks = bulkQuestionsText.split('---').filter(block => block.trim());
+      const questionBlocks = bulkQuestions.filter(block => block.trim());
       
       if (questionBlocks.length === 0) {
         toast.error("No questions found. Please paste questions in the correct format.");
@@ -319,7 +314,7 @@ export default function QuestionManagement() {
       await batchCreateQuestions({ questions: parsedQuestions });
       toast.success(`${parsedQuestions.length} PYQ questions added successfully!`);
       setShowPYQManualForm(false);
-      setBulkQuestionsText("");
+      setBulkQuestions(Array(20).fill(""));
       setPyqExamName("");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to parse PYQ questions. Please check your format.");
@@ -590,13 +585,13 @@ export default function QuestionManagement() {
                 <DialogHeader>
                   <DialogTitle className="text-white">Bulk Add Questions (Up to 50)</DialogTitle>
                 </DialogHeader>
-                <div className="space-y-4">
+                <div className="space-y-4 max-h-[60vh] overflow-y-auto">
                   <div>
-                    <Label className="text-white">Paste Questions in Plain Text</Label>
+                    <Label className="text-white">Paste Questions in Plain Text (20 Separate Sections)</Label>
                     <p className="text-white/60 text-sm mb-2">
-                      Format each question like this, separated by "---":
+                      Format each question like this:
                     </p>
-                    <div className="bg-white/5 border border-white/10 rounded p-3 mb-2 text-xs text-white/70 font-mono">
+                    <div className="bg-white/5 border border-white/10 rounded p-3 mb-4 text-xs text-white/70 font-mono">
                       Q: What is EDTA?<br/>
                       A: Anticoagulant<br/>
                       Options: Anticoagulant | Stain | Buffer | Enzyme<br/>
@@ -604,20 +599,26 @@ export default function QuestionManagement() {
                       Topic: Anticoagulants<br/>
                       Difficulty: Easy<br/>
                       Type: MCQ<br/>
-                      Explanation: EDTA is used to prevent blood clotting<br/>
-                      ---<br/>
-                      Q: Next question here?<br/>
-                      A: Answer here<br/>
-                      ...
+                      Explanation: EDTA is used to prevent blood clotting
                     </div>
-                    <Textarea
-                      value={bulkQuestionsText}
-                      onChange={(e) => setBulkQuestionsText(e.target.value)}
-                      className="bg-white/5 border-white/10 text-white font-mono text-sm"
-                      rows={15}
-                      placeholder="Q: What is EDTA?&#10;A: Anticoagulant&#10;Options: Anticoagulant | Stain | Buffer | Enzyme&#10;Subject: Hematology&#10;Topic: Anticoagulants&#10;Difficulty: Easy&#10;Type: MCQ&#10;---&#10;Q: Next question..."
-                    />
                   </div>
+                  
+                  {bulkQuestions.map((question, index) => (
+                    <div key={index} className="space-y-2">
+                      <Label className="text-white font-semibold">Question {index + 1}</Label>
+                      <Textarea
+                        value={question}
+                        onChange={(e) => {
+                          const newQuestions = [...bulkQuestions];
+                          newQuestions[index] = e.target.value;
+                          setBulkQuestions(newQuestions);
+                        }}
+                        className="bg-white/5 border-white/10 text-white font-mono text-sm"
+                        rows={8}
+                        placeholder={`Q: Question text here?&#10;A: Answer here&#10;Options: Option1 | Option2 | Option3 | Option4&#10;Subject: Subject name&#10;Topic: Topic name&#10;Difficulty: Easy&#10;Type: MCQ`}
+                      />
+                    </div>
+                  ))}
                   <div className="flex gap-2">
                     <Button onClick={handleBulkManualSubmit} className="flex-1 bg-green-500/20 hover:bg-green-500/30 text-green-300 border border-green-500/30">
                       Add All Questions
@@ -662,31 +663,39 @@ export default function QuestionManagement() {
                       max={new Date().getFullYear()}
                     />
                   </div>
-                  <div>
-                    <Label className="text-white">Paste Questions in Plain Text</Label>
-                    <p className="text-white/60 text-sm mb-2">
-                      Format each question like this, separated by "---":
-                    </p>
-                    <div className="bg-white/5 border border-white/10 rounded p-3 mb-2 text-xs text-white/70 font-mono">
-                      Q: What is EDTA?<br/>
-                      A: Anticoagulant<br/>
-                      Options: Anticoagulant | Stain | Buffer | Enzyme<br/>
-                      Subject: Hematology<br/>
-                      Topic: Anticoagulants<br/>
-                      Difficulty: Easy<br/>
-                      Type: MCQ<br/>
-                      ---<br/>
-                      Q: Next question here?<br/>
-                      A: Answer here<br/>
-                      ...
+                  <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+                    <div>
+                      <Label className="text-white">Paste PYQ Questions in Plain Text (20 Separate Sections)</Label>
+                      <p className="text-white/60 text-sm mb-2">
+                        Format each question like this:
+                      </p>
+                      <div className="bg-white/5 border border-white/10 rounded p-3 mb-4 text-xs text-white/70 font-mono">
+                        Q: What is EDTA?<br/>
+                        A: Anticoagulant<br/>
+                        Options: Anticoagulant | Stain | Buffer | Enzyme<br/>
+                        Subject: Hematology<br/>
+                        Topic: Anticoagulants<br/>
+                        Difficulty: Easy<br/>
+                        Type: MCQ
+                      </div>
                     </div>
-                    <Textarea
-                      value={bulkQuestionsText}
-                      onChange={(e) => setBulkQuestionsText(e.target.value)}
-                      className="bg-white/5 border-white/10 text-white font-mono text-sm"
-                      rows={12}
-                      placeholder="Q: What is EDTA?&#10;A: Anticoagulant&#10;Options: Anticoagulant | Stain | Buffer | Enzyme&#10;Subject: Hematology&#10;Topic: Anticoagulants&#10;Difficulty: Easy&#10;Type: MCQ&#10;---&#10;Q: Next question..."
-                    />
+                    
+                    {bulkQuestions.map((question, index) => (
+                      <div key={index} className="space-y-2">
+                        <Label className="text-white font-semibold">PYQ Question {index + 1}</Label>
+                        <Textarea
+                          value={question}
+                          onChange={(e) => {
+                            const newQuestions = [...bulkQuestions];
+                            newQuestions[index] = e.target.value;
+                            setBulkQuestions(newQuestions);
+                          }}
+                          className="bg-white/5 border-white/10 text-white font-mono text-sm"
+                          rows={8}
+                          placeholder={`Q: Question text here?&#10;A: Answer here&#10;Options: Option1 | Option2 | Option3 | Option4&#10;Subject: Subject name&#10;Topic: Topic name&#10;Difficulty: Easy&#10;Type: MCQ`}
+                        />
+                      </div>
+                    ))}
                   </div>
                   <div className="flex gap-2">
                     <Button onClick={handlePYQManualSubmit} className="flex-1 bg-green-500/20 hover:bg-green-500/30 text-green-300 border border-green-500/30">
