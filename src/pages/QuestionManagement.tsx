@@ -27,8 +27,12 @@ export default function QuestionManagement() {
   const [showAIUpload, setShowAIUpload] = useState(false);
   const [showPYQUpload, setShowPYQUpload] = useState(false);
   const [showAutoGenerate, setShowAutoGenerate] = useState(false);
+  const [showAIBulkForm, setShowAIBulkForm] = useState(false);
   const [pyqYear, setPyqYear] = useState<number>(new Date().getFullYear());
   const [pyqExamName, setPyqExamName] = useState<string>("");
+  
+  // AI bulk questions state - 50 separate sections
+  const [aiBulkQuestions, setAiBulkQuestions] = useState<string[]>(Array(50).fill(""));
   
   const questions = useQuery(api.questions.getQuestions, { status: activeTab === "all" ? undefined : activeTab });
   const topics = useQuery(api.topics.getAllTopics);
@@ -248,6 +252,145 @@ export default function QuestionManagement() {
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to add questions. Please try again.");
       console.error("Bulk add error:", error);
+    }
+  };
+
+  const handleAIBulkSubmit = async () => {
+    try {
+      // Filter out empty question blocks
+      const questionBlocks = aiBulkQuestions.filter(block => block.trim());
+      
+      if (questionBlocks.length === 0) {
+        toast.error("No questions found. Please paste questions in the correct format.");
+        return;
+      }
+      
+      if (questionBlocks.length > 50) {
+        toast.error("Cannot add more than 50 questions at once");
+        return;
+      }
+      
+      console.log(`Processing ${questionBlocks.length} AI question blocks...`);
+      
+      const parsedQuestions = [];
+      const errors = [];
+      
+      for (let index = 0; index < questionBlocks.length; index++) {
+        const block = questionBlocks[index];
+        try {
+          const lines = block.split('\n').filter(line => line.trim());
+          const question: any = {
+            type: "mcq",
+            difficulty: "medium",
+            source: "ai"
+          };
+          
+          lines.forEach(line => {
+            const trimmedLine = line.trim();
+            const colonIndex = trimmedLine.indexOf(':');
+            
+            if (colonIndex === -1) return;
+            
+            const key = trimmedLine.substring(0, colonIndex).trim().toLowerCase();
+            const value = trimmedLine.substring(colonIndex + 1).trim();
+            
+            if (!value) return;
+            
+            switch (key) {
+              case 'q':
+              case 'question':
+                question.question = value;
+                break;
+              case 'a':
+              case 'answer':
+              case 'correct answer':
+                question.correctAnswer = value;
+                break;
+              case 'options':
+              case 'option':
+                question.options = value.split('|').map(opt => opt.trim()).filter(opt => opt);
+                break;
+              case 'subject':
+                question.subject = value;
+                break;
+              case 'topic':
+                const matchingTopic = topics?.find(t => 
+                  t.name.toLowerCase() === value.toLowerCase()
+                );
+                if (matchingTopic) {
+                  question.topicId = matchingTopic._id;
+                }
+                break;
+              case 'difficulty':
+                const diff = value.toLowerCase();
+                question.difficulty = ['easy', 'medium', 'hard'].includes(diff) ? diff : 'medium';
+                break;
+              case 'type':
+                const typeStr = value.toLowerCase().replace(/[^a-z]/g, '');
+                if (typeStr === 'truefalse' || typeStr === 'tf') {
+                  question.type = 'true_false';
+                } else if (typeStr === 'shortanswer' || typeStr === 'sa') {
+                  question.type = 'short_answer';
+                } else {
+                  question.type = 'mcq';
+                }
+                break;
+              case 'explanation':
+                question.explanation = value;
+                break;
+            }
+          });
+          
+          // Validate required fields
+          if (!question.question) {
+            throw new Error(`Missing question text`);
+          }
+          if (!question.correctAnswer) {
+            throw new Error(`Missing correct answer`);
+          }
+          if (!question.subject) {
+            question.subject = "General";
+          }
+          
+          // Validate MCQ has options
+          if (question.type === 'mcq' && (!question.options || question.options.length < 2)) {
+            throw new Error(`MCQ must have at least 2 options`);
+          }
+          
+          parsedQuestions.push(question);
+          console.log(`Successfully parsed AI question ${index + 1}:`, question.question.substring(0, 50) + '...');
+        } catch (error) {
+          const errorMsg = `Question ${index + 1}: ${error instanceof Error ? error.message : 'Invalid format'}`;
+          errors.push(errorMsg);
+          console.error(errorMsg);
+        }
+      }
+      
+      if (parsedQuestions.length === 0) {
+        toast.error("No valid questions found. Please check your format.");
+        if (errors.length > 0) {
+          console.error("Parsing errors:", errors);
+          toast.error(`Errors: ${errors.slice(0, 3).join('; ')}`);
+        }
+        return;
+      }
+      
+      console.log(`Attempting to save ${parsedQuestions.length} AI questions to database...`);
+      const result = await batchCreateQuestions({ questions: parsedQuestions });
+      console.log(`Database save result:`, result);
+      
+      if (errors.length > 0) {
+        toast.warning(`${parsedQuestions.length} AI questions added. ${errors.length} questions had errors.`);
+        console.error("Parsing errors:", errors);
+      } else {
+        toast.success(`${parsedQuestions.length} AI questions added successfully!`);
+      }
+      
+      setShowAIBulkForm(false);
+      setAiBulkQuestions(Array(50).fill(""));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to add AI questions. Please try again.");
+      console.error("AI bulk add error:", error);
     }
   };
 
@@ -624,6 +767,63 @@ export default function QuestionManagement() {
                       Add All Questions
                     </Button>
                     <Button onClick={() => setShowBulkManualForm(false)} variant="outline" className="flex-1">
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog open={showAIBulkForm} onOpenChange={setShowAIBulkForm}>
+              <DialogTrigger asChild>
+                <Button className="bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/30">
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  AI Bulk Add (Up to 50)
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="glass-card border-white/20 backdrop-blur-xl bg-white/10 max-w-4xl max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="text-white">AI Bulk Add Questions (Up to 50)</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+                  <div>
+                    <Label className="text-white">Paste AI Questions in Plain Text (50 Separate Sections)</Label>
+                    <p className="text-white/60 text-sm mb-2">
+                      Format each question like this:
+                    </p>
+                    <div className="bg-white/5 border border-white/10 rounded p-3 mb-4 text-xs text-white/70 font-mono">
+                      Q: What is EDTA?<br/>
+                      A: Anticoagulant<br/>
+                      Options: Anticoagulant | Stain | Buffer | Enzyme<br/>
+                      Subject: Hematology<br/>
+                      Topic: Anticoagulants<br/>
+                      Difficulty: Easy<br/>
+                      Type: MCQ<br/>
+                      Explanation: EDTA is used to prevent blood clotting
+                    </div>
+                  </div>
+                  
+                  {aiBulkQuestions.map((question, index) => (
+                    <div key={index} className="space-y-2">
+                      <Label className="text-white font-semibold">AI Question {index + 1}</Label>
+                      <Textarea
+                        value={question}
+                        onChange={(e) => {
+                          const newQuestions = [...aiBulkQuestions];
+                          newQuestions[index] = e.target.value;
+                          setAiBulkQuestions(newQuestions);
+                        }}
+                        className="bg-white/5 border-white/10 text-white font-mono text-sm"
+                        rows={8}
+                        placeholder={`Q: Question text here?&#10;A: Answer here&#10;Options: Option1 | Option2 | Option3 | Option4&#10;Subject: Subject name&#10;Topic: Topic name&#10;Difficulty: Easy&#10;Type: MCQ`}
+                      />
+                    </div>
+                  ))}
+                  <div className="flex gap-2">
+                    <Button onClick={handleAIBulkSubmit} className="flex-1 bg-green-500/20 hover:bg-green-500/30 text-green-300 border border-green-500/30">
+                      Add All AI Questions
+                    </Button>
+                    <Button onClick={() => setShowAIBulkForm(false)} variant="outline" className="flex-1">
                       Cancel
                     </Button>
                   </div>
