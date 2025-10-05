@@ -337,17 +337,65 @@ export default function QuestionManagement() {
                     )}
                   </div>
                   {aiQuestions.length > 0 && (
-                    <div className="space-y-2">
-                      <p className="text-white font-medium">{aiQuestions.length} questions generated</p>
-                      <Button
-                        onClick={() => {
-                          setShowAIUpload(false);
-                          setAiQuestions([]);
-                        }}
-                        className="w-full bg-green-500/20 hover:bg-green-500/30 text-green-300 border border-green-500/30"
-                      >
-                        Close
-                      </Button>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <p className="text-white font-medium">{aiQuestions.length} AI questions generated</p>
+                        <Button
+                          onClick={async () => {
+                            try {
+                              setSavingQuestions(true);
+                              await batchCreateQuestions({ questions: aiQuestions });
+                              toast.success(`${aiQuestions.length} AI questions saved successfully!`);
+                              setAiQuestions([]);
+                              setShowAIUpload(false);
+                            } catch (error) {
+                              toast.error("Failed to save AI questions");
+                            } finally {
+                              setSavingQuestions(false);
+                            }
+                          }}
+                          disabled={savingQuestions}
+                          className="bg-green-500/20 hover:bg-green-500/30 text-green-300 border border-green-500/30"
+                        >
+                          {savingQuestions ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Saving...
+                            </>
+                          ) : (
+                            "Save All Questions"
+                          )}
+                        </Button>
+                      </div>
+                      <div className="space-y-3 max-h-96 overflow-y-auto">
+                        {aiQuestions.map((q, idx) => (
+                          <div key={idx} className="p-4 rounded-lg bg-white/5 border border-white/10">
+                            <p className="text-white font-medium mb-2">{q.question}</p>
+                            {q.options && (
+                              <div className="space-y-1 mb-2">
+                                {q.options.map((opt: string, optIdx: number) => (
+                                  <div
+                                    key={optIdx}
+                                    className={`text-sm p-2 rounded ${
+                                      opt === q.correctAnswer
+                                        ? "bg-green-500/20 text-green-300"
+                                        : "text-white/70"
+                                    }`}
+                                  >
+                                    {opt}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            {q.explanation && (
+                              <p className="text-xs text-white/60 mt-2">{q.explanation}</p>
+                            )}
+                            <div className="flex gap-2 text-xs text-white/60 mt-2">
+                              <span className="capitalize">{q.difficulty}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
