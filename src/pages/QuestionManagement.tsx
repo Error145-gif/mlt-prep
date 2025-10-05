@@ -115,58 +115,141 @@ export default function QuestionManagement() {
 
   const handleBulkManualSubmit = async () => {
     try {
-      // Parse bulk questions from text (expecting JSON array format)
-      const parsedQuestions = JSON.parse(bulkQuestionsText);
+      // Parse bulk questions from plain text format
+      const questionBlocks = bulkQuestionsText.split('---').filter(block => block.trim());
       
-      if (!Array.isArray(parsedQuestions)) {
-        toast.error("Please provide a valid JSON array of questions");
+      if (questionBlocks.length === 0) {
+        toast.error("No questions found. Please paste questions in the correct format.");
         return;
       }
       
-      if (parsedQuestions.length > 50) {
+      if (questionBlocks.length > 50) {
         toast.error("Cannot add more than 50 questions at once");
         return;
       }
+      
+      const parsedQuestions = questionBlocks.map((block, index) => {
+        const lines = block.split('\n').filter(line => line.trim());
+        const question: any = {
+          type: "mcq",
+          difficulty: "medium",
+          source: "manual"
+        };
+        
+        lines.forEach(line => {
+          const trimmedLine = line.trim();
+          if (trimmedLine.startsWith('Q:')) {
+            question.question = trimmedLine.substring(2).trim();
+          } else if (trimmedLine.startsWith('A:')) {
+            question.correctAnswer = trimmedLine.substring(2).trim();
+          } else if (trimmedLine.startsWith('Options:')) {
+            question.options = trimmedLine.substring(8).split('|').map(opt => opt.trim());
+          } else if (trimmedLine.startsWith('Subject:')) {
+            question.subject = trimmedLine.substring(8).trim();
+          } else if (trimmedLine.startsWith('Topic:')) {
+            const topicName = trimmedLine.substring(6).trim();
+            // Find topic ID by name
+            const matchingTopic = topics?.find(t => t.name.toLowerCase() === topicName.toLowerCase());
+            if (matchingTopic) {
+              question.topicId = matchingTopic._id;
+            }
+          } else if (trimmedLine.startsWith('Difficulty:')) {
+            question.difficulty = trimmedLine.substring(11).trim().toLowerCase();
+          } else if (trimmedLine.startsWith('Type:')) {
+            const typeStr = trimmedLine.substring(5).trim().toLowerCase();
+            question.type = typeStr === 'true/false' || typeStr === 'truefalse' ? 'true_false' : 
+                           typeStr === 'short answer' || typeStr === 'shortanswer' ? 'short_answer' : 'mcq';
+          } else if (trimmedLine.startsWith('Explanation:')) {
+            question.explanation = trimmedLine.substring(12).trim();
+          } else if (trimmedLine.startsWith('Exam:')) {
+            question.examName = trimmedLine.substring(5).trim();
+          }
+        });
+        
+        // Validate required fields
+        if (!question.question || !question.correctAnswer) {
+          throw new Error(`Question ${index + 1} is missing required fields (Q: or A:)`);
+        }
+        
+        return question;
+      });
       
       await batchCreateQuestions({ questions: parsedQuestions });
       toast.success(`${parsedQuestions.length} questions added successfully!`);
       setShowBulkManualForm(false);
       setBulkQuestionsText("");
     } catch (error) {
-      toast.error("Failed to parse or create questions. Please check your JSON format.");
+      toast.error(error instanceof Error ? error.message : "Failed to parse questions. Please check your format.");
     }
   };
 
   const handlePYQManualSubmit = async () => {
     try {
-      // Parse PYQ questions from text
-      const parsedQuestions = JSON.parse(bulkQuestionsText);
+      // Parse PYQ questions from plain text format
+      const questionBlocks = bulkQuestionsText.split('---').filter(block => block.trim());
       
-      if (!Array.isArray(parsedQuestions)) {
-        toast.error("Please provide a valid JSON array of questions");
+      if (questionBlocks.length === 0) {
+        toast.error("No questions found. Please paste questions in the correct format.");
         return;
       }
       
-      if (parsedQuestions.length > 50) {
+      if (questionBlocks.length > 50) {
         toast.error("Cannot add more than 50 questions at once");
         return;
       }
       
-      // Add PYQ metadata to all questions
-      const pyqQuestions = parsedQuestions.map(q => ({
-        ...q,
-        source: "pyq",
-        examName: pyqExamName,
-        year: pyqYear,
-      }));
+      const parsedQuestions = questionBlocks.map((block, index) => {
+        const lines = block.split('\n').filter(line => line.trim());
+        const question: any = {
+          type: "mcq",
+          difficulty: "medium",
+          source: "pyq",
+          examName: pyqExamName,
+          year: pyqYear
+        };
+        
+        lines.forEach(line => {
+          const trimmedLine = line.trim();
+          if (trimmedLine.startsWith('Q:')) {
+            question.question = trimmedLine.substring(2).trim();
+          } else if (trimmedLine.startsWith('A:')) {
+            question.correctAnswer = trimmedLine.substring(2).trim();
+          } else if (trimmedLine.startsWith('Options:')) {
+            question.options = trimmedLine.substring(8).split('|').map(opt => opt.trim());
+          } else if (trimmedLine.startsWith('Subject:')) {
+            question.subject = trimmedLine.substring(8).trim();
+          } else if (trimmedLine.startsWith('Topic:')) {
+            const topicName = trimmedLine.substring(6).trim();
+            const matchingTopic = topics?.find(t => t.name.toLowerCase() === topicName.toLowerCase());
+            if (matchingTopic) {
+              question.topicId = matchingTopic._id;
+            }
+          } else if (trimmedLine.startsWith('Difficulty:')) {
+            question.difficulty = trimmedLine.substring(11).trim().toLowerCase();
+          } else if (trimmedLine.startsWith('Type:')) {
+            const typeStr = trimmedLine.substring(5).trim().toLowerCase();
+            question.type = typeStr === 'true/false' || typeStr === 'truefalse' ? 'true_false' : 
+                           typeStr === 'short answer' || typeStr === 'shortanswer' ? 'short_answer' : 'mcq';
+          } else if (trimmedLine.startsWith('Explanation:')) {
+            question.explanation = trimmedLine.substring(12).trim();
+          }
+        });
+        
+        // Validate required fields
+        if (!question.question || !question.correctAnswer) {
+          throw new Error(`Question ${index + 1} is missing required fields (Q: or A:)`);
+        }
+        
+        return question;
+      });
       
-      await batchCreateQuestions({ questions: pyqQuestions });
-      toast.success(`${pyqQuestions.length} PYQ questions added successfully!`);
+      await batchCreateQuestions({ questions: parsedQuestions });
+      toast.success(`${parsedQuestions.length} PYQ questions added successfully!`);
       setShowPYQManualForm(false);
       setBulkQuestionsText("");
       setPyqExamName("");
     } catch (error) {
-      toast.error("Failed to parse or create PYQ questions. Please check your JSON format.");
+      toast.error(error instanceof Error ? error.message : "Failed to parse PYQ questions. Please check your format.");
     }
   };
 
@@ -436,16 +519,30 @@ export default function QuestionManagement() {
                 </DialogHeader>
                 <div className="space-y-4">
                   <div>
-                    <Label className="text-white">Paste Questions as JSON Array</Label>
+                    <Label className="text-white">Paste Questions in Plain Text</Label>
                     <p className="text-white/60 text-sm mb-2">
-                      Format: [{"{"}"type":"mcq","question":"...","options":["..."],"correctAnswer":"...","subject":"...","topic":"...","difficulty":"easy"{"}"}]
+                      Format each question like this, separated by "---":
                     </p>
+                    <div className="bg-white/5 border border-white/10 rounded p-3 mb-2 text-xs text-white/70 font-mono">
+                      Q: What is EDTA?<br/>
+                      A: Anticoagulant<br/>
+                      Options: Anticoagulant | Stain | Buffer | Enzyme<br/>
+                      Subject: Hematology<br/>
+                      Topic: Anticoagulants<br/>
+                      Difficulty: Easy<br/>
+                      Type: MCQ<br/>
+                      Explanation: EDTA is used to prevent blood clotting<br/>
+                      ---<br/>
+                      Q: Next question here?<br/>
+                      A: Answer here<br/>
+                      ...
+                    </div>
                     <Textarea
                       value={bulkQuestionsText}
                       onChange={(e) => setBulkQuestionsText(e.target.value)}
                       className="bg-white/5 border-white/10 text-white font-mono text-sm"
                       rows={15}
-                      placeholder='[{"type":"mcq","question":"What is EDTA?","options":["Anticoagulant","Stain","Buffer","Enzyme"],"correctAnswer":"Anticoagulant","subject":"Hematology","difficulty":"easy"}]'
+                      placeholder="Q: What is EDTA?&#10;A: Anticoagulant&#10;Options: Anticoagulant | Stain | Buffer | Enzyme&#10;Subject: Hematology&#10;Topic: Anticoagulants&#10;Difficulty: Easy&#10;Type: MCQ&#10;---&#10;Q: Next question..."
                     />
                   </div>
                   <div className="flex gap-2">
@@ -493,16 +590,29 @@ export default function QuestionManagement() {
                     />
                   </div>
                   <div>
-                    <Label className="text-white">Paste Questions as JSON Array</Label>
+                    <Label className="text-white">Paste Questions in Plain Text</Label>
                     <p className="text-white/60 text-sm mb-2">
-                      Format: [{"{"}"type":"mcq","question":"...","options":["..."],"correctAnswer":"...","subject":"...","topic":"...","difficulty":"easy"{"}"}]
+                      Format each question like this, separated by "---":
                     </p>
+                    <div className="bg-white/5 border border-white/10 rounded p-3 mb-2 text-xs text-white/70 font-mono">
+                      Q: What is EDTA?<br/>
+                      A: Anticoagulant<br/>
+                      Options: Anticoagulant | Stain | Buffer | Enzyme<br/>
+                      Subject: Hematology<br/>
+                      Topic: Anticoagulants<br/>
+                      Difficulty: Easy<br/>
+                      Type: MCQ<br/>
+                      ---<br/>
+                      Q: Next question here?<br/>
+                      A: Answer here<br/>
+                      ...
+                    </div>
                     <Textarea
                       value={bulkQuestionsText}
                       onChange={(e) => setBulkQuestionsText(e.target.value)}
                       className="bg-white/5 border-white/10 text-white font-mono text-sm"
                       rows={12}
-                      placeholder='[{"type":"mcq","question":"What is EDTA?","options":["Anticoagulant","Stain","Buffer","Enzyme"],"correctAnswer":"Anticoagulant","subject":"Hematology","difficulty":"easy"}]'
+                      placeholder="Q: What is EDTA?&#10;A: Anticoagulant&#10;Options: Anticoagulant | Stain | Buffer | Enzyme&#10;Subject: Hematology&#10;Topic: Anticoagulants&#10;Difficulty: Easy&#10;Type: MCQ&#10;---&#10;Q: Next question..."
                     />
                   </div>
                   <div className="flex gap-2">
