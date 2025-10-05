@@ -1,0 +1,40 @@
+// Parse the JSON response with better error handling
+let questions;
+try {
+  // Clean the response text
+  let cleanedText = responseText.trim();
+  
+  // Extract JSON from markdown code blocks if present
+  const jsonMatch = cleanedText.match(/```json([\s\S]*?)```/);
+  if (jsonMatch) {
+    cleanedText = jsonMatch[1].trim();
+  }
+  
+  // Remove any leading/trailing non-JSON characters
+  const jsonStart = cleanedText.indexOf('[');
+  const jsonEnd = cleanedText.lastIndexOf(']');
+  if (jsonStart !== -1 && jsonEnd !== -1) {
+    cleanedText = cleanedText.substring(jsonStart, jsonEnd + 1);
+  }
+  
+  questions = JSON.parse(cleanedText);
+  
+  // Validate the structure
+  if (!Array.isArray(questions) || questions.length === 0) {
+    throw new Error("Invalid questions format");
+  }
+  
+  // Add source field to each question
+  questions = questions.map((q: any) => ({
+    ...q,
+    source: "ai",
+    topicId: args.topicId,
+  }));
+  
+} catch (error) {
+  console.error("Error parsing JSON response:", error);
+  console.error("Response text:", responseText);
+  throw new Error(`Failed to parse AI-generated questions: ${error instanceof Error ? error.message : "Unknown error"}`);
+}
+
+return questions;

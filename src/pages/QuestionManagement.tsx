@@ -100,19 +100,44 @@ export default function QuestionManagement() {
   const handleAIUpload = async (file: File) => {
     try {
       setUploadingFile(true);
+      
+      // Validate file
+      if (file.type !== "application/pdf") {
+        toast.error("Please upload a PDF file");
+        return;
+      }
+      if (file.size > 100 * 1024 * 1024) {
+        toast.error("File size must be less than 100MB");
+        return;
+      }
+      
+      toast.info("Uploading PDF...");
       const uploadUrl = await generateUploadUrl();
       const result = await fetch(uploadUrl, {
         method: "POST",
         headers: { "Content-Type": file.type },
         body: file,
       });
+      
+      if (!result.ok) {
+        throw new Error("Failed to upload file");
+      }
+      
       const { storageId } = await result.json();
       
+      toast.info("Generating questions with AI... This may take a moment.");
       const generated = await generateAIQuestions({ fileId: storageId });
+      
+      if (!generated || generated.length === 0) {
+        toast.error("No questions were generated. Please try again.");
+        return;
+      }
+      
       setAiQuestions(generated);
-      toast.success("Questions generated! Review and save them.");
+      toast.success(`${generated.length} questions generated! Review and save them.`);
     } catch (error) {
-      toast.error("Failed to generate questions");
+      console.error("AI generation error:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to generate questions. Please check your API key and try again.");
     } finally {
       setUploadingFile(false);
     }

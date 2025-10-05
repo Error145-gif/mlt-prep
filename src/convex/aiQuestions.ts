@@ -22,14 +22,18 @@ export const generateQuestionsFromPDF = action({
       const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
       const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-      // Get file URL
+      // Note: Direct PDF content extraction in Convex is limited
+      // The AI will generate questions based on common MLT topics
+      // For actual PDF parsing, an external OCR/PDF service would be needed
+      
+      // Get file URL to verify it exists
       const fileUrl = await ctx.storage.getUrl(args.fileId);
       if (!fileUrl) {
         throw new Error("File not found");
       }
 
-      // Create prompt for Gemini
-      const prompt = `You are an expert Medical Lab Technology (MLT) educator. I have uploaded a PDF document. Please generate ${args.questionCount || 10} high-quality multiple-choice questions based on Medical Lab Technology topics.
+      // Create prompt for Gemini to generate MLT questions
+      const prompt = `You are an expert Medical Lab Technology (MLT) educator. Generate ${args.questionCount || 10} high-quality multiple-choice questions covering various Medical Lab Technology topics.
 
 For each question, provide:
 1. A clear question text
@@ -50,10 +54,19 @@ Format your response as a JSON array with this structure:
   }
 ]
 
-Focus on creating questions that test understanding of Medical Lab Technology concepts, procedures, and principles covering topics like hematology, microbiology, clinical chemistry, immunology, and laboratory safety. Make sure questions are clear, unambiguous, and educationally valuable.
+Focus on creating questions that test understanding of Medical Lab Technology concepts, procedures, and principles covering topics like:
+- Hematology (blood cells, coagulation, anemia)
+- Microbiology (bacteria, viruses, culture techniques)
+- Clinical Chemistry (enzymes, metabolites, electrolytes)
+- Immunology (antibodies, antigens, immune response)
+- Laboratory Safety (biosafety, quality control, equipment handling)
+- Histopathology (tissue processing, staining techniques)
+- Parasitology (parasites, diagnostic methods)
+
+Make sure questions are clear, unambiguous, and educationally valuable. Return ONLY valid JSON without any markdown formatting.
 
 Generate ${args.questionCount || 10} questions now.`;
-
+      
       // Generate content with Gemini
       const result = await model.generateContent(prompt);
       const response = await result.response;
@@ -62,14 +75,7 @@ Generate ${args.questionCount || 10} questions now.`;
       // Parse the JSON response
       let questions;
       try {
-        // Extract JSON from markdown code blocks if present
-        const jsonMatch = responseText.match(/```json\s*([\s\S]*?)\s*```/);
-        if (jsonMatch) {
-          questions = JSON.parse(jsonMatch[1]);
-        } else {
-          // Try to parse directly
-          questions = JSON.parse(responseText);
-        }
+        questions = JSON.parse(responseText);
       } catch (error) {
         console.error("Error parsing JSON response:", error);
         throw new Error("Failed to parse AI-generated questions");
