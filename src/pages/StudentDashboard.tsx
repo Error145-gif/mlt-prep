@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { BookOpen, FileText, TrendingUp, Award, Clock, AlertCircle } from "lucide-react";
+import { BookOpen, FileText, TrendingUp, Award, Clock, AlertCircle, CreditCard } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect } from "react";
 
@@ -40,8 +40,12 @@ export default function StudentDashboard() {
             <p className="text-white/70 mt-1">Continue your MLT learning journey</p>
           </div>
           {subscriptionAccess && !subscriptionAccess.hasAccess && (
-            <Button className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700">
-              Upgrade Plan
+            <Button 
+              onClick={() => navigate("/subscription")}
+              className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
+            >
+              <CreditCard className="h-4 w-4 mr-2" />
+              View Plans
             </Button>
           )}
         </div>
@@ -51,17 +55,26 @@ export default function StudentDashboard() {
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="glass-card border border-orange-500/50 backdrop-blur-xl bg-orange-500/10 p-4 rounded-xl"
+            className="glass-card border border-orange-500/50 backdrop-blur-xl bg-orange-500/10 p-4 rounded-xl cursor-pointer hover:bg-orange-500/15 transition-all"
+            onClick={() => navigate("/subscription")}
           >
-            <div className="flex items-center gap-3">
-              <AlertCircle className="h-5 w-5 text-orange-400" />
-              <div>
-                <p className="text-white font-medium">
-                  {subscriptionAccess.reason === "no_subscription" && "No active subscription"}
-                  {subscriptionAccess.reason === "expired" && "Your subscription has expired"}
-                </p>
-                <p className="text-white/70 text-sm">Upgrade to access all features</p>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <AlertCircle className="h-5 w-5 text-orange-400" />
+                <div>
+                  <p className="text-white font-medium">
+                    {subscriptionAccess.reason === "no_subscription" && "Start your 7-day free trial!"}
+                    {subscriptionAccess.reason === "expired" && "Your trial has expired"}
+                  </p>
+                  <p className="text-white/70 text-sm">
+                    {subscriptionAccess.reason === "no_subscription" && "Get full access to all features"}
+                    {subscriptionAccess.reason === "expired" && "Subscribe to continue learning"}
+                  </p>
+                </div>
               </div>
+              <Button className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700">
+                View Plans
+              </Button>
             </div>
           </motion.div>
         )}
