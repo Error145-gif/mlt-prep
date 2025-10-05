@@ -153,6 +153,91 @@ export const extractPYQFromPDF = action({
   },
 });
 
+// Generate questions automatically using AI knowledge (no PDF required)
+export const generateQuestionsFromAI = action({
+  args: {
+    topicId: v.optional(v.id("topics")),
+    questionCount: v.number(),
+    difficulty: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    try {
+      // Initialize Google Gemini AI
+      if (!process.env.GEMINI_API_KEY) {
+        throw new Error("GEMINI_API_KEY environment variable is not set");
+      }
+      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+
+      const difficultyFilter = args.difficulty 
+        ? `Focus on ${args.difficulty} difficulty questions.` 
+        : "Mix easy, medium, and hard difficulty questions.";
+
+      // Create prompt for Gemini to generate MLT questions
+      const prompt = `You are an expert Medical Lab Technology (MLT) educator. Generate ${args.questionCount} high-quality multiple-choice questions covering various Medical Lab Technology topics.
+
+${difficultyFilter}
+
+For each question, provide:
+1. A clear question text
+2. Four options (A, B, C, D)
+3. The correct answer
+4. A brief explanation
+5. Difficulty level (easy, medium, or hard)
+
+Format your response as a JSON array with this structure:
+[
+  {
+    "type": "mcq",
+    "question": "Question text here?",
+    "options": ["Option A", "Option B", "Option C", "Option D"],
+    "correctAnswer": "Option A",
+    "explanation": "Explanation here",
+    "difficulty": "medium"
+  }
+]
+
+Focus on creating questions that test understanding of Medical Lab Technology concepts, procedures, and principles covering topics like:
+- Hematology (blood cells, coagulation, anemia, blood typing, CBC interpretation)
+- Microbiology (bacteria, viruses, fungi, culture techniques, staining methods, antibiotic sensitivity)
+- Clinical Chemistry (enzymes, metabolites, electrolytes, liver function tests, kidney function tests)
+- Immunology (antibodies, antigens, immune response, ELISA, immunofluorescence)
+- Laboratory Safety (biosafety levels, quality control, equipment handling, waste disposal)
+- Histopathology (tissue processing, staining techniques, microscopy, fixation)
+- Parasitology (parasites, diagnostic methods, life cycles)
+- Blood Banking (blood groups, cross-matching, transfusion reactions)
+- Molecular Biology (PCR, DNA extraction, gel electrophoresis)
+- Clinical Pathology (urinalysis, body fluid analysis, cytology)
+
+Make sure questions are clear, unambiguous, and educationally valuable. Return ONLY valid JSON without any markdown formatting.
+
+Generate ${args.questionCount} questions now.`;
+      
+      // Generate content with Gemini
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      let responseText = response.text();
+      
+      // Clean up response text - remove markdown code blocks if present
+      responseText = responseText.replace(/```json/g, '').replace(/```/g, '');
+      
+      // Parse the JSON response
+      let questions;
+      try {
+        questions = JSON.parse(responseText);
+      } catch (error) {
+        console.error("Error parsing JSON response:", error);
+        throw new Error("Failed to parse AI-generated questions");
+      }
+
+      return questions;
+    } catch (error) {
+      console.error("Error generating questions from AI:", error);
+      throw new Error(`Failed to generate questions: ${error instanceof Error ? error.message : "Unknown error"}`);
+    }
+  },
+});
+
 // Batch create questions
 export const batchCreateQuestions = action({
   args: {

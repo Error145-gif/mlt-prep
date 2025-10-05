@@ -1,0 +1,41 @@
+      
+      // Parse the JSON response
+      let questions;
+      try {
+        questions = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error("Error parsing JSON response:", parseError);
+        console.error("Response text:", responseText);
+        
+        // Try to extract JSON from the response
+        const jsonMatch = responseText.match(/\[[\s\S]*\]/);
+        if (jsonMatch) {
+          try {
+            questions = JSON.parse(jsonMatch[0]);
+          } catch (secondError) {
+            throw new Error("Failed to parse AI-generated questions. Please try again.");
+          }
+        } else {
+          throw new Error("No valid JSON found in AI response");
+        }
+      }
+
+      // Validate questions array
+      if (!Array.isArray(questions) || questions.length === 0) {
+        throw new Error("AI did not generate valid questions");
+      }
+
+      // Add topicId if provided
+      if (args.topicId) {
+        questions = questions.map(q => ({ ...q, topicId: args.topicId }));
+      }
+
+      return questions;
+    } catch (error) {
+      console.error("Error generating questions from AI:", error);
+      throw new Error(`Failed to generate questions: ${error instanceof Error ? error.message : "Unknown error"}`);
+    }
+  },
+});
+
+// ... keep existing code (rest of the file)

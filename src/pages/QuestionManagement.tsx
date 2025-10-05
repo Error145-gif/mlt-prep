@@ -3,7 +3,7 @@ import { useQuery, useMutation, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Navigate } from "react-router";
 import { useState } from "react";
-import { Loader2, CheckCircle, XCircle, AlertCircle, Plus, Upload, FileText, Edit, Trash2 } from "lucide-react";
+import { Loader2, CheckCircle, XCircle, AlertCircle, Plus, Upload, FileText, Edit, Trash2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -31,7 +31,8 @@ export default function QuestionManagement() {
   const createQuestion = useMutation(api.questions.createQuestion);
   const deleteQuestion = useMutation(api.questions.deleteQuestion);
   const generateUploadUrl = useMutation(api.content.generateUploadUrl);
-  const generateAIQuestions = useAction(api.aiQuestions.generateQuestionsFromPDF);
+  const generateAIQuestions = useAction(api.aiQuestions.generateQuestionsFromAI);
+  const generateAIQuestionsFromPDF = useAction(api.aiQuestions.generateQuestionsFromPDF);
   const extractPYQ = useAction(api.aiQuestions.extractPYQFromPDF);
   const batchCreateQuestions = useAction(api.aiQuestions.batchCreateQuestions);
 
@@ -126,7 +127,7 @@ export default function QuestionManagement() {
       const { storageId } = await result.json();
       
       toast.info("Generating questions with AI... This may take a moment.");
-      const generated = await generateAIQuestions({ fileId: storageId });
+      const generated = await generateAIQuestionsFromPDF({ fileId: storageId });
       
       if (!generated || generated.length === 0) {
         toast.error("No questions were generated. Please try again.");
@@ -424,6 +425,49 @@ export default function QuestionManagement() {
                     </div>
                   )}
                 </div>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white border-0">
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Auto Generate AI Questions
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="glass-card border-white/20 backdrop-blur-xl bg-white/10 max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle className="text-white">Auto Generate Questions with AI</DialogTitle>
+                </DialogHeader>
+                <AutoGenerateQuestionsDialog 
+                  topics={topics}
+                  onGenerate={async (count, difficulty, topicId) => {
+                    try {
+                      setUploadingFile(true);
+                      toast.info(`Generating ${count} questions with AI... This may take a moment.`);
+                      
+                      const generated = await generateAIQuestions({ 
+                        questionCount: count,
+                        difficulty: difficulty || undefined,
+                        topicId: topicId || undefined
+                      });
+                      
+                      if (!generated || generated.length === 0) {
+                        toast.error("No questions were generated. Please try again.");
+                        return;
+                      }
+                      
+                      setAiQuestions(generated);
+                      toast.success(`${generated.length} questions generated! Review and save them.`);
+                    } catch (error) {
+                      console.error("AI generation error:", error);
+                      toast.error(error instanceof Error ? error.message : "Failed to generate questions.");
+                    } finally {
+                      setUploadingFile(false);
+                    }
+                  }}
+                  isGenerating={uploadingFile}
+                />
               </DialogContent>
             </Dialog>
 
