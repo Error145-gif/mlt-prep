@@ -389,8 +389,8 @@ export default function QuestionManagement() {
                             toast.error("Please upload a PDF file");
                             return;
                           }
-                          if (file.size > 10 * 1024 * 1024) {
-                            toast.error("File size must be less than 10MB");
+                          if (file.size > 100 * 1024 * 1024) {
+                            toast.error("File size must be less than 100MB");
                             return;
                           }
                           handlePYQUpload(file, pyqYear);
