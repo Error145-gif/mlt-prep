@@ -24,6 +24,7 @@ export default function QuestionManagement() {
   const [showManualForm, setShowManualForm] = useState(false);
   const [showAIUpload, setShowAIUpload] = useState(false);
   const [showPYQUpload, setShowPYQUpload] = useState(false);
+  const [showAutoGenerate, setShowAutoGenerate] = useState(false);
   const [pyqYear, setPyqYear] = useState<number>(new Date().getFullYear());
   
   const questions = useQuery(api.questions.getQuestions, { status: activeTab === "all" ? undefined : activeTab });
@@ -429,46 +430,109 @@ export default function QuestionManagement() {
               </DialogContent>
             </Dialog>
 
-            <Dialog>
+            <Dialog open={showAutoGenerate} onOpenChange={setShowAutoGenerate}>
               <DialogTrigger asChild>
                 <Button className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white border-0">
                   <Sparkles className="h-4 w-4 mr-2" />
                   Auto Generate AI Questions
                 </Button>
               </DialogTrigger>
-              <DialogContent className="glass-card border-white/20 backdrop-blur-xl bg-white/10 max-w-2xl">
+              <DialogContent className="glass-card border-white/20 backdrop-blur-xl bg-white/10 max-w-4xl max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle className="text-white">Auto Generate Questions with AI</DialogTitle>
                 </DialogHeader>
-                <AutoGenerateQuestionsDialog 
-                  topics={topics}
-                  onGenerate={async (count, difficulty, topicId) => {
-                    try {
-                      setUploadingFile(true);
-                      toast.info(`Generating ${count} questions with AI... This may take a moment.`);
-                      
-                      const generated = await generateAIQuestions({ 
-                        questionCount: count,
-                        difficulty: difficulty || undefined,
-                        topicId: topicId || undefined
-                      });
-                      
-                      if (!generated || generated.length === 0) {
-                        toast.error("No questions were generated. Please try again.");
-                        return;
+                {aiQuestions.length === 0 ? (
+                  <AutoGenerateQuestionsDialog 
+                    topics={topics}
+                    onGenerate={async (count, difficulty, topicId) => {
+                      try {
+                        setUploadingFile(true);
+                        toast.info(`Generating ${count} questions with AI... This may take a moment.`);
+                        
+                        const generated = await generateAIQuestions({ 
+                          questionCount: count,
+                          difficulty: difficulty || undefined,
+                          topicId: topicId || undefined
+                        });
+                        
+                        if (!generated || generated.length === 0) {
+                          toast.error("No questions were generated. Please try again.");
+                          return;
+                        }
+                        
+                        setAiQuestions(generated);
+                        toast.success(`${generated.length} questions generated! Review and save them.`);
+                      } catch (error) {
+                        console.error("AI generation error:", error);
+                        toast.error(error instanceof Error ? error.message : "Failed to generate questions.");
+                      } finally {
+                        setUploadingFile(false);
                       }
-                      
-                      setAiQuestions(generated);
-                      toast.success(`${generated.length} questions generated! Review and save them.`);
-                    } catch (error) {
-                      console.error("AI generation error:", error);
-                      toast.error(error instanceof Error ? error.message : "Failed to generate questions.");
-                    } finally {
-                      setUploadingFile(false);
-                    }
-                  }}
-                  isGenerating={uploadingFile}
-                />
+                    }}
+                    isGenerating={uploadingFile}
+                  />
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <p className="text-white font-medium">{aiQuestions.length} AI questions generated</p>
+                      <Button
+                        onClick={async () => {
+                          try {
+                            setSavingQuestions(true);
+                            await batchCreateQuestions({ questions: aiQuestions });
+                            toast.success(`${aiQuestions.length} AI questions saved successfully!`);
+                            setAiQuestions([]);
+                            setShowAutoGenerate(false);
+                          } catch (error) {
+                            toast.error("Failed to save AI questions");
+                          } finally {
+                            setSavingQuestions(false);
+                          }
+                        }}
+                        disabled={savingQuestions}
+                        className="bg-green-500/20 hover:bg-green-500/30 text-green-300 border border-green-500/30"
+                      >
+                        {savingQuestions ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Saving...
+                          </>
+                        ) : (
+                          "Save All Questions"
+                        )}
+                      </Button>
+                    </div>
+                    <div className="space-y-3 max-h-96 overflow-y-auto">
+                      {aiQuestions.map((q, idx) => (
+                        <div key={idx} className="p-4 rounded-lg bg-white/5 border border-white/10">
+                          <p className="text-white font-medium mb-2">{q.question}</p>
+                          {q.options && (
+                            <div className="space-y-1 mb-2">
+                              {q.options.map((opt: string, optIdx: number) => (
+                                <div
+                                  key={optIdx}
+                                  className={`text-sm p-2 rounded ${
+                                    opt === q.correctAnswer
+                                      ? "bg-green-500/20 text-green-300"
+                                      : "text-white/70"
+                                  }`}
+                                >
+                                  {opt}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          {q.explanation && (
+                            <p className="text-xs text-white/60 mt-2">{q.explanation}</p>
+                          )}
+                          <div className="flex gap-2 text-xs text-white/60 mt-2">
+                            <span className="capitalize">{q.difficulty}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </DialogContent>
             </Dialog>
 
