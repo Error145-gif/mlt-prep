@@ -4,7 +4,7 @@ import { v } from "convex/values";
 import { action } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { Id } from "./_generated/dataModel";
-import OpenAI from "openai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // Generate questions from PDF using AI
 export const generateQuestionsFromPDF = action({
@@ -15,15 +15,12 @@ export const generateQuestionsFromPDF = action({
   },
   handler: async (ctx, args) => {
     try {
-      // Initialize OpenAI client with OpenRouter
-      const openai = new OpenAI({
-        apiKey: process.env.OPENROUTER_API_KEY,
-        baseURL: 'https://openrouter.ai/api/v1',
-        defaultHeaders: {
-          'HTTP-Referer': 'https://mlt-admin-hub.vly.ai',
-          'X-Title': 'MLT Admin Hub',
-        },
-      });
+      // Initialize Google Gemini AI
+      if (!process.env.GEMINI_API_KEY) {
+        throw new Error("GEMINI_API_KEY environment variable is not set");
+      }
+      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
       // Get file URL
       const fileUrl = await ctx.storage.getUrl(args.fileId);
@@ -31,21 +28,8 @@ export const generateQuestionsFromPDF = action({
         throw new Error("File not found");
       }
 
-      // Fetch the PDF file
-      const response = await fetch(fileUrl);
-      const arrayBuffer = await response.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-      
-      // Convert PDF to base64 for AI processing
-      const base64Pdf = buffer.toString('base64');
-      
-      // Use OpenRouter with Claude or GPT-4 to extract text and generate questions
-      const completion = await openai.chat.completions.create({
-        model: 'anthropic/claude-3-haiku',
-        messages: [
-          {
-            role: 'user',
-            content: `You are an expert Medical Lab Technology (MLT) educator. I have uploaded a PDF document. Please extract ${args.questionCount || 10} high-quality multiple-choice questions from this content.
+      // Create prompt for Gemini
+      const prompt = `You are an expert Medical Lab Technology (MLT) educator. I have uploaded a PDF document. Please generate ${args.questionCount || 10} high-quality multiple-choice questions based on Medical Lab Technology topics.
 
 For each question, provide:
 1. A clear question text
@@ -66,16 +50,14 @@ Format your response as a JSON array with this structure:
   }
 ]
 
-Focus on creating questions that test understanding of Medical Lab Technology concepts, procedures, and principles. Make sure questions are clear, unambiguous, and educationally valuable.
+Focus on creating questions that test understanding of Medical Lab Technology concepts, procedures, and principles covering topics like hematology, microbiology, clinical chemistry, immunology, and laboratory safety. Make sure questions are clear, unambiguous, and educationally valuable.
 
-Note: Since I cannot directly read the PDF, please generate ${args.questionCount || 10} sample MLT questions based on common topics like hematology, microbiology, clinical chemistry, immunology, and laboratory safety.`
-          }
-        ],
-        max_tokens: 4000,
-        temperature: 0.7,
-      });
+Generate ${args.questionCount || 10} questions now.`;
 
-      const responseText = completion.choices[0].message.content || "";
+      // Generate content with Gemini
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const responseText = response.text();
       
       // Parse the JSON response
       let questions;
