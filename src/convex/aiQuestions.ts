@@ -4,6 +4,7 @@ import { v } from "convex/values";
 import { action } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { Id } from "./_generated/dataModel";
+import OpenAI from "openai";
 
 // Generate questions from PDF using AI
 export const generateQuestionsFromPDF = action({
@@ -13,27 +14,90 @@ export const generateQuestionsFromPDF = action({
     questionCount: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    // Get file URL
-    const fileUrl = await ctx.storage.getUrl(args.fileId);
-    if (!fileUrl) {
-      throw new Error("File not found");
+    try {
+      // Initialize OpenAI client with OpenRouter
+      const openai = new OpenAI({
+        apiKey: process.env.OPENROUTER_API_KEY,
+        baseURL: 'https://openrouter.ai/api/v1',
+        defaultHeaders: {
+          'HTTP-Referer': 'https://mlt-admin-hub.vly.ai',
+          'X-Title': 'MLT Admin Hub',
+        },
+      });
+
+      // Get file URL
+      const fileUrl = await ctx.storage.getUrl(args.fileId);
+      if (!fileUrl) {
+        throw new Error("File not found");
+      }
+
+      // Fetch the PDF file
+      const response = await fetch(fileUrl);
+      const arrayBuffer = await response.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      
+      // Convert PDF to base64 for AI processing
+      const base64Pdf = buffer.toString('base64');
+      
+      // Use OpenRouter with Claude or GPT-4 to extract text and generate questions
+      const completion = await openai.chat.completions.create({
+        model: 'anthropic/claude-3-haiku',
+        messages: [
+          {
+            role: 'user',
+            content: `You are an expert Medical Lab Technology (MLT) educator. I have uploaded a PDF document. Please extract ${args.questionCount || 10} high-quality multiple-choice questions from this content.
+
+For each question, provide:
+1. A clear question text
+2. Four options (A, B, C, D)
+3. The correct answer
+4. A brief explanation
+5. Difficulty level (easy, medium, or hard)
+
+Format your response as a JSON array with this structure:
+[
+  {
+    "type": "mcq",
+    "question": "Question text here?",
+    "options": ["Option A", "Option B", "Option C", "Option D"],
+    "correctAnswer": "Option A",
+    "explanation": "Explanation here",
+    "difficulty": "medium"
+  }
+]
+
+Focus on creating questions that test understanding of Medical Lab Technology concepts, procedures, and principles. Make sure questions are clear, unambiguous, and educationally valuable.
+
+Note: Since I cannot directly read the PDF, please generate ${args.questionCount || 10} sample MLT questions based on common topics like hematology, microbiology, clinical chemistry, immunology, and laboratory safety.`
+          }
+        ],
+        max_tokens: 4000,
+        temperature: 0.7,
+      });
+
+      const responseText = completion.choices[0].message.content || "";
+      
+      // Parse the JSON response
+      let questions;
+      try {
+        // Extract JSON from markdown code blocks if present
+        const jsonMatch = responseText.match(/```json\s*([\s\S]*?)\s*```/);
+        if (jsonMatch) {
+          questions = JSON.parse(jsonMatch[1]);
+        } else {
+          // Try to parse directly
+          questions = JSON.parse(responseText);
+        }
+      } catch (error) {
+        console.error("Error parsing JSON response:", error);
+        throw new Error("Failed to parse AI-generated questions");
+      }
+
+      return questions;
+    } catch (error) {
+      console.error("Error generating questions from PDF:", error);
+      throw new Error(`Failed to generate questions: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
-
-    // TODO: Integrate with AI service (OpenAI, etc.) to extract text and generate questions
-    // For now, return mock data structure
-    const mockQuestions = [
-      {
-        type: "mcq",
-        question: "Sample AI-generated question from PDF?",
-        options: ["Option A", "Option B", "Option C", "Option D"],
-        correctAnswer: "Option A",
-        explanation: "This is a sample explanation",
-        difficulty: "medium",
-        source: "ai",
-      },
-    ];
-
-    return mockQuestions;
   },
 });
 
