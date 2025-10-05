@@ -33,38 +33,58 @@ export const generateQuestionsFromPDF = action({
         throw new Error("File not found");
       }
 
-      // Create prompt for AI to generate MLT questions
-      const prompt = `You are an expert Medical Lab Technology (MLT) educator. Generate ${args.questionCount || 10} high-quality multiple-choice questions covering various Medical Lab Technology topics.
+      // Create prompt for AI to generate MLT questions with subject/topic tagging
+      const prompt = `You are an expert Medical Lab Technology (MLT) educator. Generate ${args.questionCount || 10} high-quality questions covering various Medical Lab Technology topics.
 
-For each question, provide:
-1. A clear question text
-2. Four options (A, B, C, D)
-3. The correct answer
-4. A brief explanation
-5. Difficulty level (easy, medium, or hard)
+**Requirements:**
+1. Question Types: MCQ (4 options), True/False, or Short Answer
+2. Each question must include: subject, topic, type, question text, correct answer, explanation, difficulty, and source
+3. Cover topics proportionally and avoid duplication
+4. Make questions concise and student-friendly
 
-Format your response as a JSON array with this structure:
+**Output Format (valid JSON array):**
 [
   {
+    "subject": "Hematology",
+    "topic": "Anticoagulants",
     "type": "mcq",
-    "question": "Question text here?",
-    "options": ["Option A", "Option B", "Option C", "Option D"],
-    "correctAnswer": "Option A",
-    "explanation": "Explanation here",
-    "difficulty": "medium"
+    "question": "Which anticoagulant is commonly used for CBC?",
+    "options": ["Heparin", "Sodium Citrate", "EDTA", "Potassium Oxalate"],
+    "correctAnswer": "EDTA",
+    "explanation": "EDTA chelates calcium to prevent clotting and preserves cell morphology.",
+    "difficulty": "easy",
+    "source": "ai"
+  },
+  {
+    "subject": "Biochemistry",
+    "topic": "Enzymes",
+    "type": "true_false",
+    "question": "Enzymes increase the activation energy of a reaction.",
+    "correctAnswer": "False",
+    "explanation": "Enzymes lower the activation energy, facilitating the reaction.",
+    "difficulty": "medium",
+    "source": "ai"
   }
 ]
 
-Focus on creating questions that test understanding of Medical Lab Technology concepts, procedures, and principles covering topics like:
-- Hematology (blood cells, coagulation, anemia)
-- Microbiology (bacteria, viruses, culture techniques)
-- Clinical Chemistry (enzymes, metabolites, electrolytes)
-- Immunology (antibodies, antigens, immune response)
-- Laboratory Safety (biosafety, quality control, equipment handling)
-- Histopathology (tissue processing, staining techniques)
-- Parasitology (parasites, diagnostic methods)
+**MLT Subjects and Topics to Cover:**
+- Hematology: Blood cells, Coagulation, Anemia, CBC interpretation, Blood typing
+- Microbiology: Bacteria, Viruses, Fungi, Culture techniques, Staining methods, Antibiotic sensitivity
+- Clinical Chemistry: Enzymes, Metabolites, Electrolytes, Liver function, Kidney function
+- Immunology: Antibodies, Antigens, Immune response, ELISA, Immunofluorescence
+- Parasitology: Parasites, Diagnostic methods, Life cycles
+- Histopathology: Tissue processing, Staining techniques, Microscopy, Fixation
+- Blood Banking: Blood groups, Cross-matching, Transfusion reactions
+- Clinical Pathology: Urinalysis, Body fluid analysis, Cytology
+- Laboratory Safety: Biosafety levels, Quality control, Equipment handling, Waste disposal
+- Molecular Biology: PCR, DNA extraction, Gel electrophoresis
 
-Make sure questions are clear, unambiguous, and educationally valuable. Return ONLY valid JSON without any markdown formatting.
+**Important:**
+- Return ONLY valid JSON without markdown formatting
+- Ensure all fields are filled correctly
+- Mix question types (60% MCQ, 30% True/False, 10% Short Answer)
+- Distribute across different subjects and topics
+- Use lowercase for type field: "mcq", "true_false", or "short_answer"
 
 Generate ${args.questionCount || 10} questions now.`;
       
@@ -83,18 +103,45 @@ Generate ${args.questionCount || 10} questions now.`;
       const responseText = completion.choices[0].message.content || "[]";
       
       // Clean up response text - remove markdown code blocks if present
-      let cleanedText = responseText.replace(/```json/g, "").replace(/```/g, "");
+      let cleanedText = responseText.trim().replace(/```json/g, "").replace(/```/g, "");
       
       // Parse the JSON response
       let questions;
       try {
         questions = JSON.parse(cleanedText);
+        
+        // Validate that it's an array
+        if (!Array.isArray(questions)) {
+          console.error("AI response is not an array:", cleanedText);
+          throw new Error("AI response must be a JSON array of questions");
+        }
+        
+        // Validate and normalize each question
+        const validQuestions = questions.filter((q: any) => {
+          const hasRequired = q.question && q.correctAnswer && q.type && q.subject && q.topic;
+          if (!hasRequired) {
+            console.warn("Skipping invalid question:", q);
+          }
+          return hasRequired;
+        }).map((q: any) => ({
+          ...q,
+          type: q.type.toLowerCase().replace(/\s+/g, '_'), // Normalize type
+          difficulty: q.difficulty?.toLowerCase() || 'medium',
+          source: 'ai'
+        }));
+        
+        if (validQuestions.length === 0) {
+          throw new Error("No valid questions generated. Please try again.");
+        }
+        
+        console.log(`Successfully parsed ${validQuestions.length} valid questions`);
+        return validQuestions;
       } catch (error) {
         console.error("Error parsing JSON response:", error);
-        throw new Error("Failed to parse AI-generated questions");
+        console.error("Raw response:", responseText);
+        console.error("Cleaned text:", cleanedText);
+        throw new Error("Failed to parse AI-generated questions. The AI response format was invalid.");
       }
-
-      return questions;
     } catch (error) {
       console.error("Error generating questions from PDF:", error);
       throw new Error(`Failed to generate questions: ${error instanceof Error ? error.message : "Unknown error"}`);
@@ -189,43 +236,67 @@ export const generateQuestionsFromAI = action({
         ? `Focus on ${args.difficulty} difficulty questions.` 
         : "Mix easy, medium, and hard difficulty questions.";
 
-      // Create prompt for Gemini to generate MLT questions
-      const prompt = `You are an expert Medical Lab Technology (MLT) educator. Generate ${args.questionCount} high-quality multiple-choice questions covering various Medical Lab Technology topics.
+      // Create prompt for AI to generate MLT questions with subject/topic tagging
+      const prompt = `You are an expert Medical Lab Technology (MLT) educator. Generate ${args.questionCount} high-quality questions covering various Medical Lab Technology topics.
 
 ${difficultyFilter}
 
-For each question, provide:
-1. A clear question text
-2. Four options (A, B, C, D)
-3. The correct answer
-4. A brief explanation
-5. Difficulty level (easy, medium, or hard)
+**Requirements:**
+1. Question Types: MCQ (4 options), True/False, or Short Answer
+2. Each question must include: subject, topic, type, question text, correct answer, explanation, difficulty, and source
+3. Cover topics proportionally and avoid duplication
+4. Make questions concise and student-friendly
 
-Format your response as a JSON array with this structure:
+**Output Format (valid JSON array):**
 [
   {
+    "subject": "Hematology",
+    "topic": "Anticoagulants",
     "type": "mcq",
-    "question": "Question text here?",
-    "options": ["Option A", "Option B", "Option C", "Option D"],
-    "correctAnswer": "Option A",
-    "explanation": "Explanation here",
-    "difficulty": "medium"
+    "question": "Which anticoagulant is commonly used for CBC?",
+    "options": ["Heparin", "Sodium Citrate", "EDTA", "Potassium Oxalate"],
+    "correctAnswer": "EDTA",
+    "explanation": "EDTA chelates calcium to prevent clotting and preserves cell morphology.",
+    "difficulty": "easy",
+    "source": "ai"
+  },
+  {
+    "subject": "Biochemistry",
+    "topic": "Enzymes",
+    "type": "true_false",
+    "question": "Enzymes increase the activation energy of a reaction.",
+    "correctAnswer": "False",
+    "explanation": "Enzymes lower the activation energy, facilitating the reaction.",
+    "difficulty": "medium",
+    "source": "ai"
   }
 ]
 
-Focus on creating questions that test understanding of Medical Lab Technology concepts, procedures, and principles covering topics like:
-- Hematology (blood cells, coagulation, anemia, blood typing, CBC interpretation)
-- Microbiology (bacteria, viruses, fungi, culture techniques, staining methods, antibiotic sensitivity)
-- Clinical Chemistry (enzymes, metabolites, electrolytes, liver function tests, kidney function tests)
-- Immunology (antibodies, antigens, immune response, ELISA, immunofluorescence)
-- Laboratory Safety (biosafety levels, quality control, equipment handling, waste disposal)
-- Histopathology (tissue processing, staining techniques, microscopy, fixation)
-- Parasitology (parasites, diagnostic methods, life cycles)
-- Blood Banking (blood groups, cross-matching, transfusion reactions)
-- Molecular Biology (PCR, DNA extraction, gel electrophoresis)
-- Clinical Pathology (urinalysis, body fluid analysis, cytology)
+**MLT Subjects and Topics to Cover:**
+- Hematology: Blood cells, Coagulation, Anemia, CBC interpretation, Blood typing, Anticoagulants
+- Microbiology: Bacteria, Viruses, Fungi, Culture techniques, Staining methods, Antibiotic sensitivity
+- Clinical Chemistry: Enzymes, Metabolites, Electrolytes, Liver function, Kidney function
+- Immunology: Antibodies, Antigens, Immune response, ELISA, Immunofluorescence
+- Parasitology: Parasites, Diagnostic methods, Life cycles
+- Histopathology: Tissue processing, Staining techniques, Microscopy, Fixation
+- Blood Banking: Blood groups, Cross-matching, Transfusion reactions
+- Clinical Pathology: Urinalysis, Body fluid analysis, Cytology
+- Laboratory Safety: Biosafety levels, Quality control, Equipment handling, Waste disposal
+- Molecular Biology: PCR, DNA extraction, Gel electrophoresis
+- Serology: Serological tests, Antigen-antibody reactions
+- Cytology: Cell morphology, Cytological techniques
+- Virology: Viral identification, Viral culture
+- Mycology: Fungal identification, Fungal culture
+- Bacteriology: Bacterial identification, Bacterial culture
+- Toxicology: Toxin detection, Drug screening
+- Endocrinology: Hormone assays, Endocrine disorders
 
-Make sure questions are clear, unambiguous, and educationally valuable. Return ONLY valid JSON without any markdown formatting.
+**Important:**
+- Return ONLY valid JSON without markdown formatting
+- Ensure all fields are filled correctly
+- Mix question types (60% MCQ, 30% True/False, 10% Short Answer)
+- Distribute across different subjects and topics
+- Use lowercase for type field: "mcq", "true_false", or "short_answer"
 
 Generate ${args.questionCount} questions now.`;
       
@@ -244,7 +315,7 @@ Generate ${args.questionCount} questions now.`;
       const responseText = completion.choices[0].message.content || "[]";
       
       // Clean up response text - remove markdown code blocks if present
-      let cleanedText = responseText.replace(/```json/g, "").replace(/```/g, "");
+      let cleanedText = responseText.trim().replace(/```json/g, "").replace(/```/g, "");
       
       // Parse the JSON response
       let questions;
