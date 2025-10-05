@@ -1,5 +1,5 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { query, mutation, QueryCtx } from "./_generated/server";
+import { query, mutation, internalQuery, QueryCtx } from "./_generated/server";
 import { v } from "convex/values";
 
 /**
@@ -32,6 +32,14 @@ export const getCurrentUser = async (ctx: QueryCtx) => {
   }
   return await ctx.db.get(userId);
 };
+
+// Internal query to get current user (for use in actions)
+export const getCurrentUserInternal = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    return await getCurrentUser(ctx);
+  },
+});
 
 // Set user role to admin (for initial setup)
 export const setUserAsAdmin = mutation({

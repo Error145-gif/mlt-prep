@@ -1,10 +1,11 @@
 "use node";
 
 import { v } from "convex/values";
-import { action } from "./_generated/server";
+import { action, internalQuery } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { Id } from "./_generated/dataModel";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 // Generate questions from PDF using AI
 export const generateQuestionsFromPDF = action({
@@ -173,7 +174,7 @@ export const batchCreateQuestions = action({
     const results: Id<"questions">[] = [];
     
     // Get current user ID from auth
-    const userId = await ctx.auth.getUserIdentity();
+    const userId = await getAuthUserId(ctx);
     if (!userId) {
       throw new Error("Not authenticated");
     }
@@ -182,7 +183,7 @@ export const batchCreateQuestions = action({
       const id: Id<"questions"> = await ctx.runMutation(internal.questions.createQuestionInternal, {
         ...question,
         contentId: undefined,
-        createdBy: userId.subject as Id<"users">,
+        createdBy: userId,
       });
       results.push(id);
     }
