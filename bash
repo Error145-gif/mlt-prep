@@ -1,1 +1,1 @@
-npx convex run users:makeCurrentUserAdmin
+npx convex run topics:initializeMLTTopics

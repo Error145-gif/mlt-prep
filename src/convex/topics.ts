@@ -87,3 +87,61 @@ export const batchCreateTopics = mutation({
     return results;
   },
 });
+
+// Initialize MLT topics - can be called once by admin
+export const initializeMLTTopics = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const user = await getCurrentUser(ctx);
+    if (!user || user.role !== "admin") {
+      throw new Error("Unauthorized");
+    }
+
+    // Check if topics already exist
+    const existingTopics = await ctx.db.query("topics").collect();
+    if (existingTopics.length > 0) {
+      return { message: "Topics already initialized", count: existingTopics.length };
+    }
+
+    const mltTopics = [
+      { name: "Anatomy", order: 1 },
+      { name: "Physiology", order: 2 },
+      { name: "Biochemistry", order: 3 },
+      { name: "Pathology", order: 4 },
+      { name: "Microbiology", order: 5 },
+      { name: "Hematology", order: 6 },
+      { name: "Histopathology", order: 7 },
+      { name: "Cytology", order: 8 },
+      { name: "Serology", order: 9 },
+      { name: "Immunology", order: 10 },
+      { name: "Parasitology", order: 11 },
+      { name: "Clinical Biochemistry", order: 12 },
+      { name: "Blood Banking (Transfusion Medicine)", order: 13 },
+      { name: "Molecular Biology", order: 14 },
+      { name: "Genetics", order: 15 },
+      { name: "Clinical Pathology", order: 16 },
+      { name: "Medical Ethics & Hospital Management", order: 17 },
+      { name: "Laboratory Management & Quality Control", order: 18 },
+      { name: "Biomedical Waste Management", order: 19 },
+      { name: "Instrumentation & Lab Equipment", order: 20 },
+      { name: "Virology", order: 21 },
+      { name: "Mycology", order: 22 },
+      { name: "Bacteriology", order: 23 },
+      { name: "Toxicology", order: 24 },
+      { name: "Endocrinology", order: 25 },
+      { name: "Clinical Microscopy & Urinalysis", order: 26 },
+      { name: "Histotechnology", order: 27 },
+      { name: "Immunohematology", order: 28 },
+      { name: "Biostatistics & Research Methodology", order: 29 },
+      { name: "Computer Applications in Laboratory Science", order: 30 },
+    ];
+
+    const results = [];
+    for (const topic of mltTopics) {
+      const id = await ctx.db.insert("topics", topic);
+      results.push(id);
+    }
+
+    return { message: "MLT topics initialized successfully", count: results.length };
+  },
+});
