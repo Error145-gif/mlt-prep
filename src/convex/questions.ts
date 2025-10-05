@@ -140,20 +140,30 @@ export const batchCreateQuestions = mutation({
       throw new Error("Cannot add more than 50 questions at once");
     }
 
+    console.log(`Backend: Attempting to insert ${args.questions.length} questions...`);
+
     const ids = [];
-    for (const question of args.questions) {
-      const id = await ctx.db.insert("questions", {
-        ...question,
-        type: question.type as any,
-        status: "approved",
-        reviewedBy: user._id,
-        reviewedAt: Date.now(),
-        createdBy: user._id,
-        source: question.source || "manual",
-      });
-      ids.push(id);
+    for (let i = 0; i < args.questions.length; i++) {
+      const question = args.questions[i];
+      try {
+        const id = await ctx.db.insert("questions", {
+          ...question,
+          type: question.type as any,
+          status: "approved",
+          reviewedBy: user._id,
+          reviewedAt: Date.now(),
+          createdBy: user._id,
+          source: question.source || "manual",
+        });
+        ids.push(id);
+        console.log(`Backend: Successfully inserted question ${i + 1}/${args.questions.length} with ID: ${id}`);
+      } catch (error) {
+        console.error(`Backend: Failed to insert question ${i + 1}:`, error);
+        throw new Error(`Failed to insert question ${i + 1}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
     }
 
+    console.log(`Backend: Successfully inserted all ${ids.length} questions`);
     return ids;
   },
 });

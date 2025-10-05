@@ -128,6 +128,8 @@ export default function QuestionManagement() {
         return;
       }
       
+      console.log(`Processing ${questionBlocks.length} question blocks...`);
+      
       const parsedQuestions = [];
       const errors = [];
       
@@ -218,8 +220,11 @@ export default function QuestionManagement() {
           }
           
           parsedQuestions.push(question);
+          console.log(`Successfully parsed question ${index + 1}:`, question.question.substring(0, 50) + '...');
         } catch (error) {
-          errors.push(`Question ${index + 1}: ${error instanceof Error ? error.message : 'Invalid format'}`);
+          const errorMsg = `Question ${index + 1}: ${error instanceof Error ? error.message : 'Invalid format'}`;
+          errors.push(errorMsg);
+          console.error(errorMsg);
         }
       }
       
@@ -232,7 +237,9 @@ export default function QuestionManagement() {
         return;
       }
       
-      await batchCreateQuestions({ questions: parsedQuestions });
+      console.log(`Attempting to save ${parsedQuestions.length} questions to database...`);
+      const result = await batchCreateQuestions({ questions: parsedQuestions });
+      console.log(`Database save result:`, result);
       
       if (errors.length > 0) {
         toast.warning(`${parsedQuestions.length} questions added. ${errors.length} questions had errors.`);
