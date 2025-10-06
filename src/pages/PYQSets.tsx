@@ -70,7 +70,7 @@ export default function PYQSets() {
                   </div>
                   <div className="flex items-center gap-2 text-white/70">
                     <Calendar className="h-4 w-4" />
-                    <span className="text-sm">{set.subjects} Subjects</span>
+                    <span className="text-sm">{Math.ceil(set.questionCount / 20) * 10} mins</span>
                   </div>
                   <Button
                     onClick={() => handleStartPYQ(set.year)}

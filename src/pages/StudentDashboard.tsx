@@ -323,7 +323,11 @@ export default function StudentDashboard() {
                       <BookOpen className="h-5 w-5 text-green-400" />
                       <div>
                         <p className="text-white font-medium">PYQ Sets</p>
-                        <p className="text-white/60 text-sm">{stats.pyqTests.count} attempts • Avg: {stats.pyqTests.avgScore}%</p>
+                        <p className="text-white/60 text-sm">
+                          {stats.pyqTests.count} {stats.pyqTests.count === 1 ? 'attempt' : 'attempts'} • 
+                          Avg: {stats.pyqTests.avgScore}% • 
+                          10 mins per 20 questions
+                        </p>
                       </div>
                     </div>
                     <Button 

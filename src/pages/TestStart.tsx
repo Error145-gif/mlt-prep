@@ -29,7 +29,7 @@ export default function TestStart() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Map<string, Answer>>(new Map());
   const [visitedQuestions, setVisitedQuestions] = useState<Set<number>>(new Set([0]));
-  const [timeRemaining, setTimeRemaining] = useState(60 * 60); // 60 minutes in seconds
+  const [timeRemaining, setTimeRemaining] = useState(0); // Will be set based on test type and question count
   const [sessionId, setSessionId] = useState<Id<"testSessions"> | null>(null);
 
   const testType = searchParams.get("type") || "mock";
@@ -68,6 +68,26 @@ export default function TestStart() {
   }, [testType, year]);
 
   const questions = testQuestions || [];
+
+  // Set initial timer based on test type and question count
+  useEffect(() => {
+    if (questions.length > 0 && timeRemaining === 0) {
+      let duration = 60 * 60; // Default 60 minutes
+      
+      if (testType === "pyq") {
+        // PYQ: 10 minutes per 20 questions (30 seconds per question)
+        duration = Math.ceil(questions.length / 20) * 10 * 60;
+      } else if (testType === "mock") {
+        // Mock: 60 minutes fixed
+        duration = 60 * 60;
+      } else if (testType === "ai") {
+        // AI: 1.5 minutes per question
+        duration = Math.ceil(questions.length * 1.5 * 60);
+      }
+      
+      setTimeRemaining(duration);
+    }
+  }, [questions.length, testType, timeRemaining]);
 
   // Timer countdown
   useEffect(() => {
