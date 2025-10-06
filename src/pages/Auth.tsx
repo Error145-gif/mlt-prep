@@ -95,13 +95,20 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
 
   return (
     <div className="min-h-screen flex">
-      {/* Left Side - Decorative Purple Section */}
+      {/* Left Side - Decorative Lab Image Section */}
       <motion.div 
         initial={{ opacity: 0, x: -50 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.6 }}
-        className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-purple-600 via-purple-500 to-purple-700 relative overflow-hidden"
+        className="hidden lg:flex lg:w-1/2 relative overflow-hidden"
+        style={{
+          backgroundImage: 'url(https://harmless-tapir-303.convex.cloud/api/storage/3031e6f7-9734-43f3-9d14-429a572529c3)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
       >
+        {/* Dark overlay for better text readability */}
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/80 via-blue-900/70 to-purple-800/80" />
         {/* Decorative Elements */}
         <div className="absolute top-10 left-10 w-32 h-32 border-2 border-white/30 rounded-full" />
         <div className="absolute top-20 right-20 w-2 h-2 bg-white rounded-full" />
