@@ -89,7 +89,6 @@ createRoot(document.getElementById("root")!).render(
             <Route path="/tests/mock" element={<StudentLayout><MockTests /></StudentLayout>} />
             <Route path="/tests/pyq" element={<StudentLayout><PYQSets /></StudentLayout>} />
             <Route path="/tests/ai" element={<StudentLayout><AIQuestions /></StudentLayout>} />
-            <Route path="/practice" element={<StudentLayout><Practice /></StudentLayout>} />
             <Route path="/feedback" element={<StudentLayout><Feedback /></StudentLayout>} />
             <Route path="/profile" element={<StudentLayout><Profile /></StudentLayout>} />
             <Route path="/test/start" element={<TestStart />} />

@@ -18,7 +18,6 @@ export default function StudentNav() {
     { path: "/dashboard", icon: Home, label: "Dashboard" },
     { path: "/tests/mock", icon: FileText, label: "Mock Tests" },
     { path: "/tests/pyq", icon: BookOpen, label: "PYQ Sets" },
-    { path: "/practice", icon: Library, label: "Practice" },
     { path: "/tests/ai", icon: BarChart3, label: "AI Questions" },
     { path: "/feedback", icon: MessageSquare, label: "Feedback" },
     { path: "/profile", icon: User, label: "Profile" },
