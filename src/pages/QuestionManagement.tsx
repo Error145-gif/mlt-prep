@@ -574,6 +574,31 @@ export default function QuestionManagement() {
     }
   };
 
+  const getDuplicateQuestions = () => {
+    if (!questions) return new Set<string>();
+    
+    const questionTextMap = new Map<string, number>();
+    const duplicateIds = new Set<string>();
+    
+    // Count occurrences of each question text
+    questions.forEach(q => {
+      const normalizedText = q.question.toLowerCase().trim();
+      questionTextMap.set(normalizedText, (questionTextMap.get(normalizedText) || 0) + 1);
+    });
+    
+    // Mark questions as duplicates if they appear more than once
+    questions.forEach(q => {
+      const normalizedText = q.question.toLowerCase().trim();
+      if (questionTextMap.get(normalizedText)! > 1) {
+        duplicateIds.add(q._id);
+      }
+    });
+    
+    return duplicateIds;
+  };
+
+  const duplicateQuestions = getDuplicateQuestions();
+
   return (
     <div className="min-h-screen p-6">
       <motion.div
@@ -1092,109 +1117,126 @@ export default function QuestionManagement() {
                 </CardContent>
               </Card>
             ) : (
-              questions.map((question, index) => (
-                <motion.div
-                  key={question._id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                >
-                  <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div className="space-y-2 flex-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <CardTitle className="text-white text-lg">{question.question}</CardTitle>
-                            {getStatusBadge(question.status)}
-                            {getSourceBadge(question.source)}
+              questions.map((question, index) => {
+                const isDuplicate = duplicateQuestions.has(question._id);
+                
+                return (
+                  <motion.div
+                    key={question._id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                  >
+                    <Card className={`glass-card backdrop-blur-xl ${
+                      isDuplicate 
+                        ? 'border-red-500/50 bg-red-500/10' 
+                        : 'border-white/20 bg-white/10'
+                    }`}>
+                      <CardHeader>
+                        <div className="flex items-start justify-between">
+                          <div className="space-y-2 flex-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <CardTitle className="text-white text-lg">{question.question}</CardTitle>
+                              {isDuplicate && (
+                                <Badge className="bg-red-500/30 text-red-200 border-red-500/50">
+                                  Duplicate
+                                </Badge>
+                              )}
+                              {getStatusBadge(question.status)}
+                              {getSourceBadge(question.source)}
+                            </div>
+                            <div className="flex items-center gap-4 text-sm text-white/60 flex-wrap">
+                              <span>{question.type.replace("_", " ").toUpperCase()}</span>
+                              <span>•</span>
+                              <span>{question.topicName}</span>
+                              {question.difficulty && (
+                                <>
+                                  <span>•</span>
+                                  <span className="capitalize">{question.difficulty}</span>
+                                </>
+                              )}
+                              {question.year && (
+                                <>
+                                  <span>•</span>
+                                  <span>Year: {question.year}</span>
+                                </>
+                              )}
+                            </div>
                           </div>
-                          <div className="flex items-center gap-4 text-sm text-white/60 flex-wrap">
-                            <span>{question.type.replace("_", " ").toUpperCase()}</span>
-                            <span>•</span>
-                            <span>{question.topicName}</span>
-                            {question.difficulty && (
-                              <>
-                                <span>•</span>
-                                <span className="capitalize">{question.difficulty}</span>
-                              </>
-                            )}
-                            {question.year && (
-                              <>
-                                <span>•</span>
-                                <span>Year: {question.year}</span>
-                              </>
-                            )}
-                          </div>
+                          <Button
+                            onClick={async () => {
+                              try {
+                                await deleteQuestion({ id: question._id });
+                                toast.success("Question deleted");
+                              } catch {
+                                toast.error("Failed to delete");
+                              }
+                            }}
+                            variant="ghost"
+                            size="icon"
+                            className={`${
+                              isDuplicate 
+                                ? 'text-red-200 hover:bg-red-500/30' 
+                                : 'text-red-300 hover:bg-red-500/20'
+                            }`}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
-                        <Button
-                          onClick={async () => {
-                            try {
-                              await deleteQuestion({ id: question._id });
-                              toast.success("Question deleted");
-                            } catch {
-                              toast.error("Failed to delete");
-                            }
-                          }}
-                          variant="ghost"
-                          size="icon"
-                          className="text-red-300 hover:bg-red-500/20"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      {question.options && question.options.length > 0 && (
-                        <div className="space-y-2">
-                          <p className="text-sm font-medium text-white/80">Options:</p>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                            {question.options.map((option, idx) => (
-                              <div
-                                key={idx}
-                                className={`p-2 rounded-lg border ${
-                                  option === question.correctAnswer
-                                    ? "bg-green-500/10 border-green-500/30 text-green-300"
-                                    : "bg-white/5 border-white/10 text-white/80"
-                                }`}
-                              >
-                                {option}
-                              </div>
-                            ))}
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        {question.options && question.options.length > 0 && (
+                          <div className="space-y-2">
+                            <p className="text-sm font-medium text-white/80">Options:</p>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                              {question.options.map((option, idx) => (
+                                <div
+                                  key={idx}
+                                  className={`p-2 rounded-lg border ${
+                                    option === question.correctAnswer
+                                      ? "bg-green-500/10 border-green-500/30 text-green-300"
+                                      : "bg-white/5 border-white/10 text-white/80"
+                                  }`}
+                                >
+                                  {option}
+                                </div>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      )}
-                      <div>
-                        <p className="text-sm font-medium text-white/80">Correct Answer:</p>
-                        <p className="text-white mt-1">{question.correctAnswer}</p>
-                      </div>
-                      {question.explanation && (
+                        )}
                         <div>
-                          <p className="text-sm font-medium text-white/80">Explanation:</p>
-                          <p className="text-white/60 mt-1">{question.explanation}</p>
+                          <p className="text-sm font-medium text-white/80">Correct Answer:</p>
+                          <p className="text-white mt-1">{question.correctAnswer}</p>
                         </div>
-                      )}
-                      {question.status === "pending" && (
-                        <div className="flex gap-2 pt-4">
-                          <Button
-                            onClick={() => handleReview(question._id, "approved")}
-                            className="bg-green-500/20 hover:bg-green-500/30 text-green-300 border border-green-500/30"
-                          >
-                            <CheckCircle className="h-4 w-4 mr-2" />
-                            Approve
-                          </Button>
-                          <Button
-                            onClick={() => handleReview(question._id, "rejected")}
-                            className="bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30"
-                          >
-                            <XCircle className="h-4 w-4 mr-2" />
-                            Reject
-                          </Button>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))
+                        {question.explanation && (
+                          <div>
+                            <p className="text-sm font-medium text-white/80">Explanation:</p>
+                            <p className="text-white/60 mt-1">{question.explanation}</p>
+                          </div>
+                        )}
+                        {question.status === "pending" && (
+                          <div className="flex gap-2 pt-4">
+                            <Button
+                              onClick={() => handleReview(question._id, "approved")}
+                              className="bg-green-500/20 hover:bg-green-500/30 text-green-300 border border-green-500/30"
+                            >
+                              <CheckCircle className="h-4 w-4 mr-2" />
+                              Approve
+                            </Button>
+                            <Button
+                              onClick={() => handleReview(question._id, "rejected")}
+                              className="bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30"
+                            >
+                              <XCircle className="h-4 w-4 mr-2" />
+                              Reject
+                            </Button>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                );
+              })
             )}
           </TabsContent>
         </Tabs>
