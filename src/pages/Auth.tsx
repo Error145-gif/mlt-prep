@@ -323,9 +323,13 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                       }
                     }}
                   >
-                    <InputOTPGroup>
+                    <InputOTPGroup className="gap-2">
                       {Array.from({ length: 6 }).map((_, index) => (
-                        <InputOTPSlot key={index} index={index} />
+                        <InputOTPSlot 
+                          key={index} 
+                          index={index}
+                          className="bg-white border-2 border-gray-300 text-gray-900 text-xl font-semibold w-12 h-12"
+                        />
                       ))}
                     </InputOTPGroup>
                   </InputOTP>
