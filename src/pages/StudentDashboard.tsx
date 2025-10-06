@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { BookOpen, FileText, TrendingUp, Award, Clock, AlertCircle, CreditCard, User, Target, Brain, BookMarked, BarChart } from "lucide-react";
+import { BookOpen, FileText, TrendingUp, Award, Clock, AlertCircle, CreditCard, User, Target, Brain, BookMarked, BarChart, RefreshCw } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -283,6 +283,77 @@ export default function StudentDashboard() {
                     <Progress value={test.score} className="h-2" />
                   </div>
                 ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Completed Tests - Available for Retake */}
+        {stats.totalTests > 0 && (
+          <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Your Completed Tests
+              </CardTitle>
+              <p className="text-white/70 text-sm">Tests you can retake anytime</p>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {stats.mockTests.count > 0 && (
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <FileText className="h-5 w-5 text-blue-400" />
+                      <div>
+                        <p className="text-white font-medium">Mock Tests</p>
+                        <p className="text-white/60 text-sm">{stats.mockTests.count} attempts • Avg: {stats.mockTests.avgScore}%</p>
+                      </div>
+                    </div>
+                    <Button 
+                      onClick={() => navigate("/tests/mock")}
+                      className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                    >
+                      Re-Test
+                    </Button>
+                  </div>
+                )}
+                {stats.pyqTests.count > 0 && (
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <BookOpen className="h-5 w-5 text-green-400" />
+                      <div>
+                        <p className="text-white font-medium">PYQ Sets</p>
+                        <p className="text-white/60 text-sm">{stats.pyqTests.count} attempts • Avg: {stats.pyqTests.avgScore}%</p>
+                      </div>
+                    </div>
+                    <Button 
+                      onClick={() => navigate("/tests/pyq")}
+                      className="bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700"
+                    >
+                      Re-Test
+                    </Button>
+                  </div>
+                )}
+                {stats.aiTests.count > 0 && (
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <Brain className="h-5 w-5 text-purple-400" />
+                      <div>
+                        <p className="text-white font-medium">AI Questions</p>
+                        <p className="text-white/60 text-sm">{stats.aiTests.count} attempts • Avg: {stats.aiTests.avgScore}%</p>
+                      </div>
+                    </div>
+                    <Button 
+                      onClick={() => navigate("/tests/ai")}
+                      className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700"
+                    >
+                      Re-Test
+                    </Button>
+                  </div>
+                )}
+                {stats.totalTests === 0 && (
+                  <p className="text-white/60 text-center py-4">No completed tests yet. Start your first test below!</p>
+                )}
               </div>
             </CardContent>
           </Card>
