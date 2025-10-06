@@ -8,7 +8,7 @@ export const getStudentDashboardStats = query({
   handler: async (ctx) => {
     const user = await getCurrentUser(ctx);
     if (!user) {
-      throw new Error("Not authenticated");
+      return null;
     }
 
     const [testSessions, testResults, subscription, recentContent] = await Promise.all([
