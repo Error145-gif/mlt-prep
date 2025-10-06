@@ -32,7 +32,8 @@ export default function TestStart() {
 
   const testType = searchParams.get("type") || "mock";
   const topicIdParam = searchParams.get("topicId");
-  const topicId = topicIdParam ? (topicIdParam as Id<"topics">) : undefined;
+  // Only set topicId if it exists and is not "general"
+  const topicId = topicIdParam && topicIdParam !== "general" ? (topicIdParam as Id<"topics">) : undefined;
   const year = searchParams.get("year") ? parseInt(searchParams.get("year")!) : undefined;
 
   const startTest = useMutation(api.student.startTest);
