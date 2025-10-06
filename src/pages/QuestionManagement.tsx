@@ -399,8 +399,19 @@ export default function QuestionManagement() {
 
   const handlePYQManualSubmit = async () => {
     try {
+      // Validate exam name and year first
+      if (!pyqExamName || !pyqExamName.trim()) {
+        toast.error("Please enter an exam name");
+        return;
+      }
+      
+      if (!pyqYear || pyqYear < 2000 || pyqYear > new Date().getFullYear()) {
+        toast.error("Please enter a valid year");
+        return;
+      }
+      
       // Parse PYQ questions from plain text format
-      const questionBlocks = bulkQuestions.filter(block => block.trim());
+      const questionBlocks = pyqBulkQuestions.filter(block => block.trim());
       
       if (questionBlocks.length === 0) {
         toast.error("No questions found. Please paste questions in the correct format.");
@@ -411,6 +422,8 @@ export default function QuestionManagement() {
         toast.error("Cannot add more than 50 questions at once");
         return;
       }
+      
+      console.log(`Processing ${questionBlocks.length} PYQ questions for ${pyqExamName} (${pyqYear})...`);
       
       const parsedQuestions = questionBlocks.map((block, index) => {
         const lines = block.split('\n').filter(line => line.trim());
@@ -424,44 +437,90 @@ export default function QuestionManagement() {
         
         lines.forEach(line => {
           const trimmedLine = line.trim();
-          if (trimmedLine.startsWith('Q:')) {
-            question.question = trimmedLine.substring(2).trim();
-          } else if (trimmedLine.startsWith('A:')) {
-            question.correctAnswer = trimmedLine.substring(2).trim();
-          } else if (trimmedLine.startsWith('Options:')) {
-            question.options = trimmedLine.substring(8).split('|').map(opt => opt.trim());
-          } else if (trimmedLine.startsWith('Subject:')) {
-            question.subject = trimmedLine.substring(8).trim();
-          } else if (trimmedLine.startsWith('Topic:')) {
-            const topicName = trimmedLine.substring(6).trim();
-            const matchingTopic = topics?.find(t => t.name.toLowerCase() === topicName.toLowerCase());
-            if (matchingTopic) {
-              question.topicId = matchingTopic._id;
-            }
-          } else if (trimmedLine.startsWith('Difficulty:')) {
-            question.difficulty = trimmedLine.substring(11).trim().toLowerCase();
-          } else if (trimmedLine.startsWith('Type:')) {
-            const typeStr = trimmedLine.substring(5).trim().toLowerCase();
-            question.type = typeStr === 'true/false' || typeStr === 'truefalse' ? 'true_false' : 
-                           typeStr === 'short answer' || typeStr === 'shortanswer' ? 'short_answer' : 'mcq';
-          } else if (trimmedLine.startsWith('Explanation:')) {
-            question.explanation = trimmedLine.substring(12).trim();
+          const colonIndex = trimmedLine.indexOf(':');
+          
+          if (colonIndex === -1) return;
+          
+          const key = trimmedLine.substring(0, colonIndex).trim().toLowerCase();
+          const value = trimmedLine.substring(colonIndex + 1).trim();
+          
+          if (!value) return;
+          
+          switch (key) {
+            case 'q':
+            case 'question':
+              question.question = value;
+              break;
+            case 'a':
+            case 'answer':
+            case 'correct answer':
+              question.correctAnswer = value;
+              break;
+            case 'options':
+            case 'option':
+              question.options = value.split('|').map(opt => opt.trim()).filter(opt => opt);
+              break;
+            case 'subject':
+              question.subject = value;
+              break;
+            case 'topic':
+              const matchingTopic = topics?.find(t => 
+                t.name.toLowerCase() === value.toLowerCase()
+              );
+              if (matchingTopic) {
+                question.topicId = matchingTopic._id;
+              }
+              break;
+            case 'difficulty':
+              const diff = value.toLowerCase();
+              question.difficulty = ['easy', 'medium', 'hard'].includes(diff) ? diff : 'medium';
+              break;
+            case 'type':
+              const typeStr = value.toLowerCase().replace(/[^a-z]/g, '');
+              if (typeStr === 'truefalse' || typeStr === 'tf') {
+                question.type = 'true_false';
+              } else if (typeStr === 'shortanswer' || typeStr === 'sa') {
+                question.type = 'short_answer';
+              } else {
+                question.type = 'mcq';
+              }
+              break;
+            case 'explanation':
+              question.explanation = value;
+              break;
           }
         });
         
         // Validate required fields
-        if (!question.question || !question.correctAnswer) {
-          throw new Error(`Question ${index + 1} is missing required fields (Q: or A:)`);
+        if (!question.question || question.question.trim() === '') {
+          throw new Error(`Question ${index + 1} is missing question text`);
         }
+        if (!question.correctAnswer || question.correctAnswer.trim() === '') {
+          throw new Error(`Question ${index + 1} is missing correct answer`);
+        }
+        if (!question.subject) {
+          question.subject = "General";
+        }
+        
+        // Validate MCQ has options
+        if (question.type === 'mcq' && (!question.options || question.options.length < 2)) {
+          throw new Error(`Question ${index + 1}: MCQ must have at least 2 options`);
+        }
+        
+        console.log(`Successfully parsed PYQ question ${index + 1}:`, question.question.substring(0, 50) + '...');
         
         return question;
       });
       
-      await batchCreateQuestions({ questions: parsedQuestions });
-      toast.success(`${parsedQuestions.length} PYQ questions added successfully!`);
+      console.log(`Attempting to save ${parsedQuestions.length} PYQ questions to database...`);
+      const result = await batchCreateQuestions({ questions: parsedQuestions });
+      console.log(`Database save result:`, result);
+      
+      toast.success(`${parsedQuestions.length} PYQ questions added successfully for ${pyqExamName} (${pyqYear})!`);
       setShowPYQManualForm(false);
-      setBulkQuestions(Array(20).fill(""));
+      setPyqBulkQuestions(Array(50).fill(""));
       setPyqExamName("");
+      setPyqYear(new Date().getFullYear());
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to parse PYQ questions. Please check your format.");
     }
@@ -984,34 +1043,34 @@ export default function QuestionManagement() {
                       </div>
                     </div>
                     
-                    {bulkQuestions.map((question, index) => (
-                      <div key={index} className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-white font-semibold">PYQ Question {index + 1}</Label>
-                          {question.trim() && (
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                const newQuestions = [...bulkQuestions];
-                                newQuestions[index] = "";
-                                setBulkQuestions(newQuestions);
-                              }}
-                              className="text-red-300 hover:text-red-200 hover:bg-red-500/20"
-                            >
-                              <Trash2 className="h-4 w-4 mr-1" />
-                              Clear
-                            </Button>
-                          )}
-                        </div>
-                        <Textarea
-                          value={question}
-                          onChange={(e) => {
-                            const newQuestions = [...bulkQuestions];
-                            newQuestions[index] = e.target.value;
-                            setBulkQuestions(newQuestions);
-                          }}
+                  {pyqBulkQuestions.map((question, index) => (
+                    <div key={index} className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-white font-semibold">PYQ Question {index + 1}</Label>
+                        {question.trim() && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              const newQuestions = [...pyqBulkQuestions];
+                              newQuestions[index] = "";
+                              setPyqBulkQuestions(newQuestions);
+                            }}
+                            className="text-red-300 hover:text-red-200 hover:bg-red-500/20"
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Clear
+                          </Button>
+                        )}
+                      </div>
+                      <Textarea
+                        value={question}
+                        onChange={(e) => {
+                          const newQuestions = [...pyqBulkQuestions];
+                          newQuestions[index] = e.target.value;
+                          setPyqBulkQuestions(newQuestions);
+                        }}
                           className="bg-white/5 border-white/10 text-white font-mono text-sm"
                           rows={8}
                           placeholder={`Q: Question text here?&#10;A: Answer here&#10;Options: Option1 | Option2 | Option3 | Option4&#10;Subject: Subject name&#10;Topic: Topic name&#10;Difficulty: Easy&#10;Type: MCQ`}
