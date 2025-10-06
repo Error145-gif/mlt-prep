@@ -416,7 +416,7 @@ export const getTestHistory = query({
   },
 });
 
-// Check subscription access
+// Check subscription access with free trial support
 export const checkSubscriptionAccess = query({
   args: {},
   handler: async (ctx) => {
@@ -425,20 +425,48 @@ export const checkSubscriptionAccess = query({
       return { hasAccess: false, reason: "not_authenticated" };
     }
 
+    // Check for active subscription
     const subscription = await ctx.db
       .query("subscriptions")
       .withIndex("by_user", (q) => q.eq("userId", user._id))
       .filter((q) => q.eq(q.field("status"), "active"))
       .first();
 
-    if (!subscription) {
-      return { hasAccess: false, reason: "no_subscription" };
+    if (subscription) {
+      if (subscription.endDate < Date.now()) {
+        return { hasAccess: false, reason: "expired" };
+      }
+      return { hasAccess: true, subscription };
     }
 
-    if (subscription.endDate < Date.now()) {
-      return { hasAccess: false, reason: "expired" };
+    // Check if user has used their free trial
+    const completedTests = await ctx.db
+      .query("testSessions")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .filter((q) => q.eq(q.field("status"), "completed"))
+      .collect();
+
+    const mockTestsCompleted = completedTests.filter((t) => t.testType === "mock").length;
+    const pyqTestsCompleted = completedTests.filter((t) => t.testType === "pyq").length;
+    const aiTestsCompleted = completedTests.filter((t) => t.testType === "ai").length;
+
+    // Allow one free test of each type
+    const hasFreeMockAccess = mockTestsCompleted < 1;
+    const hasFreePYQAccess = pyqTestsCompleted < 1;
+    const hasFreeAIAccess = aiTestsCompleted < 1;
+
+    if (hasFreeMockAccess || hasFreePYQAccess || hasFreeAIAccess) {
+      return {
+        hasAccess: true,
+        reason: "free_trial",
+        freeTrialRemaining: {
+          mock: hasFreeMockAccess ? 1 : 0,
+          pyq: hasFreePYQAccess ? 1 : 0,
+          ai: hasFreeAIAccess ? 1 : 0,
+        },
+      };
     }
 
-    return { hasAccess: true, subscription };
+    return { hasAccess: false, reason: "no_subscription" };
   },
 });
