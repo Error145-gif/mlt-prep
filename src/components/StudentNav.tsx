@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router";
-import { Home, BookOpen, FileText, BarChart3, Library, Menu, X, MessageSquare, User } from "lucide-react";
+import { Home, BookOpen, FileText, BarChart3, Library, Menu, X, MessageSquare, User, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useState } from "react";
@@ -19,6 +19,7 @@ export default function StudentNav() {
     { path: "/tests/mock", icon: FileText, label: "Mock Tests" },
     { path: "/tests/pyq", icon: BookOpen, label: "PYQ Sets" },
     { path: "/tests/ai", icon: BarChart3, label: "AI Questions" },
+    { path: "/subscription", icon: CreditCard, label: "Subscription" },
     { path: "/feedback", icon: MessageSquare, label: "Feedback" },
     { path: "/profile", icon: User, label: "Profile" },
   ];
