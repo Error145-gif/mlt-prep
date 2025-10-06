@@ -61,7 +61,7 @@ export default function PYQSets() {
                       {set.year}
                     </Badge>
                   </div>
-                  <CardTitle className="text-white mt-4">MLT Exam {set.year}</CardTitle>
+                  <CardTitle className="text-white mt-4">{set.examName}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex items-center gap-2 text-white/70">
