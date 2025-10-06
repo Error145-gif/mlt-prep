@@ -548,6 +548,46 @@ export default function QuestionManagement() {
     }
   };
 
+  const handleAutoGenerate = async (count: number, difficulty?: string, topicId?: Id<"topics">) => {
+    try {
+      setUploadingFile(true);
+      toast.info(`Generating ${count} questions with AI... This may take a moment.`);
+      
+      const generated = await generateAIQuestions({ 
+        questionCount: count, 
+        difficulty,
+        topicId 
+      });
+      
+      if (!generated || generated.length === 0) {
+        toast.error("No questions were generated. Please try again.");
+        return;
+      }
+      
+      setAiQuestions(generated);
+      toast.success(`${generated.length} questions generated! Review and save them.`);
+      setShowAutoGenerate(false);
+    } catch (error) {
+      console.error("Auto generation error:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to generate questions. Please check your API key and try again.");
+    } finally {
+      setUploadingFile(false);
+    }
+  };
+
+  const handleSaveAIQuestions = async () => {
+    try {
+      setSavingQuestions(true);
+      await batchCreateQuestionsAction({ questions: aiQuestions });
+      toast.success(`${aiQuestions.length} AI questions saved successfully!`);
+      setAiQuestions([]);
+    } catch (error) {
+      toast.error("Failed to save AI questions");
+    } finally {
+      setSavingQuestions(false);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "pending":
@@ -987,6 +1027,132 @@ export default function QuestionManagement() {
                       Cancel
                     </Button>
                   </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog open={showAutoGenerate} onOpenChange={setShowAutoGenerate}>
+              <DialogTrigger asChild>
+                <Button className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white border-0">
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Auto Generate AI Questions
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="glass-card border-white/20 backdrop-blur-xl bg-white/10 max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle className="text-white">Auto Generate AI Questions</DialogTitle>
+                </DialogHeader>
+                <AutoGenerateQuestionsDialog
+                  topics={topics}
+                  onGenerate={handleAutoGenerate}
+                  isGenerating={uploadingFile}
+                />
+              </DialogContent>
+            </Dialog>
+
+            <Dialog open={showPYQUpload} onOpenChange={setShowPYQUpload}>
+              <DialogTrigger asChild>
+                <Button className="bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/30">
+                  <Upload className="h-4 w-4 mr-2" />
+                  Extract PYQ from PDF
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="glass-card border-white/20 backdrop-blur-xl bg-white/10 max-w-4xl max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="text-white">Extract PYQ from PDF</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-white">Year</Label>
+                    <Input
+                      type="number"
+                      value={pyqYear}
+                      onChange={(e) => setPyqYear(parseInt(e.target.value))}
+                      className="bg-white/5 border-white/10 text-white"
+                      min={2000}
+                      max={new Date().getFullYear()}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-white">Upload PDF</Label>
+                    <Input
+                      type="file"
+                      accept=".pdf"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          if (file.type !== "application/pdf") {
+                            toast.error("Please upload a PDF file");
+                            return;
+                          }
+                          if (file.size > 100 * 1024 * 1024) {
+                            toast.error("File size must be less than 100MB");
+                            return;
+                          }
+                          handlePYQUpload(file, pyqYear);
+                        }
+                      }}
+                      className="bg-white/5 border-white/10 text-white"
+                      disabled={uploadingFile}
+                    />
+                    {uploadingFile && (
+                      <div className="flex items-center gap-2 mt-2 text-white/60">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>Extracting PYQ...</span>
+                      </div>
+                    )}
+                  </div>
+                  {aiQuestions.length > 0 && (
+                    <div className="space-y-4 mt-6">
+                      <div className="flex items-center justify-between">
+                        <p className="text-white font-medium">{aiQuestions.length} AI questions generated</p>
+                        <Button
+                          onClick={handleSaveAIQuestions}
+                          disabled={savingQuestions}
+                          className="bg-green-500/20 hover:bg-green-500/30 text-green-300 border border-green-500/30"
+                        >
+                          {savingQuestions ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Saving...
+                            </>
+                          ) : (
+                            "Save All Questions"
+                          )}
+                        </Button>
+                      </div>
+                      <div className="space-y-3 max-h-96 overflow-y-auto">
+                        {aiQuestions.map((q, idx) => (
+                          <div key={idx} className="p-4 rounded-lg bg-white/5 border border-white/10">
+                            <p className="text-white font-medium mb-2">{q.question}</p>
+                            {q.options && (
+                              <div className="space-y-1 mb-2">
+                                {q.options.map((opt: string, optIdx: number) => (
+                                  <div
+                                    key={optIdx}
+                                    className={`text-sm p-2 rounded ${
+                                      opt === q.correctAnswer
+                                        ? "bg-green-500/20 text-green-300"
+                                        : "text-white/70"
+                                    }`}
+                                  >
+                                    {opt}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            <div className="flex gap-2 text-xs text-white/60">
+                              <span>{q.subject || "General"}</span>
+                              <span>•</span>
+                              <span>{q.topic || "Various"}</span>
+                              <span>•</span>
+                              <span className="capitalize">{q.difficulty}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </DialogContent>
             </Dialog>
