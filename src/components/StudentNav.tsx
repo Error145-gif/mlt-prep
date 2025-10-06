@@ -1,14 +1,18 @@
 import { Link, useLocation } from "react-router";
-import { Home, BookOpen, FileText, BarChart3, Library, Menu, X, MessageSquare } from "lucide-react";
+import { Home, BookOpen, FileText, BarChart3, Library, Menu, X, MessageSquare, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/use-auth";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 export default function StudentNav() {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const { signOut } = useAuth();
+  const userProfile = useQuery(api.users.getUserProfile);
 
   const navItems = [
     { path: "/dashboard", icon: Home, label: "Dashboard" },
@@ -17,6 +21,7 @@ export default function StudentNav() {
     { path: "/practice", icon: Library, label: "Practice" },
     { path: "/tests/ai", icon: BarChart3, label: "AI Questions" },
     { path: "/feedback", icon: MessageSquare, label: "Feedback" },
+    { path: "/profile", icon: User, label: "Profile" },
   ];
 
   return (
@@ -42,7 +47,16 @@ export default function StudentNav() {
           >
             <div className="flex flex-col h-full">
               <div className="flex items-center gap-3 mb-8">
-                <img src="/logo.svg" alt="Logo" className="h-10 w-10" />
+                {userProfile?.avatarUrl ? (
+                  <Avatar className="h-10 w-10 border-2 border-white/20">
+                    <AvatarImage src={userProfile.avatarUrl} />
+                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                      {userProfile.name?.charAt(0)?.toUpperCase() || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                ) : (
+                  <img src="/logo.svg" alt="Logo" className="h-10 w-10" />
+                )}
                 <h2 className="text-xl font-bold text-white">MLT Prep</h2>
               </div>
 

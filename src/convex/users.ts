@@ -41,6 +41,58 @@ export const getCurrentUserInternal = internalQuery({
   },
 });
 
+// Get user profile
+export const getUserProfile = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Not authenticated");
+    }
+
+    const user = await ctx.db.get(userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    return {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      image: user.image,
+      avatarUrl: user.avatarUrl,
+      examPreparation: user.examPreparation,
+      state: user.state,
+    };
+  },
+});
+
+// Update user profile
+export const updateUserProfile = mutation({
+  args: {
+    name: v.optional(v.string()),
+    avatarUrl: v.optional(v.string()),
+    examPreparation: v.optional(v.string()),
+    state: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Not authenticated");
+    }
+
+    const updates: any = {};
+    if (args.name !== undefined) updates.name = args.name;
+    if (args.avatarUrl !== undefined) updates.avatarUrl = args.avatarUrl;
+    if (args.examPreparation !== undefined) updates.examPreparation = args.examPreparation;
+    if (args.state !== undefined) updates.state = args.state;
+
+    await ctx.db.patch(userId, updates);
+
+    return userId;
+  },
+});
+
 // Set user role to admin (for initial setup)
 export const setUserAsAdmin = mutation({
   args: {

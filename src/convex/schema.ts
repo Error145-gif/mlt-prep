@@ -82,6 +82,9 @@ const schema = defineSchema(
       isAnonymous: v.optional(v.boolean()),
       role: v.optional(roleValidator),
       lastActive: v.optional(v.number()),
+      examPreparation: v.optional(v.string()), // Which exam they're preparing for
+      state: v.optional(v.string()), // User's state/location
+      avatarUrl: v.optional(v.string()), // Selected avatar
     }).index("email", ["email"]),
 
     // Content Management

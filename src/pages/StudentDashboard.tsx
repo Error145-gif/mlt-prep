@@ -6,15 +6,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { BookOpen, FileText, TrendingUp, Award, Clock, AlertCircle, CreditCard } from "lucide-react";
+import { BookOpen, FileText, TrendingUp, Award, Clock, AlertCircle, CreditCard, User } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function StudentDashboard() {
   const { isAuthenticated, isLoading, user } = useAuth();
   const navigate = useNavigate();
   const stats = useQuery(api.student.getStudentDashboardStats);
   const subscriptionAccess = useQuery(api.student.checkSubscriptionAccess);
+  const userProfile = useQuery(api.users.getUserProfile);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -29,6 +31,12 @@ export default function StudentDashboard() {
       </div>
     );
   }
+
+  const profileCompletion = userProfile ? 
+    (userProfile.name ? 25 : 0) + 
+    (userProfile.avatarUrl ? 25 : 0) + 
+    (userProfile.examPreparation ? 25 : 0) + 
+    (userProfile.state ? 25 : 0) : 0;
 
   return (
     <div className="min-h-screen p-6 lg:p-8 relative">
@@ -45,9 +53,19 @@ export default function StudentDashboard() {
       <div className="relative z-10 max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-white">Welcome back, {user?.name || "Student"}!</h1>
-            <p className="text-white/70 mt-1">Continue your MLT learning journey</p>
+          <div className="flex items-center gap-4">
+            {userProfile?.avatarUrl && (
+              <Avatar className="h-16 w-16 border-2 border-white/20">
+                <AvatarImage src={userProfile.avatarUrl} />
+                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-xl">
+                  {userProfile.name?.charAt(0)?.toUpperCase() || "U"}
+                </AvatarFallback>
+              </Avatar>
+            )}
+            <div>
+              <h1 className="text-3xl font-bold text-white">Welcome back, {userProfile?.name || user?.name || "Student"}!</h1>
+              <p className="text-white/70 mt-1">Continue your MLT learning journey</p>
+            </div>
           </div>
           {subscriptionAccess && !subscriptionAccess.hasAccess && (
             <Button 
@@ -59,6 +77,29 @@ export default function StudentDashboard() {
             </Button>
           )}
         </div>
+
+        {/* Profile Completion Alert */}
+        {userProfile && profileCompletion < 100 && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="glass-card border border-blue-500/50 backdrop-blur-xl bg-blue-500/10 p-4 rounded-xl cursor-pointer hover:bg-blue-500/15 transition-all"
+            onClick={() => navigate("/profile")}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <User className="h-5 w-5 text-blue-400" />
+                <div>
+                  <p className="text-white font-medium">Complete your profile ({profileCompletion}%)</p>
+                  <p className="text-white/70 text-sm">Add your details for a personalized experience</p>
+                </div>
+              </div>
+              <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
+                Complete Profile
+              </Button>
+            </div>
+          </motion.div>
+        )}
 
         {/* Subscription Alert */}
         {subscriptionAccess && !subscriptionAccess.hasAccess && (

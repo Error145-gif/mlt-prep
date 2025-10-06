@@ -29,6 +29,7 @@ import Feedback from "./pages/Feedback.tsx";
 import AdminFeedback from "./pages/AdminFeedback.tsx";
 import TestStart from "./pages/TestStart.tsx";
 import TestResults from "./pages/TestResults.tsx";
+import Profile from "./pages/Profile.tsx";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
@@ -90,6 +91,7 @@ createRoot(document.getElementById("root")!).render(
             <Route path="/tests/ai" element={<StudentLayout><AIQuestions /></StudentLayout>} />
             <Route path="/practice" element={<StudentLayout><Practice /></StudentLayout>} />
             <Route path="/feedback" element={<StudentLayout><Feedback /></StudentLayout>} />
+            <Route path="/profile" element={<StudentLayout><Profile /></StudentLayout>} />
             <Route path="/test/start" element={<TestStart />} />
             <Route path="/test/results" element={<TestResults />} />
             <Route path="/admin" element={<AdminLayout><AdminDashboard /></AdminLayout>} />
