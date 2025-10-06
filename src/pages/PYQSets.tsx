@@ -34,8 +34,10 @@ export default function PYQSets() {
     if (!canAccessPYQ?.canAccess) {
       if (canAccessPYQ?.reason === "free_trial_used") {
         toast.error("Your free trial is used. Please subscribe to continue.");
+      } else {
+        toast.info("Please subscribe to access this test.");
       }
-      navigate("/subscription");
+      setTimeout(() => navigate("/subscription"), 500);
       return;
     }
     navigate(`/test/start?type=pyq&year=${year}`);

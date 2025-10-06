@@ -34,8 +34,10 @@ export default function MockTests() {
     if (!canAccessMock?.canAccess) {
       if (canAccessMock?.reason === "free_trial_used") {
         toast.error("Your free trial is used. Please subscribe to continue.");
+      } else {
+        toast.info("Please subscribe to access this test.");
       }
-      navigate("/subscription");
+      setTimeout(() => navigate("/subscription"), 500);
       return;
     }
     // Only add topicId to URL if it exists
