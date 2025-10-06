@@ -122,14 +122,30 @@ export const getMockTests = query({
       testsByTopic.get(topicId)!.push(q);
     }
 
+    // Get user's completed test sessions for mock tests
+    const completedSessions = await ctx.db
+      .query("testSessions")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .filter((q) => q.eq(q.field("status"), "completed"))
+      .filter((q) => q.eq(q.field("testType"), "mock"))
+      .collect();
+
     const tests = await Promise.all(
       Array.from(testsByTopic.entries()).map(async ([topicId, qs]) => {
         const topic = topicId !== "no-topic" ? await ctx.db.get(topicId as any) : null;
+        const topicIdForMatch = topicId !== "no-topic" ? topicId : null;
+        
+        // Check if user has completed this test before
+        const hasCompleted = completedSessions.some(
+          (session) => (session.topicId || null) === topicIdForMatch
+        );
+        
         return {
-          topicId: topicId !== "no-topic" ? topicId : null,
+          topicId: topicIdForMatch,
           topicName: (topic as any)?.name || "General",
           questionCount: qs.length,
           difficulty: "mixed",
+          hasCompleted,
         };
       })
     );
@@ -169,14 +185,30 @@ export const getAIQuestions = query({
       testsByTopic.get(topicId)!.push(q);
     }
 
+    // Get user's completed test sessions for AI tests
+    const completedSessions = await ctx.db
+      .query("testSessions")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .filter((q) => q.eq(q.field("status"), "completed"))
+      .filter((q) => q.eq(q.field("testType"), "ai"))
+      .collect();
+
     const tests = await Promise.all(
       Array.from(testsByTopic.entries()).map(async ([topicId, qs]) => {
         const topic = topicId !== "no-topic" ? await ctx.db.get(topicId as any) : null;
+        const topicIdForMatch = topicId !== "no-topic" ? topicId : null;
+        
+        // Check if user has completed this test before
+        const hasCompleted = completedSessions.some(
+          (session) => (session.topicId || null) === topicIdForMatch
+        );
+        
         return {
-          topicId: topicId !== "no-topic" ? topicId : null,
+          topicId: topicIdForMatch,
           topicName: (topic as any)?.name || "General",
           questionCount: qs.length,
           difficulty: "mixed",
+          hasCompleted,
         };
       })
     );
@@ -212,14 +244,30 @@ export const getPYQSets = query({
       setsByExamYear.get(key)!.push(q);
     }
 
+    // Get user's completed test sessions for PYQ tests
+    const completedSessions = await ctx.db
+      .query("testSessions")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .filter((q) => q.eq(q.field("status"), "completed"))
+      .filter((q) => q.eq(q.field("testType"), "pyq"))
+      .collect();
+
     const sets = Array.from(setsByExamYear.entries())
       .map(([key, qs]) => {
         const [examName, yearStr] = key.split("_");
+        const year = parseInt(yearStr);
+        
+        // Check if user has completed this PYQ set before
+        const hasCompleted = completedSessions.some(
+          (session) => session.year === year
+        );
+        
         return {
           examName,
-          year: parseInt(yearStr),
+          year,
           questionCount: qs.length,
           subjects: [...new Set(qs.map((q) => q.subject).filter(Boolean))],
+          hasCompleted,
         };
       })
       .sort((a, b) => b.year - a.year);

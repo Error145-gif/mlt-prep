@@ -80,7 +80,7 @@ export default function MockTests() {
                     className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
                     disabled={!subscriptionAccess?.hasAccess}
                   >
-                    Start Test
+                    {test.hasCompleted ? "Re-Test" : "Start Test"}
                   </Button>
                 </CardContent>
               </Card>

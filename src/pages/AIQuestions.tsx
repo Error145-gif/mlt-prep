@@ -82,7 +82,7 @@ export default function AIQuestions() {
                     className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700"
                     disabled={!subscriptionAccess?.hasAccess}
                   >
-                    Start AI Test
+                    {test.hasCompleted ? "Re-Test" : "Start AI Test"}
                   </Button>
                 </CardContent>
               </Card>

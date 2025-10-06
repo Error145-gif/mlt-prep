@@ -77,7 +77,7 @@ export default function PYQSets() {
                     className="w-full bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700"
                     disabled={!subscriptionAccess?.hasAccess}
                   >
-                    Start PYQ Set
+                    {set.hasCompleted ? "Re-Test" : "Start PYQ Set"}
                   </Button>
                 </CardContent>
               </Card>
