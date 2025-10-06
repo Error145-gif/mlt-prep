@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Id } from "@/convex/_generated/dataModel";
 import { User, Clock } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 type Answer = {
   questionId: Id<"questions">;
@@ -19,9 +20,10 @@ type Answer = {
 };
 
 export default function TestStart() {
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const userProfile = useQuery(api.users.getUserProfile);
   const [showInstructions, setShowInstructions] = useState(true);
   const [acceptedInstructions, setAcceptedInstructions] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -212,8 +214,17 @@ export default function TestStart() {
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-2xl font-bold text-gray-900">{testName}</h1>
             <div className="flex items-center gap-3">
-              <User className="h-8 w-8 text-blue-600" />
-              <span className="font-medium">{user?.name || "Student"}</span>
+              {userProfile?.avatarUrl ? (
+                <Avatar className="h-8 w-8 border-2 border-blue-600">
+                  <AvatarImage src={userProfile.avatarUrl} />
+                  <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                    {userProfile.name?.charAt(0)?.toUpperCase() || "U"}
+                  </AvatarFallback>
+                </Avatar>
+              ) : (
+                <User className="h-8 w-8 text-blue-600" />
+              )}
+              <span className="font-medium">{userProfile?.name || "Student"}</span>
             </div>
           </div>
 
@@ -344,8 +355,17 @@ export default function TestStart() {
             Enter Full Screen
           </Button>
           <div className="flex items-center gap-2">
-            <User className="h-8 w-8 text-blue-600" />
-            <span className="font-medium">{user?.name || "Student"}</span>
+            {userProfile?.avatarUrl ? (
+              <Avatar className="h-8 w-8 border-2 border-blue-600">
+                <AvatarImage src={userProfile.avatarUrl} />
+                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                  {userProfile.name?.charAt(0)?.toUpperCase() || "U"}
+                </AvatarFallback>
+              </Avatar>
+            ) : (
+              <User className="h-8 w-8 text-blue-600" />
+            )}
+            <span className="font-medium">{userProfile?.name || "Student"}</span>
           </div>
         </div>
       </div>

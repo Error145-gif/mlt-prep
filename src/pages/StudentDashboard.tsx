@@ -63,7 +63,7 @@ export default function StudentDashboard() {
               </Avatar>
             )}
             <div>
-              <h1 className="text-3xl font-bold text-white">Welcome back, {userProfile?.name || user?.name || "Student"}!</h1>
+              <h1 className="text-3xl font-bold text-white">Welcome back, {userProfile?.name || "Student"}!</h1>
               <p className="text-white/70 mt-1">Continue your MLT learning journey</p>
             </div>
           </div>
