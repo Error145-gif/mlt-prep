@@ -138,7 +138,7 @@ export default function QuestionManagement() {
       for (let index = 0; index < questionBlocks.length; index++) {
         const block = questionBlocks[index];
         try {
-          const lines = block.split('\n').filter(line => line.trim());
+          const lines = block.split('\n').map(line => line.trim()).filter(line => line);
           const question: any = {
             type: "mcq",
             difficulty: "medium",
@@ -146,13 +146,12 @@ export default function QuestionManagement() {
           };
           
           lines.forEach(line => {
-            const trimmedLine = line.trim();
-            const colonIndex = trimmedLine.indexOf(':');
+            const colonIndex = line.indexOf(':');
             
             if (colonIndex === -1) return;
             
-            const key = trimmedLine.substring(0, colonIndex).trim().toLowerCase();
-            const value = trimmedLine.substring(colonIndex + 1).trim();
+            const key = line.substring(0, colonIndex).trim().toLowerCase();
+            const value = line.substring(colonIndex + 1).trim();
             
             if (!value) return;
             
@@ -206,11 +205,11 @@ export default function QuestionManagement() {
           });
           
           // Validate required fields
-          if (!question.question) {
-            throw new Error(`Missing question text`);
+          if (!question.question || question.question.trim() === '') {
+            throw new Error(`Missing question text. Please ensure the line starts with "Q:" or "Question:"`);
           }
-          if (!question.correctAnswer) {
-            throw new Error(`Missing correct answer`);
+          if (!question.correctAnswer || question.correctAnswer.trim() === '') {
+            throw new Error(`Missing correct answer. Please ensure the line starts with "A:" or "Answer:"`);
           }
           if (!question.subject) {
             question.subject = "General";
@@ -218,7 +217,7 @@ export default function QuestionManagement() {
           
           // Validate MCQ has options
           if (question.type === 'mcq' && (!question.options || question.options.length < 2)) {
-            throw new Error(`MCQ must have at least 2 options`);
+            throw new Error(`MCQ must have at least 2 options. Please ensure the line starts with "Options:" and options are separated by "|"`);
           }
           
           parsedQuestions.push(question);
@@ -227,6 +226,7 @@ export default function QuestionManagement() {
           const errorMsg = `Question ${index + 1}: ${error instanceof Error ? error.message : 'Invalid format'}`;
           errors.push(errorMsg);
           console.error(errorMsg);
+          console.error('Failed block content:', block);
         }
       }
       
@@ -234,7 +234,7 @@ export default function QuestionManagement() {
         toast.error("No valid questions found. Please check your format.");
         if (errors.length > 0) {
           console.error("Parsing errors:", errors);
-          toast.error(`Errors: ${errors.slice(0, 3).join('; ')}`);
+          toast.error(`First error: ${errors[0]}`);
         }
         return;
       }
