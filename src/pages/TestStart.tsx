@@ -31,7 +31,8 @@ export default function TestStart() {
   const [sessionId, setSessionId] = useState<Id<"testSessions"> | null>(null);
 
   const testType = searchParams.get("type") || "mock";
-  const topicId = searchParams.get("topicId") as Id<"topics"> | undefined;
+  const topicIdParam = searchParams.get("topicId");
+  const topicId = topicIdParam ? (topicIdParam as Id<"topics">) : undefined;
   const year = searchParams.get("year") ? parseInt(searchParams.get("year")!) : undefined;
 
   const startTest = useMutation(api.student.startTest);
@@ -40,8 +41,8 @@ export default function TestStart() {
   // Fetch questions for the test
   const testQuestions = useQuery(api.student.getTestQuestions, {
     testType,
-    topicId,
-    year,
+    ...(topicId && { topicId }),
+    ...(year && { year }),
   });
 
   const [testName, setTestName] = useState("");

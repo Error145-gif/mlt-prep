@@ -34,7 +34,12 @@ export default function MockTests() {
       navigate("/dashboard");
       return;
     }
-    navigate(`/test/start?type=mock&topicId=${topicId}`);
+    // Only add topicId to URL if it's not "general"
+    if (topicId && topicId !== "general") {
+      navigate(`/test/start?type=mock&topicId=${topicId}`);
+    } else {
+      navigate(`/test/start?type=mock`);
+    }
   };
 
   return (
