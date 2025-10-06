@@ -421,9 +421,9 @@ export default function TestStart() {
                 >
                   <div className="space-y-3">
                     {currentQuestion.options.map((option: string, idx: number) => (
-                      <div key={idx} className="flex items-center space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
-                        <RadioGroupItem value={option} id={`option-${idx}`} />
-                        <Label htmlFor={`option-${idx}`} className="cursor-pointer text-base text-gray-900 font-medium flex-1">
+                      <div key={idx} className="flex items-center space-x-3 p-4 rounded-lg border-2 border-gray-300 bg-white hover:bg-blue-50 hover:border-blue-400 transition-colors cursor-pointer">
+                        <RadioGroupItem value={option} id={`option-${idx}`} className="border-2 border-gray-400 w-5 h-5" />
+                        <Label htmlFor={`option-${idx}`} className="cursor-pointer text-base text-gray-900 font-semibold flex-1">
                           {option}
                         </Label>
                       </div>
