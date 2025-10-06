@@ -17,6 +17,9 @@ export const getDashboardStats = query({
       totalContent,
       pendingQuestions,
       recentPayments,
+      totalQuestions,
+      approvedQuestions,
+      manualQuestions,
     ] = await Promise.all([
       ctx.db.query("users").collect().then((users) => users.length),
       ctx.db
@@ -31,6 +34,17 @@ export const getDashboardStats = query({
         .collect()
         .then((questions) => questions.length),
       ctx.db.query("payments").order("desc").take(10),
+      ctx.db.query("questions").collect().then((questions) => questions.length),
+      ctx.db
+        .query("questions")
+        .withIndex("by_status", (q) => q.eq("status", "approved"))
+        .collect()
+        .then((questions) => questions.length),
+      ctx.db
+        .query("questions")
+        .withIndex("by_source", (q) => q.eq("source", "manual"))
+        .collect()
+        .then((questions) => questions.length),
     ]);
 
     // Calculate revenue
@@ -48,6 +62,9 @@ export const getDashboardStats = query({
       totalRevenue,
       totalContent,
       pendingQuestions,
+      totalQuestions,
+      approvedQuestions,
+      manualQuestions,
       recentContent,
       recentPayments,
     };

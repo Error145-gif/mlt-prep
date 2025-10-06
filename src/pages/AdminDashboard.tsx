@@ -86,6 +86,24 @@ export default function AdminDashboard() {
       color: "from-orange-400 to-orange-600",
     },
     {
+      title: "Total Questions",
+      value: stats?.totalQuestions || 0,
+      icon: FileText,
+      color: "from-cyan-400 to-cyan-600",
+    },
+    {
+      title: "Approved Questions",
+      value: stats?.approvedQuestions || 0,
+      icon: FileText,
+      color: "from-teal-400 to-teal-600",
+    },
+    {
+      title: "Manual Questions",
+      value: stats?.manualQuestions || 0,
+      icon: FileText,
+      color: "from-indigo-400 to-indigo-600",
+    },
+    {
       title: "Pending Questions",
       value: stats?.pendingQuestions || 0,
       icon: AlertCircle,
@@ -115,7 +133,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {statCards.map((stat, index) => (
             <motion.div
               key={stat.title}
