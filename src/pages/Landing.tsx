@@ -47,6 +47,17 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
+      {/* Lab Background Image */}
+      <div 
+        className="fixed inset-0 z-0 opacity-10"
+        style={{
+          backgroundImage: 'url(https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=1920&q=80)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      />
+
       {/* Animated Background Gradients */}
       <div className="fixed inset-0 -z-10">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500/30 rounded-full blur-3xl animate-pulse" />
@@ -101,7 +112,7 @@ export default function Landing() {
       </nav>
 
       {/* Hero Section */}
-      <section className="max-w-7xl mx-auto px-6 py-20 text-center">
+      <section className="relative z-10 max-w-7xl mx-auto px-6 py-20 text-center">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -139,7 +150,7 @@ export default function Landing() {
       </section>
 
       {/* Features Section */}
-      <section className="max-w-7xl mx-auto px-6 py-20">
+      <section className="relative z-10 max-w-7xl mx-auto px-6 py-20">
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -172,7 +183,7 @@ export default function Landing() {
       </section>
 
       {/* CTA Section */}
-      <section className="max-w-7xl mx-auto px-6 py-20">
+      <section className="relative z-10 max-w-7xl mx-auto px-6 py-20">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
@@ -196,7 +207,7 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-white/20 backdrop-blur-xl bg-white/5 py-8">
+      <footer className="relative z-10 border-t border-white/20 backdrop-blur-xl bg-white/5 py-8">
         <div className="max-w-7xl mx-auto px-6 text-center text-white/60">
           <p>© 2024 MLT Learning. Powered by <a href="https://vly.ai" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">vly.ai</a></p>
         </div>
