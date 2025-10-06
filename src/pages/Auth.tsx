@@ -24,6 +24,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [rememberMe, setRememberMe] = useState(false);
+  const [isCreatingAccount, setIsCreatingAccount] = useState(false);
 
   useEffect(() => {
     if (!authLoading && isAuthenticated && user !== undefined) {
@@ -83,6 +84,15 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
     }
   };
 
+  const handleCreateAccount = () => {
+    setIsCreatingAccount(true);
+  };
+
+  const handleBackToSignIn = () => {
+    setIsCreatingAccount(false);
+    setError(null);
+  };
+
   return (
     <div className="min-h-screen flex">
       {/* Left Side - Decorative Purple Section */}
@@ -129,7 +139,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
             transition={{ delay: 0.3, duration: 0.6 }}
             className="text-5xl font-bold mb-4"
           >
-            Welcome back!
+            {isCreatingAccount ? "Join us today!" : "Welcome back!"}
           </motion.h1>
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
@@ -137,7 +147,9 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
             transition={{ delay: 0.5, duration: 0.6 }}
             className="text-xl text-white/90"
           >
-            You can sign in to access with your existing account.
+            {isCreatingAccount 
+              ? "Create your account to start your learning journey." 
+              : "You can sign in to access with your existing account."}
           </motion.p>
         </div>
       </motion.div>
@@ -165,8 +177,14 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
               </div>
 
               <div>
-                <h2 className="text-4xl font-bold text-gray-800 mb-2">sign In</h2>
-                <p className="text-gray-500">Enter your credentials to access your account</p>
+                <h2 className="text-4xl font-bold text-gray-800 mb-2">
+                  {isCreatingAccount ? "Create Account" : "Sign In"}
+                </h2>
+                <p className="text-gray-500">
+                  {isCreatingAccount 
+                    ? "Enter your email to create a new account" 
+                    : "Enter your credentials to access your account"}
+                </p>
               </div>
 
               <form onSubmit={handleEmailSubmit} className="space-y-6">
@@ -188,21 +206,23 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                   <p className="text-sm text-red-500">{error}</p>
                 )}
 
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id="remember" 
-                      checked={rememberMe}
-                      onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-                    />
-                    <label htmlFor="remember" className="text-gray-600 cursor-pointer">
-                      Remember me
-                    </label>
+                {!isCreatingAccount && (
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="remember" 
+                        checked={rememberMe}
+                        onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                      />
+                      <label htmlFor="remember" className="text-gray-600 cursor-pointer">
+                        Remember me
+                      </label>
+                    </div>
+                    <button type="button" className="text-gray-600 hover:text-purple-600 transition-colors">
+                      Forgot password?
+                    </button>
                   </div>
-                  <button type="button" className="text-gray-600 hover:text-purple-600 transition-colors">
-                    Forgot password?
-                  </button>
-                </div>
+                )}
 
                 <Button
                   type="submit"
@@ -212,38 +232,61 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      Signing In...
+                      {isCreatingAccount ? "Creating Account..." : "Signing In..."}
                     </>
                   ) : (
-                    "Sign In"
+                    isCreatingAccount ? "Create Account" : "Sign In"
                   )}
                 </Button>
 
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t border-gray-200" />
-                  </div>
-                  <div className="relative flex justify-center text-sm">
-                    <span className="bg-gray-50 px-4 text-gray-500">Or</span>
-                  </div>
-                </div>
+                {!isCreatingAccount && (
+                  <>
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t border-gray-200" />
+                      </div>
+                      <div className="relative flex justify-center text-sm">
+                        <span className="bg-gray-50 px-4 text-gray-500">Or</span>
+                      </div>
+                    </div>
 
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full h-14 border-gray-200 rounded-full text-gray-700 hover:bg-gray-100"
-                  onClick={handleGuestLogin}
-                  disabled={isLoading}
-                >
-                  <UserX className="mr-2 h-5 w-5" />
-                  Continue as Guest
-                </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full h-14 border-gray-200 rounded-full text-gray-700 hover:bg-gray-100"
+                      onClick={handleGuestLogin}
+                      disabled={isLoading}
+                    >
+                      <UserX className="mr-2 h-5 w-5" />
+                      Continue as Guest
+                    </Button>
+                  </>
+                )}
 
                 <p className="text-center text-gray-600">
-                  New here?{" "}
-                  <button type="button" className="text-purple-600 hover:text-purple-700 font-semibold">
-                    Create an Account
-                  </button>
+                  {isCreatingAccount ? (
+                    <>
+                      Already have an account?{" "}
+                      <button 
+                        type="button" 
+                        onClick={handleBackToSignIn}
+                        className="text-purple-600 hover:text-purple-700 font-semibold"
+                      >
+                        Sign In
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      New here?{" "}
+                      <button 
+                        type="button" 
+                        onClick={handleCreateAccount}
+                        className="text-purple-600 hover:text-purple-700 font-semibold"
+                      >
+                        Create an Account
+                      </button>
+                    </>
+                  )}
                 </p>
               </form>
             </div>
