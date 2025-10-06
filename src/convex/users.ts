@@ -47,12 +47,12 @@ export const getUserProfile = query({
   handler: async (ctx) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("Not authenticated");
+      return null;
     }
 
     const user = await ctx.db.get(userId);
     if (!user) {
-      throw new Error("User not found");
+      return null;
     }
 
     return {
