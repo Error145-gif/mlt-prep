@@ -751,7 +751,25 @@ export default function QuestionManagement() {
                   
                   {bulkQuestions.map((question, index) => (
                     <div key={index} className="space-y-2">
-                      <Label className="text-white font-semibold">Question {index + 1}</Label>
+                      <div className="flex items-center justify-between">
+                        <Label className="text-white font-semibold">Question {index + 1}</Label>
+                        {question.trim() && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              const newQuestions = [...bulkQuestions];
+                              newQuestions[index] = "";
+                              setBulkQuestions(newQuestions);
+                            }}
+                            className="text-red-300 hover:text-red-200 hover:bg-red-500/20"
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Clear
+                          </Button>
+                        )}
+                      </div>
                       <Textarea
                         value={question}
                         onChange={(e) => {
@@ -808,7 +826,25 @@ export default function QuestionManagement() {
                   
                   {aiBulkQuestions.map((question, index) => (
                     <div key={index} className="space-y-2">
-                      <Label className="text-white font-semibold">AI Question {index + 1}</Label>
+                      <div className="flex items-center justify-between">
+                        <Label className="text-white font-semibold">AI Question {index + 1}</Label>
+                        {question.trim() && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              const newQuestions = [...aiBulkQuestions];
+                              newQuestions[index] = "";
+                              setAiBulkQuestions(newQuestions);
+                            }}
+                            className="text-red-300 hover:text-red-200 hover:bg-red-500/20"
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Clear
+                          </Button>
+                        )}
+                      </div>
                       <Textarea
                         value={question}
                         onChange={(e) => {
@@ -885,7 +921,25 @@ export default function QuestionManagement() {
                     
                     {bulkQuestions.map((question, index) => (
                       <div key={index} className="space-y-2">
-                        <Label className="text-white font-semibold">PYQ Question {index + 1}</Label>
+                        <div className="flex items-center justify-between">
+                          <Label className="text-white font-semibold">PYQ Question {index + 1}</Label>
+                          {question.trim() && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                const newQuestions = [...bulkQuestions];
+                                newQuestions[index] = "";
+                                setBulkQuestions(newQuestions);
+                              }}
+                              className="text-red-300 hover:text-red-200 hover:bg-red-500/20"
+                            >
+                              <Trash2 className="h-4 w-4 mr-1" />
+                              Clear
+                            </Button>
+                          )}
+                        </div>
                         <Textarea
                           value={question}
                           onChange={(e) => {
