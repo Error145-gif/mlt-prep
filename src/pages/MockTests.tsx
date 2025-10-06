@@ -8,12 +8,13 @@ import { Badge } from "@/components/ui/badge";
 import { FileText, Clock, Target } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect } from "react";
+import { toast } from "sonner";
 
 export default function MockTests() {
   const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
   const mockTests = useQuery(api.student.getMockTests, {});
-  const subscriptionAccess = useQuery(api.student.checkSubscriptionAccess);
+  const canAccessMock = useQuery(api.student.canAccessTestType, { testType: "mock" });
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -30,8 +31,11 @@ export default function MockTests() {
   }
 
   const handleStartTest = (topicId: string | null) => {
-    if (!subscriptionAccess?.hasAccess) {
-      navigate("/dashboard");
+    if (!canAccessMock?.canAccess) {
+      if (canAccessMock?.reason === "free_trial_used") {
+        toast.error("Your free trial is used. Please subscribe to continue.");
+      }
+      navigate("/subscription");
       return;
     }
     // Only add topicId to URL if it exists
@@ -48,6 +52,12 @@ export default function MockTests() {
         <div>
           <h1 className="text-3xl font-bold text-white">Mock Tests</h1>
           <p className="text-white/70 mt-1">Practice with comprehensive topic-wise tests</p>
+          {canAccessMock?.reason === "free_trial" && (
+            <p className="text-yellow-400 mt-2">🎁 Free trial: You can take one mock test for free!</p>
+          )}
+          {canAccessMock?.reason === "free_trial_used" && (
+            <p className="text-red-400 mt-2">⚠️ Free trial used. Subscribe to continue testing.</p>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -78,9 +88,9 @@ export default function MockTests() {
                   <Button
                     onClick={() => handleStartTest(test.topicId)}
                     className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
-                    disabled={!subscriptionAccess?.hasAccess}
+                    disabled={!canAccessMock?.canAccess}
                   >
-                    {test.hasCompleted ? "Re-Test" : "Start Test"}
+                    {test.hasCompleted ? (canAccessMock?.canAccess ? "Re-Test" : "Subscribe to Re-Test") : "Start Test"}
                   </Button>
                 </CardContent>
               </Card>

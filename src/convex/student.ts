@@ -560,7 +560,7 @@ export const checkSubscriptionAccess = query({
       if (subscription.endDate < Date.now()) {
         return { hasAccess: false, reason: "expired" };
       }
-      return { hasAccess: true, subscription };
+      return { hasAccess: true, subscription, isPaid: true };
     }
 
     // Check if user has used their free trial
@@ -583,6 +583,7 @@ export const checkSubscriptionAccess = query({
       return {
         hasAccess: true,
         reason: "free_trial",
+        isPaid: false,
         freeTrialRemaining: {
           mock: hasFreeMockAccess ? 1 : 0,
           pyq: hasFreePYQAccess ? 1 : 0,
@@ -592,5 +593,43 @@ export const checkSubscriptionAccess = query({
     }
 
     return { hasAccess: false, reason: "no_subscription" };
+  },
+});
+
+// New query to check if a specific test type can be accessed
+export const canAccessTestType = query({
+  args: {
+    testType: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) {
+      return { canAccess: false, reason: "not_authenticated" };
+    }
+
+    // Check for active subscription
+    const subscription = await ctx.db
+      .query("subscriptions")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .filter((q) => q.eq(q.field("status"), "active"))
+      .first();
+
+    if (subscription && subscription.endDate >= Date.now()) {
+      return { canAccess: true, reason: "paid_subscription" };
+    }
+
+    // Check if user has used their free trial for this test type
+    const completedTests = await ctx.db
+      .query("testSessions")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .filter((q) => q.eq(q.field("status"), "completed"))
+      .filter((q) => q.eq(q.field("testType"), args.testType))
+      .collect();
+
+    if (completedTests.length === 0) {
+      return { canAccess: true, reason: "free_trial" };
+    }
+
+    return { canAccess: false, reason: "free_trial_used" };
   },
 });
