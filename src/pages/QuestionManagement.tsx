@@ -3,8 +3,7 @@ import { useQuery, useMutation, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Navigate } from "react-router";
 import { useState } from "react";
-import { Loader2, CheckCircle, XCircle, AlertCircle, Plus, Upload, FileText, Edit, Trash2, Sparkles, FileSpreadsheet } from "lucide-react";
-import Papa, { ParseResult } from "papaparse";
+import { Loader2, CheckCircle, XCircle, Plus, Upload, FileText, Trash2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -29,12 +28,8 @@ export default function QuestionManagement() {
   const [showPYQUpload, setShowPYQUpload] = useState(false);
   const [showAutoGenerate, setShowAutoGenerate] = useState(false);
   const [showAIBulkForm, setShowAIBulkForm] = useState(false);
-  const [showCSVUpload, setShowCSVUpload] = useState(false);
   const [pyqYear, setPyqYear] = useState<number>(new Date().getFullYear());
   const [pyqExamName, setPyqExamName] = useState<string>("");
-  const [csvQuestions, setCsvQuestions] = useState<any[]>([]);
-  const [csvErrors, setCsvErrors] = useState<string[]>([]);
-  const [processingCSV, setProcessingCSV] = useState(false);
   
   // AI bulk questions state - 50 separate sections
   const [aiBulkQuestions, setAiBulkQuestions] = useState<string[]>(Array(50).fill(""));
@@ -553,139 +548,6 @@ export default function QuestionManagement() {
     }
   };
 
-  const handleCSVUpload = (file: File) => {
-    if (file.type !== "text/csv" && !file.name.endsWith(".csv")) {
-      toast.error("Please upload a CSV file");
-      return;
-    }
-
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error("File size must be less than 10MB");
-      return;
-    }
-
-    setProcessingCSV(true);
-    setCsvErrors([]);
-    
-    Papa.parse(file, {
-      header: true,
-      skipEmptyLines: true,
-      complete: (results: ParseResult<any>) => {
-        const parsedQuestions: any[] = [];
-        const errors: string[] = [];
-
-        results.data.forEach((row: any, index: number) => {
-          try {
-            // Validate required fields
-            if (!row.Question || !row.Question.trim()) {
-              errors.push(`Row ${index + 2}: Missing question text`);
-              return;
-            }
-            if (!row.Answer || !row.Answer.trim()) {
-              errors.push(`Row ${index + 2}: Missing answer`);
-              return;
-            }
-            if (!row.Subject || !row.Subject.trim()) {
-              errors.push(`Row ${index + 2}: Missing subject`);
-              return;
-            }
-
-            // Parse question type
-            let questionType = "mcq";
-            if (row.Type) {
-              const typeStr = row.Type.toLowerCase().replace(/[^a-z]/g, "");
-              if (typeStr === "truefalse" || typeStr === "tf") {
-                questionType = "true_false";
-              } else if (typeStr === "shortanswer" || typeStr === "sa") {
-                questionType = "short_answer";
-              }
-            }
-
-            // Parse options for MCQ
-            let options: string[] | undefined;
-            if (questionType === "mcq") {
-              if (!row.Options || !row.Options.trim()) {
-                errors.push(`Row ${index + 2}: MCQ must have options`);
-                return;
-              }
-              options = row.Options.split("|").map((opt: string) => opt.trim()).filter((opt: string) => opt);
-              if (!options || options.length < 2) {
-                errors.push(`Row ${index + 2}: MCQ must have at least 2 options`);
-                return;
-              }
-            }
-
-            // Parse difficulty
-            let difficulty = "medium";
-            if (row.Difficulty) {
-              const diff = row.Difficulty.toLowerCase();
-              if (["easy", "medium", "hard"].includes(diff)) {
-                difficulty = diff;
-              }
-            }
-
-            // Find matching topic
-            let topicId: string | undefined;
-            if (row.Topic && topics) {
-              const matchingTopic = topics.find(
-                (t) => t.name.toLowerCase() === row.Topic.toLowerCase()
-              );
-              if (matchingTopic) {
-                topicId = matchingTopic._id;
-              }
-            }
-
-            const question = {
-              question: row.Question.trim(),
-              correctAnswer: row.Answer.trim(),
-              type: questionType,
-              options,
-              subject: row.Subject.trim(),
-              topicId,
-              difficulty,
-              explanation: row.Explanation?.trim() || undefined,
-              examName: row["Exam Name"]?.trim() || undefined,
-              source: "manual",
-            };
-
-            parsedQuestions.push(question);
-          } catch (error) {
-            errors.push(`Row ${index + 2}: ${error instanceof Error ? error.message : "Invalid format"}`);
-          }
-        });
-
-        setCsvQuestions(parsedQuestions);
-        setCsvErrors(errors);
-        setProcessingCSV(false);
-
-        if (parsedQuestions.length === 0) {
-          toast.error("No valid questions found in CSV");
-        } else {
-          toast.success(`${parsedQuestions.length} questions parsed successfully`);
-        }
-      },
-      error: (error: Error) => {
-        setProcessingCSV(false);
-        toast.error(`Failed to parse CSV: ${error.message}`);
-      },
-    });
-  };
-
-  const handleSaveCSVQuestions = async () => {
-    try {
-      setSavingQuestions(true);
-      await batchCreateQuestions({ questions: csvQuestions });
-      toast.success(`${csvQuestions.length} questions added successfully!`);
-      setCsvQuestions([]);
-      setCsvErrors([]);
-      setShowCSVUpload(false);
-    } catch (error) {
-      toast.error("Failed to save questions");
-    } finally {
-      setSavingQuestions(false);
-    }
-  };
-
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "pending":
@@ -1001,138 +863,6 @@ export default function QuestionManagement() {
                       Add All AI Questions
                     </Button>
                     <Button onClick={() => setShowAIBulkForm(false)} variant="outline" className="flex-1">
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
-
-            <Dialog open={showCSVUpload} onOpenChange={setShowCSVUpload}>
-              <DialogTrigger asChild>
-                <Button className="bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30">
-                  <FileSpreadsheet className="h-4 w-4 mr-2" />
-                  Upload CSV
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="glass-card border-white/20 backdrop-blur-xl bg-white/10 max-w-5xl max-h-[80vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle className="text-white">Upload Questions from CSV</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <Label className="text-white">CSV File Format</Label>
-                    <div className="bg-white/5 border border-white/10 rounded p-3 mb-4 text-xs text-white/70 font-mono">
-                      Question,Answer,Options,Subject,Topic,Difficulty,Type,Explanation,Exam Name<br/>
-                      "What is EDTA?","Anticoagulant","Anticoagulant|Stain|Buffer|Enzyme","Hematology","Anticoagulants","Easy","MCQ","EDTA prevents blood clotting",""
-                    </div>
-                    <p className="text-white/60 text-sm mb-2">
-                      • Required columns: Question, Answer, Subject<br/>
-                      • Options: Separate with | (pipe) for MCQ questions<br/>
-                      • Type: MCQ, True/False, or Short Answer (default: MCQ)<br/>
-                      • Difficulty: Easy, Medium, or Hard (default: Medium)
-                    </p>
-                  </div>
-                  
-                  <div>
-                    <Label className="text-white">Upload CSV File</Label>
-                    <Input
-                      type="file"
-                      accept=".csv"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          handleCSVUpload(file);
-                        }
-                      }}
-                      className="bg-white/5 border-white/10 text-white"
-                      disabled={processingCSV}
-                    />
-                    {processingCSV && (
-                      <div className="flex items-center gap-2 mt-2 text-white/60">
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        <span>Processing CSV...</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {csvErrors.length > 0 && (
-                    <div className="bg-red-500/10 border border-red-500/30 rounded p-3">
-                      <p className="text-red-300 font-medium mb-2">Parsing Errors ({csvErrors.length}):</p>
-                      <div className="space-y-1 max-h-32 overflow-y-auto">
-                        {csvErrors.slice(0, 10).map((error, idx) => (
-                          <p key={idx} className="text-red-300/80 text-sm">{error}</p>
-                        ))}
-                        {csvErrors.length > 10 && (
-                          <p className="text-red-300/60 text-sm">...and {csvErrors.length - 10} more errors</p>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {csvQuestions.length > 0 && (
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <p className="text-white font-medium">
-                          {csvQuestions.length} questions parsed successfully
-                        </p>
-                        <Button
-                          onClick={handleSaveCSVQuestions}
-                          disabled={savingQuestions}
-                          className="bg-green-500/20 hover:bg-green-500/30 text-green-300 border border-green-500/30"
-                        >
-                          {savingQuestions ? (
-                            <>
-                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                              Saving...
-                            </>
-                          ) : (
-                            "Save All Questions"
-                          )}
-                        </Button>
-                      </div>
-                      
-                      <div className="border border-white/10 rounded-lg overflow-hidden">
-                        <div className="max-h-96 overflow-y-auto">
-                          <table className="w-full text-sm">
-                            <thead className="bg-white/5 sticky top-0">
-                              <tr>
-                                <th className="text-left p-2 text-white/80">#</th>
-                                <th className="text-left p-2 text-white/80">Question</th>
-                                <th className="text-left p-2 text-white/80">Type</th>
-                                <th className="text-left p-2 text-white/80">Subject</th>
-                                <th className="text-left p-2 text-white/80">Difficulty</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {csvQuestions.map((q, idx) => (
-                                <tr key={idx} className="border-t border-white/10">
-                                  <td className="p-2 text-white/60">{idx + 1}</td>
-                                  <td className="p-2 text-white">
-                                    {q.question.length > 60 ? q.question.substring(0, 60) + "..." : q.question}
-                                  </td>
-                                  <td className="p-2 text-white/80 capitalize">{q.type.replace("_", " ")}</td>
-                                  <td className="p-2 text-white/80">{q.subject}</td>
-                                  <td className="p-2 text-white/80 capitalize">{q.difficulty}</td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="flex gap-2">
-                    <Button 
-                      onClick={() => {
-                        setShowCSVUpload(false);
-                        setCsvQuestions([]);
-                        setCsvErrors([]);
-                      }} 
-                      variant="outline" 
-                      className="flex-1"
-                    >
                       Cancel
                     </Button>
                   </div>
