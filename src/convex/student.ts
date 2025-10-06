@@ -99,7 +99,7 @@ export const getMockTests = query({
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
     if (!user) {
-      throw new Error("Not authenticated");
+      return [];
     }
 
     let questions = await ctx.db
@@ -162,7 +162,7 @@ export const getAIQuestions = query({
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
     if (!user) {
-      throw new Error("Not authenticated");
+      return [];
     }
 
     let questions = await ctx.db
@@ -223,7 +223,7 @@ export const getPYQSets = query({
   handler: async (ctx) => {
     const user = await getCurrentUser(ctx);
     if (!user) {
-      throw new Error("Not authenticated");
+      return [];
     }
 
     const pyqQuestions = await ctx.db
@@ -286,7 +286,7 @@ export const getPracticeQuestions = query({
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
     if (!user) {
-      throw new Error("Not authenticated");
+      return [];
     }
 
     // Enforce 10-100 question limit
@@ -325,7 +325,7 @@ export const getTestQuestions = query({
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
     if (!user) {
-      throw new Error("Not authenticated");
+      return [];
     }
 
     let questions: any[] = [];
@@ -477,7 +477,7 @@ export const getTestResults = query({
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
     if (!user) {
-      throw new Error("Not authenticated");
+      return null;
     }
 
     const session = await ctx.db.get(args.sessionId);
@@ -516,7 +516,7 @@ export const getTestHistory = query({
   handler: async (ctx) => {
     const user = await getCurrentUser(ctx);
     if (!user) {
-      throw new Error("Not authenticated");
+      return [];
     }
 
     const sessions = await ctx.db
