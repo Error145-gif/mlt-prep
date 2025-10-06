@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { BookOpen, FileText, TrendingUp, Award, Clock, AlertCircle, CreditCard, User } from "lucide-react";
+import { BookOpen, FileText, TrendingUp, Award, Clock, AlertCircle, CreditCard, User, Target, Brain, BookMarked, BarChart } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -140,6 +140,7 @@ export default function StudentDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-white">{stats.totalTests}</div>
+                <p className="text-xs text-white/60 mt-1">Tests completed</p>
               </CardContent>
             </Card>
           </motion.div>
@@ -152,6 +153,7 @@ export default function StudentDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-white">{stats.avgScore}%</div>
+                <p className="text-xs text-white/60 mt-1">Overall performance</p>
               </CardContent>
             </Card>
           </motion.div>
@@ -159,8 +161,21 @@ export default function StudentDashboard() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
             <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-white/70">Overall Accuracy</CardTitle>
+                <Target className="h-4 w-4 text-purple-400" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-white">{stats.overallAccuracy}%</div>
+                <p className="text-xs text-white/60 mt-1">Correct answers</p>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+            <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-white/70">Subscription</CardTitle>
-                <Clock className="h-4 w-4 text-purple-400" />
+                <Clock className="h-4 w-4 text-orange-400" />
               </CardHeader>
               <CardContent>
                 <Badge variant={stats.subscriptionStatus === "active" ? "default" : "destructive"}>
@@ -169,36 +184,106 @@ export default function StudentDashboard() {
               </CardContent>
             </Card>
           </motion.div>
-
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-            <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-white/70">Weak Topics</CardTitle>
-                <TrendingUp className="h-4 w-4 text-orange-400" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-white">{stats.weakTopics.length}</div>
-              </CardContent>
-            </Card>
-          </motion.div>
         </div>
 
-        {/* Weak Topics */}
-        {stats.weakTopics.length > 0 && (
+        {/* Test Type Analytics */}
+        <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
+              <BarChart className="h-5 w-5" />
+              Test Performance by Type
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Mock Tests */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-blue-400" />
+                  <h3 className="text-white font-semibold">Mock Tests</h3>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-white/70 text-sm">Tests Taken</span>
+                    <span className="text-white font-bold text-lg">{stats.mockTests.count}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-white/70 text-sm">Avg Score</span>
+                    <span className="text-white font-bold text-lg">{stats.mockTests.avgScore}%</span>
+                  </div>
+                  <Progress value={stats.mockTests.avgScore} className="h-2" />
+                </div>
+              </div>
+
+              {/* PYQ Tests */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <BookMarked className="h-5 w-5 text-green-400" />
+                  <h3 className="text-white font-semibold">PYQ Tests</h3>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-white/70 text-sm">Tests Taken</span>
+                    <span className="text-white font-bold text-lg">{stats.pyqTests.count}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-white/70 text-sm">Avg Score</span>
+                    <span className="text-white font-bold text-lg">{stats.pyqTests.avgScore}%</span>
+                  </div>
+                  <Progress value={stats.pyqTests.avgScore} className="h-2" />
+                </div>
+              </div>
+
+              {/* AI Tests */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Brain className="h-5 w-5 text-purple-400" />
+                  <h3 className="text-white font-semibold">AI Tests</h3>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-white/70 text-sm">Tests Taken</span>
+                    <span className="text-white font-bold text-lg">{stats.aiTests.count}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-white/70 text-sm">Avg Score</span>
+                    <span className="text-white font-bold text-lg">{stats.aiTests.avgScore}%</span>
+                  </div>
+                  <Progress value={stats.aiTests.avgScore} className="h-2" />
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Recent Performance Graph */}
+        {stats.recentTestPerformance && stats.recentTestPerformance.length > 0 && (
           <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
             <CardHeader>
-              <CardTitle className="text-white">Topics to Focus On</CardTitle>
+              <CardTitle className="text-white flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                Recent Test Performance
+              </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {stats.weakTopics.map((topic, index) => (
-                <div key={index} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-white">{topic.name}</span>
-                    <span className="text-white/70">{topic.score}%</span>
+            <CardContent>
+              <div className="space-y-4">
+                {stats.recentTestPerformance.map((test, index) => (
+                  <div key={index} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-white border-white/30">
+                          {test.type.toUpperCase()}
+                        </Badge>
+                        <span className="text-white/70 text-sm">
+                          {new Date(test.date).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <span className="text-white font-bold">{test.score}%</span>
+                    </div>
+                    <Progress value={test.score} className="h-2" />
                   </div>
-                  <Progress value={topic.score} className="h-2" />
-                </div>
-              ))}
+                ))}
+              </div>
             </CardContent>
           </Card>
         )}

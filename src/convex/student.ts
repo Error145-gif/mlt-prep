@@ -33,40 +33,57 @@ export const getStudentDashboardStats = query({
       ? testResults.reduce((sum, r) => sum + r.score, 0) / testResults.length
       : 0;
 
-    // Calculate weak topics
-    const topicScores = new Map<string, { total: number; count: number }>();
-    for (const result of testResults) {
-      if (result.topicId) {
-        const existing = topicScores.get(result.topicId) || { total: 0, count: 0 };
-        topicScores.set(result.topicId, {
-          total: existing.total + result.score,
-          count: existing.count + 1,
-        });
-      }
-    }
+    // Calculate test type breakdowns
+    const mockTests = testSessions.filter((t) => t.testType === "mock");
+    const pyqTests = testSessions.filter((t) => t.testType === "pyq");
+    const aiTests = testSessions.filter((t) => t.testType === "ai");
 
-    const weakTopics = await Promise.all(
-      Array.from(topicScores.entries())
-        .map(([topicId, data]) => ({
-          topicId,
-          avgScore: data.total / data.count,
-        }))
-        .filter((t) => t.avgScore < 60)
-        .sort((a, b) => a.avgScore - b.avgScore)
-        .slice(0, 3)
-        .map(async (t) => {
-          const topic = await ctx.db.get(t.topicId as any);
-          return {
-            name: (topic as any)?.name || "Unknown",
-            score: Math.round(t.avgScore),
-          };
-        })
-    );
+    const mockResults = testResults.filter((r) => r.testType === "mock");
+    const pyqResults = testResults.filter((r) => r.testType === "pyq");
+    const aiResults = testResults.filter((r) => r.testType === "ai");
+
+    const mockAvgScore = mockResults.length > 0
+      ? mockResults.reduce((sum, r) => sum + r.score, 0) / mockResults.length
+      : 0;
+    const pyqAvgScore = pyqResults.length > 0
+      ? pyqResults.reduce((sum, r) => sum + r.score, 0) / pyqResults.length
+      : 0;
+    const aiAvgScore = aiResults.length > 0
+      ? aiResults.reduce((sum, r) => sum + r.score, 0) / aiResults.length
+      : 0;
+
+    // Calculate overall accuracy
+    const totalQuestions = testResults.reduce((sum, r) => sum + r.totalQuestions, 0);
+    const totalCorrect = testResults.reduce((sum, r) => sum + r.correctAnswers, 0);
+    const overallAccuracy = totalQuestions > 0 ? (totalCorrect / totalQuestions) * 100 : 0;
+
+    // Get recent test performance for graph
+    const recentTests = testResults
+      .sort((a, b) => b._creationTime - a._creationTime)
+      .slice(0, 10)
+      .reverse();
 
     return {
       totalTests,
       avgScore: Math.round(avgScore),
-      weakTopics,
+      overallAccuracy: Math.round(overallAccuracy),
+      mockTests: {
+        count: mockTests.length,
+        avgScore: Math.round(mockAvgScore),
+      },
+      pyqTests: {
+        count: pyqTests.length,
+        avgScore: Math.round(pyqAvgScore),
+      },
+      aiTests: {
+        count: aiTests.length,
+        avgScore: Math.round(aiAvgScore),
+      },
+      recentTestPerformance: recentTests.map((r) => ({
+        score: Math.round(r.score),
+        type: r.testType,
+        date: r._creationTime,
+      })),
       subscriptionStatus: subscription?.status || "inactive",
       subscriptionEndDate: subscription?.endDate,
       recentContent,
