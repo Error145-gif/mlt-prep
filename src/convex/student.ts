@@ -250,6 +250,65 @@ export const getPracticeQuestions = query({
   },
 });
 
+// Get questions for a specific test
+export const getTestQuestions = query({
+  args: {
+    testType: v.string(),
+    topicId: v.optional(v.id("topics")),
+    year: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) {
+      throw new Error("Not authenticated");
+    }
+
+    let questions: any[] = [];
+
+    if (args.testType === "mock") {
+      // Get manual questions for mock test
+      questions = await ctx.db
+        .query("questions")
+        .withIndex("by_source", (q) => q.eq("source", "manual"))
+        .filter((q) => q.eq(q.field("status"), "approved"))
+        .collect();
+
+      if (args.topicId) {
+        questions = questions.filter((q) => q.topicId === args.topicId);
+      }
+    } else if (args.testType === "pyq") {
+      // Get PYQ questions
+      questions = await ctx.db
+        .query("questions")
+        .withIndex("by_source", (q) => q.eq("source", "pyq"))
+        .filter((q) => q.eq(q.field("status"), "approved"))
+        .collect();
+
+      if (args.year) {
+        questions = questions.filter((q) => q.year === args.year);
+      }
+    } else if (args.testType === "ai") {
+      // Get AI questions
+      questions = await ctx.db
+        .query("questions")
+        .withIndex("by_source", (q) => q.eq("source", "ai"))
+        .filter((q) => q.eq(q.field("status"), "approved"))
+        .collect();
+
+      if (args.topicId) {
+        questions = questions.filter((q) => q.topicId === args.topicId);
+      }
+    } else {
+      questions = [];
+    }
+
+    // Shuffle and limit questions
+    questions = questions.sort(() => Math.random() - 0.5).slice(0, 100);
+
+    return questions;
+  },
+});
+
 // Start a test session
 export const startTest = mutation({
   args: {
