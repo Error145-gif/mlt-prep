@@ -431,7 +431,7 @@ export default function TestStart() {
           <Card className="p-6">
             <div className="flex justify-between items-center mb-4">
               <div className="flex items-center gap-4">
-                <span className="font-semibold text-lg">Question No. {currentQuestionIndex + 1}</span>
+                <span className="font-semibold text-lg text-gray-900">Question No. {currentQuestionIndex + 1}</span>
                 <span className="text-sm text-gray-600">Marks: +1 / -0.33</span>
                 <span className="text-sm text-gray-600">Time: 00:00</span>
               </div>
