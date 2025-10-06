@@ -298,15 +298,18 @@ export default function TestStart() {
               </p>
             </div>
 
-            <div className="mt-8 flex items-center gap-3">
-              <Checkbox
-                id="accept"
-                checked={acceptedInstructions}
-                onCheckedChange={(checked) => setAcceptedInstructions(checked as boolean)}
-              />
-              <Label htmlFor="accept" className="text-base cursor-pointer">
-                I have read and understood the instructions. All computer hardware allotted to me are in proper working condition. I declare that I am not in possession of / not wearing / not carrying any prohibited gadget like mobile phone, bluetooth devices etc. /any prohibited material with me into the Examination Hall. I agree that in case of not adhering to the instructions, I shall be liable to be debarred from this Test and/or to disciplinary action, which may include ban from future Tests / Examinations.
-              </Label>
+            <div className="mt-8 p-4 bg-blue-50 border-2 border-blue-300 rounded-lg">
+              <div className="flex items-start gap-3">
+                <Checkbox
+                  id="accept"
+                  checked={acceptedInstructions}
+                  onCheckedChange={(checked) => setAcceptedInstructions(checked as boolean)}
+                  className="mt-1 h-5 w-5 border-2 border-blue-600 data-[state=checked]:bg-blue-600"
+                />
+                <Label htmlFor="accept" className="text-base cursor-pointer text-gray-900 font-medium leading-relaxed">
+                  I have read and understood the instructions. All computer hardware allotted to me are in proper working condition. I declare that I am not in possession of / not wearing / not carrying any prohibited gadget like mobile phone, bluetooth devices etc. /any prohibited material with me into the Examination Hall. I agree that in case of not adhering to the instructions, I shall be liable to be debarred from this Test and/or to disciplinary action, which may include ban from future Tests / Examinations.
+                </Label>
+              </div>
             </div>
 
             <div className="mt-6 flex justify-center">
