@@ -32,6 +32,7 @@ export default function TestStart() {
   const [timeRemaining, setTimeRemaining] = useState(0); // Will be set based on test type and question count
   const [sessionId, setSessionId] = useState<Id<"testSessions"> | null>(null);
   const [showQuestionPalette, setShowQuestionPalette] = useState(false);
+  const [isTabVisible, setIsTabVisible] = useState(true);
 
   const testType = searchParams.get("type") || "mock";
   const topicIdParam = searchParams.get("topicId");
@@ -90,9 +91,24 @@ export default function TestStart() {
     }
   }, [questions.length, testType, timeRemaining]);
 
-  // Timer countdown
+  // Handle tab visibility changes (pause timer when tab is hidden)
   useEffect(() => {
-    if (!showInstructions && timeRemaining > 0) {
+    const handleVisibilityChange = () => {
+      setIsTabVisible(!document.hidden);
+      
+      if (document.hidden && !showInstructions && sessionId) {
+        // Tab is hidden - show warning toast
+        toast.warning("Test paused - Please return to the test tab");
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [showInstructions, sessionId]);
+
+  // Timer countdown (only runs when tab is visible)
+  useEffect(() => {
+    if (!showInstructions && timeRemaining > 0 && isTabVisible) {
       const timer = setInterval(() => {
         setTimeRemaining((prev) => {
           if (prev <= 1) {
@@ -104,7 +120,7 @@ export default function TestStart() {
       }, 1000);
       return () => clearInterval(timer);
     }
-  }, [showInstructions, timeRemaining]);
+  }, [showInstructions, timeRemaining, isTabVisible]);
 
   // Format time as HH:MM:SS
   const formatTime = (seconds: number) => {
