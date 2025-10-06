@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router";
-import { LayoutDashboard, FileText, HelpCircle, Users, CreditCard, Bell, Menu, X } from "lucide-react";
+import { LayoutDashboard, FileText, HelpCircle, Users, CreditCard, Bell, Menu, X, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -17,6 +17,7 @@ export default function AdminSidebar() {
     { path: "/admin/analytics", icon: Users, label: "Analytics" },
     { path: "/admin/subscriptions", icon: CreditCard, label: "Subscriptions" },
     { path: "/admin/notifications", icon: Bell, label: "Notifications" },
+    { path: "/admin/feedback", icon: MessageSquare, label: "Feedback" },
   ];
 
   return (

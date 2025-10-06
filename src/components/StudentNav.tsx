@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router";
-import { Home, BookOpen, FileText, BarChart3, Library, Menu, X } from "lucide-react";
+import { Home, BookOpen, FileText, BarChart3, Library, Menu, X, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -16,6 +16,7 @@ export default function StudentNav() {
     { path: "/tests/pyq", icon: BookOpen, label: "PYQ Sets" },
     { path: "/practice", icon: Library, label: "Practice" },
     { path: "/tests/ai", icon: BarChart3, label: "AI Questions" },
+    { path: "/feedback", icon: MessageSquare, label: "Feedback" },
   ];
 
   return (

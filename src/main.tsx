@@ -25,6 +25,8 @@ import PYQSets from "./pages/PYQSets.tsx";
 import Practice from "./pages/Practice.tsx";
 import SubscriptionPlans from "./pages/SubscriptionPlans.tsx";
 import AIQuestions from "./pages/AIQuestions.tsx";
+import Feedback from "./pages/Feedback.tsx";
+import AdminFeedback from "./pages/AdminFeedback.tsx";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
@@ -85,12 +87,14 @@ createRoot(document.getElementById("root")!).render(
             <Route path="/tests/pyq" element={<StudentLayout><PYQSets /></StudentLayout>} />
             <Route path="/tests/ai" element={<StudentLayout><AIQuestions /></StudentLayout>} />
             <Route path="/practice" element={<StudentLayout><Practice /></StudentLayout>} />
+            <Route path="/feedback" element={<StudentLayout><Feedback /></StudentLayout>} />
             <Route path="/admin" element={<AdminLayout><AdminDashboard /></AdminLayout>} />
             <Route path="/admin/content" element={<AdminLayout><ContentManagement /></AdminLayout>} />
             <Route path="/admin/questions" element={<AdminLayout><QuestionManagement /></AdminLayout>} />
             <Route path="/admin/analytics" element={<AdminLayout><UserAnalytics /></AdminLayout>} />
             <Route path="/admin/subscriptions" element={<AdminLayout><SubscriptionManagement /></AdminLayout>} />
             <Route path="/admin/notifications" element={<AdminLayout><NotificationCenter /></AdminLayout>} />
+            <Route path="/admin/feedback" element={<AdminLayout><AdminFeedback /></AdminLayout>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

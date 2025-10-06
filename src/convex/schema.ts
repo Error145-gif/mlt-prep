@@ -239,6 +239,23 @@ const schema = defineSchema(
       sentAt: v.optional(v.number()),
       status: v.string(), // "draft", "sent"
     }).index("by_status", ["status"]),
+
+    // User Feedback
+    feedback: defineTable({
+      userId: v.id("users"),
+      userName: v.optional(v.string()),
+      userEmail: v.optional(v.string()),
+      rating: v.number(), // 1-5 stars
+      category: v.string(), // "bug", "feature", "improvement", "other"
+      message: v.string(),
+      status: v.string(), // "new", "reviewed", "resolved"
+      adminNotes: v.optional(v.string()),
+      reviewedBy: v.optional(v.id("users")),
+      reviewedAt: v.optional(v.number()),
+    })
+      .index("by_user", ["userId"])
+      .index("by_status", ["status"])
+      .index("by_category", ["category"]),
   },
   {
     schemaValidation: false,
