@@ -12,7 +12,7 @@ export const getQuestions = query({
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
     if (!user || user.role !== "admin") {
-      throw new Error("Unauthorized");
+      return [];
     }
 
     let questions;
