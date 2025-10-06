@@ -98,7 +98,7 @@ export const getMockTests = query({
     // Group by topic
     const testsByTopic = new Map<string, typeof questions>();
     for (const q of questions) {
-      const topicId = q.topicId || "general";
+      const topicId = q.topicId || "no-topic";
       if (!testsByTopic.has(topicId)) {
         testsByTopic.set(topicId, []);
       }
@@ -107,9 +107,9 @@ export const getMockTests = query({
 
     const tests = await Promise.all(
       Array.from(testsByTopic.entries()).map(async ([topicId, qs]) => {
-        const topic = topicId !== "general" ? await ctx.db.get(topicId as any) : null;
+        const topic = topicId !== "no-topic" ? await ctx.db.get(topicId as any) : null;
         return {
-          topicId,
+          topicId: topicId !== "no-topic" ? topicId : null,
           topicName: (topic as any)?.name || "General",
           questionCount: qs.length,
           difficulty: "mixed",
@@ -145,7 +145,7 @@ export const getAIQuestions = query({
     // Group by topic
     const testsByTopic = new Map<string, typeof questions>();
     for (const q of questions) {
-      const topicId = q.topicId || "general";
+      const topicId = q.topicId || "no-topic";
       if (!testsByTopic.has(topicId)) {
         testsByTopic.set(topicId, []);
       }
@@ -154,9 +154,9 @@ export const getAIQuestions = query({
 
     const tests = await Promise.all(
       Array.from(testsByTopic.entries()).map(async ([topicId, qs]) => {
-        const topic = topicId !== "general" ? await ctx.db.get(topicId as any) : null;
+        const topic = topicId !== "no-topic" ? await ctx.db.get(topicId as any) : null;
         return {
-          topicId,
+          topicId: topicId !== "no-topic" ? topicId : null,
           topicName: (topic as any)?.name || "General",
           questionCount: qs.length,
           difficulty: "mixed",

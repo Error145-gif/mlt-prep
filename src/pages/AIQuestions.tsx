@@ -29,13 +29,13 @@ export default function AIQuestions() {
     );
   }
 
-  const handleStartTest = (topicId: string) => {
+  const handleStartTest = (topicId: string | null) => {
     if (!subscriptionAccess?.hasAccess) {
       navigate("/dashboard");
       return;
     }
-    // Only add topicId to URL if it's not "general"
-    if (topicId && topicId !== "general") {
+    // Only add topicId to URL if it exists
+    if (topicId) {
       navigate(`/test/start?type=ai&topicId=${topicId}`);
     } else {
       navigate(`/test/start?type=ai`);
