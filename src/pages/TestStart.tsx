@@ -10,7 +10,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Id } from "@/convex/_generated/dataModel";
-import { User, Clock } from "lucide-react";
+import { User, Clock, Menu, X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 type Answer = {
@@ -31,6 +31,7 @@ export default function TestStart() {
   const [visitedQuestions, setVisitedQuestions] = useState<Set<number>>(new Set([0]));
   const [timeRemaining, setTimeRemaining] = useState(0); // Will be set based on test type and question count
   const [sessionId, setSessionId] = useState<Id<"testSessions"> | null>(null);
+  const [showQuestionPalette, setShowQuestionPalette] = useState(false);
 
   const testType = searchParams.get("type") || "mock";
   const topicIdParam = searchParams.get("topicId");
@@ -390,9 +391,19 @@ export default function TestStart() {
         </div>
       </div>
 
-      <div className="flex flex-1">
+      <div className="flex flex-1 relative">
+        {/* Mobile Toggle Button */}
+        <Button
+          variant="outline"
+          size="sm"
+          className="fixed bottom-4 right-4 z-50 md:hidden bg-blue-600 text-white hover:bg-blue-700 shadow-lg"
+          onClick={() => setShowQuestionPalette(!showQuestionPalette)}
+        >
+          {showQuestionPalette ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </Button>
+
         {/* Left Sidebar - Sections */}
-        <div className="w-48 bg-white border-r p-4">
+        <div className="hidden md:block w-48 bg-white border-r p-4">
           <h3 className="font-semibold mb-3 text-gray-700">SECTIONS</h3>
           <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
             Test
@@ -400,7 +411,7 @@ export default function TestStart() {
         </div>
 
         {/* Main Content - Question Area */}
-        <div className="flex-1 p-6 overflow-y-auto">
+        <div className="flex-1 p-4 md:p-6 overflow-y-auto">
           <Card className="p-6">
             <div className="flex justify-between items-center mb-4">
               <div className="flex items-center gap-4">
@@ -461,7 +472,20 @@ export default function TestStart() {
         </div>
 
         {/* Right Sidebar - Question Palette */}
-        <div className="w-80 bg-white border-l p-4 overflow-y-auto">
+        <div className={`${
+          showQuestionPalette ? 'fixed inset-0 z-40' : 'hidden'
+        } md:relative md:block w-full md:w-80 bg-white border-l p-4 overflow-y-auto`}>
+          {/* Mobile Close Button */}
+          <div className="md:hidden flex justify-between items-center mb-4 pb-2 border-b">
+            <h3 className="font-semibold text-gray-900">Question Palette</h3>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowQuestionPalette(false)}
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
           <div className="mb-4">
             <h3 className="font-semibold text-gray-700 mb-2">SECTION: Test</h3>
             <div className="grid grid-cols-5 gap-2">
