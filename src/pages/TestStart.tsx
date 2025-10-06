@@ -6,12 +6,14 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Id } from "@/convex/_generated/dataModel";
-import { User, Clock, Menu, X } from "lucide-react";
+import { User, Menu, X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { TestHeader } from "@/components/TestHeader";
+import { QuestionCard } from "@/components/QuestionCard";
+import { QuestionPalette } from "@/components/QuestionPalette";
 
 type Answer = {
   questionId: Id<"questions">;
@@ -238,34 +240,34 @@ export default function TestStart() {
 
   if (isLoading || !questions.length) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-white text-xl">Loading test...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-blue-50">
+        <div className="text-gray-700 text-xl font-medium">Loading test...</div>
       </div>
     );
   }
 
   if (showInstructions) {
     return (
-      <div className="min-h-screen bg-white p-8">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-8">
         <div className="max-w-4xl mx-auto">
           <div className="flex justify-between items-center mb-8">
-            <h1 className="text-2xl font-bold text-gray-900">{testName}</h1>
+            <h1 className="text-3xl font-bold text-gray-900">{testName}</h1>
             <div className="flex items-center gap-3">
               {userProfile?.avatarUrl ? (
-                <Avatar className="h-8 w-8 border-2 border-blue-600">
+                <Avatar className="h-10 w-10 border-2 border-blue-600 shadow-md">
                   <AvatarImage src={userProfile.avatarUrl} />
-                  <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                  <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">
                     {userProfile.name?.charAt(0)?.toUpperCase() || "U"}
                   </AvatarFallback>
                 </Avatar>
               ) : (
-                <User className="h-8 w-8 text-blue-600" />
+                <User className="h-10 w-10 text-blue-600" />
               )}
-              <span className="font-medium">{userProfile?.name || "Student"}</span>
+              <span className="font-semibold text-gray-800">{userProfile?.name || "Student"}</span>
             </div>
           </div>
 
-          <Card className="p-8">
+          <Card className="p-8 shadow-xl border-0 bg-white/90 backdrop-blur-sm">
             <h2 className="text-xl font-bold mb-4">General Instructions:</h2>
             
             <div className="space-y-4 text-gray-700">
@@ -377,181 +379,59 @@ export default function TestStart() {
 
   const currentQuestion = questions[currentQuestionIndex];
   const currentAnswer = answers.get(currentQuestion._id);
+  const answeredCount = Array.from(answers.values()).filter(a => a.answer).length;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Header */}
-      <div className="bg-white border-b px-6 py-3 flex justify-between items-center">
-        <h1 className="text-lg font-semibold text-gray-900">{testName}</h1>
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2 text-gray-700">
-            <Clock className="h-5 w-5" />
-            <span className="font-mono text-lg font-semibold">{formatTime(timeRemaining)}</span>
-          </div>
-          <Button variant="outline" size="sm">
-            Enter Full Screen
-          </Button>
-          <div className="flex items-center gap-2">
-            {userProfile?.avatarUrl ? (
-              <Avatar className="h-8 w-8 border-2 border-blue-600">
-                <AvatarImage src={userProfile.avatarUrl} />
-                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-                  {userProfile.name?.charAt(0)?.toUpperCase() || "U"}
-                </AvatarFallback>
-              </Avatar>
-            ) : (
-              <User className="h-8 w-8 text-blue-600" />
-            )}
-            <span className="font-medium">{userProfile?.name || "Student"}</span>
-          </div>
-        </div>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 flex flex-col">
+      <TestHeader
+        testName={testName}
+        timeRemaining={timeRemaining}
+        userName={userProfile?.name}
+        avatarUrl={userProfile?.avatarUrl}
+        questionsAnswered={answeredCount}
+        totalQuestions={questions.length}
+      />
 
-      <div className="flex flex-1 relative">
-        {/* Mobile Toggle Button */}
+      <div className="flex flex-1 relative overflow-hidden">
         <Button
           variant="outline"
           size="sm"
-          className="fixed bottom-4 right-4 z-50 md:hidden bg-blue-600 text-white hover:bg-blue-700 shadow-lg"
+          className="fixed bottom-6 right-6 z-50 md:hidden bg-blue-600 text-white hover:bg-blue-700 shadow-xl hover:shadow-2xl transition-all rounded-full w-14 h-14 p-0"
           onClick={() => setShowQuestionPalette(!showQuestionPalette)}
         >
-          {showQuestionPalette ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          {showQuestionPalette ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </Button>
 
-        {/* Left Sidebar - Sections */}
-        <div className="hidden md:block w-48 bg-white border-r p-4">
-          <h3 className="font-semibold mb-3 text-gray-700">SECTIONS</h3>
-          <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+        <div className="hidden md:block w-48 bg-white/80 backdrop-blur-sm border-r border-gray-200 p-4 shadow-lg">
+          <h3 className="font-semibold mb-3 text-gray-700 text-sm uppercase tracking-wide">Sections</h3>
+          <Button className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-md">
             Test
           </Button>
         </div>
 
-        {/* Main Content - Question Area */}
-        <div className="flex-1 p-4 md:p-6 overflow-y-auto">
-          <Card className="p-6">
-            <div className="flex justify-between items-center mb-4">
-              <div className="flex items-center gap-4">
-                <span className="font-semibold text-lg text-gray-900">Question No. {currentQuestionIndex + 1}</span>
-                <span className="text-sm text-gray-600">Marks: +1 / -0.33</span>
-                <span className="text-sm text-gray-600">Time: 00:00</span>
-              </div>
-              <span className="text-sm text-gray-600">View in English</span>
-            </div>
-
-            <div className="mb-6">
-              <p className="text-lg text-gray-900 mb-4">{currentQuestion.question}</p>
-
-              {currentQuestion.type === "mcq" && currentQuestion.options && (
-                <RadioGroup
-                  value={currentAnswer?.answer || ""}
-                  onValueChange={handleAnswerChange}
-                >
-                  <div className="space-y-3">
-                    {currentQuestion.options.map((option: string, idx: number) => (
-                      <div key={idx} className="flex items-center space-x-3 p-4 rounded-lg border-2 border-gray-300 bg-white hover:bg-blue-50 hover:border-blue-400 transition-colors cursor-pointer">
-                        <RadioGroupItem value={option} id={`option-${idx}`} className="border-2 border-gray-400 w-5 h-5" />
-                        <Label htmlFor={`option-${idx}`} className="cursor-pointer text-base text-gray-900 font-semibold flex-1">
-                          {option}
-                        </Label>
-                      </div>
-                    ))}
-                  </div>
-                </RadioGroup>
-              )}
-            </div>
-
-            <div className="flex justify-between items-center pt-4 border-t">
-              <Button
-                variant="outline"
-                onClick={handleMarkForReview}
-                className="bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-300"
-              >
-                Mark for Review & Next
-              </Button>
-              <div className="flex gap-3">
-                <Button 
-                  variant="outline" 
-                  onClick={handleClearResponse}
-                  className="bg-red-50 hover:bg-red-100 text-red-700 border-red-300 font-medium"
-                >
-                  Clear Response
-                </Button>
-                <Button
-                  onClick={handleSaveAndNext}
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                >
-                  Save & Next
-                </Button>
-              </div>
-            </div>
-          </Card>
+        <div className="flex-1 p-4 md:p-8 overflow-y-auto">
+          <QuestionCard
+            questionNumber={currentQuestionIndex + 1}
+            questionText={currentQuestion.question}
+            options={currentQuestion.options || []}
+            selectedAnswer={currentAnswer?.answer}
+            onAnswerChange={handleAnswerChange}
+            onSaveAndNext={handleSaveAndNext}
+            onMarkForReview={handleMarkForReview}
+            onClearResponse={handleClearResponse}
+            isLastQuestion={currentQuestionIndex === questions.length - 1}
+          />
         </div>
 
-        {/* Right Sidebar - Question Palette */}
-        <div className={`${
-          showQuestionPalette ? 'fixed inset-0 z-40' : 'hidden'
-        } md:relative md:block w-full md:w-80 bg-white border-l p-4 overflow-y-auto`}>
-          {/* Mobile Close Button */}
-          <div className="md:hidden flex justify-between items-center mb-4 pb-2 border-b">
-            <h3 className="font-semibold text-gray-900">Question Palette</h3>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowQuestionPalette(false)}
-            >
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
-          <div className="mb-4">
-            <h3 className="font-semibold text-gray-700 mb-2">SECTION: Test</h3>
-            <div className="grid grid-cols-5 gap-2">
-              {questions.map((_, index) => {
-                const status = getQuestionStatus(index);
-                return (
-                  <button
-                    key={index}
-                    onClick={() => handleQuestionClick(index)}
-                    className={`w-10 h-10 rounded flex items-center justify-center font-medium ${getStatusColor(status)} ${
-                      currentQuestionIndex === index ? "ring-2 ring-blue-500" : ""
-                    }`}
-                  >
-                    {index + 1}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="space-y-2 text-sm mt-6">
-            <div className="flex items-center gap-2">
-              <div className="w-5 h-5 bg-green-500 rounded"></div>
-              <span>Answered</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-5 h-5 bg-red-500 rounded"></div>
-              <span>Not Answered</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-5 h-5 bg-gray-200 rounded border-2 border-gray-400"></div>
-              <span>Not Visited</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-5 h-5 bg-purple-500 rounded"></div>
-              <span>Marked</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-5 h-5 bg-orange-500 rounded"></div>
-              <span>Marked & Answered</span>
-            </div>
-          </div>
-
-          <Button
-            onClick={handleSubmitTest}
-            className="w-full mt-6 bg-green-600 hover:bg-green-700 text-white"
-          >
-            Submit Test
-          </Button>
-        </div>
+        <QuestionPalette
+          questions={questions}
+          currentQuestionIndex={currentQuestionIndex}
+          getQuestionStatus={getQuestionStatus}
+          onQuestionClick={handleQuestionClick}
+          onSubmitTest={handleSubmitTest}
+          showOnMobile={showQuestionPalette}
+          onClose={() => setShowQuestionPalette(false)}
+        />
       </div>
     </div>
   );

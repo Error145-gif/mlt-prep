@@ -40,6 +40,9 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  
+  /* Modern font stack */
+  --font-sans: 'Inter', 'Poppins', 'Roboto', system-ui, -apple-system, sans-serif;
 }
 
 /* GLASSMORPHISM THEME */
@@ -120,6 +123,7 @@
     @apply text-foreground;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     background-attachment: fixed;
+    font-family: var(--font-sans);
   }
   button:not([disabled]),
   [role="button"]:not([disabled]) {
