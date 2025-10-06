@@ -394,12 +394,16 @@ export default function TestStart() {
               <Button
                 variant="outline"
                 onClick={handleMarkForReview}
-                className="bg-purple-50 hover:bg-purple-100 text-purple-700"
+                className="bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-300"
               >
                 Mark for Review & Next
               </Button>
               <div className="flex gap-3">
-                <Button variant="outline" onClick={handleClearResponse}>
+                <Button 
+                  variant="outline" 
+                  onClick={handleClearResponse}
+                  className="bg-red-50 hover:bg-red-100 text-red-700 border-red-300 font-medium"
+                >
                   Clear Response
                 </Button>
                 <Button
