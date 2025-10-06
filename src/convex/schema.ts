@@ -85,6 +85,8 @@ const schema = defineSchema(
       examPreparation: v.optional(v.string()), // Which exam they're preparing for
       state: v.optional(v.string()), // User's state/location
       avatarUrl: v.optional(v.string()), // Selected avatar
+      isRegistered: v.optional(v.boolean()), // Track if user completed registration
+      registrationCompleted: v.optional(v.boolean()), // Full registration status
     }).index("email", ["email"]),
 
     // Content Management

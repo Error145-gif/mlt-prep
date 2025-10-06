@@ -7,10 +7,12 @@ import {
 } from "@/components/ui/input-otp";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/hooks/use-auth";
-import { ArrowRight, Loader2, Mail, UserX } from "lucide-react";
+import { ArrowRight, Loader2, Mail } from "lucide-react";
 import { Suspense, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 interface AuthProps {
   redirectAfterAuth?: string;
@@ -25,9 +27,15 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
   const [error, setError] = useState<string | null>(null);
   const [rememberMe, setRememberMe] = useState(false);
   const [isCreatingAccount, setIsCreatingAccount] = useState(false);
+  const autoCompleteRegistration = useMutation(api.authHelpers.autoCompleteRegistration);
 
   useEffect(() => {
-    if (!authLoading && isAuthenticated && user !== undefined) {
+    if (!authLoading && isAuthenticated && user !== undefined && user !== null) {
+      // Auto-complete registration for new Gmail users
+      if (isCreatingAccount && user.email?.endsWith("@gmail.com")) {
+        autoCompleteRegistration().catch(console.error);
+      }
+      
       if (user?.role === "admin") {
         navigate("/admin");
       } else {
@@ -35,7 +43,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
         navigate(redirect);
       }
     }
-  }, [authLoading, isAuthenticated, user, navigate, redirectAfterAuth]);
+  }, [authLoading, isAuthenticated, user, navigate, redirectAfterAuth, isCreatingAccount, autoCompleteRegistration]);
 
   const handleEmailSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -43,8 +51,35 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
     setError(null);
     try {
       const formData = new FormData(event.currentTarget);
+      const email = (formData.get("email") as string).toLowerCase().trim();
+
+      // Validate Gmail only
+      if (!email.endsWith("@gmail.com")) {
+        setError("Only Gmail accounts are allowed. Please use a Gmail address.");
+        setIsLoading(false);
+        return;
+      }
+
+      // For sign-in (not creating account), check if email is registered
+      if (!isCreatingAccount) {
+        const checkResult = await fetch(`${import.meta.env.VITE_CONVEX_URL}/api/query`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            path: "users:checkEmailRegistered",
+            args: { email },
+          }),
+        }).then(res => res.json());
+
+        if (checkResult.value && !checkResult.value.isValid) {
+          setError(checkResult.value.message);
+          setIsLoading(false);
+          return;
+        }
+      }
+
       await signIn("email-otp", formData);
-      setStep({ email: formData.get("email") as string });
+      setStep({ email });
       setIsLoading(false);
     } catch (error) {
       console.error("Email sign-in error:", error);
@@ -64,6 +99,12 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
     try {
       const formData = new FormData(event.currentTarget);
       await signIn("email-otp", formData);
+      
+      // If creating account, mark as registered
+      if (isCreatingAccount) {
+        // The completeRegistration will be called after successful auth redirect
+        // This is handled by the auth system automatically
+      }
     } catch (error) {
       console.error("OTP verification error:", error);
       setError("The verification code you entered is incorrect.");
@@ -72,17 +113,18 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
     }
   };
 
-  const handleGuestLogin = async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      await signIn("anonymous");
-    } catch (error) {
-      console.error("Guest login error:", error);
-      setError(`Failed to sign in as guest: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      setIsLoading(false);
-    }
-  };
+  // Guest login disabled for Gmail-only authentication
+  // const handleGuestLogin = async () => {
+  //   setIsLoading(true);
+  //   setError(null);
+  //   try {
+  //     await signIn("anonymous");
+  //   } catch (error) {
+  //     console.error("Guest login error:", error);
+  //     setError(`Failed to sign in as guest: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  //     setIsLoading(false);
+  //   }
+  // };
 
   const handleCreateAccount = () => {
     setIsCreatingAccount(true);
@@ -246,29 +288,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                   )}
                 </Button>
 
-                {!isCreatingAccount && (
-                  <>
-                    <div className="relative">
-                      <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t border-gray-200" />
-                      </div>
-                      <div className="relative flex justify-center text-sm">
-                        <span className="bg-gray-50 px-4 text-gray-500">Or</span>
-                      </div>
-                    </div>
-
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full h-14 border-gray-200 rounded-full text-gray-700 hover:bg-gray-100"
-                      onClick={handleGuestLogin}
-                      disabled={isLoading}
-                    >
-                      <UserX className="mr-2 h-5 w-5" />
-                      Continue as Guest
-                    </Button>
-                  </>
-                )}
+                {/* Guest login removed - Gmail-only authentication */}
 
                 <p className="text-center text-gray-600">
                   {isCreatingAccount ? (
