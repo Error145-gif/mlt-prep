@@ -571,10 +571,37 @@ export const getTestResults = query({
       })
     );
 
+    // Calculate rank: Get all completed sessions for this test type with same topic/year/setNumber
+    let allSessions = await ctx.db
+      .query("testSessions")
+      .filter((q) => q.eq(q.field("status"), "completed"))
+      .filter((q) => q.eq(q.field("testType"), session.testType))
+      .collect();
+
+    // Filter by topic/year/setNumber to get sessions for the same test
+    allSessions = allSessions.filter((s) => {
+      if (session.testType === "mock" || session.testType === "ai") {
+        return s.topicId === session.topicId && s.setNumber === session.setNumber;
+      } else if (session.testType === "pyq") {
+        return s.year === session.year && s.setNumber === session.setNumber;
+      }
+      return false;
+    });
+
+    // Sort by score (descending) to calculate rank
+    const sortedSessions = allSessions
+      .filter((s) => s.score !== undefined)
+      .sort((a, b) => (b.score || 0) - (a.score || 0));
+
+    const rank = sortedSessions.findIndex((s) => s._id === session._id) + 1;
+    const totalCandidates = sortedSessions.length;
+
     return {
       session,
       result,
       questions,
+      rank,
+      totalCandidates,
     };
   },
 });

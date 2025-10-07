@@ -38,13 +38,15 @@ export default function TestResults() {
     );
   }
 
-  const { session, result, questions } = testResults;
+  const { session, result, questions, rank, totalCandidates } = testResults;
   const score = result?.score || 0;
   const correctAnswers = result?.correctAnswers || 0;
   const incorrectAnswers = result?.incorrectAnswers || 0;
   const skippedAnswers = result?.skippedAnswers || 0;
   const totalQuestions = result?.totalQuestions || 0;
   const timeSpent = result?.timeSpent || 0;
+  const marksObtained = correctAnswers; // 1 mark per correct answer
+  const totalMarks = totalQuestions; // 1 mark per question
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -107,6 +109,31 @@ export default function TestResults() {
             </div>
           </div>
         </Card>
+
+        {/* Marks and Rank Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <Card className="p-6 bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+            <div className="flex items-center gap-3">
+              <Trophy className="h-10 w-10 text-purple-600" />
+              <div>
+                <p className="text-sm text-purple-700 font-medium">Marks Obtained</p>
+                <p className="text-3xl font-bold text-purple-900">{marksObtained} / {totalMarks}</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-6 bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
+            <div className="flex items-center gap-3">
+              <Target className="h-10 w-10 text-orange-600" />
+              <div>
+                <p className="text-sm text-orange-700 font-medium">Your Rank</p>
+                <p className="text-3xl font-bold text-orange-900">
+                  {rank} / {totalCandidates}
+                </p>
+              </div>
+            </div>
+          </Card>
+        </div>
 
         {/* Statistics Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -174,12 +201,15 @@ export default function TestResults() {
                     <div className="flex items-center gap-3">
                       <span className="font-bold text-lg text-gray-900">Q{index + 1}.</span>
                       {isCorrect ? (
-                        <Badge className="bg-green-600 text-white">Correct</Badge>
+                        <Badge className="bg-green-600 text-white">Correct ✓</Badge>
                       ) : wasAnswered ? (
-                        <Badge className="bg-red-600 text-white">Incorrect</Badge>
+                        <Badge className="bg-red-600 text-white">Incorrect ✗</Badge>
                       ) : (
                         <Badge className="bg-gray-600 text-white">Skipped</Badge>
                       )}
+                      <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-300">
+                        1 Mark
+                      </Badge>
                     </div>
                     {q.difficulty && (
                       <Badge variant="outline" className="capitalize">
@@ -215,6 +245,11 @@ export default function TestResults() {
                                 <XCircle className="h-5 w-5 text-red-600" />
                               )}
                               <span className="text-gray-900">{option}</span>
+                              {isCorrectAnswer && (
+                                <span className="ml-auto text-green-700 font-semibold text-sm">
+                                  Correct Answer
+                                </span>
+                              )}
                             </div>
                           </div>
                         );
@@ -224,7 +259,7 @@ export default function TestResults() {
 
                   {q.explanation && (
                     <div className="mt-4 p-4 bg-blue-50 border-l-4 border-blue-400 rounded">
-                      <p className="text-sm font-semibold text-blue-900 mb-1">Explanation:</p>
+                      <p className="text-sm font-semibold text-blue-900 mb-1">💡 Explanation:</p>
                       <p className="text-sm text-blue-800">{q.explanation}</p>
                     </div>
                   )}
@@ -243,7 +278,13 @@ export default function TestResults() {
             Back to Dashboard
           </Button>
           <Button
-            onClick={() => navigate("/tests/mock")}
+            onClick={() => {
+              const testType = session.testType;
+              if (testType === "mock") navigate("/tests/mock");
+              else if (testType === "pyq") navigate("/tests/pyq");
+              else if (testType === "ai") navigate("/tests/ai");
+              else navigate("/dashboard");
+            }}
             variant="outline"
             className="px-8 py-3 text-lg border-2"
           >
