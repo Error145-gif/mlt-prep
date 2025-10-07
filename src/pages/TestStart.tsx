@@ -454,15 +454,12 @@ export default function TestStart() {
         </Button>
 
         <div className="hidden md:block w-48 bg-white/80 backdrop-blur-sm border-r border-gray-200 p-4 shadow-lg">
-          <h3 className="font-semibold mb-3 text-gray-700 text-sm uppercase tracking-wide">Sections</h3>
-          <Button className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-md">
-            Test
-          </Button>
+          <h3 className="font-semibold mb-3 text-gray-700 text-sm uppercase tracking-wide">Test Controls</h3>
           {testType === "mock" && (
             <Button
               onClick={isPaused ? handleResumeTest : handlePauseTest}
               variant="outline"
-              className="w-full mt-3 border-yellow-500 text-yellow-600 hover:bg-yellow-50 hover:text-yellow-700 font-semibold"
+              className="w-full mb-3 border-yellow-500 text-yellow-600 hover:bg-yellow-50 hover:text-yellow-700 font-semibold"
             >
               {isPaused ? "▶️ Resume Test" : "⏸️ Pause Test"}
             </Button>
@@ -470,9 +467,13 @@ export default function TestStart() {
           <Button
             onClick={handleExitTest}
             variant="outline"
-            className="w-full mt-3 border-red-500 text-red-600 hover:bg-red-50 hover:text-red-700"
+            className="w-full mb-4 border-red-500 text-red-600 hover:bg-red-50 hover:text-red-700"
           >
             Exit Test
+          </Button>
+          <h3 className="font-semibold mb-3 text-gray-700 text-sm uppercase tracking-wide border-t pt-4">Sections</h3>
+          <Button className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-md">
+            Test
           </Button>
         </div>
 
