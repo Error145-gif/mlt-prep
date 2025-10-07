@@ -30,7 +30,7 @@ export default function MockTests() {
     );
   }
 
-  const handleStartTest = (topicId: string | null) => {
+  const handleStartTest = (topicId: string | null, setNumber: number) => {
     if (!canAccessMock?.canAccess) {
       if (canAccessMock?.reason === "free_trial_used") {
         toast.error("Your free trial is used. Please subscribe to continue.");
@@ -40,11 +40,11 @@ export default function MockTests() {
       setTimeout(() => navigate("/subscription"), 500);
       return;
     }
-    // Only add topicId to URL if it exists
+    // Build URL with set number
     if (topicId) {
-      navigate(`/test/start?type=mock&topicId=${topicId}`);
+      navigate(`/test/start?type=mock&topicId=${topicId}&setNumber=${setNumber}`);
     } else {
-      navigate(`/test/start?type=mock`);
+      navigate(`/test/start?type=mock&setNumber=${setNumber}`);
     }
   };
 
@@ -53,7 +53,7 @@ export default function MockTests() {
       <div className="max-w-7xl mx-auto space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-white">Mock Tests</h1>
-          <p className="text-white/70 mt-1">Practice with comprehensive topic-wise tests</p>
+          <p className="text-white/70 mt-1">Practice with comprehensive topic-wise tests (100 questions per set)</p>
           {canAccessMock?.reason === "free_trial" && (
             <p className="text-yellow-400 mt-2">🎁 Free trial: You can take one mock test for free!</p>
           )}
@@ -65,7 +65,7 @@ export default function MockTests() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {mockTests.map((test, index) => (
             <motion.div
-              key={test.topicId}
+              key={`${test.topicId}-${test.setNumber}`}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
@@ -74,7 +74,9 @@ export default function MockTests() {
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <FileText className="h-8 w-8 text-blue-400" />
-                    <Badge>{test.questionCount} Questions</Badge>
+                    <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30">
+                      Set {test.setNumber}/{test.totalSets}
+                    </Badge>
                   </div>
                   <CardTitle className="text-white mt-4">{test.topicName}</CardTitle>
                 </CardHeader>
@@ -85,10 +87,10 @@ export default function MockTests() {
                   </div>
                   <div className="flex items-center gap-2 text-white/70">
                     <Target className="h-4 w-4" />
-                    <span className="text-sm capitalize">{test.difficulty} difficulty</span>
+                    <span className="text-sm">{test.questionCount} Questions</span>
                   </div>
                   <Button
-                    onClick={() => handleStartTest(test.topicId)}
+                    onClick={() => handleStartTest(test.topicId, test.setNumber)}
                     className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
                     disabled={!canAccessMock?.canAccess}
                   >

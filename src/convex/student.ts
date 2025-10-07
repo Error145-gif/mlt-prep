@@ -91,7 +91,7 @@ export const getStudentDashboardStats = query({
   },
 });
 
-// Get mock tests (from manual questions) - organized into sets
+// Get mock tests (from manual questions) - organized into sets of 100
 export const getMockTests = query({
   args: {
     topicId: v.optional(v.id("topics")),
@@ -130,28 +130,37 @@ export const getMockTests = query({
       .filter((q) => q.eq(q.field("testType"), "mock"))
       .collect();
 
-    const tests = await Promise.all(
-      Array.from(testsByTopic.entries()).map(async ([topicId, qs]) => {
-        const topic = topicId !== "no-topic" ? await ctx.db.get(topicId as any) : null;
-        const topicIdForMatch = topicId !== "no-topic" ? topicId : null;
+    const tests: any[] = [];
+    
+    for (const [topicId, qs] of testsByTopic.entries()) {
+      const topic = topicId !== "no-topic" ? await ctx.db.get(topicId as any) : null;
+      const topicIdForMatch = topicId !== "no-topic" ? topicId : null;
+      
+      // Organize into sets of 100 questions each
+      const setSize = 100;
+      const totalSets = Math.ceil(qs.length / setSize);
+      
+      for (let setNumber = 1; setNumber <= totalSets; setNumber++) {
+        const startIndex = (setNumber - 1) * setSize;
+        const endIndex = Math.min(startIndex + setSize, qs.length);
+        const setQuestions = qs.slice(startIndex, endIndex);
         
-        // Organize into sets (no specific set size for mock tests, just group all)
-        const totalQuestions = qs.length;
-        
-        // Check if user has completed this test before
+        // Check if user has completed this specific set before
         const hasCompleted = completedSessions.some(
-          (session) => (session.topicId || null) === topicIdForMatch
+          (session) => (session.topicId || null) === topicIdForMatch && session.setNumber === setNumber
         );
         
-        return {
+        tests.push({
           topicId: topicIdForMatch,
           topicName: (topic as any)?.name || "General",
-          questionCount: totalQuestions,
+          setNumber,
+          totalSets,
+          questionCount: setQuestions.length,
           difficulty: "mixed",
           hasCompleted,
-        };
-      })
-    );
+        });
+      }
+    }
 
     return tests;
   },
@@ -372,6 +381,14 @@ export const getTestQuestions = query({
       if (args.topicId) {
         questions = questions.filter((q) => q.topicId === args.topicId);
       }
+      
+      // Apply set filtering for mock tests (100 questions per set)
+      if (args.setNumber) {
+        const setSize = 100;
+        const startIndex = (args.setNumber - 1) * setSize;
+        const endIndex = startIndex + setSize;
+        questions = questions.slice(startIndex, endIndex);
+      }
     } else if (args.testType === "pyq") {
       // Get PYQ questions
       questions = await ctx.db
@@ -414,9 +431,9 @@ export const getTestQuestions = query({
       questions = [];
     }
 
-    // For mock tests, shuffle and limit; for PYQ and AI, maintain order
+    // For mock tests, shuffle within the set; for PYQ and AI, maintain order
     if (args.testType === "mock") {
-      questions = questions.sort(() => Math.random() - 0.5).slice(0, 100);
+      questions = questions.sort(() => Math.random() - 0.5);
     }
 
     return questions;
