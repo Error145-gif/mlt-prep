@@ -1,5 +1,5 @@
 const testQuestions = useQuery(api.student.getTestQuestions, {
-    testType,
-    ...(topicId && { topicId }),
-    ...(year && { year }),
+  testType,
+  ...(topicId && { topicId }),
+  ...(year && { year }),
 });

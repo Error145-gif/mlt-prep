@@ -53,6 +53,7 @@ export default function TestStart() {
   // Only set topicId if it exists and is not "general"
   const topicId = topicIdParam && topicIdParam !== "general" ? (topicIdParam as Id<"topics">) : undefined;
   const year = searchParams.get("year") ? parseInt(searchParams.get("year")!) : undefined;
+  const setNumber = searchParams.get("setNumber") ? parseInt(searchParams.get("setNumber")!) : undefined;
 
   const startTest = useMutation(api.student.startTest);
   const submitTest = useMutation(api.student.submitTest);
@@ -62,6 +63,7 @@ export default function TestStart() {
     testType,
     ...(topicId && { topicId }),
     ...(year && { year }),
+    ...(setNumber && { setNumber }),
   });
 
   const [testName, setTestName] = useState("");
@@ -168,6 +170,7 @@ export default function TestStart() {
         testType,
         topicId,
         year,
+        setNumber,
         questionIds,
       });
       setSessionId(id);
