@@ -271,12 +271,12 @@ export default function Profile() {
                   Exam Preparation
                 </Label>
                 <Select value={examPreparation} onValueChange={setExamPreparation}>
-                  <SelectTrigger className="bg-white/10 border-white/20 text-white">
+                  <SelectTrigger className="bg-white/20 border-white/30 text-white placeholder:text-white/60 h-12">
                     <SelectValue placeholder="Select exam you're preparing for" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-gray-900 border-white/30">
                     {EXAM_OPTIONS.map((exam) => (
-                      <SelectItem key={exam} value={exam}>
+                      <SelectItem key={exam} value={exam} className="text-white hover:bg-white/10 focus:bg-white/20">
                         {exam}
                       </SelectItem>
                     ))}
@@ -291,12 +291,12 @@ export default function Profile() {
                   State
                 </Label>
                 <Select value={state} onValueChange={setState}>
-                  <SelectTrigger className="bg-white/10 border-white/20 text-white">
+                  <SelectTrigger className="bg-white/20 border-white/30 text-white placeholder:text-white/60 h-12">
                     <SelectValue placeholder="Select your state" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-gray-900 border-white/30 max-h-[300px]">
                     {INDIAN_STATES.map((stateName) => (
-                      <SelectItem key={stateName} value={stateName}>
+                      <SelectItem key={stateName} value={stateName} className="text-white hover:bg-white/10 focus:bg-white/20">
                         {stateName}
                       </SelectItem>
                     ))}
