@@ -30,7 +30,7 @@ export default function AIQuestions() {
     );
   }
 
-  const handleStartTest = (topicId: string | null) => {
+  const handleStartTest = (topicId: string | null, setNumber: number) => {
     if (!canAccessAI?.canAccess) {
       if (canAccessAI?.reason === "free_trial_used") {
         toast.error("Your free trial is used. Please subscribe to continue.");
@@ -40,11 +40,11 @@ export default function AIQuestions() {
       setTimeout(() => navigate("/subscription"), 500);
       return;
     }
-    // Only add topicId to URL if it exists
+    // Build URL with set number
     if (topicId) {
-      navigate(`/test/start?type=ai&topicId=${topicId}`);
+      navigate(`/test/start?type=ai&topicId=${topicId}&setNumber=${setNumber}`);
     } else {
-      navigate(`/test/start?type=ai`);
+      navigate(`/test/start?type=ai&setNumber=${setNumber}`);
     }
   };
 
@@ -53,7 +53,7 @@ export default function AIQuestions() {
       <div className="max-w-7xl mx-auto space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-white">AI-Generated Questions</h1>
-          <p className="text-white/70 mt-1">Practice with AI-curated topic-wise questions</p>
+          <p className="text-white/70 mt-1">Practice with AI-curated topic-wise questions (25 questions per set)</p>
           {canAccessAI?.reason === "free_trial" && (
             <p className="text-yellow-400 mt-2">🎁 Free trial: You can take one AI test for free!</p>
           )}
@@ -65,7 +65,7 @@ export default function AIQuestions() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {aiTests.map((test, index) => (
             <motion.div
-              key={test.topicId}
+              key={`${test.topicId}-${test.setNumber}`}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
@@ -75,7 +75,7 @@ export default function AIQuestions() {
                   <div className="flex items-center justify-between">
                     <Sparkles className="h-8 w-8 text-purple-400" />
                     <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30">
-                      {test.questionCount} Questions
+                      Set {test.setNumber}/{test.totalSets}
                     </Badge>
                   </div>
                   <CardTitle className="text-white mt-4">{test.topicName}</CardTitle>
@@ -87,10 +87,10 @@ export default function AIQuestions() {
                   </div>
                   <div className="flex items-center gap-2 text-white/70">
                     <Target className="h-4 w-4" />
-                    <span className="text-sm capitalize">{test.difficulty} difficulty</span>
+                    <span className="text-sm">{test.questionCount} Questions</span>
                   </div>
                   <Button
-                    onClick={() => handleStartTest(test.topicId)}
+                    onClick={() => handleStartTest(test.topicId, test.setNumber)}
                     className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700"
                     disabled={!canAccessAI?.canAccess}
                   >

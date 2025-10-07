@@ -143,25 +143,28 @@ const schema = defineSchema(
     // Test Sessions - Track active and completed tests
     testSessions: defineTable({
       userId: v.id("users"),
-      testType: v.string(), // "mock", "pyq", "practice"
+      testType: v.string(),
       topicId: v.optional(v.id("topics")),
-      year: v.optional(v.number()), // for PYQ tests
+      year: v.optional(v.number()),
+      setNumber: v.optional(v.number()), // Add set number support
       questionIds: v.array(v.id("questions")),
-      answers: v.optional(v.array(v.object({
-        questionId: v.id("questions"),
-        answer: v.string(),
-        isCorrect: v.boolean(),
-      }))),
-      status: v.string(), // "in_progress", "completed", "abandoned"
+      answers: v.optional(
+        v.array(
+          v.object({
+            questionId: v.id("questions"),
+            answer: v.string(),
+            isCorrect: v.optional(v.boolean()),
+          })
+        )
+      ),
+      status: v.string(),
       startedAt: v.number(),
       completedAt: v.optional(v.number()),
-      timeSpent: v.optional(v.number()), // in seconds
-      score: v.optional(v.number()), // percentage
+      timeSpent: v.optional(v.number()),
+      score: v.optional(v.number()),
     })
       .index("by_user", ["userId"])
-      .index("by_status", ["status"])
-      .index("by_user_and_status", ["userId", "status"])
-      .index("by_test_type", ["testType"]),
+      .index("by_status", ["status"]),
 
     // Test Results - Detailed results storage
     testResults: defineTable({

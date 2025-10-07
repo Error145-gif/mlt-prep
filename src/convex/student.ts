@@ -91,7 +91,7 @@ export const getStudentDashboardStats = query({
   },
 });
 
-// Get mock tests (from manual questions)
+// Get mock tests (from manual questions) - organized into sets
 export const getMockTests = query({
   args: {
     topicId: v.optional(v.id("topics")),
@@ -135,6 +135,9 @@ export const getMockTests = query({
         const topic = topicId !== "no-topic" ? await ctx.db.get(topicId as any) : null;
         const topicIdForMatch = topicId !== "no-topic" ? topicId : null;
         
+        // Organize into sets (no specific set size for mock tests, just group all)
+        const totalQuestions = qs.length;
+        
         // Check if user has completed this test before
         const hasCompleted = completedSessions.some(
           (session) => (session.topicId || null) === topicIdForMatch
@@ -143,7 +146,7 @@ export const getMockTests = query({
         return {
           topicId: topicIdForMatch,
           topicName: (topic as any)?.name || "General",
-          questionCount: qs.length,
+          questionCount: totalQuestions,
           difficulty: "mixed",
           hasCompleted,
         };
@@ -154,7 +157,7 @@ export const getMockTests = query({
   },
 });
 
-// Get AI-generated questions
+// Get AI-generated questions - organized into sets of 25
 export const getAIQuestions = query({
   args: {
     topicId: v.optional(v.id("topics")),
@@ -193,31 +196,43 @@ export const getAIQuestions = query({
       .filter((q) => q.eq(q.field("testType"), "ai"))
       .collect();
 
-    const tests = await Promise.all(
-      Array.from(testsByTopic.entries()).map(async ([topicId, qs]) => {
-        const topic = topicId !== "no-topic" ? await ctx.db.get(topicId as any) : null;
-        const topicIdForMatch = topicId !== "no-topic" ? topicId : null;
+    const tests: any[] = [];
+    
+    for (const [topicId, qs] of testsByTopic.entries()) {
+      const topic = topicId !== "no-topic" ? await ctx.db.get(topicId as any) : null;
+      const topicIdForMatch = topicId !== "no-topic" ? topicId : null;
+      
+      // Organize into sets of 25 questions each
+      const setSize = 25;
+      const totalSets = Math.ceil(qs.length / setSize);
+      
+      for (let setNumber = 1; setNumber <= totalSets; setNumber++) {
+        const startIndex = (setNumber - 1) * setSize;
+        const endIndex = Math.min(startIndex + setSize, qs.length);
+        const setQuestions = qs.slice(startIndex, endIndex);
         
-        // Check if user has completed this test before
+        // Check if user has completed this specific set before
         const hasCompleted = completedSessions.some(
-          (session) => (session.topicId || null) === topicIdForMatch
+          (session) => (session.topicId || null) === topicIdForMatch && session.setNumber === setNumber
         );
         
-        return {
+        tests.push({
           topicId: topicIdForMatch,
           topicName: (topic as any)?.name || "General",
-          questionCount: qs.length,
+          setNumber,
+          totalSets,
+          questionCount: setQuestions.length,
           difficulty: "mixed",
           hasCompleted,
-        };
-      })
-    );
+        });
+      }
+    }
 
     return tests;
   },
 });
 
-// Get PYQ sets (organized by exam and year)
+// Get PYQ sets (organized by exam and year) - sets of 20 questions each
 export const getPYQSets = query({
   args: {},
   handler: async (ctx) => {
@@ -252,27 +267,42 @@ export const getPYQSets = query({
       .filter((q) => q.eq(q.field("testType"), "pyq"))
       .collect();
 
-    const sets = Array.from(setsByExamYear.entries())
-      .map(([key, qs]) => {
-        const [examName, yearStr] = key.split("_");
-        const year = parseInt(yearStr);
+    const sets: any[] = [];
+    
+    for (const [key, qs] of setsByExamYear.entries()) {
+      const [examName, yearStr] = key.split("_");
+      const year = parseInt(yearStr);
+      
+      // Organize into sets of 20 questions each
+      const setSize = 20;
+      const totalSets = Math.ceil(qs.length / setSize);
+      
+      for (let setNumber = 1; setNumber <= totalSets; setNumber++) {
+        const startIndex = (setNumber - 1) * setSize;
+        const endIndex = Math.min(startIndex + setSize, qs.length);
+        const setQuestions = qs.slice(startIndex, endIndex);
         
         // Check if user has completed this PYQ set before
         const hasCompleted = completedSessions.some(
-          (session) => session.year === year
+          (session) => session.year === year && session.setNumber === setNumber
         );
         
-        return {
+        sets.push({
           examName,
           year,
-          questionCount: qs.length,
-          subjects: [...new Set(qs.map((q) => q.subject).filter(Boolean))],
+          setNumber,
+          totalSets,
+          questionCount: setQuestions.length,
+          subjects: [...new Set(setQuestions.map((q) => q.subject).filter(Boolean))],
           hasCompleted,
-        };
-      })
-      .sort((a, b) => b.year - a.year);
+        });
+      }
+    }
 
-    return sets;
+    return sets.sort((a, b) => {
+      if (b.year !== a.year) return b.year - a.year;
+      return a.setNumber - b.setNumber;
+    });
   },
 });
 
@@ -315,12 +345,13 @@ export const getPracticeQuestions = query({
   },
 });
 
-// Get questions for a specific test
+// Get questions for a specific test - with set support
 export const getTestQuestions = query({
   args: {
     testType: v.string(),
     topicId: v.optional(v.id("topics")),
     year: v.optional(v.number()),
+    setNumber: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
@@ -352,6 +383,14 @@ export const getTestQuestions = query({
       if (args.year) {
         questions = questions.filter((q) => q.year === args.year);
       }
+      
+      // Apply set filtering for PYQ (20 questions per set)
+      if (args.setNumber) {
+        const setSize = 20;
+        const startIndex = (args.setNumber - 1) * setSize;
+        const endIndex = startIndex + setSize;
+        questions = questions.slice(startIndex, endIndex);
+      }
     } else if (args.testType === "ai") {
       // Get AI questions
       questions = await ctx.db
@@ -363,23 +402,34 @@ export const getTestQuestions = query({
       if (args.topicId) {
         questions = questions.filter((q) => q.topicId === args.topicId);
       }
+      
+      // Apply set filtering for AI (25 questions per set)
+      if (args.setNumber) {
+        const setSize = 25;
+        const startIndex = (args.setNumber - 1) * setSize;
+        const endIndex = startIndex + setSize;
+        questions = questions.slice(startIndex, endIndex);
+      }
     } else {
       questions = [];
     }
 
-    // Shuffle and limit questions
-    questions = questions.sort(() => Math.random() - 0.5).slice(0, 100);
+    // For mock tests, shuffle and limit; for PYQ and AI, maintain order
+    if (args.testType === "mock") {
+      questions = questions.sort(() => Math.random() - 0.5).slice(0, 100);
+    }
 
     return questions;
   },
 });
 
-// Start a test session
+// Start a test session - with set support
 export const startTest = mutation({
   args: {
     testType: v.string(),
     topicId: v.optional(v.id("topics")),
     year: v.optional(v.number()),
+    setNumber: v.optional(v.number()),
     questionIds: v.array(v.id("questions")),
   },
   handler: async (ctx, args) => {
@@ -393,6 +443,7 @@ export const startTest = mutation({
       testType: args.testType,
       topicId: args.topicId,
       year: args.year,
+      setNumber: args.setNumber,
       questionIds: args.questionIds,
       status: "in_progress",
       startedAt: Date.now(),

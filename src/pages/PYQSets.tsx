@@ -30,7 +30,7 @@ export default function PYQSets() {
     );
   }
 
-  const handleStartPYQ = (year: number) => {
+  const handleStartPYQ = (year: number, setNumber: number) => {
     if (!canAccessPYQ?.canAccess) {
       if (canAccessPYQ?.reason === "free_trial_used") {
         toast.error("Your free trial is used. Please subscribe to continue.");
@@ -40,7 +40,7 @@ export default function PYQSets() {
       setTimeout(() => navigate("/subscription"), 500);
       return;
     }
-    navigate(`/test/start?type=pyq&year=${year}`);
+    navigate(`/test/start?type=pyq&year=${year}&setNumber=${setNumber}`);
   };
 
   return (
@@ -48,7 +48,7 @@ export default function PYQSets() {
       <div className="max-w-7xl mx-auto space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-white">Previous Year Questions</h1>
-          <p className="text-white/70 mt-1">Practice with past exam papers</p>
+          <p className="text-white/70 mt-1">Practice with past exam papers (20 questions per set)</p>
           {canAccessPYQ?.reason === "free_trial" && (
             <p className="text-yellow-400 mt-2">🎁 Free trial: You can take one PYQ test for free!</p>
           )}
@@ -60,7 +60,7 @@ export default function PYQSets() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {pyqSets.map((set, index) => (
             <motion.div
-              key={set.year}
+              key={`${set.year}-${set.setNumber}`}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
@@ -70,10 +70,12 @@ export default function PYQSets() {
                   <div className="flex items-center justify-between">
                     <BookOpen className="h-8 w-8 text-green-400" />
                     <Badge className="bg-green-500/20 text-green-300 border-green-500/30">
-                      {set.year}
+                      Set {set.setNumber}/{set.totalSets}
                     </Badge>
                   </div>
-                  <CardTitle className="text-white mt-4">{set.examName}</CardTitle>
+                  <CardTitle className="text-white mt-4">
+                    {set.examName} - {set.year}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex items-center gap-2 text-white/70">
@@ -85,7 +87,7 @@ export default function PYQSets() {
                     <span className="text-sm">{Math.ceil(set.questionCount / 20) * 10} mins</span>
                   </div>
                   <Button
-                    onClick={() => handleStartPYQ(set.year)}
+                    onClick={() => handleStartPYQ(set.year, set.setNumber)}
                     className="w-full bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700"
                     disabled={!canAccessPYQ?.canAccess}
                   >
