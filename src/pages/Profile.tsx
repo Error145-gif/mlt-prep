@@ -22,6 +22,14 @@ const AVATAR_OPTIONS = [
   "https://api.dicebear.com/7.x/avataaars/svg?seed=Oliver",
   "https://api.dicebear.com/7.x/avataaars/svg?seed=Emma",
   "https://api.dicebear.com/7.x/avataaars/svg?seed=Jack",
+  "https://api.dicebear.com/7.x/avataaars/svg?seed=Doctor",
+  "https://api.dicebear.com/7.x/avataaars/svg?seed=Scientist",
+  "https://api.dicebear.com/7.x/avataaars/svg?seed=Researcher",
+  "https://api.dicebear.com/7.x/avataaars/svg?seed=Technician",
+  "https://api.dicebear.com/7.x/avataaars/svg?seed=Medic",
+  "https://api.dicebear.com/7.x/avataaars/svg?seed=Nurse",
+  "https://api.dicebear.com/7.x/avataaars/svg?seed=LabTech",
+  "https://api.dicebear.com/7.x/avataaars/svg?seed=Analyst",
 ];
 
 const EXAM_OPTIONS = [
