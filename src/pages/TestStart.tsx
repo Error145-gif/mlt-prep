@@ -452,7 +452,7 @@ export default function TestStart() {
           <Button
             onClick={handleExitTest}
             variant="outline"
-            className="w-full mt-3 border-red-500 text-red-600 hover:bg-red-50"
+            className="w-full mt-3 border-red-500 text-red-600 hover:bg-red-50 hover:text-red-700"
           >
             Exit Test
           </Button>
@@ -470,6 +470,17 @@ export default function TestStart() {
             onClearResponse={handleClearResponse}
             isLastQuestion={currentQuestionIndex === questions.length - 1}
           />
+          
+          {/* Add Exit button for mobile users */}
+          <div className="md:hidden mt-6 flex justify-center">
+            <Button
+              onClick={handleExitTest}
+              variant="outline"
+              className="border-red-500 text-red-600 hover:bg-red-50 hover:text-red-700 px-6"
+            >
+              Exit Test
+            </Button>
+          </div>
         </div>
 
         <QuestionPalette
