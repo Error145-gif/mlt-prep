@@ -83,7 +83,7 @@ export default function AIQuestions() {
                 <CardContent className="space-y-4">
                   <div className="flex items-center gap-2 text-white/70">
                     <Clock className="h-4 w-4" />
-                    <span className="text-sm">~{Math.ceil(test.questionCount * 1.5)} mins</span>
+                    <span className="text-sm">30 mins</span>
                   </div>
                   <div className="flex items-center gap-2 text-white/70">
                     <Target className="h-4 w-4" />

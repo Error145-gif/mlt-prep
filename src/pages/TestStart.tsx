@@ -85,8 +85,8 @@ export default function TestStart() {
         // Mock: 60 minutes fixed
         duration = 60 * 60;
       } else if (testType === "ai") {
-        // AI: 1.5 minutes per question
-        duration = Math.ceil(questions.length * 1.5 * 60);
+        // AI: 30 minutes fixed for 25 questions
+        duration = 30 * 60;
       }
       
       setTimeRemaining(duration);
