@@ -280,9 +280,6 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                         Remember me
                       </label>
                     </div>
-                    <button type="button" className="text-gray-600 hover:text-purple-600 transition-colors">
-                      Forgot password?
-                    </button>
                   </div>
                 )}
 
