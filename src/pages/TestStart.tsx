@@ -14,6 +14,16 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { TestHeader } from "@/components/TestHeader";
 import { QuestionCard } from "@/components/QuestionCard";
 import { QuestionPalette } from "@/components/QuestionPalette";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type Answer = {
   questionId: Id<"questions">;
@@ -35,6 +45,7 @@ export default function TestStart() {
   const [sessionId, setSessionId] = useState<Id<"testSessions"> | null>(null);
   const [showQuestionPalette, setShowQuestionPalette] = useState(false);
   const [isTabVisible, setIsTabVisible] = useState(true);
+  const [showExitDialog, setShowExitDialog] = useState(false);
 
   const testType = searchParams.get("type") || "mock";
   const topicIdParam = searchParams.get("topicId");
@@ -92,6 +103,20 @@ export default function TestStart() {
       setTimeRemaining(duration);
     }
   }, [questions.length, testType, timeRemaining]);
+
+  // Prevent browser navigation/close during test
+  useEffect(() => {
+    if (!showInstructions && sessionId) {
+      const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+        e.preventDefault();
+        e.returnValue = "Are you sure you want to leave? Your test progress may be lost.";
+        return e.returnValue;
+      };
+
+      window.addEventListener("beforeunload", handleBeforeUnload);
+      return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+    }
+  }, [showInstructions, sessionId]);
 
   // Handle tab visibility changes (pause timer when tab is hidden)
   useEffect(() => {
@@ -236,6 +261,23 @@ export default function TestStart() {
       default:
         return "bg-gray-200 text-gray-700";
     }
+  };
+
+  const handleExitTest = () => {
+    setShowExitDialog(true);
+  };
+
+  const handleConfirmExit = () => {
+    setShowExitDialog(false);
+    // Remove beforeunload listener before navigating
+    window.removeEventListener("beforeunload", () => {});
+    toast.info("Test exited. Your progress has been saved.");
+    navigate("/dashboard");
+  };
+
+  const handleCancelExit = () => {
+    setShowExitDialog(false);
+    toast.info("Continuing test...");
   };
 
   if (isLoading || !questions.length) {
@@ -407,6 +449,13 @@ export default function TestStart() {
           <Button className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-md">
             Test
           </Button>
+          <Button
+            onClick={handleExitTest}
+            variant="outline"
+            className="w-full mt-3 border-red-500 text-red-600 hover:bg-red-50"
+          >
+            Exit Test
+          </Button>
         </div>
 
         <div className="flex-1 p-4 md:p-8 overflow-y-auto">
@@ -433,6 +482,28 @@ export default function TestStart() {
           onClose={() => setShowQuestionPalette(false)}
         />
       </div>
+
+      <AlertDialog open={showExitDialog} onOpenChange={setShowExitDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Exit Test?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to exit? All unsaved answers may be lost. Your current progress will be saved, but you won't be able to resume this test session.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleCancelExit}>
+              No, Continue Test
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmExit}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Yes, Exit
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
