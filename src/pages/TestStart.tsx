@@ -462,9 +462,9 @@ export default function TestStart() {
             <Button
               onClick={isPaused ? handleResumeTest : handlePauseTest}
               variant="outline"
-              className="w-full mt-3 border-yellow-500 text-yellow-600 hover:bg-yellow-50 hover:text-yellow-700"
+              className="w-full mt-3 border-yellow-500 text-yellow-600 hover:bg-yellow-50 hover:text-yellow-700 font-semibold"
             >
-              {isPaused ? "Resume Test" : "Pause Test"}
+              {isPaused ? "▶️ Resume Test" : "⏸️ Pause Test"}
             </Button>
           )}
           <Button
@@ -501,9 +501,9 @@ export default function TestStart() {
               <Button
                 onClick={isPaused ? handleResumeTest : handlePauseTest}
                 variant="outline"
-                className="border-yellow-500 text-yellow-600 hover:bg-yellow-50 hover:text-yellow-700 px-6"
+                className="border-yellow-500 text-yellow-600 hover:bg-yellow-50 hover:text-yellow-700 px-6 font-semibold"
               >
-                {isPaused ? "Resume" : "Pause"}
+                {isPaused ? "▶️ Resume" : "⏸️ Pause"}
               </Button>
             )}
             <Button
