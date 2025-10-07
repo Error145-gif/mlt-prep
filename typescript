@@ -1,5 +1,9 @@
-const testQuestions = useQuery(api.student.getTestQuestions, {
-  testType,
-  ...(topicId && { topicId }),
-  ...(year && { year }),
-});
+<div 
+  className="fixed inset-0 z-0 opacity-10"
+  style={{
+    backgroundImage: 'url(https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=1920&q=80)',
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat'
+  }}
+/>
