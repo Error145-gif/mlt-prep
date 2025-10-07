@@ -24,24 +24,24 @@ export default function Landing() {
 
   const features = [
     {
-      icon: BookOpen,
-      title: "Comprehensive Content",
-      description: "Access PDFs, videos, and past-year questions curated by experts",
-    },
-    {
       icon: Brain,
       title: "AI-Powered Questions",
-      description: "Practice with AI-generated MCQs, true/false, and short-answer questions",
+      description: "Practice with AI-generated MCQs tailored to MLT exam patterns",
+    },
+    {
+      icon: BookOpen,
+      title: "Previous Year Questions",
+      description: "Access comprehensive PYQ sets organized by exam and year",
     },
     {
       icon: Award,
-      title: "Track Progress",
-      description: "Monitor your learning journey with detailed analytics and insights",
+      title: "Mock Tests",
+      description: "Take full-length mock tests to simulate real exam conditions",
     },
     {
       icon: TrendingUp,
-      title: "Personalized Learning",
-      description: "Get recommendations based on your weak topics and performance",
+      title: "Track Progress",
+      description: "Monitor your performance with detailed analytics and rankings",
     },
   ];
 
