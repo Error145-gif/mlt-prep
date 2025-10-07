@@ -1401,10 +1401,11 @@ export default function QuestionManagement() {
               questions
                 .filter((q) => {
                   // Filter by active tab
-                  if (activeTab === "manual") return q.source === "manual";
+                  if (activeTab === "manual") return q.source === "manual" || !q.source;
                   if (activeTab === "ai") return q.source === "ai";
                   if (activeTab === "pyq") return q.source === "pyq";
                   if (activeTab === "duplicates") return duplicateQuestions.has(q._id);
+                  if (activeTab === "approved") return q.status === "approved";
                   return true; // "all" tab shows everything
                 })
                 .map((question, index) => {
