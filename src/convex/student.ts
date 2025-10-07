@@ -282,13 +282,14 @@ export const getPYQSets = query({
       const [examName, yearStr] = key.split("_");
       const year = parseInt(yearStr);
       
-      // Organize into sets of 20 questions each
+      // Only create sets of exactly 20 questions - ignore remainder
       const setSize = 20;
-      const totalSets = Math.ceil(qs.length / setSize);
+      const totalCompleteSets = Math.floor(qs.length / setSize);
       
-      for (let setNumber = 1; setNumber <= totalSets; setNumber++) {
+      // Only show complete sets
+      for (let setNumber = 1; setNumber <= totalCompleteSets; setNumber++) {
         const startIndex = (setNumber - 1) * setSize;
-        const endIndex = Math.min(startIndex + setSize, qs.length);
+        const endIndex = startIndex + setSize;
         const setQuestions = qs.slice(startIndex, endIndex);
         
         // Check if user has completed this PYQ set before
@@ -300,7 +301,7 @@ export const getPYQSets = query({
           examName,
           year,
           setNumber,
-          totalSets,
+          totalSets: totalCompleteSets,
           questionCount: setQuestions.length,
           subjects: [...new Set(setQuestions.map((q) => q.subject).filter(Boolean))],
           hasCompleted,
