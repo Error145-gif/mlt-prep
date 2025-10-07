@@ -269,8 +269,6 @@ export default function TestStart() {
 
   const handleConfirmExit = () => {
     setShowExitDialog(false);
-    // Remove beforeunload listener before navigating
-    window.removeEventListener("beforeunload", () => {});
     toast.info("Test exited. Your progress has been saved.");
     navigate("/dashboard");
   };
