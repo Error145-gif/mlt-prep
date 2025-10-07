@@ -454,30 +454,33 @@ export default function TestStart() {
         </Button>
 
         <div className="hidden md:block w-48 bg-white/80 backdrop-blur-sm border-r border-gray-200 p-4 shadow-lg">
-          <h3 className="font-semibold mb-3 text-gray-700 text-sm uppercase tracking-wide">Test Controls</h3>
-          {testType === "mock" && (
-            <Button
-              onClick={isPaused ? handleResumeTest : handlePauseTest}
-              variant="outline"
-              className="w-full mb-3 border-yellow-500 text-yellow-600 hover:bg-yellow-50 hover:text-yellow-700 font-semibold"
-            >
-              {isPaused ? "▶️ Resume Test" : "⏸️ Pause Test"}
-            </Button>
-          )}
-          <Button
-            onClick={handleExitTest}
-            variant="outline"
-            className="w-full mb-4 border-red-500 text-red-600 hover:bg-red-50 hover:text-red-700"
-          >
-            Exit Test
-          </Button>
-          <h3 className="font-semibold mb-3 text-gray-700 text-sm uppercase tracking-wide border-t pt-4">Sections</h3>
+          <h3 className="font-semibold mb-3 text-gray-700 text-sm uppercase tracking-wide">Sections</h3>
           <Button className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-md">
             Test
           </Button>
         </div>
 
         <div className="flex-1 p-4 md:p-8 overflow-y-auto">
+          {/* Test Controls - Moved to top */}
+          <div className="mb-6 flex flex-wrap gap-3 justify-center md:justify-start">
+            {testType === "mock" && (
+              <Button
+                onClick={isPaused ? handleResumeTest : handlePauseTest}
+                variant="outline"
+                className="border-yellow-500 text-yellow-600 hover:bg-yellow-50 hover:text-yellow-700 font-semibold px-6 py-2"
+              >
+                {isPaused ? "▶️ Resume Test" : "⏸️ Pause Test"}
+              </Button>
+            )}
+            <Button
+              onClick={handleExitTest}
+              variant="outline"
+              className="border-red-500 text-red-600 hover:bg-red-50 hover:text-red-700 px-6 py-2"
+            >
+              Exit Test
+            </Button>
+          </div>
+
           {isPaused && (
             <div className="mb-6 p-4 bg-yellow-50 border-2 border-yellow-400 rounded-lg text-center">
               <p className="text-yellow-800 font-semibold text-lg">⏸️ Test Paused</p>
@@ -495,26 +498,6 @@ export default function TestStart() {
             onClearResponse={handleClearResponse}
             isLastQuestion={currentQuestionIndex === questions.length - 1}
           />
-          
-          {/* Add Pause and Exit buttons for mobile users */}
-          <div className="md:hidden mt-6 flex justify-center gap-3">
-            {testType === "mock" && (
-              <Button
-                onClick={isPaused ? handleResumeTest : handlePauseTest}
-                variant="outline"
-                className="border-yellow-500 text-yellow-600 hover:bg-yellow-50 hover:text-yellow-700 px-6 font-semibold"
-              >
-                {isPaused ? "▶️ Resume" : "⏸️ Pause"}
-              </Button>
-            )}
-            <Button
-              onClick={handleExitTest}
-              variant="outline"
-              className="border-red-500 text-red-600 hover:bg-red-50 hover:text-red-700 px-6"
-            >
-              Exit Test
-            </Button>
-          </div>
         </div>
 
         <QuestionPalette
