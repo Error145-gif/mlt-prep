@@ -46,6 +46,7 @@ export default function TestStart() {
   const [showQuestionPalette, setShowQuestionPalette] = useState(false);
   const [isTabVisible, setIsTabVisible] = useState(true);
   const [showExitDialog, setShowExitDialog] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
 
   const testType = searchParams.get("type") || "mock";
   const topicIdParam = searchParams.get("topicId");
@@ -133,9 +134,9 @@ export default function TestStart() {
     return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
   }, [showInstructions, sessionId]);
 
-  // Timer countdown (only runs when tab is visible)
+  // Timer countdown (only runs when tab is visible and not paused)
   useEffect(() => {
-    if (!showInstructions && timeRemaining > 0 && isTabVisible) {
+    if (!showInstructions && timeRemaining > 0 && isTabVisible && !isPaused) {
       const timer = setInterval(() => {
         setTimeRemaining((prev) => {
           if (prev <= 1) {
@@ -147,7 +148,7 @@ export default function TestStart() {
       }, 1000);
       return () => clearInterval(timer);
     }
-  }, [showInstructions, timeRemaining, isTabVisible]);
+  }, [showInstructions, timeRemaining, isTabVisible, isPaused]);
 
   // Format time as HH:MM:SS
   const formatTime = (seconds: number) => {
@@ -276,6 +277,16 @@ export default function TestStart() {
   const handleCancelExit = () => {
     setShowExitDialog(false);
     toast.info("Continuing test...");
+  };
+
+  const handlePauseTest = () => {
+    setIsPaused(true);
+    toast.info("Test paused. Click Resume to continue.");
+  };
+
+  const handleResumeTest = () => {
+    setIsPaused(false);
+    toast.success("Test resumed!");
   };
 
   if (isLoading || !questions.length) {
@@ -447,6 +458,15 @@ export default function TestStart() {
           <Button className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-md">
             Test
           </Button>
+          {testType === "mock" && (
+            <Button
+              onClick={isPaused ? handleResumeTest : handlePauseTest}
+              variant="outline"
+              className="w-full mt-3 border-yellow-500 text-yellow-600 hover:bg-yellow-50 hover:text-yellow-700"
+            >
+              {isPaused ? "Resume Test" : "Pause Test"}
+            </Button>
+          )}
           <Button
             onClick={handleExitTest}
             variant="outline"
@@ -457,6 +477,12 @@ export default function TestStart() {
         </div>
 
         <div className="flex-1 p-4 md:p-8 overflow-y-auto">
+          {isPaused && (
+            <div className="mb-6 p-4 bg-yellow-50 border-2 border-yellow-400 rounded-lg text-center">
+              <p className="text-yellow-800 font-semibold text-lg">⏸️ Test Paused</p>
+              <p className="text-yellow-700 mt-1">Click Resume to continue your test</p>
+            </div>
+          )}
           <QuestionCard
             questionNumber={currentQuestionIndex + 1}
             questionText={currentQuestion.question}
@@ -469,8 +495,17 @@ export default function TestStart() {
             isLastQuestion={currentQuestionIndex === questions.length - 1}
           />
           
-          {/* Add Exit button for mobile users */}
-          <div className="md:hidden mt-6 flex justify-center">
+          {/* Add Pause and Exit buttons for mobile users */}
+          <div className="md:hidden mt-6 flex justify-center gap-3">
+            {testType === "mock" && (
+              <Button
+                onClick={isPaused ? handleResumeTest : handlePauseTest}
+                variant="outline"
+                className="border-yellow-500 text-yellow-600 hover:bg-yellow-50 hover:text-yellow-700 px-6"
+              >
+                {isPaused ? "Resume" : "Pause"}
+              </Button>
+            )}
             <Button
               onClick={handleExitTest}
               variant="outline"
