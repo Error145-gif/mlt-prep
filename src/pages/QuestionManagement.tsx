@@ -1323,14 +1323,70 @@ export default function QuestionManagement() {
           </div>
         </div>
 
+        {/* Question Statistics */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-white">{questions?.length || 0}</p>
+                <p className="text-sm text-white/60">Total Questions</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="glass-card border-blue-500/20 backdrop-blur-xl bg-blue-500/10">
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-blue-300">{questions?.filter(q => q.source === "manual").length || 0}</p>
+                <p className="text-sm text-blue-200">Manual/Mock</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="glass-card border-purple-500/20 backdrop-blur-xl bg-purple-500/10">
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-purple-300">{questions?.filter(q => q.source === "ai").length || 0}</p>
+                <p className="text-sm text-purple-200">AI Questions</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="glass-card border-orange-500/20 backdrop-blur-xl bg-orange-500/10">
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-orange-300">{questions?.filter(q => q.source === "pyq").length || 0}</p>
+                <p className="text-sm text-orange-200">PYQ</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="glass-card border-red-500/20 backdrop-blur-xl bg-red-500/10">
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-red-300">{duplicateQuestions.size}</p>
+                <p className="text-sm text-red-200">Duplicates</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
+          <TabsList className="glass-card border-white/20 backdrop-blur-xl bg-white/10 flex-wrap">
             <TabsTrigger value="all" className="data-[state=active]:bg-white/20">
               All Questions
             </TabsTrigger>
-            <TabsTrigger value="approved" className="data-[state=active]:bg-white/20">
-              <CheckCircle className="h-4 w-4 mr-2" />
-              Approved
+            <TabsTrigger value="manual" className="data-[state=active]:bg-white/20">
+              <FileText className="h-4 w-4 mr-2" />
+              Manual/Mock
+            </TabsTrigger>
+            <TabsTrigger value="ai" className="data-[state=active]:bg-white/20">
+              <Sparkles className="h-4 w-4 mr-2" />
+              AI Questions
+            </TabsTrigger>
+            <TabsTrigger value="pyq" className="data-[state=active]:bg-white/20">
+              <Upload className="h-4 w-4 mr-2" />
+              PYQ
+            </TabsTrigger>
+            <TabsTrigger value="duplicates" className="data-[state=active]:bg-white/20">
+              <XCircle className="h-4 w-4 mr-2" />
+              Duplicates Only
             </TabsTrigger>
           </TabsList>
 
@@ -1342,7 +1398,16 @@ export default function QuestionManagement() {
                 </CardContent>
               </Card>
             ) : (
-              questions.map((question, index) => {
+              questions
+                .filter((q) => {
+                  // Filter by active tab
+                  if (activeTab === "manual") return q.source === "manual";
+                  if (activeTab === "ai") return q.source === "ai";
+                  if (activeTab === "pyq") return q.source === "pyq";
+                  if (activeTab === "duplicates") return duplicateQuestions.has(q._id);
+                  return true; // "all" tab shows everything
+                })
+                .map((question, index) => {
                 const isDuplicate = duplicateQuestions.has(question._id);
                 
                 return (
