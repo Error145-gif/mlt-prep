@@ -30,6 +30,11 @@ import AdminFeedback from "./pages/AdminFeedback.tsx";
 import TestStart from "./pages/TestStart.tsx";
 import TestResults from "./pages/TestResults.tsx";
 import Profile from "./pages/Profile.tsx";
+import ContactUs from "./pages/ContactUs.tsx";
+import ShippingPolicy from "./pages/ShippingPolicy.tsx";
+import TermsAndConditions from "./pages/TermsAndConditions.tsx";
+import PrivacyPolicy from "./pages/PrivacyPolicy.tsx";
+import RefundPolicy from "./pages/RefundPolicy.tsx";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
@@ -93,6 +98,11 @@ createRoot(document.getElementById("root")!).render(
             <Route path="/profile" element={<StudentLayout><Profile /></StudentLayout>} />
             <Route path="/test/start" element={<TestStart />} />
             <Route path="/test/results" element={<TestResults />} />
+            <Route path="/contact" element={<ContactUs />} />
+            <Route path="/shipping-policy" element={<ShippingPolicy />} />
+            <Route path="/terms" element={<TermsAndConditions />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/refund-policy" element={<RefundPolicy />} />
             <Route path="/admin" element={<AdminLayout><AdminDashboard /></AdminLayout>} />
             <Route path="/admin/content" element={<AdminLayout><ContentManagement /></AdminLayout>} />
             <Route path="/admin/questions" element={<AdminLayout><QuestionManagement /></AdminLayout>} />

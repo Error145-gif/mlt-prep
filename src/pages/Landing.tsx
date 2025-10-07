@@ -208,8 +208,33 @@ export default function Landing() {
 
       {/* Footer */}
       <footer className="relative z-10 border-t border-white/20 backdrop-blur-xl bg-white/5 py-8">
-        <div className="max-w-7xl mx-auto px-6 text-center text-white/60">
-          <p>© 2024 MLT Learning. Powered by <a href="https://vly.ai" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">vly.ai</a></p>
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-6">
+            <div>
+              <h3 className="text-white font-semibold mb-3">MLT Learning</h3>
+              <p className="text-white/60 text-sm">
+                Comprehensive Medical Lab Technology education platform for government and technical exam preparation.
+              </p>
+            </div>
+            <div>
+              <h3 className="text-white font-semibold mb-3">Quick Links</h3>
+              <div className="space-y-2">
+                <a href="/contact" className="block text-white/60 hover:text-white text-sm transition-colors">Contact Us</a>
+                <a href="/terms" className="block text-white/60 hover:text-white text-sm transition-colors">Terms & Conditions</a>
+                <a href="/privacy" className="block text-white/60 hover:text-white text-sm transition-colors">Privacy Policy</a>
+              </div>
+            </div>
+            <div>
+              <h3 className="text-white font-semibold mb-3">Policies</h3>
+              <div className="space-y-2">
+                <a href="/shipping-policy" className="block text-white/60 hover:text-white text-sm transition-colors">Shipping Policy</a>
+                <a href="/refund-policy" className="block text-white/60 hover:text-white text-sm transition-colors">Refund Policy</a>
+              </div>
+            </div>
+          </div>
+          <div className="text-center text-white/60 pt-6 border-t border-white/20">
+            <p>© 2024 MLT Learning. Powered by <a href="https://vly.ai" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">vly.ai</a></p>
+          </div>
         </div>
       </footer>
     </div>
