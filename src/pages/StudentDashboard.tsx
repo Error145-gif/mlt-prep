@@ -191,7 +191,7 @@ export default function StudentDashboard() {
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
               <BarChart className="h-5 w-5" />
-              Test Performance by Type
+              Correct Answer Accuracy by Type
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -208,10 +208,11 @@ export default function StudentDashboard() {
                     <span className="text-white font-bold text-lg">{stats.mockTests.count}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-white/70 text-sm">Avg Score</span>
+                    <span className="text-white/70 text-sm">Accuracy</span>
                     <span className="text-white font-bold text-lg">{stats.mockTests.avgScore}%</span>
                   </div>
                   <Progress value={stats.mockTests.avgScore} className="h-2" />
+                  <p className="text-white/60 text-xs">Correct answers percentage</p>
                 </div>
               </div>
 
@@ -227,10 +228,11 @@ export default function StudentDashboard() {
                     <span className="text-white font-bold text-lg">{stats.pyqTests.count}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-white/70 text-sm">Avg Score</span>
+                    <span className="text-white/70 text-sm">Accuracy</span>
                     <span className="text-white font-bold text-lg">{stats.pyqTests.avgScore}%</span>
                   </div>
                   <Progress value={stats.pyqTests.avgScore} className="h-2" />
+                  <p className="text-white/60 text-xs">Correct answers percentage</p>
                 </div>
               </div>
 
@@ -246,10 +248,11 @@ export default function StudentDashboard() {
                     <span className="text-white font-bold text-lg">{stats.aiTests.count}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-white/70 text-sm">Avg Score</span>
+                    <span className="text-white/70 text-sm">Accuracy</span>
                     <span className="text-white font-bold text-lg">{stats.aiTests.avgScore}%</span>
                   </div>
                   <Progress value={stats.aiTests.avgScore} className="h-2" />
+                  <p className="text-white/60 text-xs">Correct answers percentage</p>
                 </div>
               </div>
             </div>
