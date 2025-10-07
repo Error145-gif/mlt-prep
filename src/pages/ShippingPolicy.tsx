@@ -1,8 +1,12 @@
 import { motion } from "framer-motion";
-import { Package, Download, Zap } from "lucide-react";
+import { Package, Download, Zap, Home } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router";
 
 export default function ShippingPolicy() {
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen p-6 lg:p-8 relative">
       {/* Lab Background Image */}
@@ -17,6 +21,16 @@ export default function ShippingPolicy() {
       />
       
       <div className="relative z-10 max-w-4xl mx-auto space-y-6">
+        {/* Home Button */}
+        <Button
+          onClick={() => navigate("/")}
+          variant="outline"
+          className="glass-card border-white/20 backdrop-blur-xl bg-white/10 text-white hover:bg-white/20"
+        >
+          <Home className="h-4 w-4 mr-2" />
+          Back to Home
+        </Button>
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
