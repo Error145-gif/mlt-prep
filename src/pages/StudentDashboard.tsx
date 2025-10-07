@@ -390,13 +390,13 @@ export default function StudentDashboard() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.7 }}>
-            <Card className="glass-card border-white/20 backdrop-blur-xl bg-gradient-to-br from-orange-500/20 to-pink-600/20 cursor-pointer hover:scale-105 transition-transform" onClick={() => navigate("/practice")}>
+            <Card className="glass-card border-white/20 backdrop-blur-xl bg-gradient-to-br from-purple-500/20 to-pink-600/20 cursor-pointer hover:scale-105 transition-transform" onClick={() => navigate("/tests/ai")}>
               <CardHeader>
-                <Award className="h-8 w-8 text-orange-400 mb-2" />
-                <CardTitle className="text-white">Practice Mode</CardTitle>
+                <Brain className="h-8 w-8 text-purple-400 mb-2" />
+                <CardTitle className="text-white">AI Questions</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-white/70">Topic-wise practice questions</p>
+                <p className="text-white/70">Practice with AI-generated questions</p>
               </CardContent>
             </Card>
           </motion.div>
