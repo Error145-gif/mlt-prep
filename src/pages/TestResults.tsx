@@ -237,16 +237,18 @@ export default function TestResults() {
                                 : "bg-white border-gray-200"
                             }`}
                           >
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-2">
+                                {isCorrectAnswer && (
+                                  <CheckCircle className="h-5 w-5 text-green-600" />
+                                )}
+                                {isUserAnswer && !isCorrectAnswer && (
+                                  <XCircle className="h-5 w-5 text-red-600" />
+                                )}
+                                <span className="text-gray-900">{option}</span>
+                              </div>
                               {isCorrectAnswer && (
-                                <CheckCircle className="h-5 w-5 text-green-600" />
-                              )}
-                              {isUserAnswer && !isCorrectAnswer && (
-                                <XCircle className="h-5 w-5 text-red-600" />
-                              )}
-                              <span className="text-gray-900">{option}</span>
-                              {isCorrectAnswer && (
-                                <span className="ml-auto text-green-700 font-semibold text-sm">
+                                <span className="text-green-700 font-semibold text-sm whitespace-nowrap">
                                   Correct Answer
                                 </span>
                               )}
