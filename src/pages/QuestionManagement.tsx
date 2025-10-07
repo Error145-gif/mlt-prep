@@ -1336,7 +1336,7 @@ export default function QuestionManagement() {
           <Card className="glass-card border-blue-500/20 backdrop-blur-xl bg-blue-500/10">
             <CardContent className="pt-6">
               <div className="text-center">
-                <p className="text-2xl font-bold text-blue-300">{questions?.filter(q => q.source === "manual").length || 0}</p>
+                <p className="text-2xl font-bold text-blue-300">{questions?.filter(q => q.source === "manual" || !q.source).length || 0}</p>
                 <p className="text-sm text-blue-200">Manual/Mock</p>
               </div>
             </CardContent>
