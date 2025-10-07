@@ -190,52 +190,42 @@ export default function TestResults() {
 
                   <p className="text-gray-900 font-medium mb-4">{q.question}</p>
 
-                  {wasAnswered ? (
-                    <>
-                      {q.type === "mcq" && q.options && (
-                        <div className="space-y-2 ml-6">
-                          {q.options.map((option: string, idx: number) => {
-                            const isUserAnswer = q.userAnswer === option;
-                            const isCorrectAnswer = q.correctAnswer === option;
-                            
-                            return (
-                              <div
-                                key={idx}
-                                className={`p-3 rounded-lg border-2 ${
-                                  isCorrectAnswer
-                                    ? "bg-green-100 border-green-400 font-semibold"
-                                    : isUserAnswer
-                                    ? "bg-red-100 border-red-400"
-                                    : "bg-white border-gray-200"
-                                }`}
-                              >
-                                <div className="flex items-center gap-2">
-                                  {isCorrectAnswer && (
-                                    <CheckCircle className="h-5 w-5 text-green-600" />
-                                  )}
-                                  {isUserAnswer && !isCorrectAnswer && (
-                                    <XCircle className="h-5 w-5 text-red-600" />
-                                  )}
-                                  <span className="text-gray-900">{option}</span>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
+                  {q.type === "mcq" && q.options && (
+                    <div className="space-y-2 ml-6">
+                      {q.options.map((option: string, idx: number) => {
+                        const isUserAnswer = q.userAnswer === option;
+                        const isCorrectAnswer = q.correctAnswer === option;
+                        
+                        return (
+                          <div
+                            key={idx}
+                            className={`p-3 rounded-lg border-2 ${
+                              isCorrectAnswer
+                                ? "bg-green-100 border-green-400 font-semibold"
+                                : isUserAnswer
+                                ? "bg-red-100 border-red-400"
+                                : "bg-white border-gray-200"
+                            }`}
+                          >
+                            <div className="flex items-center gap-2">
+                              {isCorrectAnswer && (
+                                <CheckCircle className="h-5 w-5 text-green-600" />
+                              )}
+                              {isUserAnswer && !isCorrectAnswer && (
+                                <XCircle className="h-5 w-5 text-red-600" />
+                              )}
+                              <span className="text-gray-900">{option}</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
 
-                      {q.explanation && (
-                        <div className="mt-4 p-4 bg-blue-50 border-l-4 border-blue-400 rounded">
-                          <p className="text-sm font-semibold text-blue-900 mb-1">Explanation:</p>
-                          <p className="text-sm text-blue-800">{q.explanation}</p>
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <div className="mt-4 p-4 bg-gray-100 border-l-4 border-gray-400 rounded">
-                      <p className="text-sm font-semibold text-gray-700">
-                        You skipped this question. Answers are only shown for attempted questions.
-                      </p>
+                  {q.explanation && (
+                    <div className="mt-4 p-4 bg-blue-50 border-l-4 border-blue-400 rounded">
+                      <p className="text-sm font-semibold text-blue-900 mb-1">Explanation:</p>
+                      <p className="text-sm text-blue-800">{q.explanation}</p>
                     </div>
                   )}
                 </div>
