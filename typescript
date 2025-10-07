@@ -1,1 +1,5 @@
-const questions = useQuery(api.questions.getQuestions, { status: activeTab === "all" ? undefined : activeTab });
+const testQuestions = useQuery(api.student.getTestQuestions, {
+    testType,
+    ...(topicId && { topicId }),
+    ...(year && { year }),
+});
