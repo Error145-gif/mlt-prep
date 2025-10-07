@@ -37,7 +37,7 @@ export default function QuestionManagement() {
   // PYQ bulk questions state - 50 separate sections
   const [pyqBulkQuestions, setPyqBulkQuestions] = useState<string[]>(Array(50).fill(""));
   
-  const questions = useQuery(api.questions.getQuestions, { status: activeTab === "all" ? undefined : activeTab });
+  const questions = useQuery(api.questions.getQuestions, {});
   const topics = useQuery(api.topics.getAllTopics);
   const reviewQuestion = useMutation(api.questions.reviewQuestion);
   const createQuestion = useMutation(api.questions.createQuestion);

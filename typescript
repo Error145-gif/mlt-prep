@@ -1,3 +1,1 @@
-if (!user || user.role !== "admin") {
-  return [];
-}
+const questions = useQuery(api.questions.getQuestions, { status: activeTab === "all" ? undefined : activeTab });
