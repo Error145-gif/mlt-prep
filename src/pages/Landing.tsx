@@ -112,13 +112,15 @@ export default function Landing() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative z-10 max-w-7xl mx-auto px-6 py-20 text-center">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="space-y-6"
-        >
+      <section className="relative z-10 max-w-7xl mx-auto px-6 py-20">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          {/* Left side - Text content */}
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8 }}
+            className="space-y-6 text-center lg:text-left"
+          >
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card border border-white/20 backdrop-blur-xl bg-white/10 text-white/90 mb-4">
             <Sparkles className="h-4 w-4" />
             <span className="text-sm">AI-Powered Medical Lab Technology Learning</span>
@@ -136,17 +138,69 @@ export default function Landing() {
             Comprehensive study materials, AI-generated practice questions, and personalized analytics to help you excel in Medical Lab Technology
           </p>
           
-          <div className="flex items-center justify-center gap-4 pt-4">
-            <Button
-              onClick={() => navigate(isAuthenticated ? (user?.role === "admin" ? "/admin" : "/dashboard") : "/auth")}
-              size="lg"
-              className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-lg px-8"
+            <div className="flex items-center justify-center lg:justify-start gap-4 pt-4">
+              <Button
+                onClick={() => navigate(isAuthenticated ? (user?.role === "admin" ? "/admin" : "/dashboard") : "/auth")}
+                size="lg"
+                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-lg px-8"
+              >
+                {isAuthenticated ? (user?.role === "admin" ? "Admin Panel" : "Go to Dashboard") : "Start Learning"}
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </div>
+          </motion.div>
+
+          {/* Right side - Animated Character */}
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="flex justify-center lg:justify-end"
+          >
+            <motion.div
+              animate={{
+                y: [0, -20, 0],
+                rotate: [0, 5, -5, 0],
+              }}
+              transition={{
+                duration: 3,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+              className="relative"
             >
-              {isAuthenticated ? (user?.role === "admin" ? "Admin Panel" : "Go to Dashboard") : "Start Learning"}
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          </div>
-        </motion.div>
+              <motion.img
+                src="https://harmless-tapir-303.convex.cloud/api/storage/95eceda1-7789-4d29-bf58-640afb9f4499"
+                alt="MLT Mascot"
+                className="w-64 h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 drop-shadow-2xl"
+                animate={{
+                  scale: [1, 1.05, 1],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              />
+              {/* Waving hand animation */}
+              <motion.div
+                className="absolute top-16 left-8 text-6xl"
+                animate={{
+                  rotate: [0, 14, -8, 14, -4, 10, 0],
+                }}
+                transition={{
+                  duration: 2.5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  repeatDelay: 1,
+                }}
+                style={{ transformOrigin: "bottom center" }}
+              >
+                👋
+              </motion.div>
+            </motion.div>
+          </motion.div>
+        </div>
       </section>
 
       {/* Features Section */}
