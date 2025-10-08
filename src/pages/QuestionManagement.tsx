@@ -699,7 +699,27 @@ export default function QuestionManagement() {
   const duplicateQuestions = getDuplicateQuestions();
 
   return (
-    <div className="min-h-screen p-6">
+    <div className="min-h-screen p-6 relative">
+      {/* Fixed animated gradient background */}
+      <div className="fixed inset-0 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500 -z-10" />
+      
+      {/* Animated orbs */}
+      <div className="fixed top-20 left-20 w-[500px] h-[500px] bg-blue-400/50 rounded-full blur-3xl animate-pulse -z-10" />
+      <div className="fixed top-40 right-20 w-[500px] h-[500px] bg-purple-500/50 rounded-full blur-3xl animate-pulse -z-10" style={{ animationDelay: '1s' }} />
+      <div className="fixed bottom-20 left-1/3 w-[600px] h-[600px] bg-pink-400/40 rounded-full blur-3xl animate-pulse -z-10" style={{ animationDelay: '0.5s' }} />
+      <div className="fixed bottom-40 right-1/4 w-[400px] h-[400px] bg-cyan-400/40 rounded-full blur-3xl animate-pulse -z-10" style={{ animationDelay: '0.7s' }} />
+      
+      {/* Lab background image */}
+      <div 
+        className="fixed inset-0 -z-10 opacity-10"
+        style={{
+          backgroundImage: 'url("https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=1920")',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      />
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
