@@ -186,10 +186,29 @@ export default function Landing() {
             transition={{ duration: 0.8 }}
             className="space-y-6 text-center lg:text-left"
           >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card border border-white/30 backdrop-blur-xl bg-white/20 text-white mb-4 shadow-md">
-            <Sparkles className="h-4 w-4" />
+          <motion.div 
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card border border-white/30 backdrop-blur-xl bg-white/20 text-white mb-4 shadow-md"
+            animate={{
+              boxShadow: [
+                "0 0 20px rgba(255, 255, 255, 0.3)",
+                "0 0 40px rgba(255, 255, 255, 0.6)",
+                "0 0 20px rgba(255, 255, 255, 0.3)",
+              ],
+            }}
+            transition={{
+              duration: 3,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          >
+            <motion.div
+              animate={{ rotate: [0, 360] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+            >
+              <Sparkles className="h-4 w-4" />
+            </motion.div>
             <span className="text-sm">AI-Powered Medical Lab Technology Learning</span>
-          </div>
+          </motion.div>
           
           <h1 className="text-5xl md:text-7xl font-bold text-white tracking-tight drop-shadow-2xl">
             Master MLT with
@@ -204,14 +223,25 @@ export default function Landing() {
           </p>
           
             <div className="flex items-center justify-center lg:justify-start gap-4 pt-4">
-              <Button
-                onClick={() => navigate(isAuthenticated ? (user?.role === "admin" ? "/admin" : "/dashboard") : "/auth")}
-                size="lg"
-                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-lg px-8"
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
-                {isAuthenticated ? (user?.role === "admin" ? "Admin Panel" : "Go to Dashboard") : "Start Learning"}
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
+                <Button
+                  onClick={() => navigate(isAuthenticated ? (user?.role === "admin" ? "/admin" : "/dashboard") : "/auth")}
+                  size="lg"
+                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-lg px-8 shadow-lg hover:shadow-2xl transition-shadow"
+                >
+                  {isAuthenticated ? (user?.role === "admin" ? "Admin Panel" : "Go to Dashboard") : "Start Learning"}
+                  <motion.div
+                    animate={{ x: [0, 5, 0] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                    className="inline-block ml-2"
+                  >
+                    <ArrowRight className="h-5 w-5" />
+                  </motion.div>
+                </Button>
+              </motion.div>
             </div>
           </motion.div>
 
@@ -273,11 +303,30 @@ export default function Landing() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
               viewport={{ once: true }}
-              className="glass-card border border-white/30 backdrop-blur-xl bg-white/20 p-6 rounded-2xl hover:bg-white/30 hover:scale-105 transition-all duration-300 shadow-xl"
+              whileHover={{ 
+                scale: 1.05,
+                boxShadow: "0 20px 60px rgba(139, 92, 246, 0.4)",
+                transition: { duration: 0.3 }
+              }}
+              className="glass-card border border-white/30 backdrop-blur-xl bg-white/20 p-6 rounded-2xl hover:bg-white/30 transition-all duration-300 shadow-xl"
             >
-              <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 w-fit mb-4">
+              <motion.div 
+                className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 w-fit mb-4"
+                animate={{
+                  boxShadow: [
+                    "0 0 20px rgba(139, 92, 246, 0.5)",
+                    "0 0 40px rgba(139, 92, 246, 0.8)",
+                    "0 0 20px rgba(139, 92, 246, 0.5)",
+                  ],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              >
                 <feature.icon className="h-6 w-6 text-white" />
-              </div>
+              </motion.div>
               <h3 className="text-xl font-semibold text-white mb-2">{feature.title}</h3>
               <p className="text-white/70">{feature.description}</p>
             </motion.div>
