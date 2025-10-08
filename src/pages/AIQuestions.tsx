@@ -49,8 +49,27 @@ export default function AIQuestions() {
   };
 
   return (
-    <div className="min-h-screen p-6 lg:p-8">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen p-6 lg:p-8 relative overflow-hidden">
+      {/* Animated Background Gradients - Same as Landing */}
+      <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
+        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-400/50 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-500/50 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        <div className="absolute top-1/2 left-1/2 w-[600px] h-[600px] bg-pink-400/40 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '0.5s' }} />
+        <div className="absolute top-1/4 right-1/3 w-[400px] h-[400px] bg-cyan-400/40 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '0.7s' }} />
+      </div>
+
+      {/* Lab Background Image */}
+      <div 
+        className="fixed inset-0 z-0 opacity-10"
+        style={{
+          backgroundImage: 'url(https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=1920&q=80)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      />
+
+      <div className="relative z-10 max-w-7xl mx-auto space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-white">AI-Generated Questions</h1>
           <p className="text-white/70 mt-1">Practice with AI-curated topic-wise questions (25 questions per set)</p>
