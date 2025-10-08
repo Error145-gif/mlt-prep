@@ -6,7 +6,7 @@ import { internal } from "./_generated/api";
 
 // Initialize Cashfree SDK
 function initializeCashfree() {
-  const Cashfree = require("cashfree-pg");
+  const { Cashfree } = require("cashfree-pg");
   
   const clientId = process.env.CASHFREE_CLIENT_ID;
   const clientSecret = process.env.CASHFREE_CLIENT_SECRET;
@@ -17,12 +17,13 @@ function initializeCashfree() {
   
   // Determine environment based on client ID prefix
   const environment = clientId.startsWith("TEST") 
-    ? Cashfree.Environment.SANDBOX 
-    : Cashfree.Environment.PRODUCTION;
+    ? "SANDBOX" 
+    : "PRODUCTION";
   
+  // Initialize Cashfree with v5 SDK pattern
   Cashfree.XClientId = clientId;
   Cashfree.XClientSecret = clientSecret;
-  Cashfree.XEnvironment = environment;
+  Cashfree.XEnvironment = Cashfree.Environment[environment];
   
   console.log(`Cashfree initialized in ${environment} mode`);
   
