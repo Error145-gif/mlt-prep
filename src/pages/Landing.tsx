@@ -247,22 +247,6 @@ export default function Landing() {
                   ease: "easeInOut",
                 }}
               />
-              {/* Waving hand animation */}
-              <motion.div
-                className="absolute top-16 left-8 text-6xl"
-                animate={{
-                  rotate: [0, 14, -8, 14, -4, 10, 0],
-                }}
-                transition={{
-                  duration: 2.5,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  repeatDelay: 1,
-                }}
-                style={{ transformOrigin: "bottom center" }}
-              >
-                👋
-              </motion.div>
             </motion.div>
           </motion.div>
         </div>
