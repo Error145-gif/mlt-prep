@@ -133,7 +133,12 @@ export const makeCurrentUserAdmin = mutation({
     // Only allow ak6722909@gmail.com to become admin
     const allowedAdminEmail = "ak6722909@gmail.com";
     if (user.email?.toLowerCase().trim() !== allowedAdminEmail) {
-      throw new Error("You do not have admin privileges. Only authorized emails can access the admin panel.");
+      throw new Error("Unauthorized: Only authorized emails can access the admin panel.");
+    }
+
+    // Check if already admin
+    if (user.role === "admin") {
+      return userId;
     }
 
     await ctx.db.patch(userId, {
