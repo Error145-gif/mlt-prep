@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "convex/react";
+import { useMutation, useQuery, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
 import { useNavigate } from "react-router";
@@ -10,17 +10,37 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { useEffect } from "react";
 
+// Add Razorpay types
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
+
 export default function SubscriptionPlans() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
   const navigate = useNavigate();
   const subscriptionAccess = useQuery(api.student.checkSubscriptionAccess);
   const startFreeTrial = useMutation(api.subscriptions.startFreeTrial);
+  const createOrder = useAction(api.razorpay.createOrder);
+  const verifyPayment = useAction(api.razorpay.verifyPayment);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       navigate("/auth");
     }
   }, [isAuthenticated, isLoading, navigate]);
+
+  // Load Razorpay script
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    document.body.appendChild(script);
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
   if (isLoading) {
     return (
@@ -41,7 +61,74 @@ export default function SubscriptionPlans() {
   };
 
   const handleSubscribe = async (planId: string, amount: number, planName: string, duration: number) => {
-    toast.info("Payment integration coming soon! Please contact support.");
+    try {
+      toast.loading("Creating order...");
+      
+      const orderResult = await createOrder({
+        amount,
+        planName,
+        customerEmail: user?.email || "",
+        customerName: user?.name || "",
+      });
+
+      toast.dismiss();
+
+      if (!orderResult.success) {
+        toast.error("Failed to create order");
+        return;
+      }
+
+      // Open Razorpay checkout
+      const options = {
+        key: orderResult.keyId,
+        amount: orderResult.amount,
+        currency: orderResult.currency,
+        name: "MLT Admin Hub",
+        description: planName,
+        order_id: orderResult.orderId,
+        handler: async function (response: any) {
+          try {
+            toast.loading("Verifying payment...");
+            
+            const verifyResult = await verifyPayment({
+              orderId: response.razorpay_order_id,
+              paymentId: response.razorpay_payment_id,
+              signature: response.razorpay_signature,
+            });
+
+            toast.dismiss();
+
+            if (verifyResult.success) {
+              toast.success("Payment successful! Subscription activated.");
+              navigate("/dashboard");
+            } else {
+              toast.error("Payment verification failed");
+            }
+          } catch (error: any) {
+            toast.dismiss();
+            toast.error(error.message || "Payment verification failed");
+          }
+        },
+        prefill: {
+          name: user?.name || "",
+          email: user?.email || "",
+        },
+        theme: {
+          color: "#3b82f6",
+        },
+        modal: {
+          ondismiss: function () {
+            toast.info("Payment cancelled");
+          },
+        },
+      };
+
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
+    } catch (error: any) {
+      toast.dismiss();
+      toast.error(error.message || "Failed to initiate payment");
+    }
   };
 
   const plans = [

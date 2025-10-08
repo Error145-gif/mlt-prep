@@ -23,6 +23,8 @@ import type * as feedback from "../feedback.js";
 import type * as http from "../http.js";
 import type * as notifications from "../notifications.js";
 import type * as questions from "../questions.js";
+import type * as razorpay from "../razorpay.js";
+import type * as razorpayInternal from "../razorpayInternal.js";
 import type * as student from "../student.js";
 import type * as subscriptions from "../subscriptions.js";
 import type * as topics from "../topics.js";
@@ -47,6 +49,8 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   notifications: typeof notifications;
   questions: typeof questions;
+  razorpay: typeof razorpay;
+  razorpayInternal: typeof razorpayInternal;
   student: typeof student;
   subscriptions: typeof subscriptions;
   topics: typeof topics;
