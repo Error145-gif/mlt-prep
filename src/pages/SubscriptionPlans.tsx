@@ -54,6 +54,8 @@ export default function SubscriptionPlans() {
     try {
       toast.info("Initiating payment...");
       
+      console.log("Creating order for:", { planId, amount, planName });
+      
       // Create order on backend
       const orderResponse = await createCashfreeOrder({
         orderAmount: amount,
@@ -63,19 +65,28 @@ export default function SubscriptionPlans() {
         planName: planName,
       });
 
+      console.log("Order response:", orderResponse);
+
       if (!orderResponse.success || !orderResponse.paymentSessionId) {
+        console.error("Order creation failed:", orderResponse);
         throw new Error("Failed to create payment session");
       }
 
+      console.log("Loading Cashfree SDK...");
+      
       // Load Cashfree SDK and initiate checkout
       const cashfree = await load({
         mode: "sandbox", // Change to "production" for live
       });
 
+      console.log("Cashfree SDK loaded, initiating checkout...");
+
       const checkoutOptions = {
         paymentSessionId: orderResponse.paymentSessionId,
         redirectTarget: "_self" as const,
       };
+
+      console.log("Checkout options:", checkoutOptions);
 
       cashfree.checkout(checkoutOptions);
     } catch (error: any) {

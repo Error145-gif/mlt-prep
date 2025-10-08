@@ -16,6 +16,11 @@ export const createOrder = action({
     // Import Cashfree inside the handler
     const { Cashfree } = require("cashfree-pg");
     
+    // Log environment variables for debugging (remove in production)
+    console.log("Cashfree Client ID exists:", !!process.env.CASHFREE_CLIENT_ID);
+    console.log("Cashfree Secret exists:", !!process.env.CASHFREE_CLIENT_SECRET);
+    console.log("Convex Site URL:", process.env.CONVEX_SITE_URL);
+    
     // Configure Cashfree with environment variables
     Cashfree.XClientId = process.env.CASHFREE_CLIENT_ID;
     Cashfree.XClientSecret = process.env.CASHFREE_CLIENT_SECRET;
@@ -40,8 +45,12 @@ export const createOrder = action({
       order_note: args.planName ? `Subscription: ${args.planName}` : "MLT Learning Subscription",
     };
 
+    console.log("Creating order with request:", JSON.stringify(request, null, 2));
+
     try {
       const response = await Cashfree.PGCreateOrder("2023-08-01", request);
+
+      console.log("Cashfree response:", JSON.stringify(response.data, null, 2));
 
       if (response && response.data && response.data.payment_session_id) {
         console.log("Order created successfully:", response.data);
