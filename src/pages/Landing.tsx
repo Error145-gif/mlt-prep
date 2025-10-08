@@ -58,12 +58,12 @@ export default function Landing() {
         }}
       />
 
-      {/* Animated Background Gradients - Brighter and More Vibrant */}
-      <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-100 via-purple-50 to-pink-100">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-400/40 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-400/40 rounded-full blur-3xl animate-pulse delay-1000" />
-        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-pink-400/30 rounded-full blur-3xl animate-pulse delay-500" />
-        <div className="absolute top-1/4 right-1/3 w-64 h-64 bg-cyan-400/30 rounded-full blur-2xl animate-pulse delay-700" />
+      {/* Animated Background Gradients - Vibrant Purple/Blue Theme */}
+      <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
+        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-400/50 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-500/50 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        <div className="absolute top-1/2 left-1/2 w-[600px] h-[600px] bg-pink-400/40 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '0.5s' }} />
+        <div className="absolute top-1/4 right-1/3 w-[400px] h-[400px] bg-cyan-400/40 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '0.7s' }} />
         
         {/* Floating Medical Icons */}
         <motion.div
@@ -131,11 +131,11 @@ export default function Landing() {
       </div>
 
       {/* Navigation */}
-      <nav className="glass-card border-b border-white/30 backdrop-blur-xl bg-white/80 sticky top-0 z-50 shadow-lg">
+      <nav className="glass-card border-b border-white/20 backdrop-blur-xl bg-white/10 sticky top-0 z-50 shadow-lg">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate("/")}>
             <img src="/logo.svg" alt="MLT Logo" className="h-10 w-10" />
-            <span className="text-xl font-bold text-white">MLT Learning</span>
+            <span className="text-xl font-bold text-white drop-shadow-lg">MLT Learning</span>
           </div>
           <div className="flex items-center gap-4">
             {isAuthenticated ? (
@@ -186,20 +186,20 @@ export default function Landing() {
             transition={{ duration: 0.8 }}
             className="space-y-6 text-center lg:text-left"
           >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card border border-purple-300 backdrop-blur-xl bg-white/90 text-purple-700 mb-4 shadow-md">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card border border-white/30 backdrop-blur-xl bg-white/20 text-white mb-4 shadow-md">
             <Sparkles className="h-4 w-4" />
             <span className="text-sm">AI-Powered Medical Lab Technology Learning</span>
           </div>
           
-          <h1 className="text-5xl md:text-7xl font-bold text-gray-900 tracking-tight">
+          <h1 className="text-5xl md:text-7xl font-bold text-white tracking-tight drop-shadow-2xl">
             Master MLT with
             <br />
-            <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-yellow-300 via-pink-300 to-purple-300 bg-clip-text text-transparent">
               Smart Learning
             </span>
           </h1>
           
-          <p className="text-xl text-gray-700 max-w-2xl mx-auto">
+          <p className="text-xl text-white/90 max-w-2xl mx-auto drop-shadow-lg">
             Comprehensive study materials, AI-generated practice questions, and personalized analytics to help you excel in Medical Lab Technology
           </p>
           
@@ -277,8 +277,8 @@ export default function Landing() {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <h2 className="text-4xl font-bold text-white mb-4">Everything You Need to Succeed</h2>
-          <p className="text-white/70 text-lg">Powerful features designed for effective learning</p>
+          <h2 className="text-4xl font-bold text-white drop-shadow-lg mb-4">Everything You Need to Succeed</h2>
+          <p className="text-white/90 text-lg drop-shadow-md">Powerful features designed for effective learning</p>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -289,7 +289,7 @@ export default function Landing() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
               viewport={{ once: true }}
-              className="glass-card border border-white/20 backdrop-blur-xl bg-white/10 p-6 rounded-2xl hover:bg-white/15 transition-all"
+              className="glass-card border border-white/30 backdrop-blur-xl bg-white/20 p-6 rounded-2xl hover:bg-white/30 hover:scale-105 transition-all duration-300 shadow-xl"
             >
               <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 w-fit mb-4">
                 <feature.icon className="h-6 w-6 text-white" />
