@@ -1,1 +1,1 @@
-npx convex run topics:initializeMLTTopics
+pnpm add razorpay
