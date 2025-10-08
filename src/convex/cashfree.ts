@@ -23,7 +23,7 @@ function initializeCashfree() {
   // Initialize Cashfree with v5 SDK pattern
   Cashfree.XClientId = clientId;
   Cashfree.XClientSecret = clientSecret;
-  Cashfree.XEnvironment = Cashfree.Environment[environment];
+  Cashfree.XEnvironment = environment;
   
   console.log(`Cashfree initialized in ${environment} mode`);
   
