@@ -112,7 +112,15 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <div className="min-h-screen p-6 relative">
+    <div className="min-h-screen p-6 relative overflow-hidden">
+      {/* Animated Background Gradients - Same as Landing */}
+      <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
+        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-400/50 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-500/50 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        <div className="absolute top-1/2 left-1/2 w-[600px] h-[600px] bg-pink-400/40 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '0.5s' }} />
+        <div className="absolute top-1/4 right-1/3 w-[400px] h-[400px] bg-cyan-400/40 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '0.7s' }} />
+      </div>
+
       {/* Lab Background Image */}
       <div 
         className="fixed inset-0 z-0 opacity-10"
@@ -123,13 +131,14 @@ export default function AdminDashboard() {
           backgroundRepeat: 'no-repeat'
         }}
       />
+      
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="relative z-10 max-w-7xl mx-auto space-y-6"
       >
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-white drop-shadow-lg">Dashboard</h1>
         </div>
 
         {/* Stats Grid */}
@@ -141,9 +150,9 @@ export default function AdminDashboard() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
             >
-              <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
+              <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-white/80">
+                  <CardTitle className="text-sm font-medium text-white/90">
                     {stat.title}
                   </CardTitle>
                   <div className={`p-2 rounded-lg bg-gradient-to-br ${stat.color}`}>
@@ -159,13 +168,13 @@ export default function AdminDashboard() {
         </div>
 
         {/* Recent Content */}
-        <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
+        <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
           <CardHeader>
             <CardTitle className="text-white">Recently Uploaded Content</CardTitle>
           </CardHeader>
           <CardContent>
             {!stats?.recentContent || stats.recentContent.length === 0 ? (
-              <p className="text-white/60 text-center py-8">No content uploaded yet</p>
+              <p className="text-white/80 text-center py-8">No content uploaded yet</p>
             ) : (
               <div className="space-y-3">
                 {stats.recentContent.map((content) => (
@@ -175,9 +184,9 @@ export default function AdminDashboard() {
                   >
                     <div>
                       <p className="font-medium text-white">{content.title}</p>
-                      <p className="text-sm text-white/60">{content.type.toUpperCase()}</p>
+                      <p className="text-sm text-white/80">{content.type.toUpperCase()}</p>
                     </div>
-                    <div className="text-sm text-white/60">
+                    <div className="text-sm text-white/80">
                       {content.views} views
                     </div>
                   </div>
@@ -188,13 +197,13 @@ export default function AdminDashboard() {
         </Card>
 
         {/* Recent Payments */}
-        <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
+        <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
           <CardHeader>
             <CardTitle className="text-white">Recent Payments</CardTitle>
           </CardHeader>
           <CardContent>
             {!stats?.recentPayments || stats.recentPayments.length === 0 ? (
-              <p className="text-white/60 text-center py-8">No payments yet</p>
+              <p className="text-white/80 text-center py-8">No payments yet</p>
             ) : (
               <div className="space-y-3">
                 {stats.recentPayments.map((payment) => (
@@ -204,9 +213,9 @@ export default function AdminDashboard() {
                   >
                     <div>
                       <p className="font-medium text-white">₹{payment.amount}</p>
-                      <p className="text-sm text-white/60">{payment.status}</p>
+                      <p className="text-sm text-white/80">{payment.status}</p>
                     </div>
-                    <div className="text-sm text-white/60">
+                    <div className="text-sm text-white/80">
                       {new Date(payment._creationTime).toLocaleDateString()}
                     </div>
                   </div>

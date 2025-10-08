@@ -39,7 +39,15 @@ export default function StudentDashboard() {
     (userProfile.state ? 25 : 0) : 0;
 
   return (
-    <div className="min-h-screen p-6 lg:p-8 relative">
+    <div className="min-h-screen p-6 lg:p-8 relative overflow-hidden">
+      {/* Animated Background Gradients - Same as Landing */}
+      <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
+        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-400/50 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-500/50 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        <div className="absolute top-1/2 left-1/2 w-[600px] h-[600px] bg-pink-400/40 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '0.5s' }} />
+        <div className="absolute top-1/4 right-1/3 w-[400px] h-[400px] bg-cyan-400/40 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '0.7s' }} />
+      </div>
+
       {/* Lab Background Image */}
       <div 
         className="fixed inset-0 z-0 opacity-10"
@@ -50,6 +58,7 @@ export default function StudentDashboard() {
           backgroundRepeat: 'no-repeat'
         }}
       />
+      
       <div className="relative z-10 max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -63,8 +72,8 @@ export default function StudentDashboard() {
               </Avatar>
             )}
             <div>
-              <h1 className="text-3xl font-bold text-white">Welcome back, {userProfile?.name || "Student"}!</h1>
-              <p className="text-white/70 mt-1">Continue your MLT learning journey</p>
+              <h1 className="text-3xl font-bold text-white drop-shadow-lg">Welcome back, {userProfile?.name || "Student"}!</h1>
+              <p className="text-white/90 mt-1 drop-shadow-md">Continue your MLT learning journey</p>
             </div>
           </div>
           {subscriptionAccess && !subscriptionAccess.hasAccess && (
@@ -91,7 +100,7 @@ export default function StudentDashboard() {
                 <User className="h-5 w-5 text-blue-400" />
                 <div>
                   <p className="text-white font-medium">Complete your profile ({profileCompletion}%)</p>
-                  <p className="text-white/70 text-sm">Add your details for a personalized experience</p>
+                  <p className="text-white/90 text-sm">Add your details for a personalized experience</p>
                 </div>
               </div>
               <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
@@ -117,7 +126,7 @@ export default function StudentDashboard() {
                     {subscriptionAccess.reason === "no_subscription" && "Start your 7-day free trial!"}
                     {subscriptionAccess.reason === "expired" && "Your trial has expired"}
                   </p>
-                  <p className="text-white/70 text-sm">
+                  <p className="text-white/90 text-sm">
                     {subscriptionAccess.reason === "no_subscription" && "Get full access to all features"}
                     {subscriptionAccess.reason === "expired" && "Subscribe to continue learning"}
                   </p>
@@ -133,48 +142,48 @@ export default function StudentDashboard() {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
+            <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-white/70">Total Tests</CardTitle>
+                <CardTitle className="text-sm font-medium text-white/90">Total Tests</CardTitle>
                 <FileText className="h-4 w-4 text-blue-400" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-white">{stats.totalTests}</div>
-                <p className="text-xs text-white/60 mt-1">Tests completed</p>
+                <p className="text-xs text-white/80 mt-1">Tests completed</p>
               </CardContent>
             </Card>
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-            <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
+            <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-white/70">Average Score</CardTitle>
+                <CardTitle className="text-sm font-medium text-white/90">Average Score</CardTitle>
                 <Award className="h-4 w-4 text-green-400" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-white">{stats.avgScore}%</div>
-                <p className="text-xs text-white/60 mt-1">Overall performance</p>
+                <p className="text-xs text-white/80 mt-1">Overall performance</p>
               </CardContent>
             </Card>
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-            <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
+            <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-white/70">Overall Accuracy</CardTitle>
+                <CardTitle className="text-sm font-medium text-white/90">Overall Accuracy</CardTitle>
                 <Target className="h-4 w-4 text-purple-400" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-white">{stats.overallAccuracy}%</div>
-                <p className="text-xs text-white/60 mt-1">Correct answers</p>
+                <p className="text-xs text-white/80 mt-1">Correct answers</p>
               </CardContent>
             </Card>
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-            <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
+            <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-white/70">Subscription</CardTitle>
+                <CardTitle className="text-sm font-medium text-white/90">Subscription</CardTitle>
                 <Clock className="h-4 w-4 text-orange-400" />
               </CardHeader>
               <CardContent>
@@ -187,7 +196,7 @@ export default function StudentDashboard() {
         </div>
 
         {/* Test Type Analytics */}
-        <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
+        <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
               <BarChart className="h-5 w-5" />
@@ -204,15 +213,15 @@ export default function StudentDashboard() {
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-white/70 text-sm">Tests Taken</span>
+                    <span className="text-white/90 text-sm">Tests Taken</span>
                     <span className="text-white font-bold text-lg">{stats.mockTests.count}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-white/70 text-sm">Accuracy</span>
+                    <span className="text-white/90 text-sm">Accuracy</span>
                     <span className="text-white font-bold text-lg">{stats.mockTests.avgScore}%</span>
                   </div>
                   <Progress value={stats.mockTests.avgScore} className="h-2" />
-                  <p className="text-white/60 text-xs">Correct answers percentage</p>
+                  <p className="text-white/80 text-xs">Correct answers percentage</p>
                 </div>
               </div>
 
@@ -224,15 +233,15 @@ export default function StudentDashboard() {
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-white/70 text-sm">Tests Taken</span>
+                    <span className="text-white/90 text-sm">Tests Taken</span>
                     <span className="text-white font-bold text-lg">{stats.pyqTests.count}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-white/70 text-sm">Accuracy</span>
+                    <span className="text-white/90 text-sm">Accuracy</span>
                     <span className="text-white font-bold text-lg">{stats.pyqTests.avgScore}%</span>
                   </div>
                   <Progress value={stats.pyqTests.avgScore} className="h-2" />
-                  <p className="text-white/60 text-xs">Correct answers percentage</p>
+                  <p className="text-white/80 text-xs">Correct answers percentage</p>
                 </div>
               </div>
 
@@ -244,15 +253,15 @@ export default function StudentDashboard() {
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-white/70 text-sm">Tests Taken</span>
+                    <span className="text-white/90 text-sm">Tests Taken</span>
                     <span className="text-white font-bold text-lg">{stats.aiTests.count}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-white/70 text-sm">Accuracy</span>
+                    <span className="text-white/90 text-sm">Accuracy</span>
                     <span className="text-white font-bold text-lg">{stats.aiTests.avgScore}%</span>
                   </div>
                   <Progress value={stats.aiTests.avgScore} className="h-2" />
-                  <p className="text-white/60 text-xs">Correct answers percentage</p>
+                  <p className="text-white/80 text-xs">Correct answers percentage</p>
                 </div>
               </div>
             </div>
@@ -261,7 +270,7 @@ export default function StudentDashboard() {
 
         {/* Recent Performance Graph */}
         {stats.recentTestPerformance && stats.recentTestPerformance.length > 0 && (
-          <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
+          <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
                 <TrendingUp className="h-5 w-5" />
@@ -277,7 +286,7 @@ export default function StudentDashboard() {
                         <Badge variant="outline" className="text-white border-white/30">
                           {test.type.toUpperCase()}
                         </Badge>
-                        <span className="text-white/70 text-sm">
+                        <span className="text-white/90 text-sm">
                           {new Date(test.date).toLocaleDateString()}
                         </span>
                       </div>
@@ -293,13 +302,13 @@ export default function StudentDashboard() {
 
         {/* Completed Tests - Available for Retake */}
         {stats.totalTests > 0 && (
-          <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
+          <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
                 <FileText className="h-5 w-5" />
                 Your Completed Tests
               </CardTitle>
-              <p className="text-white/70 text-sm">Tests you can retake anytime</p>
+              <p className="text-white/90 text-sm">Tests you can retake anytime</p>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
@@ -309,7 +318,7 @@ export default function StudentDashboard() {
                       <FileText className="h-5 w-5 text-blue-400" />
                       <div>
                         <p className="text-white font-medium">Mock Tests</p>
-                        <p className="text-white/60 text-sm">{stats.mockTests.count} attempts • Avg: {stats.mockTests.avgScore}%</p>
+                        <p className="text-white/80 text-sm">{stats.mockTests.count} attempts • Avg: {stats.mockTests.avgScore}%</p>
                       </div>
                     </div>
                     <Button 
@@ -326,7 +335,7 @@ export default function StudentDashboard() {
                       <BookOpen className="h-5 w-5 text-green-400" />
                       <div>
                         <p className="text-white font-medium">PYQ Sets</p>
-                        <p className="text-white/60 text-sm">
+                        <p className="text-white/80 text-sm">
                           {stats.pyqTests.count} {stats.pyqTests.count === 1 ? 'attempt' : 'attempts'} • 
                           Avg: {stats.pyqTests.avgScore}% • 
                           10 mins per 20 questions
@@ -347,7 +356,7 @@ export default function StudentDashboard() {
                       <Brain className="h-5 w-5 text-purple-400" />
                       <div>
                         <p className="text-white font-medium">AI Questions</p>
-                        <p className="text-white/60 text-sm">{stats.aiTests.count} attempts • Avg: {stats.aiTests.avgScore}%</p>
+                        <p className="text-white/80 text-sm">{stats.aiTests.count} attempts • Avg: {stats.aiTests.avgScore}%</p>
                       </div>
                     </div>
                     <Button 
@@ -359,7 +368,7 @@ export default function StudentDashboard() {
                   </div>
                 )}
                 {stats.totalTests === 0 && (
-                  <p className="text-white/60 text-center py-4">No completed tests yet. Start your first test below!</p>
+                  <p className="text-white/80 text-center py-4">No completed tests yet. Start your first test below!</p>
                 )}
               </div>
             </CardContent>
@@ -369,37 +378,37 @@ export default function StudentDashboard() {
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.5 }}>
-            <Card className="glass-card border-white/20 backdrop-blur-xl bg-gradient-to-br from-blue-500/20 to-purple-600/20 cursor-pointer hover:scale-105 transition-transform" onClick={() => navigate("/tests/mock")}>
+            <Card className="glass-card border-white/30 backdrop-blur-xl bg-gradient-to-br from-blue-500/20 to-purple-600/20 cursor-pointer hover:scale-105 transition-transform" onClick={() => navigate("/tests/mock")}>
               <CardHeader>
                 <FileText className="h-8 w-8 text-blue-400 mb-2" />
                 <CardTitle className="text-white">Mock Tests</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-white/70">Practice with comprehensive mock tests</p>
+                <p className="text-white/90">Practice with comprehensive mock tests</p>
               </CardContent>
             </Card>
           </motion.div>
 
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.6 }}>
-            <Card className="glass-card border-white/20 backdrop-blur-xl bg-gradient-to-br from-green-500/20 to-teal-600/20 cursor-pointer hover:scale-105 transition-transform" onClick={() => navigate("/tests/pyq")}>
+            <Card className="glass-card border-white/30 backdrop-blur-xl bg-gradient-to-br from-green-500/20 to-teal-600/20 cursor-pointer hover:scale-105 transition-transform" onClick={() => navigate("/tests/pyq")}>
               <CardHeader>
                 <BookOpen className="h-8 w-8 text-green-400 mb-2" />
                 <CardTitle className="text-white">PYQ Sets</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-white/70">Solve previous year questions</p>
+                <p className="text-white/90">Solve previous year questions</p>
               </CardContent>
             </Card>
           </motion.div>
 
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.7 }}>
-            <Card className="glass-card border-white/20 backdrop-blur-xl bg-gradient-to-br from-purple-500/20 to-pink-600/20 cursor-pointer hover:scale-105 transition-transform" onClick={() => navigate("/tests/ai")}>
+            <Card className="glass-card border-white/30 backdrop-blur-xl bg-gradient-to-br from-purple-500/20 to-pink-600/20 cursor-pointer hover:scale-105 transition-transform" onClick={() => navigate("/tests/ai")}>
               <CardHeader>
                 <Brain className="h-8 w-8 text-purple-400 mb-2" />
                 <CardTitle className="text-white">AI Questions</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-white/70">Practice with AI-generated questions</p>
+                <p className="text-white/90">Practice with AI-generated questions</p>
               </CardContent>
             </Card>
           </motion.div>
@@ -407,7 +416,7 @@ export default function StudentDashboard() {
 
         {/* Recent Content */}
         {stats.recentContent && stats.recentContent.length > 0 && (
-          <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
+          <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
             <CardHeader>
               <CardTitle className="text-white">Recent Content</CardTitle>
             </CardHeader>
@@ -419,7 +428,7 @@ export default function StudentDashboard() {
                       <BookOpen className="h-5 w-5 text-blue-400" />
                       <div>
                         <p className="text-white font-medium">{content.title}</p>
-                        <p className="text-white/60 text-sm">{content.type}</p>
+                        <p className="text-white/80 text-sm">{content.type}</p>
                       </div>
                     </div>
                     <Badge>{content.type}</Badge>
