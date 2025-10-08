@@ -124,12 +124,12 @@
     @apply bg-background text-foreground;
     font-family: var(--font-sans);
   }
-  button:not([disabled]), system-ui, sans-serif;
+  button:not([disabled]),
+  [role="button"]:not([disabled]) {
+    cursor: pointer;
   }
   .font-sans {
     font-family: var(--font-sans);
-  }
-  button:not([disabled]), system-ui, sans-serif;
   }
   .font-serif {
     font-family: Georgia, Georgia, serif;
