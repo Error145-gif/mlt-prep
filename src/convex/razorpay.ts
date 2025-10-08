@@ -45,6 +45,7 @@ export const createOrder = action({
         },
       };
 
+      console.log("Creating Razorpay order with options:", orderOptions);
       const order = await razorpay.orders.create(orderOptions);
       
       console.log("Razorpay order created:", order);
@@ -66,7 +67,9 @@ export const createOrder = action({
       };
     } catch (error: any) {
       console.error("Razorpay order creation error:", error);
-      throw new Error(`Razorpay order creation failed: ${error.message}`);
+      console.error("Error details:", JSON.stringify(error, null, 2));
+      const errorMessage = error?.message || error?.error?.description || error?.description || JSON.stringify(error);
+      throw new Error(`Razorpay order creation failed: ${errorMessage}`);
     }
   },
 });
@@ -104,7 +107,8 @@ export const verifyPayment = action({
       }
     } catch (error: any) {
       console.error("Payment verification error:", error);
-      throw new Error(`Payment verification failed: ${error.message}`);
+      const errorMessage = error?.message || error?.error?.description || JSON.stringify(error);
+      throw new Error(`Payment verification failed: ${errorMessage}`);
     }
   },
 });
