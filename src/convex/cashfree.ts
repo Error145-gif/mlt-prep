@@ -2,7 +2,6 @@
 
 import { v } from "convex/values";
 import { action } from "./_generated/server";
-const { Cashfree } = require("cashfree-pg");
 
 // Create a Cashfree order and return payment session ID
 export const createOrder = action({
@@ -14,10 +13,13 @@ export const createOrder = action({
     planName: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    // Import Cashfree inside the handler
+    const { Cashfree } = require("cashfree-pg");
+    
     // Configure Cashfree with environment variables
     Cashfree.XClientId = process.env.CASHFREE_CLIENT_ID;
     Cashfree.XClientSecret = process.env.CASHFREE_CLIENT_SECRET;
-    Cashfree.XEnvironment = Cashfree.Environment.SANDBOX; // Change to PRODUCTION for live
+    Cashfree.XEnvironment = Cashfree.Environment.SANDBOX;
 
     const uniqueOrderId = `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
@@ -65,10 +67,13 @@ export const verifyPayment = action({
     orderId: v.string(),
   },
   handler: async (ctx, args) => {
+    // Import Cashfree inside the handler
+    const { Cashfree } = require("cashfree-pg");
+    
     // Configure Cashfree with environment variables
     Cashfree.XClientId = process.env.CASHFREE_CLIENT_ID;
     Cashfree.XClientSecret = process.env.CASHFREE_CLIENT_SECRET;
-    Cashfree.XEnvironment = Cashfree.Environment.SANDBOX; // Change to PRODUCTION for live
+    Cashfree.XEnvironment = Cashfree.Environment.SANDBOX;
     
     try {
       const response = await Cashfree.PGFetchOrder("2023-08-01", args.orderId);
