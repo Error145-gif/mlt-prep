@@ -9,13 +9,16 @@ import { Check, Sparkles, Zap, Crown } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { useEffect } from "react";
+import { useAction } from "convex/react";
+import { load } from "@cashfreepayments/cashfree-js";
 
 export default function SubscriptionPlans() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
   const navigate = useNavigate();
   const subscriptionAccess = useQuery(api.student.checkSubscriptionAccess);
   const startFreeTrial = useMutation(api.subscriptions.startFreeTrial);
   const createSubscription = useMutation(api.subscriptions.createSubscription);
+  const createCashfreeOrder = useAction(api.cashfree.createOrder);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -41,13 +44,43 @@ export default function SubscriptionPlans() {
     }
   };
 
-  const handleSubscribe = async (planName: string, duration: number, amount: number) => {
+  const handleSubscribe = async (planId: string, amount: number, planName: string) => {
+    if (!user) {
+      toast.error("Please login to subscribe");
+      navigate("/auth");
+      return;
+    }
+
     try {
-      await createSubscription({ planName, duration, amount });
-      toast.success("Subscription activated!");
-      navigate("/dashboard");
+      toast.info("Initiating payment...");
+      
+      // Create order on backend
+      const orderResponse = await createCashfreeOrder({
+        orderAmount: amount,
+        customerName: user.name || "Student",
+        customerEmail: user.email || "",
+        customerPhone: "9999999999", // Default phone number
+        planName: planName,
+      });
+
+      if (!orderResponse.success || !orderResponse.paymentSessionId) {
+        throw new Error("Failed to create payment session");
+      }
+
+      // Load Cashfree SDK and initiate checkout
+      const cashfree = await load({
+        mode: "sandbox", // Change to "production" for live
+      });
+
+      const checkoutOptions = {
+        paymentSessionId: orderResponse.paymentSessionId,
+        redirectTarget: "_self" as const,
+      };
+
+      cashfree.checkout(checkoutOptions);
     } catch (error: any) {
-      toast.error(error.message || "Failed to subscribe");
+      console.error("Payment initiation error:", error);
+      toast.error(error.message || "Failed to initiate payment. Please try again.");
     }
   };
 
@@ -80,7 +113,7 @@ export default function SubscriptionPlans() {
         "Unlimited practice questions",
         "Priority support",
       ],
-      action: () => handleSubscribe("Monthly Plan", 30, 99),
+      action: () => handleSubscribe("monthly", 99, "Monthly Plan"),
       buttonText: "Subscribe",
     },
     {
@@ -97,7 +130,7 @@ export default function SubscriptionPlans() {
         "Exam preparation guide",
         "Weekly progress reports",
       ],
-      action: () => handleSubscribe("4 Months Plan", 120, 399),
+      action: () => handleSubscribe("4months", 399, "4 Months Plan"),
       buttonText: "Best Value",
     },
     {
@@ -115,7 +148,7 @@ export default function SubscriptionPlans() {
         "Personalized study plan",
         "One-on-one mentorship session",
       ],
-      action: () => handleSubscribe("Yearly Plan", 365, 599),
+      action: () => handleSubscribe("yearly", 599, "Yearly Plan"),
       buttonText: "Maximum Savings",
     },
   ];

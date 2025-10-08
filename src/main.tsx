@@ -35,6 +35,7 @@ import ShippingPolicy from "./pages/ShippingPolicy.tsx";
 import TermsAndConditions from "./pages/TermsAndConditions.tsx";
 import PrivacyPolicy from "./pages/PrivacyPolicy.tsx";
 import RefundPolicy from "./pages/RefundPolicy.tsx";
+import PaymentStatus from "./pages/PaymentStatus";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
@@ -103,6 +104,7 @@ createRoot(document.getElementById("root")!).render(
             <Route path="/terms" element={<TermsAndConditions />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/refund-policy" element={<RefundPolicy />} />
+            <Route path="/payment-status" element={<PaymentStatus />} />
             <Route path="/admin" element={<AdminLayout><AdminDashboard /></AdminLayout>} />
             <Route path="/admin/content" element={<AdminLayout><ContentManagement /></AdminLayout>} />
             <Route path="/admin/questions" element={<AdminLayout><QuestionManagement /></AdminLayout>} />

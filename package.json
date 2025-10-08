@@ -11,6 +11,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@cashfreepayments/cashfree-js": "^1.0.5",
     "@convex-dev/auth": "^0.0.86",
     "@faker-js/faker": "^9.8.0",
     "@google/generative-ai": "^0.24.1",
@@ -48,6 +49,7 @@
     "@types/three": "^0.177.0",
     "@zumer/snapdom": "^1.7.1",
     "axios": "^1.9.0",
+    "cashfree-pg": "^5.0.8",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
