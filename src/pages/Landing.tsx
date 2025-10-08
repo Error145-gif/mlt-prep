@@ -47,9 +47,9 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Lab Background Image */}
+      {/* Lab Background Image - Lighter */}
       <div 
-        className="fixed inset-0 z-0 opacity-10"
+        className="fixed inset-0 z-0 opacity-20"
         style={{
           backgroundImage: 'url(https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=1920&q=80)',
           backgroundSize: 'cover',
@@ -58,15 +58,80 @@ export default function Landing() {
         }}
       />
 
-      {/* Animated Background Gradients */}
-      <div className="fixed inset-0 -z-10">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500/30 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-500/30 rounded-full blur-3xl animate-pulse delay-1000" />
-        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-pink-500/20 rounded-full blur-3xl animate-pulse delay-500" />
+      {/* Animated Background Gradients - Brighter and More Vibrant */}
+      <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-100 via-purple-50 to-pink-100">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-400/40 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-400/40 rounded-full blur-3xl animate-pulse delay-1000" />
+        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-pink-400/30 rounded-full blur-3xl animate-pulse delay-500" />
+        <div className="absolute top-1/4 right-1/3 w-64 h-64 bg-cyan-400/30 rounded-full blur-2xl animate-pulse delay-700" />
+        
+        {/* Floating Medical Icons */}
+        <motion.div
+          className="absolute top-20 left-10 text-6xl opacity-20"
+          animate={{
+            y: [0, -30, 0],
+            rotate: [0, 10, -10, 0],
+          }}
+          transition={{
+            duration: 6,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        >
+          💉
+        </motion.div>
+        
+        <motion.div
+          className="absolute top-40 right-20 text-5xl opacity-20"
+          animate={{
+            y: [0, 25, 0],
+            rotate: [0, -15, 15, 0],
+          }}
+          transition={{
+            duration: 7,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 1,
+          }}
+        >
+          🔬
+        </motion.div>
+        
+        <motion.div
+          className="absolute bottom-32 left-1/4 text-5xl opacity-20"
+          animate={{
+            y: [0, -20, 0],
+            x: [0, 15, 0],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 2,
+          }}
+        >
+          🧪
+        </motion.div>
+        
+        <motion.div
+          className="absolute bottom-20 right-1/3 text-4xl opacity-20"
+          animate={{
+            y: [0, 30, 0],
+            rotate: [0, 20, -20, 0],
+          }}
+          transition={{
+            duration: 5,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 0.5,
+          }}
+        >
+          🩺
+        </motion.div>
       </div>
 
       {/* Navigation */}
-      <nav className="glass-card border-b border-white/20 backdrop-blur-xl bg-white/10 sticky top-0 z-50">
+      <nav className="glass-card border-b border-white/30 backdrop-blur-xl bg-white/80 sticky top-0 z-50 shadow-lg">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate("/")}>
             <img src="/logo.svg" alt="MLT Logo" className="h-10 w-10" />
@@ -121,20 +186,20 @@ export default function Landing() {
             transition={{ duration: 0.8 }}
             className="space-y-6 text-center lg:text-left"
           >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card border border-white/20 backdrop-blur-xl bg-white/10 text-white/90 mb-4">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card border border-purple-300 backdrop-blur-xl bg-white/90 text-purple-700 mb-4 shadow-md">
             <Sparkles className="h-4 w-4" />
             <span className="text-sm">AI-Powered Medical Lab Technology Learning</span>
           </div>
           
-          <h1 className="text-5xl md:text-7xl font-bold text-white tracking-tight">
+          <h1 className="text-5xl md:text-7xl font-bold text-gray-900 tracking-tight">
             Master MLT with
             <br />
-            <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
               Smart Learning
             </span>
           </h1>
           
-          <p className="text-xl text-white/70 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-700 max-w-2xl mx-auto">
             Comprehensive study materials, AI-generated practice questions, and personalized analytics to help you excel in Medical Lab Technology
           </p>
           
