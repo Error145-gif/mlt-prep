@@ -14,6 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { TestHeader } from "@/components/TestHeader";
 import { QuestionCard } from "@/components/QuestionCard";
 import { QuestionPalette } from "@/components/QuestionPalette";
+import { motion } from "framer-motion";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -485,10 +486,15 @@ export default function TestStart() {
           </div>
 
           {isPaused && (
-            <div className="mb-6 p-4 bg-yellow-50 border-2 border-yellow-400 rounded-lg text-center">
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="mb-6 p-4 bg-yellow-50 border-2 border-yellow-400 rounded-lg text-center shadow-lg"
+            >
               <p className="text-yellow-800 font-semibold text-lg">⏸️ Test Paused</p>
               <p className="text-yellow-700 mt-1">Click Resume to continue your test</p>
-            </div>
+            </motion.div>
           )}
           <QuestionCard
             questionNumber={currentQuestionIndex + 1}
@@ -515,7 +521,7 @@ export default function TestStart() {
       </div>
 
       <AlertDialog open={showExitDialog} onOpenChange={setShowExitDialog}>
-        <AlertDialogContent>
+        <AlertDialogContent className="z-[100]">
           <AlertDialogHeader>
             <AlertDialogTitle>Exit Test?</AlertDialogTitle>
             <AlertDialogDescription>

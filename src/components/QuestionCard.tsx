@@ -29,10 +29,11 @@ export function QuestionCard({
 }: QuestionCardProps) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.3 }}
+      key={questionNumber}
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+      transition={{ duration: 0.4, ease: "easeInOut" }}
       className="h-full"
     >
       <Card className="p-8 shadow-lg border-0 bg-white/80 backdrop-blur-sm h-full flex flex-col">
@@ -64,8 +65,11 @@ export function QuestionCard({
                 return (
                   <motion.div
                     key={idx}
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.99 }}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.05 }}
+                    whileHover={{ scale: 1.02, x: 4 }}
+                    whileTap={{ scale: 0.98 }}
                   >
                     <div
                       className={`flex items-center space-x-4 p-5 rounded-xl border-2 transition-all duration-200 cursor-pointer ${
@@ -77,7 +81,7 @@ export function QuestionCard({
                       <RadioGroupItem
                         value={option}
                         id={`option-${idx}`}
-                        className="border-2 w-5 h-5 text-blue-600"
+                        className="border-2 w-6 h-6 text-blue-600 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                       />
                       <Label
                         htmlFor={`option-${idx}`}
