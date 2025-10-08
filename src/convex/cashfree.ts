@@ -15,7 +15,8 @@ export const createOrder = action({
   handler: async (ctx, args) => {
     try {
       // Import Cashfree SDK inside the handler
-      const { Cashfree } = require("cashfree-pg");
+      const cashfreePg = require("cashfree-pg");
+      const Cashfree = cashfreePg.Cashfree;
       
       // Log environment variables for debugging
       console.log("Cashfree Client ID exists:", !!process.env.CASHFREE_CLIENT_ID);
@@ -36,24 +37,24 @@ export const createOrder = action({
       
       console.log("Cashfree Environment:", isSandbox ? "SANDBOX" : "PRODUCTION");
 
-    const uniqueOrderId = `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const uniqueOrderId = `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-    const request = {
-      order_amount: args.orderAmount,
-      order_currency: "INR",
-      order_id: uniqueOrderId,
-      customer_details: {
-        customer_id: args.customerEmail,
-        customer_phone: args.customerPhone,
-        customer_name: args.customerName,
-        customer_email: args.customerEmail,
-      },
-      order_meta: {
-        return_url: `${process.env.CONVEX_SITE_URL}/payment-status?order_id={order_id}`,
-        notify_url: `${process.env.CONVEX_SITE_URL}/api/cashfree/webhook`,
-      },
-      order_note: args.planName ? `Subscription: ${args.planName}` : "MLT Learning Subscription",
-    };
+      const request = {
+        order_amount: args.orderAmount,
+        order_currency: "INR",
+        order_id: uniqueOrderId,
+        customer_details: {
+          customer_id: args.customerEmail,
+          customer_phone: args.customerPhone,
+          customer_name: args.customerName,
+          customer_email: args.customerEmail,
+        },
+        order_meta: {
+          return_url: `${process.env.CONVEX_SITE_URL}/payment-status?order_id={order_id}`,
+          notify_url: `${process.env.CONVEX_SITE_URL}/api/cashfree/webhook`,
+        },
+        order_note: args.planName ? `Subscription: ${args.planName}` : "MLT Learning Subscription",
+      };
 
       console.log("Creating order with request:", JSON.stringify(request, null, 2));
 
@@ -87,7 +88,8 @@ export const verifyPayment = action({
   handler: async (ctx, args) => {
     try {
       // Import Cashfree SDK inside the handler
-      const { Cashfree } = require("cashfree-pg");
+      const cashfreePg = require("cashfree-pg");
+      const Cashfree = cashfreePg.Cashfree;
       
       if (!process.env.CASHFREE_CLIENT_ID || !process.env.CASHFREE_CLIENT_SECRET) {
         throw new Error("Cashfree credentials not configured.");
