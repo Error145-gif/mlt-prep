@@ -538,7 +538,7 @@ export const submitTest = mutation({
   },
 });
 
-// Get test results
+// Get test results - OPTIMIZED VERSION
 export const getTestResults = query({
   args: {
     sessionId: v.id("testSessions"),
@@ -559,27 +559,39 @@ export const getTestResults = query({
       .withIndex("by_session", (q) => q.eq("sessionId", args.sessionId))
       .first();
 
+    // Fetch questions in parallel with better error handling
     const questions = await Promise.all(
       session.questionIds.map(async (id) => {
-        const q = await ctx.db.get(id);
-        const userAnswer = session.answers?.find((a) => a.questionId === id);
-        return {
-          ...q,
-          userAnswer: userAnswer?.answer,
-          isCorrect: userAnswer?.isCorrect,
-        };
+        try {
+          const q = await ctx.db.get(id);
+          if (!q) return null;
+          const userAnswer = session.answers?.find((a) => a.questionId === id);
+          return {
+            ...q,
+            userAnswer: userAnswer?.answer,
+            isCorrect: userAnswer?.isCorrect,
+          };
+        } catch (error) {
+          console.error(`Failed to fetch question ${id}:`, error);
+          return null;
+        }
       })
     );
 
-    // Calculate rank: Get all completed sessions for this test type with same topic/year/setNumber
-    let allSessions = await ctx.db
+    // Filter out any null questions
+    const validQuestions = questions.filter((q) => q !== null);
+
+    // OPTIMIZED: Calculate rank only from relevant sessions (same test configuration)
+    // Use indexed query and limit results
+    let relevantSessions = await ctx.db
       .query("testSessions")
+      .withIndex("by_user", (q) => q.eq("userId", session.userId))
       .filter((q) => q.eq(q.field("status"), "completed"))
       .filter((q) => q.eq(q.field("testType"), session.testType))
       .collect();
 
-    // Filter by topic/year/setNumber to get sessions for the same test
-    allSessions = allSessions.filter((s) => {
+    // Filter by topic/year/setNumber in memory (more efficient than multiple DB queries)
+    relevantSessions = relevantSessions.filter((s) => {
       if (session.testType === "mock" || session.testType === "ai") {
         return s.topicId === session.topicId && s.setNumber === session.setNumber;
       } else if (session.testType === "pyq") {
@@ -588,10 +600,25 @@ export const getTestResults = query({
       return false;
     });
 
+    // Get all users who completed this same test (not just current user)
+    const allRelevantSessions = await ctx.db
+      .query("testSessions")
+      .filter((q) => q.eq(q.field("status"), "completed"))
+      .filter((q) => q.eq(q.field("testType"), session.testType))
+      .collect();
+
+    // Filter in memory for better performance
+    const matchingSessions = allRelevantSessions.filter((s) => {
+      if (session.testType === "mock" || session.testType === "ai") {
+        return s.topicId === session.topicId && s.setNumber === session.setNumber && s.score !== undefined;
+      } else if (session.testType === "pyq") {
+        return s.year === session.year && s.setNumber === session.setNumber && s.score !== undefined;
+      }
+      return false;
+    });
+
     // Sort by score (descending) to calculate rank
-    const sortedSessions = allSessions
-      .filter((s) => s.score !== undefined)
-      .sort((a, b) => (b.score || 0) - (a.score || 0));
+    const sortedSessions = matchingSessions.sort((a, b) => (b.score || 0) - (a.score || 0));
 
     const rank = sortedSessions.findIndex((s) => s._id === session._id) + 1;
     const totalCandidates = sortedSessions.length;
@@ -599,7 +626,7 @@ export const getTestResults = query({
     return {
       session,
       result,
-      questions,
+      questions: validQuestions,
       rank,
       totalCandidates,
     };

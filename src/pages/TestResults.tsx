@@ -30,10 +30,17 @@ export default function TestResults() {
     sessionId ? { sessionId } : "skip"
   );
 
+  // Enhanced loading state with progress indicator
   if (isLoading || !testResults) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50">
-        <div className="text-gray-900 text-xl">Loading results...</div>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50">
+        <div className="text-center space-y-4">
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+          </div>
+          <div className="text-gray-900 text-xl font-medium">Loading results...</div>
+          <div className="text-gray-600 text-sm">Calculating your score and rank</div>
+        </div>
       </div>
     );
   }

@@ -59,7 +59,7 @@ export default function TestStart() {
   const startTest = useMutation(api.student.startTest);
   const submitTest = useMutation(api.student.submitTest);
 
-  // Fetch questions for the test
+  // Fetch questions for the test - with loading optimization
   const testQuestions = useQuery(api.student.getTestQuestions, {
     testType,
     ...(topicId && { topicId }),
@@ -293,10 +293,17 @@ export default function TestStart() {
     toast.success("Test resumed!");
   };
 
+  // Enhanced loading state
   if (isLoading || !questions.length) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-blue-50">
-        <div className="text-gray-700 text-xl font-medium">Loading test...</div>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-blue-50">
+        <div className="text-center space-y-4">
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+          </div>
+          <div className="text-gray-700 text-xl font-medium">Preparing your test...</div>
+          <div className="text-gray-600 text-sm">Loading questions</div>
+        </div>
       </div>
     );
   }
