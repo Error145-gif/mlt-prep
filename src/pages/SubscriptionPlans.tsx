@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useAction } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
 import { useNavigate } from "react-router";
@@ -8,15 +8,13 @@ import { Badge } from "@/components/ui/badge";
 import { Check, Sparkles, Zap, Crown } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 export default function SubscriptionPlans() {
-  const { isAuthenticated, isLoading, user } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
   const subscriptionAccess = useQuery(api.student.checkSubscriptionAccess);
   const startFreeTrial = useMutation(api.subscriptions.startFreeTrial);
-  const createOrder = useAction(api.cashfree.createOrder);
-  const [processingPlan, setProcessingPlan] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -43,38 +41,7 @@ export default function SubscriptionPlans() {
   };
 
   const handleSubscribe = async (planId: string, amount: number, planName: string, duration: number) => {
-    if (!user) {
-      toast.error("Please login to subscribe");
-      navigate("/auth");
-      return;
-    }
-
-    setProcessingPlan(planId);
-    
-    try {
-      toast.info("Creating payment order...");
-      
-      const result = await createOrder({
-        planName,
-        amount,
-        customerName: user.name || "Student",
-        customerEmail: user.email || "",
-        customerPhone: "9999999999", // Default phone number
-      });
-
-      if (result.success && result.paymentUrl) {
-        toast.success("Redirecting to payment gateway...");
-        // Redirect to Cashfree payment page
-        window.location.href = result.paymentUrl;
-      } else {
-        throw new Error("Failed to create payment order");
-      }
-    } catch (error: any) {
-      console.error("Payment error:", error);
-      toast.error(error.message || "Failed to initiate payment");
-    } finally {
-      setProcessingPlan(null);
-    }
+    toast.info("Payment integration coming soon! Please contact support.");
   };
 
   const plans = [
@@ -215,12 +182,9 @@ export default function SubscriptionPlans() {
                   <Button
                     onClick={plan.action}
                     className={`w-full bg-gradient-to-r ${plan.color} hover:opacity-90`}
-                    disabled={
-                      (subscriptionAccess?.hasAccess && plan.price === 0) || 
-                      processingPlan === plan.id
-                    }
+                    disabled={subscriptionAccess?.hasAccess && plan.price === 0}
                   >
-                    {processingPlan === plan.id ? "Processing..." : plan.buttonText}
+                    {plan.buttonText}
                   </Button>
                 </CardContent>
               </Card>

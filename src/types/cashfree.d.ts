@@ -1,1 +1,1 @@
-// Cashfree type definitions removed - ready for fresh configuration
+// Cashfree type definitions removed - file deprecated
