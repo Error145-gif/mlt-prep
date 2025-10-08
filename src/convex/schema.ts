@@ -207,6 +207,11 @@ const schema = defineSchema(
       status: v.string(), // "success", "failed", "pending"
       paymentMethod: v.optional(v.string()),
       transactionId: v.optional(v.string()),
+      orderId: v.optional(v.string()), // Cashfree order ID
+      paymentSessionId: v.optional(v.string()), // Cashfree payment session ID
+      planName: v.optional(v.string()), // Plan name for the payment
+      duration: v.optional(v.number()), // Duration in days
+      paymentId: v.optional(v.string()), // Cashfree payment ID after success
     })
       .index("by_user", ["userId"])
       .index("by_subscription", ["subscriptionId"]),

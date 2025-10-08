@@ -18,6 +18,8 @@ import type * as analytics from "../analytics.js";
 import type * as auth_emailOtp from "../auth/emailOtp.js";
 import type * as auth from "../auth.js";
 import type * as authHelpers from "../authHelpers.js";
+import type * as cashfree from "../cashfree.js";
+import type * as cashfreeInternal from "../cashfreeInternal.js";
 import type * as content from "../content.js";
 import type * as feedback from "../feedback.js";
 import type * as http from "../http.js";
@@ -42,6 +44,8 @@ declare const fullApi: ApiFromModules<{
   "auth/emailOtp": typeof auth_emailOtp;
   auth: typeof auth;
   authHelpers: typeof authHelpers;
+  cashfree: typeof cashfree;
+  cashfreeInternal: typeof cashfreeInternal;
   content: typeof content;
   feedback: typeof feedback;
   http: typeof http;

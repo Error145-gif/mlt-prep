@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "convex/react";
+import { useMutation, useQuery, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
 import { useNavigate } from "react-router";
@@ -8,13 +8,15 @@ import { Badge } from "@/components/ui/badge";
 import { Check, Sparkles, Zap, Crown } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function SubscriptionPlans() {
   const { isAuthenticated, isLoading, user } = useAuth();
   const navigate = useNavigate();
   const subscriptionAccess = useQuery(api.student.checkSubscriptionAccess);
   const startFreeTrial = useMutation(api.subscriptions.startFreeTrial);
+  const createOrder = useAction(api.cashfree.createOrder);
+  const [processingPlan, setProcessingPlan] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -40,21 +42,48 @@ export default function SubscriptionPlans() {
     }
   };
 
-  const handleSubscribe = async (planId: string, amount: number, planName: string) => {
+  const handleSubscribe = async (planId: string, amount: number, planName: string, duration: number) => {
     if (!user) {
       toast.error("Please login to subscribe");
       navigate("/auth");
       return;
     }
 
-    toast.info("Payment gateway integration coming soon!");
+    setProcessingPlan(planId);
+    
+    try {
+      toast.info("Creating payment order...");
+      
+      const result = await createOrder({
+        planName,
+        amount,
+        customerName: user.name || "Student",
+        customerEmail: user.email || "",
+        customerPhone: "9999999999", // Default phone number
+      });
+
+      if (result.success && result.paymentUrl) {
+        toast.success("Redirecting to payment gateway...");
+        // Redirect to Cashfree payment page
+        window.location.href = result.paymentUrl;
+      } else {
+        throw new Error("Failed to create payment order");
+      }
+    } catch (error: any) {
+      console.error("Payment error:", error);
+      toast.error(error.message || "Failed to initiate payment");
+    } finally {
+      setProcessingPlan(null);
+    }
   };
 
   const plans = [
     {
+      id: "trial",
       name: "Free Trial",
       price: 0,
-      duration: "7 days",
+      duration: 7,
+      durationText: "7 days",
       icon: Sparkles,
       color: "from-blue-500 to-cyan-600",
       features: [
@@ -67,9 +96,11 @@ export default function SubscriptionPlans() {
       buttonText: "Start Free Trial",
     },
     {
+      id: "monthly",
       name: "Monthly",
       price: 99,
-      duration: "per month",
+      duration: 30,
+      durationText: "per month",
       icon: Zap,
       color: "from-purple-500 to-pink-600",
       features: [
@@ -79,13 +110,15 @@ export default function SubscriptionPlans() {
         "Unlimited practice questions",
         "Priority support",
       ],
-      action: () => handleSubscribe("monthly", 99, "Monthly Plan"),
+      action: () => handleSubscribe("monthly", 99, "Monthly Plan", 30),
       buttonText: "Subscribe",
     },
     {
+      id: "4months",
       name: "4 Months",
       price: 399,
-      duration: "4 months",
+      duration: 120,
+      durationText: "4 months",
       icon: Crown,
       color: "from-orange-500 to-red-600",
       popular: true,
@@ -96,14 +129,16 @@ export default function SubscriptionPlans() {
         "Exam preparation guide",
         "Weekly progress reports",
       ],
-      action: () => handleSubscribe("4months", 399, "4 Months Plan"),
+      action: () => handleSubscribe("4months", 399, "4 Months Plan", 120),
       buttonText: "Best Value",
     },
     {
+      id: "yearly",
       name: "Yearly",
       price: 599,
       originalPrice: 798,
-      duration: "12 months",
+      duration: 365,
+      durationText: "12 months",
       icon: Crown,
       color: "from-green-500 to-teal-600",
       discount: "Save ₹199",
@@ -114,7 +149,7 @@ export default function SubscriptionPlans() {
         "Personalized study plan",
         "One-on-one mentorship session",
       ],
-      action: () => handleSubscribe("yearly", 599, "Yearly Plan"),
+      action: () => handleSubscribe("yearly", 599, "Yearly Plan", 365),
       buttonText: "Maximum Savings",
     },
   ];
@@ -138,7 +173,7 @@ export default function SubscriptionPlans() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {plans.map((plan, index) => (
             <motion.div
-              key={plan.name}
+              key={plan.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
@@ -164,7 +199,7 @@ export default function SubscriptionPlans() {
                     )}
                     <div className="flex items-baseline gap-1">
                       <span className="text-4xl font-bold text-white">₹{plan.price}</span>
-                      <span className="text-white/60">/{plan.duration}</span>
+                      <span className="text-white/60">/{plan.durationText}</span>
                     </div>
                   </div>
                 </CardHeader>
@@ -180,9 +215,12 @@ export default function SubscriptionPlans() {
                   <Button
                     onClick={plan.action}
                     className={`w-full bg-gradient-to-r ${plan.color} hover:opacity-90`}
-                    disabled={subscriptionAccess?.hasAccess && plan.price === 0}
+                    disabled={
+                      (subscriptionAccess?.hasAccess && plan.price === 0) || 
+                      processingPlan === plan.id
+                    }
                   >
-                    {plan.buttonText}
+                    {processingPlan === plan.id ? "Processing..." : plan.buttonText}
                   </Button>
                 </CardContent>
               </Card>
