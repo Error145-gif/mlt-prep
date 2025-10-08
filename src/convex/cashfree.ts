@@ -20,7 +20,7 @@ function initializeCashfree() {
     ? "SANDBOX" 
     : "PRODUCTION";
   
-  // Initialize Cashfree with v5 SDK pattern
+  // Set global configuration for v5 SDK
   Cashfree.XClientId = clientId;
   Cashfree.XClientSecret = clientSecret;
   Cashfree.XEnvironment = environment;
