@@ -2,6 +2,8 @@ import { v } from "convex/values";
 import { mutation } from "./_generated/server";
 import { getCurrentUser } from "./users";
 
+export { resetAllUserData } from "./userDataReset";
+
 // Delete a user (admin only)
 export const deleteUser = mutation({
   args: {

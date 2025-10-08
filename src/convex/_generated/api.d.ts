@@ -28,6 +28,7 @@ import type * as razorpayInternal from "../razorpayInternal.js";
 import type * as student from "../student.js";
 import type * as subscriptions from "../subscriptions.js";
 import type * as topics from "../topics.js";
+import type * as userDataReset from "../userDataReset.js";
 import type * as userManagement from "../userManagement.js";
 import type * as users from "../users.js";
 
@@ -55,6 +56,7 @@ declare const fullApi: ApiFromModules<{
   student: typeof student;
   subscriptions: typeof subscriptions;
   topics: typeof topics;
+  userDataReset: typeof userDataReset;
   userManagement: typeof userManagement;
   users: typeof users;
 }>;
