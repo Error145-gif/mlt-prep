@@ -359,7 +359,7 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="relative z-10 border-t border-white/20 backdrop-blur-xl bg-white/5 py-8">
+      <footer className="relative z-10 border-t border-white/20 backdrop-blur-xl bg-transparent py-8">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-6">
             <div>
