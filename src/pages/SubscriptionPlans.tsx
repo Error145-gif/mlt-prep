@@ -9,16 +9,12 @@ import { Check, Sparkles, Zap, Crown } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { useEffect } from "react";
-import { useAction } from "convex/react";
-import { load } from "@cashfreepayments/cashfree-js";
 
 export default function SubscriptionPlans() {
   const { isAuthenticated, isLoading, user } = useAuth();
   const navigate = useNavigate();
   const subscriptionAccess = useQuery(api.student.checkSubscriptionAccess);
   const startFreeTrial = useMutation(api.subscriptions.startFreeTrial);
-  const createSubscription = useMutation(api.subscriptions.createSubscription);
-  const createCashfreeOrder = useAction(api.cashfree.createOrder);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -51,48 +47,7 @@ export default function SubscriptionPlans() {
       return;
     }
 
-    try {
-      toast.info("Initiating payment...");
-      
-      console.log("Creating order for:", { planId, amount, planName });
-      
-      // Create order on backend
-      const orderResponse = await createCashfreeOrder({
-        orderAmount: amount,
-        customerName: user.name || "Student",
-        customerEmail: user.email || "",
-        customerPhone: "9999999999", // Default phone number
-        planName: planName,
-      });
-
-      console.log("Order response:", orderResponse);
-
-      if (!orderResponse.success || !orderResponse.paymentSessionId) {
-        console.error("Order creation failed:", orderResponse);
-        throw new Error("Failed to create payment session");
-      }
-
-      console.log("Loading Cashfree SDK...");
-      
-      // Load Cashfree SDK and initiate checkout
-      const cashfree = await load({
-        mode: "sandbox", // Change to "production" for live
-      });
-
-      console.log("Cashfree SDK loaded, initiating checkout...");
-
-      const checkoutOptions = {
-        paymentSessionId: orderResponse.paymentSessionId,
-        redirectTarget: "_self" as const,
-      };
-
-      console.log("Checkout options:", checkoutOptions);
-
-      cashfree.checkout(checkoutOptions);
-    } catch (error: any) {
-      console.error("Payment initiation error:", error);
-      toast.error(error.message || "Failed to initiate payment. Please try again.");
-    }
+    toast.info("Payment gateway integration coming soon!");
   };
 
   const plans = [
