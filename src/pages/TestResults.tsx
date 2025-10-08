@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Id } from "@/convex/_generated/dataModel";
-import { User, Clock, CheckCircle, XCircle, MinusCircle, Trophy, TrendingUp, Target } from "lucide-react";
+import { Clock, CheckCircle, XCircle, MinusCircle, Trophy, TrendingUp, Target } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function TestResults() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -29,6 +30,8 @@ export default function TestResults() {
     api.student.getTestResults,
     sessionId ? { sessionId } : "skip"
   );
+
+  const userProfile = useQuery(api.users.getUserProfile);
 
   // Enhanced loading state with progress indicator
   if (isLoading || !testResults) {
@@ -96,7 +99,20 @@ export default function TestResults() {
           Test Results
         </h1>
         <div className="flex items-center gap-3">
-          <User className="h-8 w-8 text-blue-600" />
+          {userProfile?.avatarUrl ? (
+            <Avatar className="h-10 w-10 border-2 border-blue-600 shadow-md">
+              <AvatarImage src={userProfile.avatarUrl} />
+              <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">
+                {userProfile.name?.charAt(0)?.toUpperCase() || "U"}
+              </AvatarFallback>
+            </Avatar>
+          ) : (
+            <Avatar className="h-10 w-10 border-2 border-blue-600 shadow-md">
+              <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">
+                {user?.name?.charAt(0)?.toUpperCase() || "U"}
+              </AvatarFallback>
+            </Avatar>
+          )}
           <span className="font-medium text-gray-900">{user?.name || "Student"}</span>
         </div>
       </div>
