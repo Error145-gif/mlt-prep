@@ -6,7 +6,7 @@ import { action } from "./_generated/server";
 // Helper function to initialize and configure Cashfree SDK
 function initializeCashfree() {
   try {
-    const { Cashfree } = require("cashfree-pg");
+    const Cashfree = require("cashfree-pg");
     
     // Validate environment variables
     if (!process.env.CASHFREE_CLIENT_ID || !process.env.CASHFREE_CLIENT_SECRET) {
