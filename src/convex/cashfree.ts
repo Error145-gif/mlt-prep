@@ -13,18 +13,28 @@ export const createOrder = action({
     planName: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    // Import Cashfree inside the handler
-    const { Cashfree } = require("cashfree-pg");
-    
-    // Log environment variables for debugging (remove in production)
-    console.log("Cashfree Client ID exists:", !!process.env.CASHFREE_CLIENT_ID);
-    console.log("Cashfree Secret exists:", !!process.env.CASHFREE_CLIENT_SECRET);
-    console.log("Convex Site URL:", process.env.CONVEX_SITE_URL);
-    
-    // Configure Cashfree with environment variables
-    Cashfree.XClientId = process.env.CASHFREE_CLIENT_ID;
-    Cashfree.XClientSecret = process.env.CASHFREE_CLIENT_SECRET;
-    Cashfree.XEnvironment = Cashfree.Environment.SANDBOX;
+    try {
+      // Import Cashfree SDK inside the handler
+      const { Cashfree } = require("cashfree-pg");
+      
+      // Log environment variables for debugging
+      console.log("Cashfree Client ID exists:", !!process.env.CASHFREE_CLIENT_ID);
+      console.log("Cashfree Secret exists:", !!process.env.CASHFREE_CLIENT_SECRET);
+      console.log("Convex Site URL:", process.env.CONVEX_SITE_URL);
+      
+      if (!process.env.CASHFREE_CLIENT_ID || !process.env.CASHFREE_CLIENT_SECRET) {
+        throw new Error("Cashfree credentials not configured. Please add CASHFREE_CLIENT_ID and CASHFREE_CLIENT_SECRET in API Keys tab.");
+      }
+      
+      // Configure Cashfree with environment variables
+      Cashfree.XClientId = process.env.CASHFREE_CLIENT_ID;
+      Cashfree.XClientSecret = process.env.CASHFREE_CLIENT_SECRET;
+      
+      // Set environment based on Client ID (TEST prefix = sandbox, otherwise production)
+      const isSandbox = process.env.CASHFREE_CLIENT_ID.startsWith("TEST");
+      Cashfree.XEnvironment = isSandbox ? Cashfree.Environment.SANDBOX : Cashfree.Environment.PRODUCTION;
+      
+      console.log("Cashfree Environment:", isSandbox ? "SANDBOX" : "PRODUCTION");
 
     const uniqueOrderId = `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
@@ -45,9 +55,8 @@ export const createOrder = action({
       order_note: args.planName ? `Subscription: ${args.planName}` : "MLT Learning Subscription",
     };
 
-    console.log("Creating order with request:", JSON.stringify(request, null, 2));
+      console.log("Creating order with request:", JSON.stringify(request, null, 2));
 
-    try {
       const response = await Cashfree.PGCreateOrder("2023-08-01", request);
 
       console.log("Cashfree response:", JSON.stringify(response.data, null, 2));
@@ -76,15 +85,22 @@ export const verifyPayment = action({
     orderId: v.string(),
   },
   handler: async (ctx, args) => {
-    // Import Cashfree inside the handler
-    const { Cashfree } = require("cashfree-pg");
-    
-    // Configure Cashfree with environment variables
-    Cashfree.XClientId = process.env.CASHFREE_CLIENT_ID;
-    Cashfree.XClientSecret = process.env.CASHFREE_CLIENT_SECRET;
-    Cashfree.XEnvironment = Cashfree.Environment.SANDBOX;
-    
     try {
+      // Import Cashfree SDK inside the handler
+      const { Cashfree } = require("cashfree-pg");
+      
+      if (!process.env.CASHFREE_CLIENT_ID || !process.env.CASHFREE_CLIENT_SECRET) {
+        throw new Error("Cashfree credentials not configured.");
+      }
+      
+      // Configure Cashfree with environment variables
+      Cashfree.XClientId = process.env.CASHFREE_CLIENT_ID;
+      Cashfree.XClientSecret = process.env.CASHFREE_CLIENT_SECRET;
+      
+      // Set environment based on Client ID
+      const isSandbox = process.env.CASHFREE_CLIENT_ID.startsWith("TEST");
+      Cashfree.XEnvironment = isSandbox ? Cashfree.Environment.SANDBOX : Cashfree.Environment.PRODUCTION;
+    
       const response = await Cashfree.PGFetchOrder("2023-08-01", args.orderId);
 
       if (response && response.data) {
