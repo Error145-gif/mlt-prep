@@ -71,6 +71,37 @@ export const getDashboardStats = query({
   },
 });
 
+// Get all registered users with Gmail accounts
+export const getAllRegisteredUsers = query({
+  args: {},
+  handler: async (ctx) => {
+    const user = await getCurrentUser(ctx);
+    if (!user || user.role !== "admin") {
+      throw new Error("Unauthorized");
+    }
+
+    const allUsers = await ctx.db.query("users").collect();
+    
+    // Filter for Gmail accounts and return relevant info
+    const gmailUsers = allUsers
+      .filter(u => u.email?.endsWith("@gmail.com"))
+      .map(u => ({
+        _id: u._id,
+        name: u.name,
+        email: u.email,
+        role: u.role,
+        isRegistered: u.isRegistered,
+        _creationTime: u._creationTime,
+      }));
+
+    return {
+      totalUsers: gmailUsers.length,
+      activeUsers: gmailUsers.filter(u => u.isRegistered).length,
+      users: gmailUsers,
+    };
+  },
+});
+
 // Get all users with basic stats
 export const getAllUsersAnalytics = query({
   args: {},
