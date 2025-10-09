@@ -10,6 +10,7 @@ import { BookOpen, FileText, TrendingUp, Award, Clock, AlertCircle, CreditCard, 
 import { motion } from "framer-motion";
 import { useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import AmoebaLoader from "@/components/AmoebaLoader";
 
 export default function StudentDashboard() {
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -25,11 +26,7 @@ export default function StudentDashboard() {
   }, [isAuthenticated, isLoading, navigate]);
 
   if (isLoading || !stats) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-white text-xl">Loading...</div>
-      </div>
-    );
+    return <AmoebaLoader text="Loading your dashboard..." />;
   }
 
   const profileCompletion = userProfile ? 
