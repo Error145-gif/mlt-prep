@@ -62,8 +62,8 @@ export default function QuestionManagement() {
     examName: "",
   });
 
-  // Bulk manual entry state - 20 separate sections
-  const [bulkQuestions, setBulkQuestions] = useState<string[]>(Array(20).fill(""));
+  // Bulk manual entry state - 50 separate sections
+  const [bulkQuestions, setBulkQuestions] = useState<string[]>(Array(50).fill(""));
 
   // AI generated questions preview
   const [aiQuestions, setAiQuestions] = useState<any[]>([]);
@@ -251,7 +251,7 @@ export default function QuestionManagement() {
       }
       
       setShowBulkManualForm(false);
-      setBulkQuestions(Array(20).fill(""));
+      setBulkQuestions(Array(50).fill(""));
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to add questions. Please try again.");
       console.error("Bulk add error:", error);
@@ -877,7 +877,7 @@ export default function QuestionManagement() {
                 </DialogHeader>
                 <div className="space-y-4 max-h-[60vh] overflow-y-auto">
                   <div>
-                    <Label className="text-white">Paste Questions in Plain Text (20 Separate Sections)</Label>
+                    <Label className="text-white">Paste Questions in Plain Text (50 Separate Sections)</Label>
                     <p className="text-white/60 text-sm mb-2">
                       Format each question like this:
                     </p>
