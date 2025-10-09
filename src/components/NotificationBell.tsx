@@ -36,9 +36,14 @@ export default function NotificationBell() {
 
   // Show browser notification and toast when new notification arrives
   useEffect(() => {
+    console.log("Notification check - Unread count:", unreadCount, "Previous:", previousCountRef.current);
+    console.log("Notifications:", notifications?.length || 0);
+    
     if (unreadCount !== undefined && unreadCount > previousCountRef.current) {
       // Get the latest notification
       const latestNotification = notifications?.[0];
+      
+      console.log("New notification detected:", latestNotification);
       
       if (latestNotification && !latestNotification.isRead) {
         // Show toast notification

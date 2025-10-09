@@ -90,14 +90,19 @@ export const sendNotification = action({
     id: v.id("notifications"),
   },
   handler: async (ctx, args) => {
+    console.log("Sending notification with ID:", args.id);
+    
     // Get the notification
     const notification = await ctx.runQuery(internal.notifications.getNotificationById, {
       id: args.id,
     });
 
     if (!notification) {
+      console.error("Notification not found:", args.id);
       throw new Error("Notification not found");
     }
+
+    console.log("Notification found:", notification.title, "Status:", notification.status);
 
     // Get target users
     let targetUsers;
@@ -105,9 +110,11 @@ export const sendNotification = action({
       targetUsers = await ctx.runQuery(internal.notifications.getUsersByIds, {
         userIds: notification.targetUsers,
       });
+      console.log(`Sending to ${targetUsers.length} specific users`);
     } else {
       // Send to all users
       targetUsers = await ctx.runQuery(internal.notifications.getAllUsersInternal, {});
+      console.log(`Sending to all ${targetUsers.length} users`);
     }
 
     // Send emails if type includes email
@@ -132,6 +139,8 @@ export const sendNotification = action({
     await ctx.runMutation(internal.notifications.updateNotificationStatus, {
       id: args.id,
     });
+
+    console.log("Notification status updated to 'sent'");
 
     return args.id;
   },

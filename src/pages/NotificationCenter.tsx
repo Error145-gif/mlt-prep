@@ -97,9 +97,10 @@ export default function NotificationCenter() {
   const handleSend = async (id: Id<"notifications">) => {
     try {
       await sendNotification({ id });
-      toast.success("Notification sent successfully!");
+      toast.success("Notification sent successfully! Users will see it now.");
     } catch (error) {
-      toast.error("Failed to send notification");
+      console.error("Failed to send notification:", error);
+      toast.error("Failed to send notification: " + (error as Error).message);
     }
   };
 
