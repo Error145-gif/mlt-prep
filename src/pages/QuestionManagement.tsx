@@ -597,12 +597,12 @@ export default function QuestionManagement() {
               <DialogTrigger asChild>
                 <Button className="bg-green-500/20 hover:bg-green-500/30 text-green-300 border border-green-500/30">
                   <Upload className="h-4 w-4 mr-2" />
-                  Bulk Add (Up to 100)
+                  Bulk Add Manual Questions (Up to 100)
                 </Button>
               </DialogTrigger>
               <DialogContent className="glass-card border-white/20 backdrop-blur-xl bg-white/10 max-w-4xl max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle className="text-white">Bulk Add Questions (Up to 100)</DialogTitle>
+                  <DialogTitle className="text-white">Bulk Add Manual Questions (Up to 100)</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 max-h-[60vh] overflow-y-auto">
                   <div>
