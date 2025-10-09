@@ -5,7 +5,7 @@ import { useNavigate } from "react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Clock, Target } from "lucide-react";
+import { FileText, Clock, Target, Lock } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect } from "react";
 import { toast } from "sonner";
@@ -82,43 +82,68 @@ export default function MockTests() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {mockTests.map((test, index) => (
-            <motion.div
-              key={`${test.topicId}-${test.setNumber}`}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10 hover:bg-white/15 transition-all">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <FileText className="h-8 w-8 text-blue-400" />
-                    <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30">
-                      Set {test.setNumber}/{test.totalSets}
-                    </Badge>
-                  </div>
-                  <CardTitle className="text-white mt-4">{test.topicName}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center gap-2 text-white/70">
-                    <Clock className="h-4 w-4" />
-                    <span className="text-sm">60 mins</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-white/70">
-                    <Target className="h-4 w-4" />
-                    <span className="text-sm">{test.questionCount} Questions</span>
-                  </div>
-                  <Button
-                    onClick={() => handleStartTest(test.topicId, test.setNumber)}
-                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
-                    disabled={!canAccessMock?.canAccess}
-                  >
-                    {test.hasCompleted ? (canAccessMock?.canAccess ? "Re-Test" : "Subscribe to Re-Test") : "Start Test"}
-                  </Button>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
+          {mockTests.map((test, index) => {
+            const isFirstTest = index === 0;
+            const isLocked = !canAccessMock?.canAccess && !isFirstTest;
+            
+            return (
+              <motion.div
+                key={`${test.topicId}-${test.setNumber}`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <Card className={`glass-card border-white/20 backdrop-blur-xl bg-white/10 hover:bg-white/15 transition-all ${isLocked ? 'opacity-60' : ''}`}>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      {isLocked ? (
+                        <Lock className="h-8 w-8 text-yellow-400" />
+                      ) : (
+                        <FileText className="h-8 w-8 text-blue-400" />
+                      )}
+                      <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30">
+                        Set {test.setNumber}/{test.totalSets}
+                      </Badge>
+                    </div>
+                    <CardTitle className="text-white mt-4 flex items-center gap-2">
+                      {test.topicName}
+                      {isLocked && <Lock className="h-5 w-5 text-yellow-400" />}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center gap-2 text-white/70">
+                      <Clock className="h-4 w-4" />
+                      <span className="text-sm">60 mins</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-white/70">
+                      <Target className="h-4 w-4" />
+                      <span className="text-sm">{test.questionCount} Questions</span>
+                    </div>
+                    {isLocked ? (
+                      <Button
+                        onClick={() => {
+                          toast.info("Subscribe to unlock all tests!");
+                          setTimeout(() => navigate("/subscription"), 500);
+                        }}
+                        className="w-full bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700"
+                      >
+                        <Lock className="h-4 w-4 mr-2" />
+                        Subscribe to Unlock
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={() => handleStartTest(test.topicId, test.setNumber)}
+                        className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                        disabled={!canAccessMock?.canAccess && !isFirstTest}
+                      >
+                        {test.hasCompleted ? (canAccessMock?.canAccess ? "Re-Test" : "Subscribe to Re-Test") : isFirstTest && canAccessMock?.reason === "free_trial" ? "Start Free Test" : "Start Test"}
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </div>
