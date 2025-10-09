@@ -1,4 +1,4 @@
-import { useQuery, useAction } from "convex/react";
+import { useQuery, useAction, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
 import { useNavigate, useSearchParams } from "react-router";
@@ -23,6 +23,7 @@ export default function PaymentSummary() {
   const { isAuthenticated, isLoading, user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const convex = useConvex();
   const userProfile = useQuery(api.users.getUserProfile);
   const createOrder = useAction(api.razorpay.createOrder);
   const verifyPayment = useAction(api.razorpay.verifyPayment);
@@ -71,6 +72,11 @@ export default function PaymentSummary() {
     return null;
   }
 
+  const validateCouponQuery = useQuery(
+    api.coupons.validateCoupon,
+    couponCode.trim() ? { code: couponCode.trim() } : "skip"
+  );
+
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) {
       toast.error("Please enter a coupon code");
@@ -79,27 +85,21 @@ export default function PaymentSummary() {
 
     setIsApplyingCoupon(true);
     try {
-      const result = await fetch(`/api/validate-coupon?code=${couponCode}`).then(r => r.json());
+      // Use the Convex query to validate the coupon
+      const result = await fetch(`/api/validate-coupon?code=${couponCode}`).then(r => r.json()).catch(() => null);
       
-      // Hardcoded validation for demo
-      const coupons: Record<string, { discount: number; type: "percentage" | "fixed" }> = {
-        "WELCOME10": { discount: 10, type: "percentage" },
-        "SAVE20": { discount: 20, type: "percentage" },
-        "FLAT50": { discount: 50, type: "fixed" },
-        "NEWYEAR25": { discount: 25, type: "percentage" },
-      };
-
-      const coupon = coupons[couponCode.toUpperCase()];
+      // Call the actual backend validation
+      const validation = validateCouponQuery;
       
-      if (coupon) {
+      if (validation && validation.valid) {
         setAppliedCoupon({
           code: couponCode.toUpperCase(),
-          discount: coupon.discount,
-          type: coupon.type,
+          discount: validation.discount,
+          type: validation.type,
         });
-        toast.success(`Coupon applied! ${coupon.type === "percentage" ? `${coupon.discount}% off` : `₹${coupon.discount} off`}`);
+        toast.success(validation.message);
       } else {
-        toast.error("Invalid coupon code");
+        toast.error(validation?.message || "Invalid coupon code");
       }
     } catch (error) {
       toast.error("Failed to apply coupon");
