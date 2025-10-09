@@ -47,11 +47,11 @@ export const getAllCoupons = query({
 
     const user = await ctx.db
       .query("users")
-      .withIndex("email", (q) => q.eq("email", identity.email))
+      .withIndex("email", (q) => q.eq("email", identity.email!))
       .first();
 
     if (!user || user.role !== "admin") {
-      throw new Error("Unauthorized");
+      throw new Error("Unauthorized: Admin access required");
     }
 
     return await ctx.db.query("coupons").order("desc").collect();
@@ -74,11 +74,11 @@ export const createCoupon = mutation({
 
     const user = await ctx.db
       .query("users")
-      .withIndex("email", (q) => q.eq("email", identity.email))
+      .withIndex("email", (q) => q.eq("email", identity.email!))
       .first();
 
     if (!user || user.role !== "admin") {
-      throw new Error("Unauthorized");
+      throw new Error("Unauthorized: Admin access required");
     }
 
     // Check if coupon code already exists
@@ -129,11 +129,11 @@ export const updateCoupon = mutation({
 
     const user = await ctx.db
       .query("users")
-      .withIndex("email", (q) => q.eq("email", identity.email))
+      .withIndex("email", (q) => q.eq("email", identity.email!))
       .first();
 
     if (!user || user.role !== "admin") {
-      throw new Error("Unauthorized");
+      throw new Error("Unauthorized: Admin access required");
     }
 
     const updates: any = {};
@@ -157,11 +157,11 @@ export const deleteCoupon = mutation({
 
     const user = await ctx.db
       .query("users")
-      .withIndex("email", (q) => q.eq("email", identity.email))
+      .withIndex("email", (q) => q.eq("email", identity.email!))
       .first();
 
     if (!user || user.role !== "admin") {
-      throw new Error("Unauthorized");
+      throw new Error("Unauthorized: Admin access required");
     }
 
     await ctx.db.delete(args.couponId);
