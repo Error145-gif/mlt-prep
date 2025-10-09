@@ -83,7 +83,7 @@ export default function SubscriptionPlans() {
         key: orderResult.keyId,
         amount: orderResult.amount,
         currency: orderResult.currency,
-        name: "MLT Admin Hub",
+        name: "MLT Prep",
         description: planName,
         order_id: orderResult.orderId,
         handler: async function (response: any) {
