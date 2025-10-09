@@ -22,11 +22,11 @@ export default function AdminSidebar() {
 
   return (
     <>
-      {/* Mobile Menu Button */}
+      {/* Menu Toggle Button - Visible on all screens */}
       <Button
         variant="ghost"
         size="icon"
-        className="fixed top-4 left-4 z-50 lg:hidden glass-card border-white/20 backdrop-blur-xl bg-white/10 text-white"
+        className="fixed top-4 left-4 z-50 glass-card border-white/20 backdrop-blur-xl bg-white/10 text-white hover:bg-white/20 transition-all"
         onClick={() => setIsOpen(!isOpen)}
       >
         {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -34,12 +34,13 @@ export default function AdminSidebar() {
 
       {/* Sidebar */}
       <AnimatePresence>
-        {(isOpen || window.innerWidth >= 1024) && (
+        {isOpen && (
           <motion.aside
             initial={{ x: -300 }}
             animate={{ x: 0 }}
             exit={{ x: -300 }}
-            className="fixed left-0 top-0 h-screen w-64 glass-card border-r border-white/20 backdrop-blur-xl bg-white/10 p-6 z-40 lg:translate-x-0"
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="fixed left-0 top-0 h-screen w-64 glass-card border-r border-white/20 backdrop-blur-xl bg-white/10 p-6 z-40"
           >
             <div className="flex flex-col h-full">
               <div className="flex items-center gap-3 mb-8">
@@ -80,10 +81,10 @@ export default function AdminSidebar() {
         )}
       </AnimatePresence>
 
-      {/* Overlay for mobile */}
+      {/* Overlay - Visible when sidebar is open */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          className="fixed inset-0 bg-black/50 z-30"
           onClick={() => setIsOpen(false)}
         />
       )}
