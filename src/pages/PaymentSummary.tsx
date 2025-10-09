@@ -42,6 +42,13 @@ export default function PaymentSummary() {
   const basePrice = parseFloat(searchParams.get("price") || "0");
   const duration = parseInt(searchParams.get("duration") || "0");
 
+  // Always call useQuery hook - pass "skip" when no coupon code to validate
+  // This ensures consistent hook order across renders
+  const validateCouponQuery = useQuery(
+    api.coupons.validateCoupon,
+    couponCode.trim() ? { code: couponCode.trim() } : "skip"
+  );
+
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       navigate("/auth");
@@ -58,12 +65,6 @@ export default function PaymentSummary() {
       document.body.removeChild(script);
     };
   }, []);
-
-  // Call useQuery hook before any conditional returns
-  const validateCouponQuery = useQuery(
-    api.coupons.validateCoupon,
-    couponCode.trim() ? { code: couponCode.trim() } : "skip"
-  );
 
   if (isLoading || !userProfile) {
     return (
