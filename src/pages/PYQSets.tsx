@@ -31,11 +31,11 @@ export default function PYQSets() {
   }
 
   const handleStartPYQ = (year: number, setNumber: number, isFirstTest: boolean) => {
-    // Check if this is a locked test (not first test and no subscription)
-    const isLocked = !isFirstTest && !canAccessPYQ?.canAccess;
+    // Check if user has paid subscription
+    const hasPaidSubscription = canAccessPYQ?.reason === "paid_subscription";
     
-    // If locked, show error and redirect
-    if (isLocked) {
+    // If not first test and no paid subscription, it's locked
+    if (!isFirstTest && !hasPaidSubscription) {
       toast.error("This test is locked! Subscribe to unlock all tests.");
       setTimeout(() => navigate("/subscription"), 1000);
       return;
@@ -87,7 +87,8 @@ export default function PYQSets() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {pyqSets.map((set, index) => {
             const isFirstTest = index === 0;
-            const isLocked = !canAccessPYQ?.canAccess && !isFirstTest;
+            const hasPaidSubscription = canAccessPYQ?.reason === "paid_subscription";
+            const isLocked = !isFirstTest && !hasPaidSubscription;
             
             return (
               <motion.div

@@ -31,11 +31,11 @@ export default function AIQuestions() {
   }
 
   const handleStartTest = (topicId: string | null, setNumber: number, isFirstTest: boolean) => {
-    // Check if this is a locked test (not first test and no subscription)
-    const isLocked = !isFirstTest && !canAccessAI?.canAccess;
+    // Check if user has paid subscription
+    const hasPaidSubscription = canAccessAI?.reason === "paid_subscription";
     
-    // If locked, show error and redirect
-    if (isLocked) {
+    // If not first test and no paid subscription, it's locked
+    if (!isFirstTest && !hasPaidSubscription) {
       toast.error("This test is locked! Subscribe to unlock all tests.");
       setTimeout(() => navigate("/subscription"), 1000);
       return;
@@ -92,7 +92,8 @@ export default function AIQuestions() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {aiTests.map((test, index) => {
             const isFirstTest = index === 0;
-            const isLocked = !canAccessAI?.canAccess && !isFirstTest;
+            const hasPaidSubscription = canAccessAI?.reason === "paid_subscription";
+            const isLocked = !isFirstTest && !hasPaidSubscription;
             
             return (
               <motion.div
