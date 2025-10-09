@@ -144,59 +144,10 @@ export default function UserAnalytics() {
         className="relative z-10 max-w-7xl mx-auto space-y-6"
       >
         <div className="flex items-center justify-between">
-        <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-white">User Management</h1>
             <p className="text-white/70 mt-1">Manage registered users and their accounts</p>
           </div>
-          
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button 
-                variant="destructive" 
-                className="bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30"
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Reset All User Data
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent className="glass-card border-white/20 backdrop-blur-xl bg-gray-900/95">
-              <AlertDialogHeader>
-                <AlertDialogTitle className="text-white">Are you absolutely sure?</AlertDialogTitle>
-                <AlertDialogDescription className="text-white/70">
-                  This action will permanently delete ALL user accounts and their related data including:
-                  <ul className="list-disc list-inside mt-2 space-y-1">
-                    <li>User profiles and accounts</li>
-                    <li>Test scores and results</li>
-                    <li>Progress tracking data</li>
-                    <li>Subscriptions and payments</li>
-                    <li>Feedback submissions</li>
-                  </ul>
-                  <p className="mt-3 font-semibold text-red-400">
-                    Your admin account will be preserved. This action cannot be undone.
-                  </p>
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel className="bg-white/10 text-white border-white/20">Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleResetAllUsers}
-                  disabled={isResetting}
-                  className="bg-red-500 hover:bg-red-600 text-white"
-                >
-                  {isResetting ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Resetting...
-                    </>
-                  ) : (
-                    "Yes, Reset All Data"
-                  )}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
           
           <AlertDialog>
             <AlertDialogTrigger asChild>
