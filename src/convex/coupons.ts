@@ -207,11 +207,11 @@ export const getCouponStats = query({
 
     const user = await ctx.db
       .query("users")
-      .withIndex("email", (q) => q.eq("email", identity.email))
+      .withIndex("email", (q) => q.eq("email", identity.email!))
       .first();
 
     if (!user || user.role !== "admin") {
-      throw new Error("Unauthorized");
+      throw new Error("Unauthorized: Admin access required");
     }
 
     const usages = await ctx.db
