@@ -159,6 +159,17 @@ export default function SubscriptionPlans() {
         <div className="absolute top-1/4 right-1/3 w-[400px] h-[400px] bg-cyan-400/25 rounded-full blur-3xl" />
       </div>
       
+      {/* Lab Background Image */}
+      <div 
+        className="fixed inset-0 z-0 opacity-10"
+        style={{
+          backgroundImage: 'url(https://harmless-tapir-303.convex.cloud/api/storage/b5c7b06f-8b6e-4419-949e-f800852edc5e)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      />
+      
       <div className="relative z-10 max-w-7xl mx-auto space-y-8">
         <div className="text-center">
           <h1 className="text-4xl font-bold text-white mb-4">Choose Your Plan</h1>
