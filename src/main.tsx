@@ -38,6 +38,8 @@ import PrivacyPolicy from "./pages/PrivacyPolicy.tsx";
 import RefundPolicy from "./pages/RefundPolicy.tsx";
 import PaymentStatus from "./pages/PaymentStatus";
 import PaymentSummary from "./pages/PaymentSummary";
+import StudyMaterialsManagement from "./pages/StudyMaterialsManagement.tsx";
+import FreeLibrary from "./pages/FreeLibrary.tsx";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
@@ -108,12 +110,14 @@ createRoot(document.getElementById("root")!).render(
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/refund-policy" element={<RefundPolicy />} />
             <Route path="/payment-status" element={<PaymentStatus />} />
+            <Route path="/free-library" element={<StudentLayout><FreeLibrary /></StudentLayout>} />
             <Route path="/admin" element={<AdminLayout><AdminDashboard /></AdminLayout>} />
             <Route path="/admin/content" element={<AdminLayout><ContentManagement /></AdminLayout>} />
             <Route path="/admin/questions" element={<AdminLayout><QuestionManagement /></AdminLayout>} />
             <Route path="/admin/analytics" element={<AdminLayout><UserAnalytics /></AdminLayout>} />
             <Route path="/admin/subscriptions" element={<AdminLayout><SubscriptionManagement /></AdminLayout>} />
             <Route path="/admin/coupons" element={<AdminLayout><CouponManagement /></AdminLayout>} />
+            <Route path="/admin/study-materials" element={<AdminLayout><StudyMaterialsManagement /></AdminLayout>} />
             <Route path="/admin/notifications" element={<AdminLayout><NotificationCenter /></AdminLayout>} />
             <Route path="/admin/feedback" element={<AdminLayout><AdminFeedback /></AdminLayout>} />
             <Route path="*" element={<NotFound />} />

@@ -21,6 +21,7 @@ export default function StudentNav() {
     { path: "/tests/ai", icon: BarChart3, label: "AI Questions" },
     { path: "/subscription", icon: CreditCard, label: "Subscription" },
     { path: "/feedback", icon: MessageSquare, label: "Feedback" },
+    { path: "/free-library", icon: BookOpen, label: "Free Library" },
     { path: "/profile", icon: User, label: "Profile" },
   ];
 

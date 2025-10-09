@@ -313,6 +313,21 @@ const schema = defineSchema(
       .index("by_user", ["userId"])
       .index("by_invoice_number", ["invoiceNumber"])
       .index("by_subscription", ["subscriptionId"]),
+
+    // Free Study Materials
+    studyMaterials: defineTable({
+      title: v.string(),
+      description: v.optional(v.string()),
+      fileId: v.id("_storage"),
+      fileUrl: v.optional(v.string()),
+      uploadedBy: v.id("users"),
+      status: v.string(), // "active", "archived"
+      views: v.number(),
+      category: v.optional(v.string()), // "handwritten_notes", "study_material", etc.
+    })
+      .index("by_status", ["status"])
+      .index("by_uploader", ["uploadedBy"])
+      .index("by_category", ["category"]),
   },
   {
     schemaValidation: false,

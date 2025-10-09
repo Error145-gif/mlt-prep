@@ -13,6 +13,7 @@ export default function AdminSidebar() {
   const navItems = [
     { path: "/admin", icon: LayoutDashboard, label: "Dashboard" },
     { path: "/admin/questions", icon: HelpCircle, label: "Questions" },
+    { path: "/admin/study-materials", icon: FileText, label: "Study Materials" },
     { path: "/admin/analytics", icon: Users, label: "Analytics" },
     { path: "/admin/subscriptions", icon: CreditCard, label: "Subscriptions" },
     { path: "/admin/coupons", icon: Tag, label: "Coupons" },
