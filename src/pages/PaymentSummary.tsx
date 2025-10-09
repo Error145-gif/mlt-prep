@@ -91,7 +91,7 @@ export default function PaymentSummary() {
       // Call the actual backend validation
       const validation = validateCouponQuery;
       
-      if (validation && validation.valid) {
+      if (validation && validation.valid && validation.discount !== undefined && validation.type !== undefined) {
         setAppliedCoupon({
           code: couponCode.toUpperCase(),
           discount: validation.discount,
