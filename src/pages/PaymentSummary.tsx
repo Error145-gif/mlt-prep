@@ -11,6 +11,7 @@ import { User, Mail, MapPin, BookOpen, Tag, CreditCard, CheckCircle, AlertCircle
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import AmoebaLoader from "@/components/AmoebaLoader";
 
 // Add Razorpay types
 declare global {
@@ -67,11 +68,7 @@ export default function PaymentSummary() {
   }, []);
 
   if (isLoading || !userProfile) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-white text-xl">Loading...</div>
-      </div>
-    );
+    return <AmoebaLoader text="Loading payment details..." />;
   }
 
   if (!planId || !planName || !basePrice) {

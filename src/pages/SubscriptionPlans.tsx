@@ -9,6 +9,7 @@ import { Check, Sparkles, Zap, Crown } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { useEffect } from "react";
+import AmoebaLoader from "@/components/AmoebaLoader";
 
 // Add Razorpay types
 declare global {
@@ -43,11 +44,7 @@ export default function SubscriptionPlans() {
   }, []);
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-white text-xl">Loading...</div>
-      </div>
-    );
+    return <AmoebaLoader text="Loading subscription plans..." />;
   }
 
   const handleFreeTrial = async () => {
