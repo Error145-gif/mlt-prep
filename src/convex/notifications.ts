@@ -1,6 +1,7 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { mutation, query, action, internalQuery, internalMutation, internalAction } from "./_generated/server";
 import { getCurrentUser } from "./users";
+import { internal } from "./_generated/api";
 
 // Get all notifications
 export const getAllNotifications = query({
@@ -13,18 +14,47 @@ export const getAllNotifications = query({
 
     const notifications = await ctx.db.query("notifications").order("desc").collect();
 
-    // Enrich with sender info
+    // Enrich with sender info and recipient count
     const enrichedNotifications = await Promise.all(
       notifications.map(async (notif) => {
         const sender = await ctx.db.get(notif.sentBy);
+        let recipientCount = 0;
+        
+        if (notif.targetUsers && notif.targetUsers.length > 0) {
+          recipientCount = notif.targetUsers.length;
+        } else if (notif.status === "sent") {
+          // If sent to all users, count all users
+          const allUsers = await ctx.db.query("users").collect();
+          recipientCount = allUsers.length;
+        }
+        
         return {
           ...notif,
           senderName: sender?.name || "Unknown",
+          recipientCount,
         };
       })
     );
 
     return enrichedNotifications;
+  },
+});
+
+// Get all users for targeting
+export const getAllUsers = query({
+  args: {},
+  handler: async (ctx) => {
+    const user = await getCurrentUser(ctx);
+    if (!user || user.role !== "admin") {
+      throw new Error("Unauthorized");
+    }
+
+    const users = await ctx.db.query("users").collect();
+    return users.map(u => ({
+      _id: u._id,
+      name: u.name || "Unknown",
+      email: u.email,
+    }));
   },
 });
 
@@ -35,6 +65,7 @@ export const createNotification = mutation({
     message: v.string(),
     type: v.string(),
     targetUsers: v.optional(v.array(v.id("users"))),
+    sendToAll: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
@@ -43,30 +74,131 @@ export const createNotification = mutation({
     }
 
     return await ctx.db.insert("notifications", {
-      ...args,
+      title: args.title,
+      message: args.message,
+      type: args.type,
+      targetUsers: args.sendToAll ? undefined : args.targetUsers,
       sentBy: user._id,
       status: "draft",
     });
   },
 });
 
-// Send notification
-export const sendNotification = mutation({
+// Send notification (now with email support)
+export const sendNotification = action({
   args: {
     id: v.id("notifications"),
   },
   handler: async (ctx, args) => {
-    const user = await getCurrentUser(ctx);
-    if (!user || user.role !== "admin") {
-      throw new Error("Unauthorized");
+    // Get the notification
+    const notification = await ctx.runQuery(internal.notifications.getNotificationById, {
+      id: args.id,
+    });
+
+    if (!notification) {
+      throw new Error("Notification not found");
     }
 
+    // Get target users
+    let targetUsers;
+    if (notification.targetUsers && notification.targetUsers.length > 0) {
+      targetUsers = await ctx.runQuery(internal.notifications.getUsersByIds, {
+        userIds: notification.targetUsers,
+      });
+    } else {
+      // Send to all users
+      targetUsers = await ctx.runQuery(internal.notifications.getAllUsersInternal, {});
+    }
+
+    // Send emails if type includes email
+    if (notification.type === "email" || notification.type === "both") {
+      for (const user of targetUsers) {
+        if (user.email) {
+          try {
+            await ctx.runAction(internal.notifications.sendNotificationEmail, {
+              email: user.email,
+              name: user.name || "User",
+              title: notification.title,
+              message: notification.message,
+            });
+          } catch (error) {
+            console.error(`Failed to send email to ${user.email}:`, error);
+          }
+        }
+      }
+    }
+
+    // Update notification status
+    await ctx.runMutation(internal.notifications.updateNotificationStatus, {
+      id: args.id,
+    });
+
+    return args.id;
+  },
+});
+
+// Internal query to get notification by ID
+export const getNotificationById = internalQuery({
+  args: { id: v.id("notifications") },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.id);
+  },
+});
+
+// Internal query to get users by IDs
+export const getUsersByIds = internalQuery({
+  args: { userIds: v.array(v.id("users")) },
+  handler: async (ctx, args) => {
+    const users = await Promise.all(
+      args.userIds.map(id => ctx.db.get(id))
+    );
+    return users.filter(u => u !== null);
+  },
+});
+
+// Internal query to get all users
+export const getAllUsersInternal = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db.query("users").collect();
+  },
+});
+
+// Internal mutation to update notification status
+export const updateNotificationStatus = internalMutation({
+  args: { id: v.id("notifications") },
+  handler: async (ctx, args) => {
     await ctx.db.patch(args.id, {
       status: "sent",
       sentAt: Date.now(),
     });
+  },
+});
 
-    return args.id;
+// Internal action to send email
+export const sendNotificationEmail = internalAction({
+  args: {
+    email: v.string(),
+    name: v.string(),
+    title: v.string(),
+    message: v.string(),
+  },
+  handler: async (ctx, args) => {
+    // This would integrate with Resend API
+    // For now, just log it
+    console.log(`Sending notification email to ${args.email}:`, {
+      title: args.title,
+      message: args.message,
+    });
+    
+    // TODO: Integrate with Resend when ready
+    // const resend = new Resend(process.env.RESEND_API_KEY);
+    // await resend.emails.send({
+    //   from: 'MLT Prep <notifications@mltprep.com>',
+    //   to: args.email,
+    //   subject: args.title,
+    //   html: `<p>Hi ${args.name},</p><p>${args.message}</p>`,
+    // });
   },
 });
 
