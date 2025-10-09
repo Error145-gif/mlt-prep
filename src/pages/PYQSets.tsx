@@ -30,16 +30,21 @@ export default function PYQSets() {
     );
   }
 
-  const handleStartPYQ = (year: number, setNumber: number) => {
-    if (!canAccessPYQ?.canAccess) {
-      if (canAccessPYQ?.reason === "free_trial_used") {
-        toast.error("Your free trial is used. Please subscribe to continue.");
-      } else {
-        toast.info("Please subscribe to access this test.");
-      }
+  const handleStartPYQ = (year: number, setNumber: number, isFirstTest: boolean) => {
+    // If not first test and no subscription access, redirect to subscription
+    if (!isFirstTest && !canAccessPYQ?.canAccess) {
+      toast.error("Subscribe to unlock this test!");
       setTimeout(() => navigate("/subscription"), 500);
       return;
     }
+    
+    // If first test but free trial already used, redirect to subscription
+    if (isFirstTest && canAccessPYQ?.reason === "free_trial_used") {
+      toast.error("Your free trial is used. Please subscribe to continue.");
+      setTimeout(() => navigate("/subscription"), 500);
+      return;
+    }
+    
     navigate(`/test/start?type=pyq&year=${year}&setNumber=${setNumber}`);
   };
 
@@ -127,9 +132,8 @@ export default function PYQSets() {
                       </Button>
                     ) : (
                       <Button
-                        onClick={() => handleStartPYQ(set.year, set.setNumber)}
+                        onClick={() => handleStartPYQ(set.year, set.setNumber, isFirstTest)}
                         className="w-full bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700"
-                        disabled={!canAccessPYQ?.canAccess && !isFirstTest}
                       >
                         {set.hasCompleted ? (canAccessPYQ?.canAccess ? "Re-Test" : "Subscribe to Re-Test") : isFirstTest && canAccessPYQ?.reason === "free_trial" ? "Start Free Test" : "Start PYQ Set"}
                       </Button>

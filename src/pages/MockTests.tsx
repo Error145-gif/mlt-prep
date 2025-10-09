@@ -30,16 +30,21 @@ export default function MockTests() {
     );
   }
 
-  const handleStartTest = (topicId: string | null, setNumber: number) => {
-    if (!canAccessMock?.canAccess) {
-      if (canAccessMock?.reason === "free_trial_used") {
-        toast.error("Your free trial is used. Please subscribe to continue.");
-      } else {
-        toast.info("Please subscribe to access this test.");
-      }
+  const handleStartTest = (topicId: string | null, setNumber: number, isFirstTest: boolean) => {
+    // If not first test and no subscription access, redirect to subscription
+    if (!isFirstTest && !canAccessMock?.canAccess) {
+      toast.error("Subscribe to unlock this test!");
       setTimeout(() => navigate("/subscription"), 500);
       return;
     }
+    
+    // If first test but free trial already used, redirect to subscription
+    if (isFirstTest && canAccessMock?.reason === "free_trial_used") {
+      toast.error("Your free trial is used. Please subscribe to continue.");
+      setTimeout(() => navigate("/subscription"), 500);
+      return;
+    }
+    
     // Build URL with set number
     if (topicId) {
       navigate(`/test/start?type=mock&topicId=${topicId}&setNumber=${setNumber}`);
@@ -132,9 +137,8 @@ export default function MockTests() {
                       </Button>
                     ) : (
                       <Button
-                        onClick={() => handleStartTest(test.topicId, test.setNumber)}
+                        onClick={() => handleStartTest(test.topicId, test.setNumber, isFirstTest)}
                         className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
-                        disabled={!canAccessMock?.canAccess && !isFirstTest}
                       >
                         {test.hasCompleted ? (canAccessMock?.canAccess ? "Re-Test" : "Subscribe to Re-Test") : isFirstTest && canAccessMock?.reason === "free_trial" ? "Start Free Test" : "Start Test"}
                       </Button>

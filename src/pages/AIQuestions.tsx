@@ -30,16 +30,21 @@ export default function AIQuestions() {
     );
   }
 
-  const handleStartTest = (topicId: string | null, setNumber: number) => {
-    if (!canAccessAI?.canAccess) {
-      if (canAccessAI?.reason === "free_trial_used") {
-        toast.error("Your free trial is used. Please subscribe to continue.");
-      } else {
-        toast.info("Please subscribe to access this test.");
-      }
+  const handleStartTest = (topicId: string | null, setNumber: number, isFirstTest: boolean) => {
+    // If not first test and no subscription access, redirect to subscription
+    if (!isFirstTest && !canAccessAI?.canAccess) {
+      toast.error("Subscribe to unlock this test!");
       setTimeout(() => navigate("/subscription"), 500);
       return;
     }
+    
+    // If first test but free trial already used, redirect to subscription
+    if (isFirstTest && canAccessAI?.reason === "free_trial_used") {
+      toast.error("Your free trial is used. Please subscribe to continue.");
+      setTimeout(() => navigate("/subscription"), 500);
+      return;
+    }
+    
     // Build URL with set number
     if (topicId) {
       navigate(`/test/start?type=ai&topicId=${topicId}&setNumber=${setNumber}`);
@@ -132,9 +137,8 @@ export default function AIQuestions() {
                       </Button>
                     ) : (
                       <Button
-                        onClick={() => handleStartTest(test.topicId, test.setNumber)}
+                        onClick={() => handleStartTest(test.topicId, test.setNumber, isFirstTest)}
                         className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700"
-                        disabled={!canAccessAI?.canAccess && !isFirstTest}
                       >
                         {test.hasCompleted ? (canAccessAI?.canAccess ? "Re-Test" : "Subscribe to Re-Test") : isFirstTest && canAccessAI?.reason === "free_trial" ? "Start Free Test" : "Start AI Test"}
                       </Button>
