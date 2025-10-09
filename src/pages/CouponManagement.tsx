@@ -19,7 +19,10 @@ import { Id } from "@/convex/_generated/dataModel";
 
 export default function CouponManagement() {
   const { isLoading, isAuthenticated, user } = useAuth();
-  const coupons = useQuery(api.coupons.getAllCoupons);
+  const coupons = useQuery(
+    api.coupons.getAllCoupons,
+    !isLoading && isAuthenticated && user?.role === "admin" ? {} : "skip"
+  );
   const createCoupon = useMutation(api.coupons.createCoupon);
   const updateCoupon = useMutation(api.coupons.updateCoupon);
   const deleteCoupon = useMutation(api.coupons.deleteCoupon);

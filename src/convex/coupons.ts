@@ -44,8 +44,10 @@ export const getAllCoupons = query({
   args: {},
   handler: async (ctx) => {
     const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
-
+    if (!userId) {
+      throw new Error("Not authenticated");
+    }
+    
     const user = await ctx.db.get(userId);
     if (!user || user.role !== "admin") {
       throw new Error("Unauthorized: Admin access required");
@@ -67,8 +69,10 @@ export const createCoupon = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
-
+    if (!userId) {
+      throw new Error("Not authenticated");
+    }
+    
     const user = await ctx.db.get(userId);
     if (!user || user.role !== "admin") {
       throw new Error("Unauthorized: Admin access required");
@@ -118,8 +122,10 @@ export const updateCoupon = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
-
+    if (!userId) {
+      throw new Error("Not authenticated");
+    }
+    
     const user = await ctx.db.get(userId);
     if (!user || user.role !== "admin") {
       throw new Error("Unauthorized: Admin access required");
@@ -142,8 +148,10 @@ export const deleteCoupon = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
-
+    if (!userId) {
+      throw new Error("Not authenticated");
+    }
+    
     const user = await ctx.db.get(userId);
     if (!user || user.role !== "admin") {
       throw new Error("Unauthorized: Admin access required");
@@ -188,8 +196,10 @@ export const getCouponStats = query({
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
-
+    if (!userId) {
+      throw new Error("Not authenticated");
+    }
+    
     const user = await ctx.db.get(userId);
     if (!user || user.role !== "admin") {
       throw new Error("Unauthorized: Admin access required");
