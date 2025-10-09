@@ -1,4 +1,4 @@
-import { useQuery, useAction, useMutation } from "convex/react";
+import { useQuery, useAction, useMutation, useConvex } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
 import { useNavigate, useSearchParams } from "react-router";
@@ -72,11 +72,6 @@ export default function PaymentSummary() {
     return null;
   }
 
-  const validateCouponQuery = useQuery(
-    api.coupons.validateCoupon,
-    couponCode.trim() ? { code: couponCode.trim() } : "skip"
-  );
-
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) {
       toast.error("Please enter a coupon code");
@@ -85,19 +80,16 @@ export default function PaymentSummary() {
 
     setIsApplyingCoupon(true);
     try {
-      // Use the Convex query to validate the coupon
-      const result = await fetch(`/api/validate-coupon?code=${couponCode}`).then(r => r.json()).catch(() => null);
-      
-      // Call the actual backend validation
-      const validation = validateCouponQuery;
+      // Validate the coupon using the Convex query
+      const validation = await convex.query(api.coupons.validateCoupon, { code: couponCode.trim() });
       
       if (validation && validation.valid) {
         setAppliedCoupon({
           code: couponCode.toUpperCase(),
-          discount: validation.discount,
-          type: validation.type,
+          discount: validation.discount || 0,
+          type: validation.type || "percentage",
         });
-        toast.success(validation.message);
+        toast.success(validation.message || "Coupon applied successfully!");
       } else {
         toast.error(validation?.message || "Invalid coupon code");
       }
