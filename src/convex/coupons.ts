@@ -45,7 +45,7 @@ export const getAllCoupons = query({
   handler: async (ctx) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("Not authenticated");
+      throw new Error("Unauthorized: User not authenticated");
     }
     
     const user = await ctx.db.get(userId);
@@ -70,7 +70,7 @@ export const createCoupon = mutation({
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("Not authenticated");
+      throw new Error("Unauthorized: User not authenticated");
     }
     
     const user = await ctx.db.get(userId);
@@ -123,7 +123,7 @@ export const updateCoupon = mutation({
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("Not authenticated");
+      throw new Error("Unauthorized: User not authenticated");
     }
     
     const user = await ctx.db.get(userId);
@@ -149,7 +149,7 @@ export const deleteCoupon = mutation({
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("Not authenticated");
+      throw new Error("Unauthorized: User not authenticated");
     }
     
     const user = await ctx.db.get(userId);
@@ -197,7 +197,7 @@ export const getCouponStats = query({
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("Not authenticated");
+      throw new Error("Unauthorized: User not authenticated");
     }
     
     const user = await ctx.db.get(userId);
