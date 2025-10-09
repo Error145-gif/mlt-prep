@@ -70,7 +70,7 @@ export default function AIQuestions() {
       <div 
         className="fixed inset-0 z-0 opacity-10"
         style={{
-          backgroundImage: 'url(https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=1920&q=80)',
+          backgroundImage: 'url(https://harmless-tapir-303.convex.cloud/api/storage/248a8492-0c51-4de9-a100-32eccdb346c2)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat'
