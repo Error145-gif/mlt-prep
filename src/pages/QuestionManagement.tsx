@@ -27,11 +27,11 @@ export default function QuestionManagement() {
   const [pyqYear, setPyqYear] = useState<number>(new Date().getFullYear());
   const [pyqExamName, setPyqExamName] = useState<string>("");
   
-  // AI bulk questions state - 50 separate sections
-  const [aiBulkQuestions, setAiBulkQuestions] = useState<string[]>(Array(50).fill(""));
+  // AI bulk questions state - 100 separate sections
+  const [aiBulkQuestions, setAiBulkQuestions] = useState<string[]>(Array(100).fill(""));
   
-  // PYQ bulk questions state - 50 separate sections
-  const [pyqBulkQuestions, setPyqBulkQuestions] = useState<string[]>(Array(50).fill(""));
+  // PYQ bulk questions state - 100 separate sections
+  const [pyqBulkQuestions, setPyqBulkQuestions] = useState<string[]>(Array(100).fill(""));
   
   const questions = useQuery(api.questions.getQuestions, {});
   const topics = useQuery(api.topics.getAllTopics);
@@ -55,8 +55,8 @@ export default function QuestionManagement() {
     examName: "",
   });
 
-  // Bulk manual entry state - 50 separate sections
-  const [bulkQuestions, setBulkQuestions] = useState<string[]>(Array(50).fill(""));
+  // Bulk manual entry state - 100 separate sections
+  const [bulkQuestions, setBulkQuestions] = useState<string[]>(Array(100).fill(""));
 
   const [savingQuestions, setSavingQuestions] = useState(false);
 
@@ -240,7 +240,7 @@ export default function QuestionManagement() {
       }
       
       setShowBulkManualForm(false);
-      setBulkQuestions(Array(50).fill(""));
+      setBulkQuestions(Array(100).fill(""));
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to add questions. Please try again.");
       console.error("Bulk add error:", error);
@@ -268,8 +268,8 @@ export default function QuestionManagement() {
         return;
       }
       
-      if (questionBlocks.length > 50) {
-        toast.error("Cannot add more than 50 questions at once");
+      if (questionBlocks.length > 100) {
+        toast.error("Cannot add more than 100 questions at once");
         return;
       }
       
@@ -368,7 +368,7 @@ export default function QuestionManagement() {
       
       toast.success(`${parsedQuestions.length} PYQ questions added successfully for ${pyqExamName} (${pyqYear})!`);
       setShowPYQManualForm(false);
-      setPyqBulkQuestions(Array(50).fill(""));
+      setPyqBulkQuestions(Array(100).fill(""));
       setPyqExamName("");
       setPyqYear(new Date().getFullYear());
     } catch (error) {
@@ -597,16 +597,16 @@ export default function QuestionManagement() {
               <DialogTrigger asChild>
                 <Button className="bg-green-500/20 hover:bg-green-500/30 text-green-300 border border-green-500/30">
                   <Upload className="h-4 w-4 mr-2" />
-                  Bulk Add (Up to 50)
+                  Bulk Add (Up to 100)
                 </Button>
               </DialogTrigger>
               <DialogContent className="glass-card border-white/20 backdrop-blur-xl bg-white/10 max-w-4xl max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle className="text-white">Bulk Add Questions (Up to 50)</DialogTitle>
+                  <DialogTitle className="text-white">Bulk Add Questions (Up to 100)</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 max-h-[60vh] overflow-y-auto">
                   <div>
-                    <Label className="text-white">Paste Questions in Plain Text (50 Separate Sections)</Label>
+                    <Label className="text-white">Paste Questions in Plain Text (100 Separate Sections)</Label>
                     <p className="text-white/60 text-sm mb-2">
                       Format each question like this:
                     </p>
@@ -677,7 +677,7 @@ export default function QuestionManagement() {
               </DialogTrigger>
               <DialogContent className="glass-card border-white/20 backdrop-blur-xl bg-white/10 max-w-4xl max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle className="text-white">Add PYQ Questions (Up to 50)</DialogTitle>
+                  <DialogTitle className="text-white">Add PYQ Questions (Up to 100)</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
                   <div>
@@ -702,7 +702,7 @@ export default function QuestionManagement() {
                   </div>
                   <div className="space-y-4 max-h-[60vh] overflow-y-auto">
                     <div>
-                      <Label className="text-white">Paste PYQ Questions in Plain Text (20 Separate Sections)</Label>
+                      <Label className="text-white">Paste PYQ Questions in Plain Text (100 Separate Sections)</Label>
                       <p className="text-white/60 text-sm mb-2">
                         Format each question like this:
                       </p>
