@@ -61,74 +61,8 @@ export default function SubscriptionPlans() {
   };
 
   const handleSubscribe = async (planId: string, amount: number, planName: string, duration: number) => {
-    try {
-      toast.loading("Creating order...");
-      
-      const orderResult = await createOrder({
-        amount,
-        planName,
-        customerEmail: user?.email || "",
-        customerName: user?.name || "",
-      });
-
-      toast.dismiss();
-
-      if (!orderResult.success) {
-        toast.error("Failed to create order");
-        return;
-      }
-
-      // Open Razorpay checkout
-      const options = {
-        key: orderResult.keyId,
-        amount: orderResult.amount,
-        currency: orderResult.currency,
-        name: "MLT Prep",
-        description: planName,
-        order_id: orderResult.orderId,
-        handler: async function (response: any) {
-          try {
-            toast.loading("Verifying payment...");
-            
-            const verifyResult = await verifyPayment({
-              orderId: response.razorpay_order_id,
-              paymentId: response.razorpay_payment_id,
-              signature: response.razorpay_signature,
-            });
-
-            toast.dismiss();
-
-            if (verifyResult.success) {
-              toast.success("Payment successful! Subscription activated.");
-              navigate("/dashboard");
-            } else {
-              toast.error("Payment verification failed");
-            }
-          } catch (error: any) {
-            toast.dismiss();
-            toast.error(error.message || "Payment verification failed");
-          }
-        },
-        prefill: {
-          name: user?.name || "",
-          email: user?.email || "",
-        },
-        theme: {
-          color: "#3b82f6",
-        },
-        modal: {
-          ondismiss: function () {
-            toast.info("Payment cancelled");
-          },
-        },
-      };
-
-      const razorpay = new window.Razorpay(options);
-      razorpay.open();
-    } catch (error: any) {
-      toast.dismiss();
-      toast.error(error.message || "Failed to initiate payment");
-    }
+    // Navigate to payment summary page instead of directly opening Razorpay
+    navigate(`/payment-summary?plan=${planId}&name=${encodeURIComponent(planName)}&price=${amount}&duration=${duration}`);
   };
 
   const plans = [

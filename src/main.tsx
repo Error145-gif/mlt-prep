@@ -36,6 +36,7 @@ import TermsAndConditions from "./pages/TermsAndConditions.tsx";
 import PrivacyPolicy from "./pages/PrivacyPolicy.tsx";
 import RefundPolicy from "./pages/RefundPolicy.tsx";
 import PaymentStatus from "./pages/PaymentStatus";
+import PaymentSummary from "./pages/PaymentSummary";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
@@ -92,6 +93,7 @@ createRoot(document.getElementById("root")!).render(
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/dashboard" element={<StudentLayout><StudentDashboard /></StudentLayout>} />
             <Route path="/subscription" element={<StudentLayout><SubscriptionPlans /></StudentLayout>} />
+            <Route path="/payment-summary" element={<StudentLayout><PaymentSummary /></StudentLayout>} />
             <Route path="/tests/mock" element={<StudentLayout><MockTests /></StudentLayout>} />
             <Route path="/tests/pyq" element={<StudentLayout><PYQSets /></StudentLayout>} />
             <Route path="/tests/ai" element={<StudentLayout><AIQuestions /></StudentLayout>} />

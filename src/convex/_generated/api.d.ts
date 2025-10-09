@@ -19,6 +19,7 @@ import type * as auth_emailOtp from "../auth/emailOtp.js";
 import type * as auth from "../auth.js";
 import type * as authHelpers from "../authHelpers.js";
 import type * as content from "../content.js";
+import type * as coupons from "../coupons.js";
 import type * as feedback from "../feedback.js";
 import type * as http from "../http.js";
 import type * as notifications from "../notifications.js";
@@ -47,6 +48,7 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   authHelpers: typeof authHelpers;
   content: typeof content;
+  coupons: typeof coupons;
   feedback: typeof feedback;
   http: typeof http;
   notifications: typeof notifications;
