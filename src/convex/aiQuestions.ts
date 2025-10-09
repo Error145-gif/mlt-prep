@@ -1,376 +1,59 @@
 "use node";
 
 import { v } from "convex/values";
-import { action, internalQuery } from "./_generated/server";
+import { action } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { Id } from "./_generated/dataModel";
-import OpenAI from "openai";
-import { getAuthUserId } from "@convex-dev/auth/server";
 
-// Generate questions from PDF using AI
+// AI question generation has been removed
+// All question generation features are now disabled
+
+export const generateQuestionsFromAI = action({
+  args: {
+    questionCount: v.number(),
+    difficulty: v.optional(v.string()),
+    topicId: v.optional(v.id("topics")),
+  },
+  handler: async (ctx, args) => {
+    throw new Error("AI question generation has been disabled. Please use manual question entry instead.");
+  },
+});
+
 export const generateQuestionsFromPDF = action({
   args: {
     fileId: v.id("_storage"),
-    topicId: v.optional(v.id("topics")),
-    questionCount: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    try {
-      // Initialize OpenRouter client inside handler to ensure env vars are available
-      const apiKey = process.env.OPENROUTER_API_KEY;
-      if (!apiKey) {
-        throw new Error("OPENROUTER_API_KEY environment variable is not set. Please add it in the API Keys tab.");
-      }
-      
-      const openai = new OpenAI({
-        apiKey: apiKey,
-        baseURL: "https://openrouter.ai/api/v1",
-      });
-
-      // Get file URL to verify it exists
-      const fileUrl = await ctx.storage.getUrl(args.fileId);
-      if (!fileUrl) {
-        throw new Error("File not found");
-      }
-
-      // Create prompt for AI to generate MLT questions with subject/topic tagging
-      const prompt = `You are an expert Medical Lab Technology (MLT) educator. Generate ${args.questionCount || 10} high-quality questions covering various Medical Lab Technology topics.
-
-**Requirements:**
-1. Question Types: MCQ (4 options), True/False, or Short Answer
-2. Each question must include: subject, topic, type, question text, correct answer, explanation, difficulty, and source
-3. Cover topics proportionally and avoid duplication
-4. Make questions concise and student-friendly
-
-**Output Format (valid JSON array):**
-[
-  {
-    "subject": "Hematology",
-    "topic": "Anticoagulants",
-    "type": "mcq",
-    "question": "Which anticoagulant is commonly used for CBC?",
-    "options": ["Heparin", "Sodium Citrate", "EDTA", "Potassium Oxalate"],
-    "correctAnswer": "EDTA",
-    "explanation": "EDTA chelates calcium to prevent clotting and preserves cell morphology.",
-    "difficulty": "easy",
-    "source": "ai"
-  },
-  {
-    "subject": "Biochemistry",
-    "topic": "Enzymes",
-    "type": "true_false",
-    "question": "Enzymes increase the activation energy of a reaction.",
-    "correctAnswer": "False",
-    "explanation": "Enzymes lower the activation energy, facilitating the reaction.",
-    "difficulty": "medium",
-    "source": "ai"
-  }
-]
-
-**MLT Subjects and Topics to Cover:**
-- Hematology: Blood cells, Coagulation, Anemia, CBC interpretation, Blood typing
-- Microbiology: Bacteria, Viruses, Fungi, Culture techniques, Staining methods, Antibiotic sensitivity
-- Clinical Chemistry: Enzymes, Metabolites, Electrolytes, Liver function, Kidney function
-- Immunology: Antibodies, Antigens, Immune response, ELISA, Immunofluorescence
-- Parasitology: Parasites, Diagnostic methods, Life cycles
-- Histopathology: Tissue processing, Staining techniques, Microscopy, Fixation
-- Blood Banking: Blood groups, Cross-matching, Transfusion reactions
-- Clinical Pathology: Urinalysis, Body fluid analysis, Cytology
-- Laboratory Safety: Biosafety levels, Quality control, Equipment handling, Waste disposal
-- Molecular Biology: PCR, DNA extraction, Gel electrophoresis
-
-**Important:**
-- Return ONLY valid JSON without markdown formatting
-- Ensure all fields are filled correctly
-- Mix question types (60% MCQ, 30% True/False, 10% Short Answer)
-- Distribute across different subjects and topics
-- Use lowercase for type field: "mcq", "true_false", or "short_answer"
-
-Generate ${args.questionCount || 10} questions now.`;
-      
-      // Generate content with OpenRouter (using Claude)
-      const completion = await openai.chat.completions.create({
-        model: "anthropic/claude-3-haiku",
-        messages: [
-          {
-            role: "user",
-            content: prompt,
-          },
-        ],
-        temperature: 0.7,
-      });
-      
-      const responseText = completion.choices[0].message.content || "[]";
-      
-      // Clean up response text - remove markdown code blocks if present
-      let cleanedText = responseText.trim().replace(/```json/g, "").replace(/```/g, "");
-      
-      // Parse the JSON response
-      let questions;
-      try {
-        questions = JSON.parse(cleanedText);
-        
-        // Validate that it's an array
-        if (!Array.isArray(questions)) {
-          console.error("AI response is not an array:", cleanedText);
-          throw new Error("AI response must be a JSON array of questions");
-        }
-        
-        // Validate and normalize each question
-        const validQuestions = questions.filter((q: any) => {
-          const hasRequired = q.question && q.correctAnswer && q.type && q.subject && q.topic;
-          if (!hasRequired) {
-            console.warn("Skipping invalid question:", q);
-          }
-          return hasRequired;
-        }).map((q: any) => ({
-          ...q,
-          type: q.type.toLowerCase().replace(/\s+/g, '_'), // Normalize type
-          difficulty: q.difficulty?.toLowerCase() || 'medium',
-          source: 'ai'
-        }));
-        
-        if (validQuestions.length === 0) {
-          throw new Error("No valid questions generated. Please try again.");
-        }
-        
-        console.log(`Successfully parsed ${validQuestions.length} valid questions`);
-        return validQuestions;
-      } catch (error) {
-        console.error("Error parsing JSON response:", error);
-        console.error("Raw response:", responseText);
-        console.error("Cleaned text:", cleanedText);
-        throw new Error("Failed to parse AI-generated questions. The AI response format was invalid.");
-      }
-    } catch (error) {
-      console.error("Error generating questions from PDF:", error);
-      throw new Error(`Failed to generate questions: ${error instanceof Error ? error.message : "Unknown error"}`);
-    }
+    throw new Error("AI question generation from PDF has been disabled. Please use manual question entry instead.");
   },
 });
 
-// Extract PYQ from PDF
 export const extractPYQFromPDF = action({
   args: {
     fileId: v.id("_storage"),
-    year: v.optional(v.number()),
+    year: v.number(),
   },
   handler: async (ctx, args) => {
-    try {
-      // Get file URL
-      const fileUrl = await ctx.storage.getUrl(args.fileId);
-      if (!fileUrl) {
-        throw new Error("File not found");
-      }
-
-      // For now, we'll use OCR or manual text extraction
-      // This is a placeholder that returns structured mock data
-      // In production, integrate with an OCR service or PDF text extraction API
-      
-      // Simulate processing delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Return sample extracted questions
-      const mockQuestions = [
-        {
-          type: "mcq",
-          question: "What is the normal range of hemoglobin in adult males?",
-          options: ["10-12 g/dL", "13-17 g/dL", "18-20 g/dL", "8-10 g/dL"],
-          correctAnswer: "13-17 g/dL",
-          explanation: "Normal hemoglobin range for adult males is 13-17 g/dL",
-          difficulty: "medium",
-          source: "pyq",
-          year: args.year || new Date().getFullYear(),
-        },
-        {
-          type: "mcq",
-          question: "Which of the following is a gram-positive bacteria?",
-          options: ["E. coli", "Staphylococcus aureus", "Salmonella", "Pseudomonas"],
-          correctAnswer: "Staphylococcus aureus",
-          explanation: "Staphylococcus aureus is a gram-positive bacteria",
-          difficulty: "easy",
-          source: "pyq",
-          year: args.year || new Date().getFullYear(),
-        },
-        {
-          type: "mcq",
-          question: "What is the primary function of platelets?",
-          options: ["Oxygen transport", "Blood clotting", "Immune response", "Nutrient transport"],
-          correctAnswer: "Blood clotting",
-          explanation: "Platelets are primarily responsible for blood clotting",
-          difficulty: "easy",
-          source: "pyq",
-          year: args.year || new Date().getFullYear(),
-        },
-      ];
-      
-      return mockQuestions;
-    } catch (error) {
-      console.error("Error extracting PYQ from PDF:", error);
-      throw new Error(`Failed to extract questions: ${error instanceof Error ? error.message : "Unknown error"}`);
-    }
+    throw new Error("PYQ extraction from PDF has been disabled. Please use manual PYQ entry instead.");
   },
 });
 
-// Generate questions automatically using AI knowledge (no PDF required)
-export const generateQuestionsFromAI = action({
-  args: {
-    topicId: v.optional(v.id("topics")),
-    questionCount: v.number(),
-    difficulty: v.optional(v.string()),
-  },
-  handler: async (ctx, args) => {
-    try {
-      // Initialize OpenRouter client inside handler to ensure env vars are available
-      const apiKey = process.env.OPENROUTER_API_KEY;
-      if (!apiKey) {
-        throw new Error("OPENROUTER_API_KEY environment variable is not set. Please add it in the API Keys tab.");
-      }
-      
-      const openai = new OpenAI({
-        apiKey: apiKey,
-        baseURL: "https://openrouter.ai/api/v1",
-      });
-
-      const difficultyFilter = args.difficulty 
-        ? `Focus on ${args.difficulty} difficulty questions.` 
-        : "Mix easy, medium, and hard difficulty questions.";
-
-      // Create prompt for AI to generate MLT questions with subject/topic tagging
-      const prompt = `You are an expert Medical Lab Technology (MLT) educator. Generate ${args.questionCount} high-quality questions covering various Medical Lab Technology topics.
-
-${difficultyFilter}
-
-**Requirements:**
-1. Question Types: MCQ (4 options), True/False, or Short Answer
-2. Each question must include: subject, topic, type, question text, correct answer, explanation, difficulty, and source
-3. Cover topics proportionally and avoid duplication
-4. Make questions concise and student-friendly
-
-**Output Format (valid JSON array):**
-[
-  {
-    "subject": "Hematology",
-    "topic": "Anticoagulants",
-    "type": "mcq",
-    "question": "Which anticoagulant is commonly used for CBC?",
-    "options": ["Heparin", "Sodium Citrate", "EDTA", "Potassium Oxalate"],
-    "correctAnswer": "EDTA",
-    "explanation": "EDTA chelates calcium to prevent clotting and preserves cell morphology.",
-    "difficulty": "easy",
-    "source": "ai"
-  },
-  {
-    "subject": "Biochemistry",
-    "topic": "Enzymes",
-    "type": "true_false",
-    "question": "Enzymes increase the activation energy of a reaction.",
-    "correctAnswer": "False",
-    "explanation": "Enzymes lower the activation energy, facilitating the reaction.",
-    "difficulty": "medium",
-    "source": "ai"
-  }
-]
-
-**MLT Subjects and Topics to Cover:**
-- Hematology: Blood cells, Coagulation, Anemia, CBC interpretation, Blood typing, Anticoagulants
-- Microbiology: Bacteria, Viruses, Fungi, Culture techniques, Staining methods, Antibiotic sensitivity
-- Clinical Chemistry: Enzymes, Metabolites, Electrolytes, Liver function, Kidney function
-- Immunology: Antibodies, Antigens, Immune response, ELISA, Immunofluorescence
-- Parasitology: Parasites, Diagnostic methods, Life cycles
-- Histopathology: Tissue processing, Staining techniques, Microscopy, Fixation
-- Blood Banking: Blood groups, Cross-matching, Transfusion reactions
-- Clinical Pathology: Urinalysis, Body fluid analysis, Cytology
-- Laboratory Safety: Biosafety levels, Quality control, Equipment handling, Waste disposal
-- Molecular Biology: PCR, DNA extraction, Gel electrophoresis
-- Serology: Serological tests, Antigen-antibody reactions
-- Cytology: Cell morphology, Cytological techniques
-- Virology: Viral identification, Viral culture
-- Mycology: Fungal identification, Fungal culture
-- Bacteriology: Bacterial identification, Bacterial culture
-- Toxicology: Toxin detection, Drug screening
-- Endocrinology: Hormone assays, Endocrine disorders
-
-**Important:**
-- Return ONLY valid JSON without markdown formatting
-- Ensure all fields are filled correctly
-- Mix question types (60% MCQ, 30% True/False, 10% Short Answer)
-- Distribute across different subjects and topics
-- Use lowercase for type field: "mcq", "true_false", or "short_answer"
-
-Generate ${args.questionCount} questions now.`;
-      
-      // Generate content with OpenRouter (using Claude)
-      const completion = await openai.chat.completions.create({
-        model: "anthropic/claude-3-haiku",
-        messages: [
-          {
-            role: "user",
-            content: prompt,
-          },
-        ],
-        temperature: 0.7,
-      });
-      
-      const responseText = completion.choices[0].message.content || "[]";
-      
-      // Clean up response text - remove markdown code blocks if present
-      let cleanedText = responseText.trim().replace(/```json/g, "").replace(/```/g, "");
-      
-      // Parse the JSON response
-      let questions;
-      try {
-        questions = JSON.parse(cleanedText);
-      } catch (error) {
-        console.error("Error parsing JSON response:", error);
-        throw new Error("Failed to parse AI-generated questions");
-      }
-
-      return questions;
-    } catch (error) {
-      console.error("Error generating questions from AI:", error);
-      throw new Error(`Failed to generate questions: ${error instanceof Error ? error.message : "Unknown error"}`);
-    }
-  },
-});
-
-// Batch create questions
 export const batchCreateQuestions = action({
   args: {
-    questions: v.array(
-      v.object({
-        type: v.string(),
-        question: v.string(),
-        options: v.optional(v.array(v.string())),
-        correctAnswer: v.string(),
-        explanation: v.optional(v.string()),
-        difficulty: v.optional(v.string()),
-        source: v.string(),
-        topicId: v.optional(v.id("topics")),
-        year: v.optional(v.number()),
-        examName: v.optional(v.string()),
-        subject: v.optional(v.string()),
-      })
-    ),
+    questions: v.array(v.any()),
   },
-  handler: async (ctx, args): Promise<Id<"questions">[]> => {
-    const results: Id<"questions">[] = [];
-    
-    // Get current user ID from auth
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      throw new Error("Not authenticated");
-    }
-    
+  handler: async (ctx, args): Promise<Array<Id<"questions"> | null>> => {
+    // This function is still needed for bulk manual entry
+    const results: Array<Id<"questions"> | null> = [];
     for (const question of args.questions) {
-      const id: Id<"questions"> = await ctx.runMutation(internal.questions.createQuestionInternal, {
-        ...question,
-        contentId: undefined,
-        createdBy: userId,
-      });
-      results.push(id);
+      try {
+        const result: Id<"questions"> = await ctx.runMutation(internal.questions.createQuestionInternal, question);
+        results.push(result);
+      } catch (error) {
+        console.error("Failed to create question:", error);
+        results.push(null);
+      }
     }
-
     return results;
   },
 });
