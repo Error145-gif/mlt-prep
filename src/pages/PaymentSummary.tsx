@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { User, Mail, MapPin, BookOpen, Tag, CreditCard, CheckCircle } from "lucide-react";
+import { User, Mail, MapPin, BookOpen, Tag, CreditCard, CheckCircle, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -77,6 +77,81 @@ export default function PaymentSummary() {
   if (!planId || !planName || !basePrice) {
     navigate("/subscription");
     return null;
+  }
+
+  // Check if profile is complete
+  const isProfileComplete = userProfile.name && userProfile.state && userProfile.examPreparation;
+  
+  if (!isProfileComplete) {
+    return (
+      <div className="min-h-screen p-6 lg:p-8 relative overflow-hidden">
+        {/* Animated Background Gradients */}
+        <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
+          <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-400/30 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-500/30 rounded-full blur-3xl" />
+          <div className="absolute top-1/2 left-1/2 w-[600px] h-[600px] bg-pink-400/25 rounded-full blur-3xl" />
+        </div>
+
+        <div className="relative z-10 max-w-2xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center"
+          >
+            <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10 p-8">
+              <CardContent className="space-y-6">
+                <div className="flex justify-center">
+                  <div className="w-20 h-20 rounded-full bg-yellow-500/20 flex items-center justify-center">
+                    <User className="h-10 w-10 text-yellow-400" />
+                  </div>
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-white mb-2">Complete Your Profile First</h2>
+                  <p className="text-white/70">
+                    Please complete your profile before proceeding with payment. We need the following information:
+                  </p>
+                </div>
+                <div className="space-y-3 text-left">
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-white/5">
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center ${userProfile.name ? 'bg-green-500/20' : 'bg-red-500/20'}`}>
+                      {userProfile.name ? <CheckCircle className="h-4 w-4 text-green-400" /> : <span className="text-red-400">✕</span>}
+                    </div>
+                    <span className="text-white">Full Name</span>
+                  </div>
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-white/5">
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center ${userProfile.state ? 'bg-green-500/20' : 'bg-red-500/20'}`}>
+                      {userProfile.state ? <CheckCircle className="h-4 w-4 text-green-400" /> : <span className="text-red-400">✕</span>}
+                    </div>
+                    <span className="text-white">State</span>
+                  </div>
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-white/5">
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center ${userProfile.examPreparation ? 'bg-green-500/20' : 'bg-red-500/20'}`}>
+                      {userProfile.examPreparation ? <CheckCircle className="h-4 w-4 text-green-400" /> : <span className="text-red-400">✕</span>}
+                    </div>
+                    <span className="text-white">Exam Preparation</span>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-3 pt-4">
+                  <Button
+                    onClick={() => navigate("/profile")}
+                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                  >
+                    Complete Profile Now
+                  </Button>
+                  <Button
+                    onClick={() => navigate("/subscription")}
+                    variant="outline"
+                    className="w-full border-white/20 text-white hover:bg-white/10"
+                  >
+                    Back to Plans
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+      </div>
+    );
   }
 
   const handleApplyCoupon = async () => {
