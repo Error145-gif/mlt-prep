@@ -59,6 +59,12 @@ export default function PaymentSummary() {
     };
   }, []);
 
+  // Call useQuery hook before any conditional returns
+  const validateCouponQuery = useQuery(
+    api.coupons.validateCoupon,
+    couponCode.trim() ? { code: couponCode.trim() } : "skip"
+  );
+
   if (isLoading || !userProfile) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -71,11 +77,6 @@ export default function PaymentSummary() {
     navigate("/subscription");
     return null;
   }
-
-  const validateCouponQuery = useQuery(
-    api.coupons.validateCoupon,
-    couponCode.trim() ? { code: couponCode.trim() } : "skip"
-  );
 
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) {
