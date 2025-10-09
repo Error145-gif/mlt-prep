@@ -27,6 +27,7 @@ import SubscriptionPlans from "./pages/SubscriptionPlans.tsx";
 import AIQuestions from "./pages/AIQuestions.tsx";
 import Feedback from "./pages/Feedback.tsx";
 import AdminFeedback from "./pages/AdminFeedback.tsx";
+import CouponManagement from "./pages/CouponManagement.tsx";
 import TestStart from "./pages/TestStart.tsx";
 import TestResults from "./pages/TestResults.tsx";
 import Profile from "./pages/Profile.tsx";
@@ -112,6 +113,7 @@ createRoot(document.getElementById("root")!).render(
             <Route path="/admin/questions" element={<AdminLayout><QuestionManagement /></AdminLayout>} />
             <Route path="/admin/analytics" element={<AdminLayout><UserAnalytics /></AdminLayout>} />
             <Route path="/admin/subscriptions" element={<AdminLayout><SubscriptionManagement /></AdminLayout>} />
+            <Route path="/admin/coupons" element={<AdminLayout><CouponManagement /></AdminLayout>} />
             <Route path="/admin/notifications" element={<AdminLayout><NotificationCenter /></AdminLayout>} />
             <Route path="/admin/feedback" element={<AdminLayout><AdminFeedback /></AdminLayout>} />
             <Route path="*" element={<NotFound />} />

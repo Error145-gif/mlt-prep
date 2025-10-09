@@ -359,12 +359,8 @@ export default function PaymentSummary() {
                       >
                         {isApplyingCoupon ? "Applying..." : "Apply Coupon"}
                       </Button>
-                      <div className="text-xs text-white/50 space-y-1">
-                        <p className="font-semibold">Available Coupons:</p>
-                        <p>• WELCOME10 - 10% off</p>
-                        <p>• SAVE20 - 20% off</p>
-                        <p>• FLAT50 - ₹50 off</p>
-                        <p>• NEWYEAR25 - 25% off</p>
+                      <div className="text-xs text-white/50">
+                        <p>Enter your coupon code to get a discount</p>
                       </div>
                     </>
                   ) : (

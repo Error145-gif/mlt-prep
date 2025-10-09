@@ -269,6 +269,32 @@ const schema = defineSchema(
       .index("by_user", ["userId"])
       .index("by_status", ["status"])
       .index("by_category", ["category"]),
+
+    // Coupon Codes
+    coupons: defineTable({
+      code: v.string(),
+      discountType: v.union(v.literal("percentage"), v.literal("fixed")),
+      discountValue: v.number(),
+      isActive: v.boolean(),
+      usageLimit: v.optional(v.number()), // null = unlimited
+      usageCount: v.number(),
+      expiryDate: v.optional(v.number()),
+      createdBy: v.id("users"),
+      description: v.optional(v.string()),
+    })
+      .index("by_code", ["code"])
+      .index("by_active", ["isActive"]),
+
+    // Coupon Usage Tracking
+    couponUsage: defineTable({
+      couponId: v.id("coupons"),
+      userId: v.id("users"),
+      orderId: v.optional(v.string()),
+      discountAmount: v.number(),
+      usedAt: v.number(),
+    })
+      .index("by_coupon", ["couponId"])
+      .index("by_user", ["userId"]),
   },
   {
     schemaValidation: false,
