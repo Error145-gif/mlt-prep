@@ -5,7 +5,7 @@ import { useNavigate } from "react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Clock, Target, Lock } from "lucide-react";
+import { FileText, Clock, Target } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect } from "react";
 import { toast } from "sonner";
@@ -102,7 +102,11 @@ export default function MockTests() {
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       {isLocked ? (
-                        <Lock className="h-8 w-8 text-yellow-400" />
+                        <img 
+                          src="https://harmless-tapir-303.convex.cloud/api/storage/22271688-6e3c-45a0-a31d-8c82daf67b1e" 
+                          alt="Locked"
+                          className="h-12 w-12 object-contain"
+                        />
                       ) : (
                         <FileText className="h-8 w-8 text-blue-400" />
                       )}
@@ -112,7 +116,13 @@ export default function MockTests() {
                     </div>
                     <CardTitle className="text-white mt-4 flex items-center gap-2">
                       {test.topicName}
-                      {isLocked && <Lock className="h-5 w-5 text-yellow-400" />}
+                      {isLocked && (
+                        <img 
+                          src="https://harmless-tapir-303.convex.cloud/api/storage/22271688-6e3c-45a0-a31d-8c82daf67b1e" 
+                          alt="Locked"
+                          className="h-6 w-6 object-contain"
+                        />
+                      )}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -127,13 +137,17 @@ export default function MockTests() {
                     {isLocked ? (
                       <Button
                         onClick={() => {
-                          toast.info("Subscribe to unlock all tests!");
-                          setTimeout(() => navigate("/subscription"), 500);
+                          toast.error("This test is locked! Subscribe to unlock all tests.");
+                          setTimeout(() => navigate("/subscription"), 1000);
                         }}
                         className="w-full bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700"
                       >
-                        <Lock className="h-4 w-4 mr-2" />
-                        Subscribe to Unlock
+                        <img 
+                          src="https://harmless-tapir-303.convex.cloud/api/storage/22271688-6e3c-45a0-a31d-8c82daf67b1e" 
+                          alt="Locked"
+                          className="h-4 w-4 mr-2"
+                        />
+                        Unlock with Subscription
                       </Button>
                     ) : (
                       <Button
