@@ -31,10 +31,13 @@ export default function PYQSets() {
   }
 
   const handleStartPYQ = (year: number, setNumber: number, isFirstTest: boolean) => {
-    // If not first test and no subscription access, redirect to subscription
-    if (!isFirstTest && !canAccessPYQ?.canAccess) {
-      toast.error("Subscribe to unlock this test!");
-      setTimeout(() => navigate("/subscription"), 500);
+    // Check if this is a locked test (not first test and no subscription)
+    const isLocked = !isFirstTest && !canAccessPYQ?.canAccess;
+    
+    // If locked, show error and redirect
+    if (isLocked) {
+      toast.error("This test is locked! Subscribe to unlock all tests.");
+      setTimeout(() => navigate("/subscription"), 1000);
       return;
     }
     
