@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import NotificationBell from "@/components/NotificationBell";
 
 export default function StudentNav() {
   const location = useLocation();
@@ -47,18 +48,21 @@ export default function StudentNav() {
             className="fixed left-0 top-0 h-screen w-64 glass-card border-r border-white/20 backdrop-blur-xl bg-white/10 p-6 z-40 lg:translate-x-0"
           >
             <div className="flex flex-col h-full">
-              <div className="flex items-center gap-3 mb-8">
-                {userProfile?.avatarUrl ? (
-                  <Avatar className="h-10 w-10 border-2 border-white/20">
-                    <AvatarImage src={userProfile.avatarUrl} />
-                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-                      {userProfile.name?.charAt(0)?.toUpperCase() || "U"}
-                    </AvatarFallback>
-                  </Avatar>
-                ) : (
-                  <img src="/logo.svg" alt="Logo" className="h-10 w-10" />
-                )}
-                <h2 className="text-xl font-bold text-white">MLT Prep</h2>
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-3">
+                  {userProfile?.avatarUrl ? (
+                    <Avatar className="h-10 w-10 border-2 border-white/20">
+                      <AvatarImage src={userProfile.avatarUrl} />
+                      <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                        {userProfile.name?.charAt(0)?.toUpperCase() || "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                  ) : (
+                    <img src="/logo.svg" alt="Logo" className="h-10 w-10" />
+                  )}
+                  <h2 className="text-xl font-bold text-white">MLT Prep</h2>
+                </div>
+                <NotificationBell />
               </div>
 
               <nav className="flex-1 space-y-2">

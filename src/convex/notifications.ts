@@ -215,3 +215,178 @@ export const deleteNotification = mutation({
     return args.id;
   },
 });
+
+// Get user's notifications (for students)
+export const getUserNotifications = query({
+  args: {},
+  handler: async (ctx) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) {
+      throw new Error("Unauthorized");
+    }
+
+    // Get all sent notifications
+    const allNotifications = await ctx.db
+      .query("notifications")
+      .withIndex("by_status", (q) => q.eq("status", "sent"))
+      .order("desc")
+      .take(50);
+
+    // Filter notifications for this user
+    const userNotifications = allNotifications.filter((notif) => {
+      // If targetUsers is undefined or empty, it's for all users
+      if (!notif.targetUsers || notif.targetUsers.length === 0) {
+        return true;
+      }
+      // Check if user is in targetUsers
+      return notif.targetUsers.includes(user._id);
+    });
+
+    // Get read status for each notification
+    const notificationsWithStatus = await Promise.all(
+      userNotifications.map(async (notif) => {
+        const readStatus = await ctx.db
+          .query("userNotificationStatus")
+          .withIndex("by_user_and_notification", (q) =>
+            q.eq("userId", user._id).eq("notificationId", notif._id)
+          )
+          .first();
+
+        return {
+          ...notif,
+          isRead: readStatus?.isRead || false,
+          readAt: readStatus?.readAt,
+        };
+      })
+    );
+
+    return notificationsWithStatus;
+  },
+});
+
+// Get unread notification count
+export const getUnreadCount = query({
+  args: {},
+  handler: async (ctx) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) {
+      return 0;
+    }
+
+    // Get all sent notifications
+    const allNotifications = await ctx.db
+      .query("notifications")
+      .withIndex("by_status", (q) => q.eq("status", "sent"))
+      .collect();
+
+    // Filter notifications for this user
+    const userNotifications = allNotifications.filter((notif) => {
+      if (!notif.targetUsers || notif.targetUsers.length === 0) {
+        return true;
+      }
+      return notif.targetUsers.includes(user._id);
+    });
+
+    // Count unread
+    let unreadCount = 0;
+    for (const notif of userNotifications) {
+      const readStatus = await ctx.db
+        .query("userNotificationStatus")
+        .withIndex("by_user_and_notification", (q) =>
+          q.eq("userId", user._id).eq("notificationId", notif._id)
+        )
+        .first();
+
+      if (!readStatus || !readStatus.isRead) {
+        unreadCount++;
+      }
+    }
+
+    return unreadCount;
+  },
+});
+
+// Mark notification as read
+export const markAsRead = mutation({
+  args: { notificationId: v.id("notifications") },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) {
+      throw new Error("Unauthorized");
+    }
+
+    // Check if status already exists
+    const existing = await ctx.db
+      .query("userNotificationStatus")
+      .withIndex("by_user_and_notification", (q) =>
+        q.eq("userId", user._id).eq("notificationId", args.notificationId)
+      )
+      .first();
+
+    if (existing) {
+      await ctx.db.patch(existing._id, {
+        isRead: true,
+        readAt: Date.now(),
+      });
+    } else {
+      await ctx.db.insert("userNotificationStatus", {
+        userId: user._id,
+        notificationId: args.notificationId,
+        isRead: true,
+        readAt: Date.now(),
+      });
+    }
+
+    return args.notificationId;
+  },
+});
+
+// Mark all notifications as read
+export const markAllAsRead = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) {
+      throw new Error("Unauthorized");
+    }
+
+    // Get all sent notifications for this user
+    const allNotifications = await ctx.db
+      .query("notifications")
+      .withIndex("by_status", (q) => q.eq("status", "sent"))
+      .collect();
+
+    const userNotifications = allNotifications.filter((notif) => {
+      if (!notif.targetUsers || notif.targetUsers.length === 0) {
+        return true;
+      }
+      return notif.targetUsers.includes(user._id);
+    });
+
+    // Mark each as read
+    for (const notif of userNotifications) {
+      const existing = await ctx.db
+        .query("userNotificationStatus")
+        .withIndex("by_user_and_notification", (q) =>
+          q.eq("userId", user._id).eq("notificationId", notif._id)
+        )
+        .first();
+
+      if (existing) {
+        await ctx.db.patch(existing._id, {
+          isRead: true,
+          readAt: Date.now(),
+        });
+      } else {
+        await ctx.db.insert("userNotificationStatus", {
+          userId: user._id,
+          notificationId: notif._id,
+          isRead: true,
+          readAt: Date.now(),
+        });
+      }
+    }
+
+    return true;
+  },
+});

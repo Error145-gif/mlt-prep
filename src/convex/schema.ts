@@ -253,6 +253,17 @@ const schema = defineSchema(
       status: v.string(), // "draft", "sent"
     }).index("by_status", ["status"]),
 
+    // User Notification Read Status
+    userNotificationStatus: defineTable({
+      userId: v.id("users"),
+      notificationId: v.id("notifications"),
+      isRead: v.boolean(),
+      readAt: v.optional(v.number()),
+    })
+      .index("by_user", ["userId"])
+      .index("by_notification", ["notificationId"])
+      .index("by_user_and_notification", ["userId", "notificationId"]),
+
     // User Feedback
     feedback: defineTable({
       userId: v.id("users"),
