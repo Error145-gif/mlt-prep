@@ -295,6 +295,24 @@ const schema = defineSchema(
     })
       .index("by_coupon", ["couponId"])
       .index("by_user", ["userId"]),
+
+    // Invoices
+    invoices: defineTable({
+      invoiceNumber: v.string(),
+      userId: v.id("users"),
+      subscriptionId: v.id("subscriptions"),
+      paymentId: v.string(),
+      planName: v.string(),
+      amount: v.number(),
+      duration: v.number(),
+      issuedDate: v.number(),
+      emailSent: v.boolean(),
+      emailSentAt: v.optional(v.number()),
+      emailError: v.optional(v.string()),
+    })
+      .index("by_user", ["userId"])
+      .index("by_invoice_number", ["invoiceNumber"])
+      .index("by_subscription", ["subscriptionId"]),
   },
   {
     schemaValidation: false,

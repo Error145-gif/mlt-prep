@@ -1,6 +1,7 @@
 import { internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 import { getCurrentUser } from "./users";
+import { internal, api } from "./_generated/api";
 
 // Store Razorpay order in database
 export const storeOrder = internalMutation({
@@ -58,7 +59,7 @@ export const updatePaymentStatus = internalMutation({
       paymentId: args.paymentId,
     });
 
-    // If payment successful, create subscription
+    // If payment successful, create subscription and generate invoice
     if (args.status === "success") {
       const planDurations: Record<string, number> = {
         "Monthly Plan": 30,
@@ -70,7 +71,8 @@ export const updatePaymentStatus = internalMutation({
       const startDate = Date.now();
       const endDate = startDate + duration * 24 * 60 * 60 * 1000;
 
-      await ctx.db.insert("subscriptions", {
+      // Create subscription
+      const subscriptionId = await ctx.db.insert("subscriptions", {
         userId: user._id,
         planName: payment.planName || "Monthly Plan",
         status: "active",
@@ -79,6 +81,40 @@ export const updatePaymentStatus = internalMutation({
         amount: payment.amount,
         paymentId: args.paymentId,
       });
+
+      // Generate invoice and send email
+      try {
+        const invoiceData = await ctx.runMutation(internal.invoicesInternal.createInvoice, {
+          userId: user._id,
+          subscriptionId,
+          paymentId: args.paymentId,
+          planName: payment.planName || "Monthly Plan",
+          amount: payment.amount,
+          duration,
+        });
+
+        // Schedule email sending (non-blocking) - using api instead of internal for actions
+        await ctx.scheduler.runAfter(
+          0,
+          api.invoices.sendInvoiceEmail,
+          {
+            userId: user._id,
+            invoiceNumber: invoiceData.invoiceNumber,
+            userName: user.name || "Valued Customer",
+            userEmail: user.email || "",
+            planName: payment.planName || "Monthly Plan",
+            amount: payment.amount,
+            duration,
+            transactionId: args.paymentId,
+            issuedDate: invoiceData.issuedDate,
+          },
+        );
+
+        console.log(`Invoice ${invoiceData.invoiceNumber} created and email scheduled for user ${user.email}`);
+      } catch (error) {
+        console.error("Failed to generate invoice or send email:", error);
+        // Don't fail the payment if invoice generation fails
+      }
     }
 
     return { success: true };

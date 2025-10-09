@@ -22,6 +22,8 @@ import type * as content from "../content.js";
 import type * as coupons from "../coupons.js";
 import type * as feedback from "../feedback.js";
 import type * as http from "../http.js";
+import type * as invoices from "../invoices.js";
+import type * as invoicesInternal from "../invoicesInternal.js";
 import type * as notifications from "../notifications.js";
 import type * as questions from "../questions.js";
 import type * as razorpay from "../razorpay.js";
@@ -51,6 +53,8 @@ declare const fullApi: ApiFromModules<{
   coupons: typeof coupons;
   feedback: typeof feedback;
   http: typeof http;
+  invoices: typeof invoices;
+  invoicesInternal: typeof invoicesInternal;
   notifications: typeof notifications;
   questions: typeof questions;
   razorpay: typeof razorpay;
