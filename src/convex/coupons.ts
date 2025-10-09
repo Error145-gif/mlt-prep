@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 // Query to validate a coupon code
 export const validateCoupon = query({
@@ -42,14 +43,10 @@ export const validateCoupon = query({
 export const getAllCoupons = query({
   args: {},
   handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Not authenticated");
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
 
-    const user = await ctx.db
-      .query("users")
-      .withIndex("email", (q) => q.eq("email", identity.email!))
-      .first();
-
+    const user = await ctx.db.get(userId);
     if (!user || user.role !== "admin") {
       throw new Error("Unauthorized: Admin access required");
     }
@@ -69,14 +66,10 @@ export const createCoupon = mutation({
     description: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Not authenticated");
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
 
-    const user = await ctx.db
-      .query("users")
-      .withIndex("email", (q) => q.eq("email", identity.email!))
-      .first();
-
+    const user = await ctx.db.get(userId);
     if (!user || user.role !== "admin") {
       throw new Error("Unauthorized: Admin access required");
     }
@@ -124,14 +117,10 @@ export const updateCoupon = mutation({
     description: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Not authenticated");
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
 
-    const user = await ctx.db
-      .query("users")
-      .withIndex("email", (q) => q.eq("email", identity.email!))
-      .first();
-
+    const user = await ctx.db.get(userId);
     if (!user || user.role !== "admin") {
       throw new Error("Unauthorized: Admin access required");
     }
@@ -152,14 +141,10 @@ export const deleteCoupon = mutation({
     couponId: v.id("coupons"),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Not authenticated");
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
 
-    const user = await ctx.db
-      .query("users")
-      .withIndex("email", (q) => q.eq("email", identity.email!))
-      .first();
-
+    const user = await ctx.db.get(userId);
     if (!user || user.role !== "admin") {
       throw new Error("Unauthorized: Admin access required");
     }
@@ -202,14 +187,10 @@ export const getCouponStats = query({
     couponId: v.id("coupons"),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Not authenticated");
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
 
-    const user = await ctx.db
-      .query("users")
-      .withIndex("email", (q) => q.eq("email", identity.email!))
-      .first();
-
+    const user = await ctx.db.get(userId);
     if (!user || user.role !== "admin") {
       throw new Error("Unauthorized: Admin access required");
     }
