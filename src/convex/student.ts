@@ -633,14 +633,14 @@ export const submitTest = mutation({
         };
       }
       
-      // Comprehensive normalization function
+      // Comprehensive normalization function - removes ALL special chars and extra spaces
       const normalizeAnswer = (str: string) => {
         if (!str) return "";
         return str
           .trim()
           .toLowerCase()
           .replace(/\s+/g, ' ') // Replace multiple spaces with single space
-          .replace(/[^\w\s]/g, '') // Remove special characters
+          .replace(/[^a-z0-9\s]/g, '') // Remove ALL special characters, keep only letters, numbers, spaces
           .replace(/\n/g, ' ') // Replace newlines with space
           .trim(); // Final trim after all replacements
       };
@@ -648,22 +648,33 @@ export const submitTest = mutation({
       const userAnswer = normalizeAnswer(ans.answer);
       const correctAnswer = normalizeAnswer(question.correctAnswer || "");
       
-      // Also check if user answer matches any of the options exactly (for MCQ)
+      console.log(`[VALIDATION DEBUG] Question ID: ${question._id}`);
+      console.log(`[VALIDATION DEBUG] Raw User Answer: "${ans.answer}"`);
+      console.log(`[VALIDATION DEBUG] Raw Correct Answer: "${question.correctAnswer}"`);
+      console.log(`[VALIDATION DEBUG] Normalized User: "${userAnswer}"`);
+      console.log(`[VALIDATION DEBUG] Normalized Correct: "${correctAnswer}"`);
+      
+      // Primary comparison: direct normalized match
       let isCorrect = userAnswer === correctAnswer;
       
-      // Additional check: if question has options, verify the selected option text
+      // Secondary check: if question has options, compare by option index
       if (!isCorrect && question.options && question.options.length > 0) {
-        // Check if the user's answer matches the correct answer when both are normalized
         const normalizedOptions = question.options.map(opt => normalizeAnswer(opt));
+        console.log(`[VALIDATION DEBUG] Normalized Options:`, normalizedOptions);
+        
         const userAnswerIndex = normalizedOptions.indexOf(userAnswer);
         const correctAnswerIndex = normalizedOptions.indexOf(correctAnswer);
+        
+        console.log(`[VALIDATION DEBUG] User Answer Index: ${userAnswerIndex}`);
+        console.log(`[VALIDATION DEBUG] Correct Answer Index: ${correctAnswerIndex}`);
         
         if (userAnswerIndex !== -1 && userAnswerIndex === correctAnswerIndex) {
           isCorrect = true;
         }
       }
       
-      console.log(`[VALIDATION] Q${question._id}: User="${ans.answer}" (normalized: "${userAnswer}") vs Correct="${question.correctAnswer}" (normalized: "${correctAnswer}") => ${isCorrect ? 'CORRECT ✓' : 'INCORRECT ✗'}`);
+      console.log(`[VALIDATION RESULT] => ${isCorrect ? 'CORRECT ✓' : 'INCORRECT ✗'}`);
+      console.log('---');
       
       return {
         ...ans,

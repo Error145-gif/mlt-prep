@@ -246,14 +246,14 @@ export default function TestResults() {
                   {q.type === "mcq" && q.options && (
                     <div className="space-y-2 ml-6">
                       {q.options.map((option: string, idx: number) => {
-                        // Comprehensive normalization for display comparison
+                        // Comprehensive normalization for display comparison - MUST match backend exactly
                         const normalizeForDisplay = (str: string) => {
                           if (!str) return "";
                           return str
                             .trim()
                             .toLowerCase()
                             .replace(/\s+/g, ' ')
-                            .replace(/[^\w\s]/g, '')
+                            .replace(/[^a-z0-9\s]/g, '') // Match backend: only letters, numbers, spaces
                             .replace(/\n/g, ' ')
                             .trim();
                         };
