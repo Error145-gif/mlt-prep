@@ -247,15 +247,15 @@ export default function TestResults() {
                   {q.type === "mcq" && q.options && (
                     <div className="space-y-2 ml-6">
                       {q.options.map((option: string, idx: number) => {
-                        // Simple normalization - only trim and lowercase
-                        const normalizeForDisplay = (str: string) => {
-                          if (!str) return "";
-                          return str.trim().toLowerCase();
+                        // Simple normalization - ONLY trim and lowercase
+                        const normalize = (text: string) => {
+                          if (!text) return "";
+                          return text.trim().toLowerCase();
                         };
                         
-                        const normalizedUserAnswer = normalizeForDisplay(q.userAnswer || "");
-                        const normalizedOption = normalizeForDisplay(option);
-                        const normalizedCorrectAnswer = normalizeForDisplay(q.correctAnswer || "");
+                        const normalizedUserAnswer = normalize(q.userAnswer || "");
+                        const normalizedOption = normalize(option);
+                        const normalizedCorrectAnswer = normalize(q.correctAnswer || "");
                         
                         const isUserAnswer = normalizedUserAnswer === normalizedOption;
                         const isCorrectAnswer = normalizedCorrectAnswer === normalizedOption;
