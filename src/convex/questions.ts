@@ -382,7 +382,7 @@ export const createAITestWithQuestions = mutation({
   },
 });
 
-// Create PYQ test with bulk questions
+// Create PYQ test with bulk questions (automatically splits into sets of 20)
 export const createPYQTestWithQuestions = mutation({
   args: {
     examName: v.string(),
@@ -405,39 +405,60 @@ export const createPYQTestWithQuestions = mutation({
       throw new Error("Unauthorized");
     }
 
-    // Validate question count (PYQ sets should be in multiples of 20)
-    if (args.questions.length === 0 || args.questions.length > 100) {
-      throw new Error("Please provide between 1 and 100 questions");
+    // Validate question count
+    if (args.questions.length === 0) {
+      throw new Error("Please provide at least 1 question");
     }
 
-    // Insert all questions with PYQ metadata
-    const questionIds = [];
-    for (let i = 0; i < args.questions.length; i++) {
-      const question = args.questions[i];
-      try {
-        const id = await ctx.db.insert("questions", {
-          ...question,
-          type: question.type as any,
-          examName: args.examName,
-          year: args.year,
-          status: "approved",
-          reviewedBy: user._id,
-          reviewedAt: Date.now(),
-          createdBy: user._id,
-          source: "pyq",
-        });
-        questionIds.push(id);
-      } catch (error) {
-        console.error(`Failed to insert PYQ question ${i + 1}:`, error);
-        throw new Error(`Failed to insert PYQ question ${i + 1}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    // Split questions into sets of 20
+    const setsCreated = [];
+    const totalQuestions = args.questions.length;
+    const questionsPerSet = 20;
+    const numberOfSets = Math.ceil(totalQuestions / questionsPerSet);
+
+    for (let setIndex = 0; setIndex < numberOfSets; setIndex++) {
+      const startIdx = setIndex * questionsPerSet;
+      const endIdx = Math.min(startIdx + questionsPerSet, totalQuestions);
+      const setQuestions = args.questions.slice(startIdx, endIdx);
+      const setNumber = setIndex + 1;
+
+      // Insert questions for this set
+      const questionIds = [];
+      for (let i = 0; i < setQuestions.length; i++) {
+        const question = setQuestions[i];
+        try {
+          const id = await ctx.db.insert("questions", {
+            ...question,
+            type: question.type as any,
+            examName: args.examName,
+            year: args.year,
+            setNumber: setNumber,
+            status: "approved",
+            reviewedBy: user._id,
+            reviewedAt: Date.now(),
+            createdBy: user._id,
+            source: "pyq",
+          });
+          questionIds.push(id);
+        } catch (error) {
+          console.error(`Failed to insert PYQ question ${i + 1} in set ${setNumber}:`, error);
+          throw new Error(`Failed to insert PYQ question ${i + 1} in set ${setNumber}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
       }
+
+      setsCreated.push({
+        setNumber: setNumber,
+        questionCount: questionIds.length,
+      });
     }
 
     return {
       success: true,
       examName: args.examName,
       year: args.year,
-      questionCount: questionIds.length,
+      totalQuestions: totalQuestions,
+      setsCreated: setsCreated,
+      numberOfSets: numberOfSets,
     };
   },
 });

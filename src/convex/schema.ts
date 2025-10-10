@@ -131,6 +131,7 @@ const schema = defineSchema(
       year: v.optional(v.number()), // for PYQ questions
       examName: v.optional(v.string()), // for PYQ questions (e.g., "RRB Section Officer", "AIIMS MLT")
       subject: v.optional(v.string()), // subject name (e.g., "Hematology", "Microbiology")
+      setNumber: v.optional(v.number()), // for organizing questions into sets (especially PYQ sets of 20)
       createdBy: v.optional(v.id("users")),
     })
       .index("by_content", ["contentId"])

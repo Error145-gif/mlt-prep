@@ -887,7 +887,7 @@ export default function QuestionManagement() {
       });
 
       toast.success(
-        `PYQ Test created successfully! ${result.questionCount} questions added for ${result.examName} ${result.year}`
+        `PYQ Test created successfully! ${result.totalQuestions} questions added for ${result.examName} ${result.year} (${result.numberOfSets} sets created)`
       );
 
       // Reset form
