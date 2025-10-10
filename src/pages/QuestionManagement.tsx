@@ -1569,7 +1569,28 @@ Explanation: Explanation text here
                       value={bulkPYQText}
                       onChange={(e) => {
                         setBulkPYQText(e.target.value);
-                        const parsed = parseBulkQuestions(e.target.value);
+                        const text = e.target.value.trim();
+                        if (!text) {
+                          setParsedPYQQuestions([]);
+                          return;
+                        }
+                        
+                        const blocks = text.split(/\n\s*\n/).filter(block => block.trim());
+                        const parsed = blocks.map(block => {
+                          const lines = block.trim().split('\n');
+                          const questionLine = lines[0];
+                          const options = lines.slice(1, 5);
+                          const correctLine = lines.find(l => l.toLowerCase().startsWith('correct:'));
+                          const explanationLine = lines.find(l => l.toLowerCase().startsWith('explanation:'));
+                          
+                          return {
+                            question: questionLine.replace(/^\d+\.\s*/, '').trim(),
+                            options: options.map(opt => opt.replace(/^[A-D]\)\s*/, '').trim()),
+                            correctAnswer: correctLine ? correctLine.replace(/^correct:\s*/i, '').trim() : '',
+                            explanation: explanationLine ? explanationLine.replace(/^explanation:\s*/i, '').trim() : ''
+                          };
+                        });
+                        
                         setParsedPYQQuestions(parsed);
                       }}
                       className="min-h-[300px] bg-white/10 border-white/20 text-white placeholder:text-white/50 font-mono text-sm"
