@@ -648,28 +648,42 @@ export const submitTest = mutation({
       const userAnswer = normalizeAnswer(ans.answer);
       const correctAnswer = normalizeAnswer(question.correctAnswer || "");
       
-      console.log(`[VALIDATION DEBUG] Question ID: ${question._id}`);
-      console.log(`[VALIDATION DEBUG] Raw User Answer: "${ans.answer}"`);
-      console.log(`[VALIDATION DEBUG] Raw Correct Answer: "${question.correctAnswer}"`);
-      console.log(`[VALIDATION DEBUG] Normalized User: "${userAnswer}"`);
-      console.log(`[VALIDATION DEBUG] Normalized Correct: "${correctAnswer}"`);
+      console.log(`\n========== VALIDATION DEBUG ==========`);
+      console.log(`Question ID: ${question._id}`);
+      console.log(`Question Text: "${question.question}"`);
+      console.log(`Raw User Answer: "${ans.answer}"`);
+      console.log(`Raw Correct Answer: "${question.correctAnswer}"`);
+      console.log(`Normalized User: "${userAnswer}"`);
+      console.log(`Normalized Correct: "${correctAnswer}"`);
       
       // Primary comparison: direct normalized match
       let isCorrect = userAnswer === correctAnswer;
+      console.log(`Direct Match Result: ${isCorrect}`);
       
-      // Secondary check: if question has options, compare by option index
-      if (!isCorrect && question.options && question.options.length > 0) {
-        const normalizedOptions = question.options.map(opt => normalizeAnswer(opt));
-        console.log(`[VALIDATION DEBUG] Normalized Options:`, normalizedOptions);
+      // Secondary check: if question has options, compare by finding which option matches
+      if (question.options && question.options.length > 0) {
+        console.log(`\nOptions Available: ${question.options.length}`);
+        const normalizedOptions = question.options.map((opt, idx) => {
+          const normalized = normalizeAnswer(opt);
+          console.log(`  Option ${idx}: "${opt}" -> "${normalized}"`);
+          return normalized;
+        });
         
         const userAnswerIndex = normalizedOptions.indexOf(userAnswer);
         const correctAnswerIndex = normalizedOptions.indexOf(correctAnswer);
         
-        console.log(`[VALIDATION DEBUG] User Answer Index: ${userAnswerIndex}`);
-        console.log(`[VALIDATION DEBUG] Correct Answer Index: ${correctAnswerIndex}`);
+        console.log(`\nUser Answer matches Option Index: ${userAnswerIndex}`);
+        console.log(`Correct Answer matches Option Index: ${correctAnswerIndex}`);
         
-        if (userAnswerIndex !== -1 && userAnswerIndex === correctAnswerIndex) {
-          isCorrect = true;
+        // If both user and correct answer map to valid options, compare indices
+        if (userAnswerIndex !== -1 && correctAnswerIndex !== -1) {
+          isCorrect = userAnswerIndex === correctAnswerIndex;
+          console.log(`Index-based comparison: ${isCorrect}`);
+        } else if (userAnswerIndex !== -1 && correctAnswerIndex === -1) {
+          // User selected a valid option, but correctAnswer doesn't match any option
+          // This might mean correctAnswer is stored differently - try direct match
+          console.log(`WARNING: Correct answer "${correctAnswer}" doesn't match any option!`);
+          console.log(`Falling back to direct string comparison`);
         }
       }
       

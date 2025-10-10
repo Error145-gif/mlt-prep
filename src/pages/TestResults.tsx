@@ -206,8 +206,9 @@ export default function TestResults() {
           <h3 className="text-2xl font-bold text-gray-900 mb-6">Question Review</h3>
           <div className="space-y-6">
             {questions.map((q: any, index: number) => {
-              const isCorrect = q.isCorrect;
-              const wasAnswered = q.userAnswer !== undefined && q.userAnswer !== "";
+              // Use the backend-validated isCorrect flag - this is the source of truth
+              const isCorrect = q.isCorrect === true;
+              const wasAnswered = q.userAnswer !== undefined && q.userAnswer !== null && q.userAnswer !== "";
               
               return (
                 <div
@@ -258,8 +259,12 @@ export default function TestResults() {
                             .trim();
                         };
                         
-                        const isUserAnswer = normalizeForDisplay(q.userAnswer || "") === normalizeForDisplay(option);
-                        const isCorrectAnswer = normalizeForDisplay(q.correctAnswer || "") === normalizeForDisplay(option);
+                        const normalizedUserAnswer = normalizeForDisplay(q.userAnswer || "");
+                        const normalizedOption = normalizeForDisplay(option);
+                        const normalizedCorrectAnswer = normalizeForDisplay(q.correctAnswer || "");
+                        
+                        const isUserAnswer = normalizedUserAnswer === normalizedOption;
+                        const isCorrectAnswer = normalizedCorrectAnswer === normalizedOption;
                         
                         return (
                           <div
