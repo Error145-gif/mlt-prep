@@ -633,40 +633,39 @@ export const submitTest = mutation({
         };
       }
       
-      // Simple normalization - only trim and lowercase
-      const normalizeAnswer = (str: string) => {
-        if (!str) return "";
-        return str.trim().toLowerCase();
+      // FIXED: Simple normalization - only trim and lowercase
+      const normalize = (text: string) => {
+        if (!text) return "";
+        return text.trim().toLowerCase();
       };
       
-      const userAnswer = normalizeAnswer(ans.answer);
-      const correctAnswer = normalizeAnswer(question.correctAnswer || "");
+      const userAnswer = normalize(ans.answer);
+      const correctAnswer = normalize(question.correctAnswer || "");
       
       console.log(`\n========== VALIDATION DEBUG ==========`);
       console.log(`Question ID: ${question._id}`);
-      console.log(`Question Text: "${question.question}"`);
-      console.log(`Raw User Answer: "${ans.answer}"`);
-      console.log(`Raw Correct Answer: "${question.correctAnswer}"`);
-      console.log(`Normalized User: "${userAnswer}"`);
-      console.log(`Normalized Correct: "${correctAnswer}"`);
+      console.log(`Question: "${question.question}"`);
+      console.log(`User Answer (raw): "${ans.answer}"`);
+      console.log(`User Answer (normalized): "${userAnswer}"`);
+      console.log(`Correct Answer (raw): "${question.correctAnswer}"`);
+      console.log(`Correct Answer (normalized): "${correctAnswer}"`);
       
-      // SIMPLIFIED: Direct comparison only
+      // Direct string comparison
       const isCorrect = userAnswer === correctAnswer;
       
-      console.log(`\n[FINAL COMPARISON]`);
-      console.log(`User: "${userAnswer}"`);
-      console.log(`Correct: "${correctAnswer}"`);
-      console.log(`Match: ${isCorrect}`);
+      console.log(`Direct Match: ${isCorrect}`);
       
+      // Log all options if MCQ
       if (question.options && question.options.length > 0) {
-        console.log(`\n[OPTIONS AVAILABLE]`);
+        console.log(`\nOptions:`);
         question.options.forEach((opt, idx) => {
-          console.log(`  [${idx}] "${opt}" -> normalized: "${normalizeAnswer(opt)}"`);
+          const normalizedOpt = normalize(opt);
+          console.log(`  [${idx}] "${opt}" -> "${normalizedOpt}" ${normalizedOpt === correctAnswer ? '← CORRECT' : ''} ${normalizedOpt === userAnswer ? '← USER SELECTED' : ''}`);
         });
       }
       
-      console.log(`[VALIDATION RESULT] => ${isCorrect ? 'CORRECT ✓' : 'INCORRECT ✗'}`);
-      console.log('---');
+      console.log(`\nFINAL RESULT: ${isCorrect ? '✓ CORRECT' : '✗ INCORRECT'}`);
+      console.log('=====================================\n');
       
       return {
         ...ans,
