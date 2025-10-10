@@ -625,16 +625,28 @@ export const submitTest = mutation({
     const answersWithCorrectness = args.answers.map((ans) => {
       const question = questions.find((q) => q?._id === ans.questionId);
       
+      if (!question) {
+        console.error(`Question not found for ID: ${ans.questionId}`);
+        return {
+          ...ans,
+          isCorrect: false,
+        };
+      }
+      
       // Normalize both answers for comparison
       const normalizeAnswer = (str: string) => {
+        if (!str) return "";
         return str
           .trim()
           .toLowerCase()
-          .replace(/\s+/g, ' '); // Replace multiple spaces with single space
+          .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+          .replace(/[^\w\s]/g, ''); // Remove special characters for better matching
       };
       
       const userAnswer = normalizeAnswer(ans.answer);
-      const correctAnswer = normalizeAnswer(question?.correctAnswer || "");
+      const correctAnswer = normalizeAnswer(question.correctAnswer || "");
+      
+      console.log(`Question ${question._id}: User="${userAnswer}" vs Correct="${correctAnswer}"`);
       
       const isCorrect = userAnswer === correctAnswer;
       

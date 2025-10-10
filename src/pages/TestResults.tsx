@@ -246,8 +246,14 @@ export default function TestResults() {
                   {q.type === "mcq" && q.options && (
                     <div className="space-y-2 ml-6">
                       {q.options.map((option: string, idx: number) => {
-                        const isUserAnswer = q.userAnswer === option;
-                        const isCorrectAnswer = q.correctAnswer === option;
+                        // Normalize for comparison
+                        const normalizeForDisplay = (str: string) => {
+                          if (!str) return "";
+                          return str.trim().toLowerCase().replace(/\s+/g, ' ');
+                        };
+                        
+                        const isUserAnswer = normalizeForDisplay(q.userAnswer || "") === normalizeForDisplay(option);
+                        const isCorrectAnswer = normalizeForDisplay(q.correctAnswer || "") === normalizeForDisplay(option);
                         
                         return (
                           <div
