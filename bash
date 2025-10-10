@@ -1,1 +1,2 @@
-npx cap open android
+   npx convex deploy --prod
+   
