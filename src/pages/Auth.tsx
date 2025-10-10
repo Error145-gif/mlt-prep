@@ -410,18 +410,6 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
               </form>
             </div>
           )}
-
-          <div className="mt-8 text-center text-sm text-gray-500">
-            Secured by{" "}
-            <a
-              href="https://vly.ai"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-purple-600 hover:text-purple-700 font-semibold"
-            >
-              vly.ai
-            </a>
-          </div>
         </div>
       </motion.div>
     </div>
