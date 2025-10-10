@@ -621,11 +621,26 @@ export const submitTest = mutation({
       session.questionIds.map((id) => ctx.db.get(id))
     );
 
+    // FIXED: Improved answer comparison with normalization
     const answersWithCorrectness = args.answers.map((ans) => {
       const question = questions.find((q) => q?._id === ans.questionId);
+      
+      // Normalize both answers for comparison
+      const normalizeAnswer = (str: string) => {
+        return str
+          .trim()
+          .toLowerCase()
+          .replace(/\s+/g, ' '); // Replace multiple spaces with single space
+      };
+      
+      const userAnswer = normalizeAnswer(ans.answer);
+      const correctAnswer = normalizeAnswer(question?.correctAnswer || "");
+      
+      const isCorrect = userAnswer === correctAnswer;
+      
       return {
         ...ans,
-        isCorrect: question?.correctAnswer === ans.answer,
+        isCorrect,
       };
     });
 
