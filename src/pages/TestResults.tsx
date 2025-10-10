@@ -255,7 +255,7 @@ export default function TestResults() {
                             className={`p-3 rounded-lg border-2 ${
                               isCorrectAnswer
                                 ? "bg-green-100 border-green-400 font-semibold"
-                                : isUserAnswer
+                                : isUserAnswer && !isCorrectAnswer
                                 ? "bg-red-100 border-red-400"
                                 : "bg-white border-gray-200"
                             }`}
