@@ -17,10 +17,17 @@ export const autoCompleteRegistration = mutation({
 
     // Only mark as registered if Gmail and not already registered
     if (user.email?.endsWith("@gmail.com") && !user.isRegistered) {
-      await ctx.db.patch(userId, {
-        isRegistered: true,
-        registrationCompleted: true,
-      });
+      try {
+        await ctx.db.patch(userId, {
+          isRegistered: true,
+          registrationCompleted: true,
+          role: "user", // Explicitly set default role
+        });
+      } catch (error) {
+        console.error("Error completing registration:", error);
+        // If patch fails, try to continue anyway
+        return userId;
+      }
     }
 
     return userId;

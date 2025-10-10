@@ -1,2 +1,1 @@
-   npx convex deploy --prod
-   
+pnpm update @convex-dev/auth
