@@ -6,7 +6,7 @@ import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { ConvexReactClient } from "convex/react";
 import { StrictMode, useEffect } from "react";
 import { createRoot } from "react-dom/client";
-import { BrowserRouter, Route, Routes, useLocation } from "react-router";
+import { BrowserRouter, Route, Routes, useLocation, useNavigate } from "react-router";
 import "./index.css";
 import Landing from "./pages/Landing.tsx";
 import NotFound from "./pages/NotFound.tsx";
@@ -40,6 +40,7 @@ import PaymentStatus from "./pages/PaymentStatus";
 import PaymentSummary from "./pages/PaymentSummary";
 import StudyMaterialsManagement from "./pages/StudyMaterialsManagement.tsx";
 import FreeLibrary from "./pages/FreeLibrary.tsx";
+import { useAuth } from "@/hooks/use-auth";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
@@ -75,12 +76,43 @@ function StudentLayout({ children }: { children: React.ReactNode }) {
   );
 }
 
+function ProtectedAdminRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, isLoading, user } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isLoading) {
+      if (!isAuthenticated) {
+        navigate("/auth");
+      } else if (user?.role !== "admin") {
+        navigate("/dashboard");
+      }
+    }
+  }, [isAuthenticated, isLoading, user, navigate]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-xl">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated || user?.role !== "admin") {
+    return null;
+  }
+
+  return <>{children}</>;
+}
+
 function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen">
-      <AdminSidebar />
-      <main className="flex-1 lg:ml-64">{children}</main>
-    </div>
+    <ProtectedAdminRoute>
+      <div className="flex min-h-screen">
+        <AdminSidebar />
+        <main className="flex-1 lg:ml-64">{children}</main>
+      </div>
+    </ProtectedAdminRoute>
   );
 }
 
