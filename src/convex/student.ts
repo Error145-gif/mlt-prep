@@ -650,38 +650,19 @@ export const submitTest = mutation({
       console.log(`Normalized User: "${userAnswer}"`);
       console.log(`Normalized Correct: "${correctAnswer}"`);
       
-      // For MCQ questions, compare against the options array
-      let isCorrect = false;
+      // SIMPLIFIED: Direct comparison only
+      const isCorrect = userAnswer === correctAnswer;
+      
+      console.log(`\n[FINAL COMPARISON]`);
+      console.log(`User: "${userAnswer}"`);
+      console.log(`Correct: "${correctAnswer}"`);
+      console.log(`Match: ${isCorrect}`);
       
       if (question.options && question.options.length > 0) {
-        console.log(`\nMCQ Question - Comparing against options`);
-        
-        // Find which option the user selected
-        const userSelectedOption = question.options.find(opt => 
-          normalizeAnswer(opt) === userAnswer
-        );
-        
-        // Find which option is the correct answer
-        const correctOption = question.options.find(opt => 
-          normalizeAnswer(opt) === correctAnswer
-        );
-        
-        console.log(`User Selected Option: "${userSelectedOption}"`);
-        console.log(`Correct Option: "${correctOption}"`);
-        
-        // Compare the actual option texts
-        if (userSelectedOption && correctOption) {
-          isCorrect = normalizeAnswer(userSelectedOption) === normalizeAnswer(correctOption);
-          console.log(`Option Match Result: ${isCorrect}`);
-        } else {
-          // Fallback to direct comparison
-          isCorrect = userAnswer === correctAnswer;
-          console.log(`Direct Match Result: ${isCorrect}`);
-        }
-      } else {
-        // For non-MCQ questions, direct comparison
-        isCorrect = userAnswer === correctAnswer;
-        console.log(`Direct Match Result: ${isCorrect}`);
+        console.log(`\n[OPTIONS AVAILABLE]`);
+        question.options.forEach((opt, idx) => {
+          console.log(`  [${idx}] "${opt}" -> normalized: "${normalizeAnswer(opt)}"`);
+        });
       }
       
       console.log(`[VALIDATION RESULT] => ${isCorrect ? 'CORRECT ✓' : 'INCORRECT ✗'}`);
