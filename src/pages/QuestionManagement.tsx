@@ -123,19 +123,6 @@ export default function QuestionManagement() {
     try {
       setCreatingMockTest(true);
       
-      // Validate inputs
-      if (!mockTestName.trim()) {
-        toast.error("Please enter a test set name");
-        setCreatingMockTest(false);
-        return;
-      }
-
-      if (!mockTestTopicId && !mockTestNewTopicName.trim()) {
-        toast.error("Please select a topic or enter a new topic name");
-        setCreatingMockTest(false);
-        return;
-      }
-
       if (!mockTestQuestions.trim()) {
         toast.error("Please paste questions");
         setCreatingMockTest(false);
@@ -248,25 +235,25 @@ export default function QuestionManagement() {
 
       toast.info(`Creating mock test with ${parsedQuestions.length} questions...`);
 
-      // Create mock test
+      // Auto-generate test set name based on timestamp
+      const autoTestName = `Mock Test ${new Date().toLocaleDateString('en-GB').replace(/\//g, '-')} ${new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`;
+
+      // Create mock test with auto-generated name and default topic
       const result = await createMockTestWithQuestions({
-        testSetName: mockTestName,
-        topicId: mockTestTopicId ? (mockTestTopicId as Id<"topics">) : undefined,
-        newTopicName: mockTestNewTopicName || undefined,
+        testSetName: autoTestName,
+        topicId: undefined,
+        newTopicName: "General Mock Tests",
         questions: parsedQuestions,
       });
 
       if (errors.length > 0) {
-        toast.warning(`Mock test "${result.testSetName}" created with ${result.questionCount} questions under topic "${result.topicName}". ${errors.length} questions had parsing errors.`);
+        toast.warning(`Mock test created with ${result.questionCount} questions. ${errors.length} questions had parsing errors.`);
       } else {
-        toast.success(`Mock test "${result.testSetName}" created successfully with ${result.questionCount} questions under topic "${result.topicName}"!`);
+        toast.success(`Mock test created successfully with ${result.questionCount} questions!`);
       }
 
       // Reset form
       setShowMockTestCreator(false);
-      setMockTestName("");
-      setMockTestTopicId("");
-      setMockTestNewTopicName("");
       setMockTestQuestions("");
       setCreatingMockTest(false);
     } catch (error) {
@@ -1182,53 +1169,9 @@ export default function QuestionManagement() {
               <DialogContent className="glass-card border-white/20 backdrop-blur-xl bg-white/10 max-w-4xl max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle className="text-white text-xl">Bulk Add & Create Mock Test</DialogTitle>
-                  <p className="text-white/60 text-sm">Create a complete mock test set with up to 100 questions in one go</p>
+                  <p className="text-white/60 text-sm">Paste up to 100 questions to automatically create a mock test</p>
                 </DialogHeader>
                 <div className="space-y-4">
-                  <div>
-                    <Label className="text-white font-semibold">Test Set Name *</Label>
-                    <Input
-                      value={mockTestName}
-                      onChange={(e) => setMockTestName(e.target.value)}
-                      className="bg-white/5 border-white/10 text-white mt-2"
-                      placeholder="e.g., Hematology Set 1, Complete MLT Mock Test"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label className="text-white font-semibold">Select Existing Topic</Label>
-                      <Select value={mockTestTopicId} onValueChange={(v) => {
-                        setMockTestTopicId(v);
-                        setMockTestNewTopicName("");
-                      }}>
-                        <SelectTrigger className="bg-white/5 border-white/10 text-white mt-2">
-                          <SelectValue placeholder="Choose a topic" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {topics?.map((topic) => (
-                            <SelectItem key={topic._id} value={topic._id}>
-                              {topic.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <Label className="text-white font-semibold">Or Create New Topic</Label>
-                      <Input
-                        value={mockTestNewTopicName}
-                        onChange={(e) => {
-                          setMockTestNewTopicName(e.target.value);
-                          setMockTestTopicId("");
-                        }}
-                        className="bg-white/5 border-white/10 text-white mt-2"
-                        placeholder="e.g., Advanced Hematology"
-                      />
-                    </div>
-                  </div>
-
                   <div>
                     <Label className="text-white font-semibold">Paste Questions (Up to 100) *</Label>
                     <p className="text-white/60 text-sm mb-2 mt-1">
@@ -1275,9 +1218,6 @@ export default function QuestionManagement() {
                     </Button>
                     <Button 
                       onClick={() => {
-                        setMockTestName("");
-                        setMockTestTopicId("");
-                        setMockTestNewTopicName("");
                         setMockTestQuestions("");
                       }}
                       variant="outline" 
