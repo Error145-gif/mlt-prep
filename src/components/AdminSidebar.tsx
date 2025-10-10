@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router";
 import { LayoutDashboard, FileText, HelpCircle, Users, CreditCard, Bell, Menu, X, MessageSquare, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -9,6 +9,24 @@ export default function AdminSidebar() {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const { signOut } = useAuth();
+
+  // Open sidebar by default on desktop
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        setIsOpen(true);
+      } else {
+        setIsOpen(false);
+      }
+    };
+
+    // Set initial state
+    handleResize();
+
+    // Listen for window resize
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const navItems = [
     { path: "/admin", icon: LayoutDashboard, label: "Dashboard" },
@@ -56,7 +74,12 @@ export default function AdminSidebar() {
                     <Link
                       key={item.path}
                       to={item.path}
-                      onClick={() => setIsOpen(false)}
+                      onClick={() => {
+                        // Only close on mobile
+                        if (window.innerWidth < 768) {
+                          setIsOpen(false);
+                        }
+                      }}
                       className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
                         isActive
                           ? "bg-white/20 text-white"
@@ -82,8 +105,8 @@ export default function AdminSidebar() {
         )}
       </AnimatePresence>
 
-      {/* Overlay - Visible when sidebar is open */}
-      {isOpen && (
+      {/* Overlay - Visible when sidebar is open on mobile */}
+      {isOpen && window.innerWidth < 768 && (
         <div
           className="fixed inset-0 bg-black/50 z-30"
           onClick={() => setIsOpen(false)}
