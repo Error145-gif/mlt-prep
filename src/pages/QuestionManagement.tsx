@@ -47,6 +47,14 @@ export default function QuestionManagement() {
   // PYQ bulk questions state - 100 separate sections
   const [pyqBulkQuestions, setPyqBulkQuestions] = useState<string[]>(Array(100).fill(""));
   
+  // State for Bulk Add & Create PYQ Test
+  const [showBulkPYQDialog, setShowBulkPYQDialog] = useState(false);
+  const [bulkPYQText, setBulkPYQText] = useState("");
+  const [bulkPYQExamName, setBulkPYQExamName] = useState("");
+  const [bulkPYQYear, setBulkPYQYear] = useState("");
+  const [parsedPYQQuestions, setParsedPYQQuestions] = useState<any[]>([]);
+  const [isCreatingPYQTest, setIsCreatingPYQTest] = useState(false);
+
   const questions = useQuery(api.questions.getQuestions, {});
   const topics = useQuery(api.topics.getAllTopics);
   const reviewQuestion = useMutation(api.questions.reviewQuestion);
@@ -57,6 +65,7 @@ export default function QuestionManagement() {
   const batchCreateQuestionsAction = useAction(api.aiQuestions.batchCreateQuestions);
   const createMockTestWithQuestions = useMutation(api.questions.createMockTestWithQuestions);
   const createAITestWithQuestions = useMutation(api.questions.createAITestWithQuestions);
+  const createPYQTestMutation = useMutation(api.questions.createPYQTestWithQuestions);
 
   // Manual question form state
   const [manualQuestion, setManualQuestion] = useState({
@@ -846,6 +855,55 @@ export default function QuestionManagement() {
     }
   };
 
+  // Handle Bulk PYQ Test Creation
+  const handleCreatePYQTest = async () => {
+    if (!bulkPYQExamName.trim()) {
+      toast.error("Please enter an exam name");
+      return;
+    }
+
+    const yearNum = parseInt(bulkPYQYear);
+    if (!yearNum || yearNum < 1900 || yearNum > 2100) {
+      toast.error("Please enter a valid exam year (e.g., 2024)");
+      return;
+    }
+
+    if (parsedPYQQuestions.length === 0) {
+      toast.error("Please paste questions first");
+      return;
+    }
+
+    if (parsedPYQQuestions.length > 100) {
+      toast.error("Maximum 100 questions allowed");
+      return;
+    }
+
+    setIsCreatingPYQTest(true);
+    try {
+      const result = await createPYQTestMutation({
+        examName: bulkPYQExamName.trim(),
+        year: yearNum,
+        questions: parsedPYQQuestions,
+      });
+
+      toast.success(
+        `PYQ Test created successfully! ${result.questionCount} questions added for ${result.examName} ${result.year}`
+      );
+
+      // Reset form
+      setBulkPYQText("");
+      setBulkPYQExamName("");
+      setBulkPYQYear("");
+      setParsedPYQQuestions([]);
+      setShowBulkPYQDialog(false);
+    } catch (error: any) {
+      console.error("Error creating PYQ test:", error);
+      toast.error(error.message || "Failed to create PYQ test");
+    } finally {
+      setIsCreatingPYQTest(false);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "pending":
@@ -1447,6 +1505,120 @@ export default function QuestionManagement() {
                       disabled={creatingAITest}
                     >
                       Clear Form
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog open={showBulkPYQDialog} onOpenChange={setShowBulkPYQDialog}>
+              <DialogTrigger asChild>
+                <Button className="bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Bulk Add & Create PYQ Test
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto glass-card border-white/20 backdrop-blur-xl bg-gray-900/95">
+                <DialogHeader>
+                  <DialogTitle className="text-white text-xl">Bulk Add & Create PYQ Test</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-white/90 text-sm font-medium mb-2 block">
+                        Exam Name *
+                      </label>
+                      <Input
+                        placeholder="e.g., NEET MLT, AIIMS MLT"
+                        value={bulkPYQExamName}
+                        onChange={(e) => setBulkPYQExamName(e.target.value)}
+                        className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-white/90 text-sm font-medium mb-2 block">
+                        Exam Year *
+                      </label>
+                      <Input
+                        type="number"
+                        placeholder="e.g., 2024"
+                        value={bulkPYQYear}
+                        onChange={(e) => setBulkPYQYear(e.target.value)}
+                        className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                        min="1900"
+                        max="2100"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-white/90 text-sm font-medium mb-2 block">
+                      Paste Questions (Up to 100) *
+                    </label>
+                    <Textarea
+                      placeholder={`Format each question as:
+Q: Question text here?
+A) Option 1
+B) Option 2
+C) Option 3
+D) Option 4
+Correct: A
+Explanation: Explanation text here
+
+(Leave a blank line between questions)`}
+                      value={bulkPYQText}
+                      onChange={(e) => {
+                        setBulkPYQText(e.target.value);
+                        const parsed = parseBulkQuestions(e.target.value);
+                        setParsedPYQQuestions(parsed);
+                      }}
+                      className="min-h-[300px] bg-white/10 border-white/20 text-white placeholder:text-white/50 font-mono text-sm"
+                    />
+                    <p className="text-white/60 text-sm mt-2">
+                      Parsed: {parsedPYQQuestions.length} questions
+                      {parsedPYQQuestions.length > 100 && (
+                        <span className="text-red-400 ml-2">
+                          (Maximum 100 allowed)
+                        </span>
+                      )}
+                    </p>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <Button
+                      onClick={handleCreatePYQTest}
+                      disabled={
+                        isCreatingPYQTest ||
+                        parsedPYQQuestions.length === 0 ||
+                        parsedPYQQuestions.length > 100 ||
+                        !bulkPYQExamName.trim() ||
+                        !bulkPYQYear.trim()
+                      }
+                      className="flex-1 bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700"
+                    >
+                      {isCreatingPYQTest ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Creating PYQ Test...
+                        </>
+                      ) : (
+                        <>
+                          <Plus className="h-4 w-4 mr-2" />
+                          Create PYQ Test ({parsedPYQQuestions.length} questions)
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setBulkPYQText("");
+                        setBulkPYQExamName("");
+                        setBulkPYQYear("");
+                        setParsedPYQQuestions([]);
+                      }}
+                      variant="outline"
+                      className="border-white/20 text-white hover:bg-white/10"
+                    >
+                      Clear
                     </Button>
                   </div>
                 </div>

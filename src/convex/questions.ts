@@ -381,3 +381,63 @@ export const createAITestWithQuestions = mutation({
     };
   },
 });
+
+// Create PYQ test with bulk questions
+export const createPYQTestWithQuestions = mutation({
+  args: {
+    examName: v.string(),
+    year: v.number(),
+    questions: v.array(
+      v.object({
+        type: v.string(),
+        question: v.string(),
+        options: v.optional(v.array(v.string())),
+        correctAnswer: v.string(),
+        explanation: v.optional(v.string()),
+        difficulty: v.optional(v.string()),
+        subject: v.optional(v.string()),
+      })
+    ),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user || user.role !== "admin") {
+      throw new Error("Unauthorized");
+    }
+
+    // Validate question count (PYQ sets should be in multiples of 20)
+    if (args.questions.length === 0 || args.questions.length > 100) {
+      throw new Error("Please provide between 1 and 100 questions");
+    }
+
+    // Insert all questions with PYQ metadata
+    const questionIds = [];
+    for (let i = 0; i < args.questions.length; i++) {
+      const question = args.questions[i];
+      try {
+        const id = await ctx.db.insert("questions", {
+          ...question,
+          type: question.type as any,
+          examName: args.examName,
+          year: args.year,
+          status: "approved",
+          reviewedBy: user._id,
+          reviewedAt: Date.now(),
+          createdBy: user._id,
+          source: "pyq",
+        });
+        questionIds.push(id);
+      } catch (error) {
+        console.error(`Failed to insert PYQ question ${i + 1}:`, error);
+        throw new Error(`Failed to insert PYQ question ${i + 1}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+    }
+
+    return {
+      success: true,
+      examName: args.examName,
+      year: args.year,
+      questionCount: questionIds.length,
+    };
+  },
+});
