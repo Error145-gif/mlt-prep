@@ -25,8 +25,16 @@ export default function QuestionManagement() {
   const [showBulkManualForm, setShowBulkManualForm] = useState(false);
   const [showPYQManualForm, setShowPYQManualForm] = useState(false);
   const [showAIBulkForm, setShowAIBulkForm] = useState(false);
+  const [showMockTestCreator, setShowMockTestCreator] = useState(false);
   const [pyqYear, setPyqYear] = useState<number>(new Date().getFullYear());
   const [pyqExamName, setPyqExamName] = useState<string>("");
+  
+  // Mock test creator state
+  const [mockTestName, setMockTestName] = useState("");
+  const [mockTestTopicId, setMockTestTopicId] = useState("");
+  const [mockTestNewTopicName, setMockTestNewTopicName] = useState("");
+  const [mockTestQuestions, setMockTestQuestions] = useState("");
+  const [creatingMockTest, setCreatingMockTest] = useState(false);
   
   // AI bulk questions state - 100 separate sections
   const [aiBulkQuestions, setAiBulkQuestions] = useState<string[]>(Array(100).fill(""));
@@ -42,6 +50,7 @@ export default function QuestionManagement() {
   const batchCreateQuestions = useMutation(api.questions.batchCreateQuestions);
   const generateUploadUrl = useMutation(api.content.generateUploadUrl);
   const batchCreateQuestionsAction = useAction(api.aiQuestions.batchCreateQuestions);
+  const createMockTestWithQuestions = useMutation(api.questions.createMockTestWithQuestions);
 
   // Manual question form state
   const [manualQuestion, setManualQuestion] = useState({
@@ -107,6 +116,163 @@ export default function QuestionManagement() {
       });
     } catch (error) {
       toast.error("Failed to create question");
+    }
+  };
+
+  const handleCreateMockTest = async () => {
+    try {
+      setCreatingMockTest(true);
+      
+      // Validate inputs
+      if (!mockTestName.trim()) {
+        toast.error("Please enter a test set name");
+        setCreatingMockTest(false);
+        return;
+      }
+
+      if (!mockTestTopicId && !mockTestNewTopicName.trim()) {
+        toast.error("Please select a topic or enter a new topic name");
+        setCreatingMockTest(false);
+        return;
+      }
+
+      if (!mockTestQuestions.trim()) {
+        toast.error("Please paste questions");
+        setCreatingMockTest(false);
+        return;
+      }
+
+      // Parse questions
+      const questionBlocks = mockTestQuestions.split(/\n\s*\n/).filter(block => block.trim());
+      
+      if (questionBlocks.length === 0) {
+        toast.error("No questions found. Please paste questions in the correct format.");
+        setCreatingMockTest(false);
+        return;
+      }
+
+      if (questionBlocks.length > 100) {
+        toast.error("Cannot add more than 100 questions at once");
+        setCreatingMockTest(false);
+        return;
+      }
+
+      toast.info(`Parsing ${questionBlocks.length} questions...`);
+
+      const parsedQuestions = [];
+      const errors = [];
+
+      for (let index = 0; index < questionBlocks.length; index++) {
+        const block = questionBlocks[index];
+        try {
+          const lines = block.split('\n').map(line => line.trim()).filter(line => line);
+          const question: any = {
+            type: "mcq",
+            difficulty: "medium",
+          };
+          
+          lines.forEach(line => {
+            const colonIndex = line.indexOf(':');
+            if (colonIndex === -1) return;
+            
+            const key = line.substring(0, colonIndex).trim().toLowerCase();
+            const value = line.substring(colonIndex + 1).trim();
+            if (!value) return;
+            
+            switch (key) {
+              case 'q':
+              case 'question':
+                question.question = value;
+                break;
+              case 'a':
+              case 'answer':
+              case 'correct answer':
+                question.correctAnswer = value;
+                break;
+              case 'options':
+              case 'option':
+                question.options = value.split('|').map(opt => opt.trim()).filter(opt => opt);
+                break;
+              case 'subject':
+                question.subject = value;
+                break;
+              case 'difficulty':
+                const diff = value.toLowerCase();
+                question.difficulty = ['easy', 'medium', 'hard'].includes(diff) ? diff : 'medium';
+                break;
+              case 'type':
+                const typeStr = value.toLowerCase().replace(/[^a-z]/g, '');
+                if (typeStr === 'truefalse' || typeStr === 'tf') {
+                  question.type = 'true_false';
+                } else if (typeStr === 'shortanswer' || typeStr === 'sa') {
+                  question.type = 'short_answer';
+                } else {
+                  question.type = 'mcq';
+                }
+                break;
+              case 'explanation':
+                question.explanation = value;
+                break;
+            }
+          });
+          
+          // Validate required fields
+          if (!question.question || question.question.trim() === '') {
+            throw new Error(`Missing question text`);
+          }
+          if (!question.correctAnswer || question.correctAnswer.trim() === '') {
+            throw new Error(`Missing correct answer`);
+          }
+          if (!question.subject) {
+            question.subject = "General";
+          }
+          if (question.type === 'mcq' && (!question.options || question.options.length < 2)) {
+            throw new Error(`MCQ must have at least 2 options`);
+          }
+          
+          parsedQuestions.push(question);
+        } catch (error) {
+          const errorMsg = `Question ${index + 1}: ${error instanceof Error ? error.message : 'Invalid format'}`;
+          errors.push(errorMsg);
+        }
+      }
+
+      if (parsedQuestions.length === 0) {
+        toast.error("No valid questions found. Please check your format.");
+        if (errors.length > 0) {
+          toast.error(`First error: ${errors[0]}`);
+        }
+        setCreatingMockTest(false);
+        return;
+      }
+
+      toast.info(`Creating mock test with ${parsedQuestions.length} questions...`);
+
+      // Create mock test
+      const result = await createMockTestWithQuestions({
+        testSetName: mockTestName,
+        topicId: mockTestTopicId ? (mockTestTopicId as Id<"topics">) : undefined,
+        newTopicName: mockTestNewTopicName || undefined,
+        questions: parsedQuestions,
+      });
+
+      if (errors.length > 0) {
+        toast.warning(`Mock test "${result.testSetName}" created with ${result.questionCount} questions under topic "${result.topicName}". ${errors.length} questions had parsing errors.`);
+      } else {
+        toast.success(`Mock test "${result.testSetName}" created successfully with ${result.questionCount} questions under topic "${result.topicName}"!`);
+      }
+
+      // Reset form
+      setShowMockTestCreator(false);
+      setMockTestName("");
+      setMockTestTopicId("");
+      setMockTestNewTopicName("");
+      setMockTestQuestions("");
+      setCreatingMockTest(false);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to create mock test. Please try again.");
+      console.error("Mock test creation error:", error);
+      setCreatingMockTest(false);
     }
   };
 
@@ -1000,6 +1166,125 @@ export default function QuestionManagement() {
                     </Button>
                     <Button onClick={() => setShowPYQManualForm(false)} variant="outline" className="flex-1">
                       Cancel
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog open={showMockTestCreator} onOpenChange={setShowMockTestCreator}>
+              <DialogTrigger asChild>
+                <Button className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white border-0 shadow-lg">
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Bulk Add & Create Mock Test
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="glass-card border-white/20 backdrop-blur-xl bg-white/10 max-w-4xl max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="text-white text-xl">Bulk Add & Create Mock Test</DialogTitle>
+                  <p className="text-white/60 text-sm">Create a complete mock test set with up to 100 questions in one go</p>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-white font-semibold">Test Set Name *</Label>
+                    <Input
+                      value={mockTestName}
+                      onChange={(e) => setMockTestName(e.target.value)}
+                      className="bg-white/5 border-white/10 text-white mt-2"
+                      placeholder="e.g., Hematology Set 1, Complete MLT Mock Test"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-white font-semibold">Select Existing Topic</Label>
+                      <Select value={mockTestTopicId} onValueChange={(v) => {
+                        setMockTestTopicId(v);
+                        setMockTestNewTopicName("");
+                      }}>
+                        <SelectTrigger className="bg-white/5 border-white/10 text-white mt-2">
+                          <SelectValue placeholder="Choose a topic" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {topics?.map((topic) => (
+                            <SelectItem key={topic._id} value={topic._id}>
+                              {topic.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label className="text-white font-semibold">Or Create New Topic</Label>
+                      <Input
+                        value={mockTestNewTopicName}
+                        onChange={(e) => {
+                          setMockTestNewTopicName(e.target.value);
+                          setMockTestTopicId("");
+                        }}
+                        className="bg-white/5 border-white/10 text-white mt-2"
+                        placeholder="e.g., Advanced Hematology"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label className="text-white font-semibold">Paste Questions (Up to 100) *</Label>
+                    <p className="text-white/60 text-sm mb-2 mt-1">
+                      Format each question like this (separate questions with a blank line):
+                    </p>
+                    <div className="bg-white/5 border border-white/10 rounded p-3 mb-3 text-xs text-white/70 font-mono">
+                      Q: What is EDTA?<br/>
+                      A: Anticoagulant<br/>
+                      Options: Anticoagulant | Stain | Buffer | Enzyme<br/>
+                      Subject: Hematology<br/>
+                      Difficulty: Easy<br/>
+                      Type: MCQ<br/>
+                      Explanation: EDTA is used to prevent blood clotting
+                    </div>
+                    <Textarea
+                      value={mockTestQuestions}
+                      onChange={(e) => setMockTestQuestions(e.target.value)}
+                      className="bg-white/5 border-white/10 text-white font-mono text-sm"
+                      rows={15}
+                      placeholder="Paste your questions here..."
+                    />
+                    <p className="text-white/60 text-xs mt-2">
+                      {mockTestQuestions.split(/\n\s*\n/).filter(b => b.trim()).length} questions detected
+                    </p>
+                  </div>
+
+                  <div className="flex gap-2 pt-4">
+                    <Button 
+                      onClick={handleCreateMockTest} 
+                      disabled={creatingMockTest}
+                      className="flex-1 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white border-0"
+                    >
+                      {creatingMockTest ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Creating Mock Test...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="h-4 w-4 mr-2" />
+                          Create Mock Test
+                        </>
+                      )}
+                    </Button>
+                    <Button 
+                      onClick={() => {
+                        setMockTestName("");
+                        setMockTestTopicId("");
+                        setMockTestNewTopicName("");
+                        setMockTestQuestions("");
+                      }}
+                      variant="outline" 
+                      className="flex-1"
+                      disabled={creatingMockTest}
+                    >
+                      Clear Form
                     </Button>
                   </div>
                 </div>
