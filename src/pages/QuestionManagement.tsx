@@ -1579,10 +1579,13 @@ Explanation: Explanation text here
                           const explanationLine = lines.find(l => l.toLowerCase().startsWith('explanation:'));
                           
                           return {
+                            type: 'mcq',
                             question: questionLine.replace(/^\d+\.\s*/, '').trim(),
                             options: options.map(opt => opt.replace(/^[A-D]\)\s*/, '').trim()),
                             correctAnswer: correctLine ? correctLine.replace(/^correct:\s*/i, '').trim() : '',
-                            explanation: explanationLine ? explanationLine.replace(/^explanation:\s*/i, '').trim() : ''
+                            explanation: explanationLine ? explanationLine.replace(/^explanation:\s*/i, '').trim() : '',
+                            difficulty: 'medium',
+                            subject: 'General'
                           };
                         });
                         
