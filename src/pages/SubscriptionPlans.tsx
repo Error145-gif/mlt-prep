@@ -51,6 +51,12 @@ export default function SubscriptionPlans() {
   }
 
   const handleFreeTrial = async () => {
+    // Check if user already has active subscription
+    if (subscriptionAccess?.hasAccess) {
+      toast.error("You already have an active subscription!");
+      return;
+    }
+
     try {
       await startFreeTrial({});
       toast.success("7-day free trial activated!");
@@ -61,6 +67,12 @@ export default function SubscriptionPlans() {
   };
 
   const handleSubscribe = async (planId: string, amount: number, planName: string, duration: number) => {
+    // Check if user already has active subscription
+    if (subscriptionAccess?.hasAccess) {
+      toast.error("You already have an active subscription! Check your dashboard for expiry date.");
+      return;
+    }
+
     // Navigate to payment summary page instead of directly opening Razorpay
     navigate(`/payment-summary?plan=${planId}&name=${encodeURIComponent(planName)}&price=${amount}&duration=${duration}`);
   };
@@ -81,8 +93,9 @@ export default function SubscriptionPlans() {
         "Limited practice questions",
       ],
       action: () => handleFreeTrial(),
-      buttonText: "Start Free Trial",
+      buttonText: subscriptionAccess?.hasAccess ? "Already Subscribed" : "Start Free Trial",
       gstNote: "No payment required",
+      disabled: subscriptionAccess?.hasAccess,
     },
     {
       id: "monthly",
@@ -100,8 +113,9 @@ export default function SubscriptionPlans() {
         "Priority support",
       ],
       action: () => handleSubscribe("monthly", 99, "Monthly Plan", 30),
-      buttonText: "Subscribe",
+      buttonText: subscriptionAccess?.hasAccess ? "Already Subscribed" : "Subscribe",
       gstNote: "No GST",
+      disabled: subscriptionAccess?.hasAccess,
     },
     {
       id: "4months",
@@ -120,8 +134,9 @@ export default function SubscriptionPlans() {
         "Weekly progress reports",
       ],
       action: () => handleSubscribe("4months", 399, "4 Months Plan", 120),
-      buttonText: "Best Value",
+      buttonText: subscriptionAccess?.hasAccess ? "Already Subscribed" : "Best Value",
       gstNote: "No GST",
+      disabled: subscriptionAccess?.hasAccess,
     },
     {
       id: "yearly",
@@ -141,8 +156,9 @@ export default function SubscriptionPlans() {
         "One-on-one mentorship session",
       ],
       action: () => handleSubscribe("yearly", 599, "Yearly Plan", 365),
-      buttonText: "Maximum Savings",
+      buttonText: subscriptionAccess?.hasAccess ? "Already Subscribed" : "Maximum Savings",
       gstNote: "No GST",
+      disabled: subscriptionAccess?.hasAccess,
     },
   ];
 
@@ -171,6 +187,11 @@ export default function SubscriptionPlans() {
         <div className="text-center">
           <h1 className="text-4xl font-bold text-white mb-4">Choose Your Plan</h1>
           <p className="text-white/70 text-lg">Start with a 7-day free trial, then select the plan that works best for you</p>
+          {subscriptionAccess?.hasAccess && (
+            <Badge className="mt-4 bg-green-500/20 text-green-300 border-green-500/30 text-lg px-4 py-2">
+              ✓ You have an active subscription
+            </Badge>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -187,7 +208,7 @@ export default function SubscriptionPlans() {
                   Most Popular
                 </Badge>
               )}
-              <Card className={`glass-card border-white/20 backdrop-blur-xl bg-white/10 h-full ${plan.popular ? 'border-orange-500/50' : ''}`}>
+              <Card className={`glass-card border-white/20 backdrop-blur-xl bg-white/10 h-full ${plan.popular ? 'border-orange-500/50' : ''} ${plan.disabled ? 'opacity-60' : ''}`}>
                 <CardHeader>
                   <div className={`p-3 rounded-xl bg-gradient-to-br ${plan.color} w-fit mb-4`}>
                     <plan.icon className="h-6 w-6 text-white" />
@@ -218,7 +239,7 @@ export default function SubscriptionPlans() {
                   <Button
                     onClick={plan.action}
                     className={`w-full bg-gradient-to-r ${plan.color} hover:opacity-90`}
-                    disabled={subscriptionAccess?.hasAccess && plan.price === 0}
+                    disabled={plan.disabled}
                   >
                     {plan.buttonText}
                   </Button>
