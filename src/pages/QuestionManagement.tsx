@@ -1280,7 +1280,7 @@ export default function QuestionManagement() {
               </DialogTrigger>
               <DialogContent className="glass-card border-white/20 backdrop-blur-xl bg-white/10 max-w-4xl max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle className="text-white">Add PYQ Questions (Up to 100)</DialogTitle>
+                  <DialogTitle className="text-white">Add PYQ Questions</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
                   <div>
@@ -1553,7 +1553,7 @@ export default function QuestionManagement() {
 
                   <div>
                     <label className="text-white/90 text-sm font-medium mb-2 block">
-                      Paste Questions (Up to 100) *
+                      Paste Questions *
                     </label>
                     <Textarea
                       placeholder={`Format each question as:
@@ -1597,11 +1597,6 @@ Explanation: Explanation text here
                     />
                     <p className="text-white/60 text-sm mt-2">
                       Parsed: {parsedPYQQuestions.length} questions
-                      {parsedPYQQuestions.length > 100 && (
-                        <span className="text-red-400 ml-2">
-                          (Maximum 100 allowed)
-                        </span>
-                      )}
                     </p>
                   </div>
 
@@ -1611,7 +1606,6 @@ Explanation: Explanation text here
                       disabled={
                         isCreatingPYQTest ||
                         parsedPYQQuestions.length === 0 ||
-                        parsedPYQQuestions.length > 100 ||
                         !bulkPYQExamName.trim() ||
                         !bulkPYQYear.trim()
                       }
