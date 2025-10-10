@@ -633,16 +633,10 @@ export const submitTest = mutation({
         };
       }
       
-      // Comprehensive normalization function - removes ALL special chars and extra spaces
+      // Simple normalization - only trim and lowercase
       const normalizeAnswer = (str: string) => {
         if (!str) return "";
-        return str
-          .trim()
-          .toLowerCase()
-          .replace(/\s+/g, ' ') // Replace multiple spaces with single space
-          .replace(/[^a-z0-9\s]/g, '') // Remove ALL special characters, keep only letters, numbers, spaces
-          .replace(/\n/g, ' ') // Replace newlines with space
-          .trim(); // Final trim after all replacements
+        return str.trim().toLowerCase();
       };
       
       const userAnswer = normalizeAnswer(ans.answer);
@@ -656,35 +650,38 @@ export const submitTest = mutation({
       console.log(`Normalized User: "${userAnswer}"`);
       console.log(`Normalized Correct: "${correctAnswer}"`);
       
-      // Primary comparison: direct normalized match
-      let isCorrect = userAnswer === correctAnswer;
-      console.log(`Direct Match Result: ${isCorrect}`);
+      // For MCQ questions, compare against the options array
+      let isCorrect = false;
       
-      // Secondary check: if question has options, compare by finding which option matches
       if (question.options && question.options.length > 0) {
-        console.log(`\nOptions Available: ${question.options.length}`);
-        const normalizedOptions = question.options.map((opt, idx) => {
-          const normalized = normalizeAnswer(opt);
-          console.log(`  Option ${idx}: "${opt}" -> "${normalized}"`);
-          return normalized;
-        });
+        console.log(`\nMCQ Question - Comparing against options`);
         
-        const userAnswerIndex = normalizedOptions.indexOf(userAnswer);
-        const correctAnswerIndex = normalizedOptions.indexOf(correctAnswer);
+        // Find which option the user selected
+        const userSelectedOption = question.options.find(opt => 
+          normalizeAnswer(opt) === userAnswer
+        );
         
-        console.log(`\nUser Answer matches Option Index: ${userAnswerIndex}`);
-        console.log(`Correct Answer matches Option Index: ${correctAnswerIndex}`);
+        // Find which option is the correct answer
+        const correctOption = question.options.find(opt => 
+          normalizeAnswer(opt) === correctAnswer
+        );
         
-        // If both user and correct answer map to valid options, compare indices
-        if (userAnswerIndex !== -1 && correctAnswerIndex !== -1) {
-          isCorrect = userAnswerIndex === correctAnswerIndex;
-          console.log(`Index-based comparison: ${isCorrect}`);
-        } else if (userAnswerIndex !== -1 && correctAnswerIndex === -1) {
-          // User selected a valid option, but correctAnswer doesn't match any option
-          // This might mean correctAnswer is stored differently - try direct match
-          console.log(`WARNING: Correct answer "${correctAnswer}" doesn't match any option!`);
-          console.log(`Falling back to direct string comparison`);
+        console.log(`User Selected Option: "${userSelectedOption}"`);
+        console.log(`Correct Option: "${correctOption}"`);
+        
+        // Compare the actual option texts
+        if (userSelectedOption && correctOption) {
+          isCorrect = normalizeAnswer(userSelectedOption) === normalizeAnswer(correctOption);
+          console.log(`Option Match Result: ${isCorrect}`);
+        } else {
+          // Fallback to direct comparison
+          isCorrect = userAnswer === correctAnswer;
+          console.log(`Direct Match Result: ${isCorrect}`);
         }
+      } else {
+        // For non-MCQ questions, direct comparison
+        isCorrect = userAnswer === correctAnswer;
+        console.log(`Direct Match Result: ${isCorrect}`);
       }
       
       console.log(`[VALIDATION RESULT] => ${isCorrect ? 'CORRECT ✓' : 'INCORRECT ✗'}`);
