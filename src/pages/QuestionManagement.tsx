@@ -26,6 +26,7 @@ export default function QuestionManagement() {
   const [showPYQManualForm, setShowPYQManualForm] = useState(false);
   const [showAIBulkForm, setShowAIBulkForm] = useState(false);
   const [showMockTestCreator, setShowMockTestCreator] = useState(false);
+  const [showAITestCreator, setShowAITestCreator] = useState(false);
   const [pyqYear, setPyqYear] = useState<number>(new Date().getFullYear());
   const [pyqExamName, setPyqExamName] = useState<string>("");
   
@@ -35,6 +36,10 @@ export default function QuestionManagement() {
   const [mockTestNewTopicName, setMockTestNewTopicName] = useState("");
   const [mockTestQuestions, setMockTestQuestions] = useState("");
   const [creatingMockTest, setCreatingMockTest] = useState(false);
+  
+  // AI test creator state
+  const [aiTestQuestions, setAiTestQuestions] = useState("");
+  const [creatingAITest, setCreatingAITest] = useState(false);
   
   // AI bulk questions state - 100 separate sections
   const [aiBulkQuestions, setAiBulkQuestions] = useState<string[]>(Array(100).fill(""));
@@ -51,6 +56,7 @@ export default function QuestionManagement() {
   const generateUploadUrl = useMutation(api.content.generateUploadUrl);
   const batchCreateQuestionsAction = useAction(api.aiQuestions.batchCreateQuestions);
   const createMockTestWithQuestions = useMutation(api.questions.createMockTestWithQuestions);
+  const createAITestWithQuestions = useMutation(api.questions.createAITestWithQuestions);
 
   // Manual question form state
   const [manualQuestion, setManualQuestion] = useState({
@@ -116,6 +122,150 @@ export default function QuestionManagement() {
       });
     } catch (error) {
       toast.error("Failed to create question");
+    }
+  };
+
+  const handleCreateAITest = async () => {
+    try {
+      setCreatingAITest(true);
+      
+      if (!aiTestQuestions.trim()) {
+        toast.error("Please paste AI questions");
+        setCreatingAITest(false);
+        return;
+      }
+
+      // Parse questions
+      const questionBlocks = aiTestQuestions.split(/\n\s*\n/).filter(block => block.trim());
+      
+      if (questionBlocks.length === 0) {
+        toast.error("No questions found. Please paste questions in the correct format.");
+        setCreatingAITest(false);
+        return;
+      }
+
+      if (questionBlocks.length > 100) {
+        toast.error("Cannot add more than 100 questions at once");
+        setCreatingAITest(false);
+        return;
+      }
+
+      toast.info(`Parsing ${questionBlocks.length} AI questions...`);
+
+      const parsedQuestions = [];
+      const errors = [];
+
+      for (let index = 0; index < questionBlocks.length; index++) {
+        const block = questionBlocks[index];
+        try {
+          const lines = block.split('\n').map(line => line.trim()).filter(line => line);
+          const question: any = {
+            type: "mcq",
+            difficulty: "medium",
+          };
+          
+          lines.forEach(line => {
+            const colonIndex = line.indexOf(':');
+            if (colonIndex === -1) return;
+            
+            const key = line.substring(0, colonIndex).trim().toLowerCase();
+            const value = line.substring(colonIndex + 1).trim();
+            if (!value) return;
+            
+            switch (key) {
+              case 'q':
+              case 'question':
+                question.question = value;
+                break;
+              case 'a':
+              case 'answer':
+              case 'correct answer':
+                question.correctAnswer = value;
+                break;
+              case 'options':
+              case 'option':
+                question.options = value.split('|').map(opt => opt.trim()).filter(opt => opt);
+                break;
+              case 'subject':
+                question.subject = value;
+                break;
+              case 'difficulty':
+                const diff = value.toLowerCase();
+                question.difficulty = ['easy', 'medium', 'hard'].includes(diff) ? diff : 'medium';
+                break;
+              case 'type':
+                const typeStr = value.toLowerCase().replace(/[^a-z]/g, '');
+                if (typeStr === 'truefalse' || typeStr === 'tf') {
+                  question.type = 'true_false';
+                } else if (typeStr === 'shortanswer' || typeStr === 'sa') {
+                  question.type = 'short_answer';
+                } else {
+                  question.type = 'mcq';
+                }
+                break;
+              case 'explanation':
+                question.explanation = value;
+                break;
+            }
+          });
+          
+          // Validate required fields
+          if (!question.question || question.question.trim() === '') {
+            throw new Error(`Missing question text`);
+          }
+          if (!question.correctAnswer || question.correctAnswer.trim() === '') {
+            throw new Error(`Missing correct answer`);
+          }
+          if (!question.subject) {
+            question.subject = "General";
+          }
+          if (question.type === 'mcq' && (!question.options || question.options.length < 2)) {
+            throw new Error(`MCQ must have at least 2 options`);
+          }
+          
+          parsedQuestions.push(question);
+        } catch (error) {
+          const errorMsg = `Question ${index + 1}: ${error instanceof Error ? error.message : 'Invalid format'}`;
+          errors.push(errorMsg);
+        }
+      }
+
+      if (parsedQuestions.length === 0) {
+        toast.error("No valid questions found. Please check your format.");
+        if (errors.length > 0) {
+          toast.error(`First error: ${errors[0]}`);
+        }
+        setCreatingAITest(false);
+        return;
+      }
+
+      toast.info(`Creating AI test with ${parsedQuestions.length} questions...`);
+
+      // Auto-generate test set name based on timestamp
+      const autoTestName = `AI Test ${new Date().toLocaleDateString('en-GB').replace(/\//g, '-')} ${new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`;
+
+      // Create AI test with auto-generated name and default topic
+      const result = await createAITestWithQuestions({
+        testSetName: autoTestName,
+        topicId: undefined,
+        newTopicName: "General AI Questions",
+        questions: parsedQuestions,
+      });
+
+      if (errors.length > 0) {
+        toast.warning(`AI test created with ${result.questionCount} questions. ${errors.length} questions had parsing errors.`);
+      } else {
+        toast.success(`AI test created successfully with ${result.questionCount} questions!`);
+      }
+
+      // Reset form
+      setShowAITestCreator(false);
+      setAiTestQuestions("");
+      setCreatingAITest(false);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to create AI test. Please try again.");
+      console.error("AI test creation error:", error);
+      setCreatingAITest(false);
     }
   };
 
@@ -1223,6 +1373,78 @@ export default function QuestionManagement() {
                       variant="outline" 
                       className="flex-1"
                       disabled={creatingMockTest}
+                    >
+                      Clear Form
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog open={showAITestCreator} onOpenChange={setShowAITestCreator}>
+              <DialogTrigger asChild>
+                <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white border-0 shadow-lg">
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Bulk Add & Create AI Test
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="glass-card border-white/20 backdrop-blur-xl bg-white/10 max-w-4xl max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="text-white text-xl">Bulk Add & Create AI Test</DialogTitle>
+                  <p className="text-white/60 text-sm">Paste up to 100 AI questions to automatically create an AI test</p>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-white font-semibold">Paste AI Questions (Up to 100) *</Label>
+                    <p className="text-white/60 text-sm mb-2 mt-1">
+                      Format each question like this (separate questions with a blank line):
+                    </p>
+                    <div className="bg-white/5 border border-white/10 rounded p-3 mb-3 text-xs text-white/70 font-mono">
+                      Q: What is EDTA?<br/>
+                      A: Anticoagulant<br/>
+                      Options: Anticoagulant | Stain | Buffer | Enzyme<br/>
+                      Subject: Hematology<br/>
+                      Difficulty: Easy<br/>
+                      Type: MCQ<br/>
+                      Explanation: EDTA is used to prevent blood clotting
+                    </div>
+                    <Textarea
+                      value={aiTestQuestions}
+                      onChange={(e) => setAiTestQuestions(e.target.value)}
+                      className="bg-white/5 border-white/10 text-white font-mono text-sm"
+                      rows={15}
+                      placeholder="Paste your AI questions here..."
+                    />
+                    <p className="text-white/60 text-xs mt-2">
+                      {aiTestQuestions.split(/\n\s*\n/).filter(b => b.trim()).length} questions detected
+                    </p>
+                  </div>
+
+                  <div className="flex gap-2 pt-4">
+                    <Button 
+                      onClick={handleCreateAITest} 
+                      disabled={creatingAITest}
+                      className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white border-0"
+                    >
+                      {creatingAITest ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Creating AI Test...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="h-4 w-4 mr-2" />
+                          Create AI Test
+                        </>
+                      )}
+                    </Button>
+                    <Button 
+                      onClick={() => {
+                        setAiTestQuestions("");
+                      }}
+                      variant="outline" 
+                      className="flex-1"
+                      disabled={creatingAITest}
                     >
                       Clear Form
                     </Button>
