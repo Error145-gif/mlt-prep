@@ -112,15 +112,19 @@ export default function QuestionManagement() {
 
   const handleBulkManualSubmit = async () => {
     try {
+      setSavingQuestions(true);
+      
       // Filter out empty question blocks
       const questionBlocks = bulkQuestions.filter(block => block.trim());
       
       if (questionBlocks.length === 0) {
         toast.error("No questions found. Please paste questions in the correct format.");
+        setSavingQuestions(false);
         return;
       }
       
       console.log(`Processing ${questionBlocks.length} question blocks...`);
+      toast.info(`Processing ${questionBlocks.length} questions... This may take a moment.`);
       
       const parsedQuestions = [];
       const errors = [];
@@ -226,44 +230,58 @@ export default function QuestionManagement() {
           console.error("Parsing errors:", errors);
           toast.error(`First error: ${errors[0]}`);
         }
+        setSavingQuestions(false);
         return;
       }
       
       console.log(`Attempting to save ${parsedQuestions.length} questions to database...`);
-      const result = await batchCreateQuestions({ questions: parsedQuestions });
-      console.log(`Database save result:`, result);
+      toast.info(`Saving ${parsedQuestions.length} questions... Please wait.`);
+      
+      const result = await batchCreateQuestionsAction({ questions: parsedQuestions });
+      const successCount = result.filter(r => r !== null).length;
+      
+      console.log(`Database save result: ${successCount}/${parsedQuestions.length} questions saved`);
       
       if (errors.length > 0) {
-        toast.warning(`${parsedQuestions.length} questions added. ${errors.length} questions had errors.`);
+        toast.warning(`${successCount} questions added successfully. ${errors.length} questions had parsing errors.`);
         console.error("Parsing errors:", errors);
+      } else if (successCount < parsedQuestions.length) {
+        toast.warning(`${successCount} questions added successfully. ${parsedQuestions.length - successCount} questions failed to save.`);
       } else {
-        toast.success(`${parsedQuestions.length} questions added successfully!`);
+        toast.success(`All ${successCount} questions added successfully!`);
       }
       
       setShowBulkManualForm(false);
       setBulkQuestions(Array(100).fill(""));
+      setSavingQuestions(false);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to add questions. Please try again.");
       console.error("Bulk add error:", error);
+      setSavingQuestions(false);
     }
   };
 
   const handleAIBulkSubmit = async () => {
     try {
+      setSavingQuestions(true);
+      
       // Filter out empty question blocks
       const questionBlocks = aiBulkQuestions.filter(block => block.trim());
       
       if (questionBlocks.length === 0) {
         toast.error("No questions found. Please paste questions in the correct format.");
+        setSavingQuestions(false);
         return;
       }
       
       if (questionBlocks.length > 100) {
         toast.error("Cannot add more than 100 questions at once");
+        setSavingQuestions(false);
         return;
       }
       
       console.log(`Processing ${questionBlocks.length} AI question blocks...`);
+      toast.info(`Processing ${questionBlocks.length} AI questions... This may take a moment.`);
       
       const parsedQuestions = [];
       const errors = [];
@@ -365,25 +383,34 @@ export default function QuestionManagement() {
           console.error("Parsing errors:", errors);
           toast.error(`First error: ${errors[0]}`);
         }
+        setSavingQuestions(false);
         return;
       }
       
       console.log(`Attempting to save ${parsedQuestions.length} AI questions to database...`);
-      const result = await batchCreateQuestions({ questions: parsedQuestions });
-      console.log(`Database save result:`, result);
+      toast.info(`Saving ${parsedQuestions.length} AI questions... Please wait.`);
+      
+      const result = await batchCreateQuestionsAction({ questions: parsedQuestions });
+      const successCount = result.filter(r => r !== null).length;
+      
+      console.log(`Database save result: ${successCount}/${parsedQuestions.length} AI questions saved`);
       
       if (errors.length > 0) {
-        toast.warning(`${parsedQuestions.length} AI questions added. ${errors.length} questions had errors.`);
+        toast.warning(`${successCount} AI questions added successfully. ${errors.length} questions had parsing errors.`);
         console.error("Parsing errors:", errors);
+      } else if (successCount < parsedQuestions.length) {
+        toast.warning(`${successCount} AI questions added successfully. ${parsedQuestions.length - successCount} questions failed to save.`);
       } else {
-        toast.success(`${parsedQuestions.length} AI questions added successfully!`);
+        toast.success(`All ${successCount} AI questions added successfully!`);
       }
       
       setShowAIBulkForm(false);
       setAiBulkQuestions(Array(100).fill(""));
+      setSavingQuestions(false);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to add AI questions. Please try again.");
       console.error("AI bulk add error:", error);
+      setSavingQuestions(false);
     }
   };
 

@@ -43,17 +43,33 @@ export const batchCreateQuestions = action({
     questions: v.array(v.any()),
   },
   handler: async (ctx, args): Promise<Array<Id<"questions"> | null>> => {
-    // This function is still needed for bulk manual entry
+    // Process questions in chunks of 10 to avoid timeout issues
+    const CHUNK_SIZE = 10;
     const results: Array<Id<"questions"> | null> = [];
-    for (const question of args.questions) {
-      try {
-        const result: Id<"questions"> = await ctx.runMutation(internal.questions.createQuestionInternal, question);
-        results.push(result);
-      } catch (error) {
-        console.error("Failed to create question:", error);
-        results.push(null);
+    
+    console.log(`Starting batch creation of ${args.questions.length} questions in chunks of ${CHUNK_SIZE}`);
+    
+    for (let i = 0; i < args.questions.length; i += CHUNK_SIZE) {
+      const chunk = args.questions.slice(i, i + CHUNK_SIZE);
+      console.log(`Processing chunk ${Math.floor(i / CHUNK_SIZE) + 1}/${Math.ceil(args.questions.length / CHUNK_SIZE)} (${chunk.length} questions)`);
+      
+      for (const question of chunk) {
+        try {
+          const result: Id<"questions"> = await ctx.runMutation(internal.questions.createQuestionInternal, question);
+          results.push(result);
+        } catch (error) {
+          console.error("Failed to create question:", error);
+          results.push(null);
+        }
+      }
+      
+      // Small delay between chunks to prevent overwhelming the system
+      if (i + CHUNK_SIZE < args.questions.length) {
+        await new Promise(resolve => setTimeout(resolve, 100));
       }
     }
+    
+    console.log(`Batch creation complete: ${results.filter(r => r !== null).length}/${args.questions.length} questions created successfully`);
     return results;
   },
 });
