@@ -134,8 +134,8 @@ export default function Landing() {
       <nav className="glass-card border-b border-white/20 backdrop-blur-xl bg-white/10 sticky top-0 z-50 shadow-lg">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate("/")}>
-            <img src="/logo.svg" alt="MLT Logo" className="h-10 w-10" />
-            <span className="text-xl font-bold text-white drop-shadow-lg">MLT Learning</span>
+            <img src="https://harmless-tapir-303.convex.cloud/api/storage/d9da05f9-b7b1-43d8-b723-0f805bc8f673" alt="MLT Logo" className="h-10 w-10" />
+            <span className="text-xl font-bold text-white drop-shadow-lg">MLT Prep</span>
           </div>
           <div className="flex items-center gap-4">
             {isAuthenticated ? (
