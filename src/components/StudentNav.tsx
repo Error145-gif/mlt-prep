@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router";
 import { Home, BookOpen, FileText, BarChart3, Library, Menu, X, MessageSquare, User, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "convex/react";
@@ -15,6 +15,24 @@ export default function StudentNav() {
   const { signOut } = useAuth();
   const userProfile = useQuery(api.users.getUserProfile);
 
+  // Open sidebar by default on desktop
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setIsOpen(true);
+      } else {
+        setIsOpen(false);
+      }
+    };
+
+    // Set initial state
+    handleResize();
+
+    // Listen for window resize
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const navItems = [
     { path: "/dashboard", icon: Home, label: "Dashboard" },
     { path: "/tests/mock", icon: FileText, label: "Mock Tests" },
@@ -22,17 +40,17 @@ export default function StudentNav() {
     { path: "/tests/ai", icon: BarChart3, label: "AI Questions" },
     { path: "/subscription", icon: CreditCard, label: "Subscription" },
     { path: "/feedback", icon: MessageSquare, label: "Feedback" },
-    { path: "/free-library", icon: BookOpen, label: "Free Library" },
+    { path: "/free-library", icon: Library, label: "Free Library" },
     { path: "/profile", icon: User, label: "Profile" },
   ];
 
   return (
     <>
-      {/* Mobile Menu Button */}
+      {/* Mobile Menu Button - Now visible on all screens */}
       <Button
         variant="ghost"
         size="icon"
-        className="fixed top-4 left-4 z-50 lg:hidden glass-card border-white/20 backdrop-blur-xl bg-white/10 text-white"
+        className="fixed top-4 left-4 z-50 glass-card border-white/20 backdrop-blur-xl bg-white/10 text-white"
         onClick={() => setIsOpen(!isOpen)}
       >
         {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -40,12 +58,12 @@ export default function StudentNav() {
 
       {/* Sidebar */}
       <AnimatePresence>
-        {(isOpen || window.innerWidth >= 1024) && (
+        {isOpen && (
           <motion.aside
             initial={{ x: -300 }}
             animate={{ x: 0 }}
             exit={{ x: -300 }}
-            className="fixed left-0 top-0 h-screen w-64 glass-card border-r border-white/20 backdrop-blur-xl bg-white/10 p-6 z-40 lg:translate-x-0"
+            className="fixed left-0 top-0 h-screen w-64 glass-card border-r border-white/20 backdrop-blur-xl bg-white/10 p-6 z-40"
           >
             <div className="flex flex-col h-full">
               <div className="flex items-center justify-between mb-8">
@@ -72,7 +90,12 @@ export default function StudentNav() {
                     <Link
                       key={item.path}
                       to={item.path}
-                      onClick={() => setIsOpen(false)}
+                      onClick={() => {
+                        // Only close on mobile
+                        if (window.innerWidth < 1024) {
+                          setIsOpen(false);
+                        }
+                      }}
                       className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
                         isActive
                           ? "bg-white/20 text-white"
@@ -99,9 +122,9 @@ export default function StudentNav() {
       </AnimatePresence>
 
       {/* Overlay for mobile */}
-      {isOpen && (
+      {isOpen && window.innerWidth < 1024 && (
         <div
-          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          className="fixed inset-0 bg-black/50 z-30"
           onClick={() => setIsOpen(false)}
         />
       )}
