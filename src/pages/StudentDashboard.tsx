@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { BookOpen, FileText, TrendingUp, Award, Clock, AlertCircle, CreditCard, User, Target, Brain, BookMarked, BarChart, RefreshCw } from "lucide-react";
+import { BookOpen, FileText, TrendingUp, Award, Clock, AlertCircle, CreditCard, User, Target, Brain, BookMarked, BarChart, Zap, Trophy, Flame, Sparkles, TrendingDown } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -55,9 +55,38 @@ export default function StudentDashboard() {
     return days > 0 ? days : 0;
   };
 
+  // Format time
+  const formatTime = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    }
+    return `${minutes}m`;
+  };
+
+  // Get performance score color
+  const getPerformanceColor = (score: number) => {
+    if (score >= 80) return "from-green-500 to-emerald-600";
+    if (score >= 50) return "from-yellow-500 to-orange-600";
+    return "from-red-500 to-pink-600";
+  };
+
+  const getPerformanceBadgeColor = (score: number) => {
+    if (score >= 80) return "bg-green-500/20 text-green-300 border-green-500/30";
+    if (score >= 50) return "bg-yellow-500/20 text-yellow-300 border-yellow-500/30";
+    return "bg-red-500/20 text-red-300 border-red-500/30";
+  };
+
+  const getPerformanceLabel = (score: number) => {
+    if (score >= 80) return "Excellent";
+    if (score >= 50) return "Moderate";
+    return "Needs Work";
+  };
+
   return (
     <div className="min-h-screen p-6 lg:p-8 relative overflow-hidden">
-      {/* Animated Background Gradients - Same as Landing */}
+      {/* Animated Background Gradients */}
       <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
         <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-400/30 rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-500/30 rounded-full blur-3xl" />
@@ -104,7 +133,72 @@ export default function StudentDashboard() {
           )}
         </div>
 
-        {/* Subscription Status Card - NEW */}
+        {/* Performance Score - PROMINENT DISPLAY */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+          className="glass-card border border-white/30 backdrop-blur-xl bg-white/10 p-6 rounded-xl"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <h2 className="text-white/90 text-lg mb-2 flex items-center gap-2">
+                <Target className="h-5 w-5" />
+                Exam Readiness Score
+              </h2>
+              <div className="flex items-center gap-4">
+                <div className={`w-24 h-24 rounded-full bg-gradient-to-br ${getPerformanceColor(stats.performanceScore)} flex items-center justify-center shadow-lg`}>
+                  <span className="text-4xl font-bold text-white">{stats.performanceScore}</span>
+                </div>
+                <div>
+                  <Badge className={`${getPerformanceBadgeColor(stats.performanceScore)} text-lg px-4 py-1`}>
+                    {getPerformanceLabel(stats.performanceScore)}
+                  </Badge>
+                  <p className="text-white/80 text-sm mt-2">
+                    Based on accuracy, consistency & improvement
+                  </p>
+                </div>
+              </div>
+            </div>
+            {stats.consistencyStreak > 0 && (
+              <div className="text-center">
+                <Flame className="h-12 w-12 text-orange-400 mx-auto mb-2" />
+                <p className="text-3xl font-bold text-white">{stats.consistencyStreak}</p>
+                <p className="text-white/80 text-sm">Day Streak</p>
+              </div>
+            )}
+          </div>
+        </motion.div>
+
+        {/* AI Insights Card */}
+        {stats.aiInsights && stats.aiInsights.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="glass-card border border-purple-500/50 backdrop-blur-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 p-5 rounded-xl"
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <Sparkles className="h-5 w-5 text-yellow-400" />
+              <h3 className="text-white font-semibold text-lg">Smart Insights</h3>
+            </div>
+            <div className="space-y-2">
+              {stats.aiInsights.map((insight, index) => (
+                <motion.p
+                  key={index}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 + index * 0.1 }}
+                  className="text-white/95 text-base leading-relaxed"
+                >
+                  {insight}
+                </motion.p>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Subscription Status Card */}
         {subscriptionAccess && subscriptionAccess.hasAccess && subscriptionAccess.subscription && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
@@ -136,59 +230,7 @@ export default function StudentDashboard() {
           </motion.div>
         )}
 
-        {/* Profile Completion Alert */}
-        {userProfile && profileCompletion < 100 && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="glass-card border border-blue-500/50 backdrop-blur-xl bg-blue-500/10 p-4 rounded-xl cursor-pointer hover:bg-blue-500/15 transition-all"
-            onClick={() => navigate("/profile")}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <User className="h-5 w-5 text-blue-400" />
-                <div>
-                  <p className="text-white font-medium">Complete your profile ({profileCompletion}%)</p>
-                  <p className="text-white/90 text-sm">Add your details for a personalized experience</p>
-                </div>
-              </div>
-              <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
-                Complete Profile
-              </Button>
-            </div>
-          </motion.div>
-        )}
-
-        {/* Subscription Alert */}
-        {subscriptionAccess && !subscriptionAccess.hasAccess && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="glass-card border border-orange-500/50 backdrop-blur-xl bg-orange-500/10 p-4 rounded-xl cursor-pointer hover:bg-orange-500/15 transition-all"
-            onClick={() => navigate("/subscription")}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <AlertCircle className="h-5 w-5 text-orange-400" />
-                <div>
-                  <p className="text-white font-medium">
-                    {subscriptionAccess.reason === "no_subscription" && "Start your 7-day free trial!"}
-                    {subscriptionAccess.reason === "expired" && "Your trial has expired"}
-                  </p>
-                  <p className="text-white/90 text-sm">
-                    {subscriptionAccess.reason === "no_subscription" && "Get full access to all features"}
-                    {subscriptionAccess.reason === "expired" && "Subscribe to continue learning"}
-                  </p>
-                </div>
-              </div>
-              <Button className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700">
-                View Plans
-              </Button>
-            </div>
-          </motion.div>
-        )}
-
-        {/* Stats Grid */}
+        {/* User Overview Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
             <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
@@ -206,12 +248,12 @@ export default function StudentDashboard() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
             <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-white/90">Average Score</CardTitle>
-                <Award className="h-4 w-4 text-green-400" />
+                <CardTitle className="text-sm font-medium text-white/90">Questions Attempted</CardTitle>
+                <Target className="h-4 w-4 text-purple-400" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-white">{stats.avgScore}%</div>
-                <p className="text-xs text-white/80 mt-1">Overall performance</p>
+                <div className="text-2xl font-bold text-white">{stats.totalQuestionsAttempted}</div>
+                <p className="text-xs text-white/80 mt-1">Total questions</p>
               </CardContent>
             </Card>
           </motion.div>
@@ -219,12 +261,12 @@ export default function StudentDashboard() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
             <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-white/90">Overall Accuracy</CardTitle>
-                <Target className="h-4 w-4 text-purple-400" />
+                <CardTitle className="text-sm font-medium text-white/90">Avg Time/Question</CardTitle>
+                <Clock className="h-4 w-4 text-orange-400" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-white">{stats.overallAccuracy}%</div>
-                <p className="text-xs text-white/80 mt-1">Correct answers</p>
+                <div className="text-2xl font-bold text-white">{stats.avgTimePerQuestion}s</div>
+                <p className="text-xs text-white/80 mt-1">Per question</p>
               </CardContent>
             </Card>
           </motion.div>
@@ -232,28 +274,27 @@ export default function StudentDashboard() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
             <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-white/90">Subscription</CardTitle>
-                <Clock className="h-4 w-4 text-orange-400" />
+                <CardTitle className="text-sm font-medium text-white/90">Overall Accuracy</CardTitle>
+                <Award className="h-4 w-4 text-green-400" />
               </CardHeader>
               <CardContent>
-                <Badge variant={stats.subscriptionStatus === "active" ? "default" : "destructive"}>
-                  {stats.subscriptionStatus}
-                </Badge>
+                <div className="text-2xl font-bold text-white">{stats.overallAccuracy}%</div>
+                <p className="text-xs text-white/80 mt-1">Correct answers</p>
               </CardContent>
             </Card>
           </motion.div>
         </div>
 
-        {/* Test Type Analytics */}
+        {/* Performance Breakdown */}
         <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
               <BarChart className="h-5 w-5" />
-              Correct Answer Accuracy by Type
+              Performance Breakdown
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* Mock Tests */}
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
@@ -262,15 +303,10 @@ export default function StudentDashboard() {
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-white/90 text-sm">Tests Taken</span>
-                    <span className="text-white font-bold text-lg">{stats.mockTests.count}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
                     <span className="text-white/90 text-sm">Accuracy</span>
                     <span className="text-white font-bold text-lg">{stats.mockTests.avgScore}%</span>
                   </div>
                   <Progress value={stats.mockTests.avgScore} className="h-2" />
-                  <p className="text-white/80 text-xs">Correct answers percentage</p>
                 </div>
               </div>
 
@@ -282,15 +318,10 @@ export default function StudentDashboard() {
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-white/90 text-sm">Tests Taken</span>
-                    <span className="text-white font-bold text-lg">{stats.pyqTests.count}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
                     <span className="text-white/90 text-sm">Accuracy</span>
                     <span className="text-white font-bold text-lg">{stats.pyqTests.avgScore}%</span>
                   </div>
                   <Progress value={stats.pyqTests.avgScore} className="h-2" />
-                  <p className="text-white/80 text-xs">Correct answers percentage</p>
                 </div>
               </div>
 
@@ -302,130 +333,86 @@ export default function StudentDashboard() {
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-white/90 text-sm">Tests Taken</span>
-                    <span className="text-white font-bold text-lg">{stats.aiTests.count}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
                     <span className="text-white/90 text-sm">Accuracy</span>
                     <span className="text-white font-bold text-lg">{stats.aiTests.avgScore}%</span>
                   </div>
                   <Progress value={stats.aiTests.avgScore} className="h-2" />
-                  <p className="text-white/80 text-xs">Correct answers percentage</p>
+                </div>
+              </div>
+
+              {/* Strongest Subject */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Trophy className="h-5 w-5 text-yellow-400" />
+                  <h3 className="text-white font-semibold">Strongest Subject</h3>
+                </div>
+                <div className="text-white/90 text-lg font-medium">{stats.strongestSubject}</div>
+              </div>
+
+              {/* Weakest Subject */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <BookOpen className="h-5 w-5 text-red-400" />
+                  <h3 className="text-white font-semibold">Needs Improvement</h3>
+                </div>
+                <div className="text-white/90 text-lg font-medium">{stats.weakestSubject}</div>
+              </div>
+
+              {/* Improvement Rate */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  {stats.improvementRate >= 0 ? (
+                    <TrendingUp className="h-5 w-5 text-green-400" />
+                  ) : (
+                    <TrendingDown className="h-5 w-5 text-red-400" />
+                  )}
+                  <h3 className="text-white font-semibold">Last Test Change</h3>
+                </div>
+                <div className={`text-lg font-bold ${stats.improvementRate >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  {stats.improvementRate >= 0 ? '+' : ''}{stats.improvementRate}%
                 </div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Recent Performance Graph */}
-        {stats.recentTestPerformance && stats.recentTestPerformance.length > 0 && (
-          <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
-                <TrendingUp className="h-5 w-5" />
-                Recent Test Performance
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {stats.recentTestPerformance.map((test, index) => (
-                  <div key={index} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-white border-white/30">
-                          {test.type.toUpperCase()}
-                        </Badge>
-                        <span className="text-white/90 text-sm">
-                          {new Date(test.date).toLocaleDateString()}
-                        </span>
-                      </div>
-                      <span className="text-white font-bold">{test.score}%</span>
-                    </div>
-                    <Progress value={test.score} className="h-2" />
-                  </div>
-                ))}
+        {/* Engagement Metrics */}
+        <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
+              <Zap className="h-5 w-5" />
+              Engagement Metrics
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-blue-400" />
+                  <span className="text-white/90">Total Study Time</span>
+                </div>
+                <div className="text-2xl font-bold text-white">{formatTime(stats.totalStudyTime)}</div>
               </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Completed Tests - Available for Retake */}
-        {stats.totalTests > 0 && (
-          <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                Your Completed Tests
-              </CardTitle>
-              <p className="text-white/90 text-sm">Tests you can retake anytime</p>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {stats.mockTests.count > 0 && (
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <FileText className="h-5 w-5 text-blue-400" />
-                      <div>
-                        <p className="text-white font-medium">Mock Tests</p>
-                        <p className="text-white/80 text-sm">{stats.mockTests.count} attempts • Avg: {stats.mockTests.avgScore}%</p>
-                      </div>
-                    </div>
-                    <Button 
-                      onClick={() => navigate("/tests/mock")}
-                      className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
-                    >
-                      Re-Test
-                    </Button>
-                  </div>
-                )}
-                {stats.pyqTests.count > 0 && (
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <BookOpen className="h-5 w-5 text-green-400" />
-                      <div>
-                        <p className="text-white font-medium">PYQ Sets</p>
-                        <p className="text-white/80 text-sm">
-                          {stats.pyqTests.count} {stats.pyqTests.count === 1 ? 'attempt' : 'attempts'} • 
-                          Avg: {stats.pyqTests.avgScore}% • 
-                          10 mins per 20 questions
-                        </p>
-                      </div>
-                    </div>
-                    <Button 
-                      onClick={() => navigate("/tests/pyq")}
-                      className="bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700"
-                    >
-                      Re-Test
-                    </Button>
-                  </div>
-                )}
-                {stats.aiTests.count > 0 && (
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <Brain className="h-5 w-5 text-purple-400" />
-                      <div>
-                        <p className="text-white font-medium">AI Questions</p>
-                        <p className="text-white/80 text-sm">{stats.aiTests.count} attempts • Avg: {stats.aiTests.avgScore}%</p>
-                      </div>
-                    </div>
-                    <Button 
-                      onClick={() => navigate("/tests/ai")}
-                      className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700"
-                    >
-                      Re-Test
-                    </Button>
-                  </div>
-                )}
-                {stats.totalTests === 0 && (
-                  <p className="text-white/80 text-center py-4">No completed tests yet. Start your first test below!</p>
-                )}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Target className="h-5 w-5 text-purple-400" />
+                  <span className="text-white/90">Avg Questions/Test</span>
+                </div>
+                <div className="text-2xl font-bold text-white">{stats.avgQuestionsPerTest}</div>
               </div>
-            </CardContent>
-          </Card>
-        )}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Flame className="h-5 w-5 text-orange-400" />
+                  <span className="text-white/90">Consistency Streak</span>
+                </div>
+                <div className="text-2xl font-bold text-white">{stats.consistencyStreak} days</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.5 }}>
             <Card className="glass-card border-white/30 backdrop-blur-xl bg-gradient-to-br from-blue-500/20 to-purple-600/20 cursor-pointer hover:scale-105 transition-transform" onClick={() => navigate("/tests/mock")}>
               <CardHeader>
@@ -462,31 +449,6 @@ export default function StudentDashboard() {
             </Card>
           </motion.div>
         </div>
-
-        {/* Recent Content */}
-        {stats.recentContent && stats.recentContent.length > 0 && (
-          <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
-            <CardHeader>
-              <CardTitle className="text-white">Recent Content</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {stats.recentContent.map((content) => (
-                  <div key={content._id} className="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <BookOpen className="h-5 w-5 text-blue-400" />
-                      <div>
-                        <p className="text-white font-medium">{content.title}</p>
-                        <p className="text-white/80 text-sm">{content.type}</p>
-                      </div>
-                    </div>
-                    <Badge>{content.type}</Badge>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
       </div>
     </div>
   );

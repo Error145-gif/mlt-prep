@@ -2,7 +2,7 @@ import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
 import { getCurrentUser } from "./users";
 
-// Get student dashboard statistics
+// Get student dashboard statistics - ENHANCED VERSION
 export const getStudentDashboardStats = query({
   args: {},
   handler: async (ctx) => {
@@ -57,6 +57,119 @@ export const getStudentDashboardStats = query({
     const totalCorrect = testResults.reduce((sum, r) => sum + r.correctAnswers, 0);
     const overallAccuracy = totalQuestions > 0 ? (totalCorrect / totalQuestions) * 100 : 0;
 
+    // NEW: Calculate total questions attempted
+    const totalQuestionsAttempted = totalQuestions;
+
+    // NEW: Calculate average time per question (in seconds)
+    const totalTimeSpent = testResults.reduce((sum, r) => sum + r.timeSpent, 0);
+    const avgTimePerQuestion = totalQuestions > 0 ? totalTimeSpent / totalQuestions : 0;
+
+    // NEW: Calculate total study time
+    const totalStudyTime = totalTimeSpent;
+
+    // NEW: Calculate average questions per test
+    const avgQuestionsPerTest = totalTests > 0 ? totalQuestions / totalTests : 0;
+
+    // NEW: Calculate consistency streak (days active)
+    const testDates = testSessions.map(s => new Date(s._creationTime).toDateString());
+    const uniqueDates = [...new Set(testDates)];
+    const consistencyStreak = uniqueDates.length;
+
+    // NEW: Weekly accuracy trend (last 7 days)
+    const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+    const recentResults = testResults.filter(r => r._creationTime >= sevenDaysAgo);
+    const weeklyAccuracy = recentResults.length > 0
+      ? recentResults.reduce((sum, r) => sum + ((r.correctAnswers / r.totalQuestions) * 100), 0) / recentResults.length
+      : 0;
+
+    // NEW: Subject-wise performance (strongest/weakest)
+    const subjectPerformance = new Map<string, { correct: number; total: number }>();
+    
+    for (const session of testSessions) {
+      const questions = await Promise.all(
+        session.questionIds.map(id => ctx.db.get(id))
+      );
+      
+      for (const q of questions) {
+        if (q?.subject) {
+          const subject = q.subject;
+          if (!subjectPerformance.has(subject)) {
+            subjectPerformance.set(subject, { correct: 0, total: 0 });
+          }
+          const stats = subjectPerformance.get(subject)!;
+          stats.total++;
+          
+          const answer = session.answers?.find(a => a.questionId === q._id);
+          if (answer?.isCorrect) {
+            stats.correct++;
+          }
+        }
+      }
+    }
+
+    let strongestSubject = "N/A";
+    let weakestSubject = "N/A";
+    let highestAccuracy = 0;
+    let lowestAccuracy = 100;
+
+    for (const [subject, stats] of subjectPerformance.entries()) {
+      const accuracy = (stats.correct / stats.total) * 100;
+      if (accuracy > highestAccuracy) {
+        highestAccuracy = accuracy;
+        strongestSubject = subject;
+      }
+      if (accuracy < lowestAccuracy && stats.total >= 5) { // Only consider subjects with at least 5 questions
+        lowestAccuracy = accuracy;
+        weakestSubject = subject;
+      }
+    }
+
+    // NEW: Improvement since last test
+    const sortedResults = testResults.sort((a, b) => b._creationTime - a._creationTime);
+    let improvementRate = 0;
+    if (sortedResults.length >= 2) {
+      const lastScore = sortedResults[0].score;
+      const previousScore = sortedResults[1].score;
+      improvementRate = lastScore - previousScore;
+    }
+
+    // NEW: Calculate Performance Score (0-100)
+    const accuracyComponent = overallAccuracy * 0.6;
+    const consistencyComponent = Math.min(consistencyStreak / 30, 1) * 30; // Max 30 days = 100%
+    const improvementComponent = Math.max(0, Math.min(improvementRate, 10)); // Cap at 10%
+    const performanceScore = Math.round(accuracyComponent + consistencyComponent + improvementComponent);
+
+    // NEW: Generate AI Insights
+    const aiInsights: string[] = [];
+    
+    // Readiness message
+    if (overallAccuracy > 80) {
+      aiInsights.push("🚀 You're exam-ready! Let's polish your timing.");
+    } else if (overallAccuracy >= 50) {
+      aiInsights.push("💪 Good progress! Focus on weak topics.");
+    } else {
+      aiInsights.push("📚 Needs more preparation. Try mock set 2 or AI tests.");
+    }
+
+    // Improvement message
+    if (improvementRate > 10) {
+      aiInsights.push(`🔥 You improved ${Math.round(improvementRate)}% since your last test — keep it up!`);
+    } else if (improvementRate > 0) {
+      aiInsights.push(`✨ You're making progress — ${Math.round(improvementRate)}% improvement!`);
+    }
+
+    // Subject-specific tip
+    if (weakestSubject !== "N/A" && lowestAccuracy < 60) {
+      aiInsights.push(`⚡ You're losing marks in ${weakestSubject} — revise the basics.`);
+    }
+
+    // Performance-based motivation
+    if (overallAccuracy > 85) {
+      aiInsights.push("🏆 You're performing like a topper — let's push to 90%!");
+    } else if (consistencyStreak >= 7) {
+      aiInsights.push(`🔥 ${consistencyStreak} days streak! Consistency is key to success.`);
+    }
+
     // Get recent test performance for graph
     const recentTests = testResults
       .sort((a, b) => b._creationTime - a._creationTime)
@@ -67,6 +180,17 @@ export const getStudentDashboardStats = query({
       totalTests,
       avgScore: Math.round(avgScore),
       overallAccuracy: Math.round(overallAccuracy),
+      totalQuestionsAttempted,
+      avgTimePerQuestion: Math.round(avgTimePerQuestion),
+      totalStudyTime,
+      avgQuestionsPerTest: Math.round(avgQuestionsPerTest),
+      consistencyStreak,
+      weeklyAccuracy: Math.round(weeklyAccuracy),
+      strongestSubject,
+      weakestSubject,
+      improvementRate: Math.round(improvementRate),
+      performanceScore,
+      aiInsights,
       mockTests: {
         count: mockTests.length,
         avgScore: Math.round(mockAvgScore),
@@ -86,6 +210,7 @@ export const getStudentDashboardStats = query({
       })),
       subscriptionStatus: subscription?.status || "inactive",
       subscriptionEndDate: subscription?.endDate,
+      subscription,
       recentContent,
     };
   },
