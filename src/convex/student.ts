@@ -621,7 +621,7 @@ export const submitTest = mutation({
       session.questionIds.map((id) => ctx.db.get(id))
     );
 
-    // FIXED: Improved answer comparison with normalization
+    // FIXED: Robust answer comparison with comprehensive normalization
     const answersWithCorrectness = args.answers.map((ans) => {
       const question = questions.find((q) => q?._id === ans.questionId);
       
@@ -633,22 +633,37 @@ export const submitTest = mutation({
         };
       }
       
-      // Normalize both answers for comparison
+      // Comprehensive normalization function
       const normalizeAnswer = (str: string) => {
         if (!str) return "";
         return str
           .trim()
           .toLowerCase()
           .replace(/\s+/g, ' ') // Replace multiple spaces with single space
-          .replace(/[^\w\s]/g, ''); // Remove special characters for better matching
+          .replace(/[^\w\s]/g, '') // Remove special characters
+          .replace(/\n/g, ' ') // Replace newlines with space
+          .trim(); // Final trim after all replacements
       };
       
       const userAnswer = normalizeAnswer(ans.answer);
       const correctAnswer = normalizeAnswer(question.correctAnswer || "");
       
-      console.log(`Question ${question._id}: User="${userAnswer}" vs Correct="${correctAnswer}"`);
+      // Also check if user answer matches any of the options exactly (for MCQ)
+      let isCorrect = userAnswer === correctAnswer;
       
-      const isCorrect = userAnswer === correctAnswer;
+      // Additional check: if question has options, verify the selected option text
+      if (!isCorrect && question.options && question.options.length > 0) {
+        // Check if the user's answer matches the correct answer when both are normalized
+        const normalizedOptions = question.options.map(opt => normalizeAnswer(opt));
+        const userAnswerIndex = normalizedOptions.indexOf(userAnswer);
+        const correctAnswerIndex = normalizedOptions.indexOf(correctAnswer);
+        
+        if (userAnswerIndex !== -1 && userAnswerIndex === correctAnswerIndex) {
+          isCorrect = true;
+        }
+      }
+      
+      console.log(`[VALIDATION] Q${question._id}: User="${ans.answer}" (normalized: "${userAnswer}") vs Correct="${question.correctAnswer}" (normalized: "${correctAnswer}") => ${isCorrect ? 'CORRECT ✓' : 'INCORRECT ✗'}`);
       
       return {
         ...ans,

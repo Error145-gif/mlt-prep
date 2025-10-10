@@ -246,10 +246,16 @@ export default function TestResults() {
                   {q.type === "mcq" && q.options && (
                     <div className="space-y-2 ml-6">
                       {q.options.map((option: string, idx: number) => {
-                        // Normalize for comparison
+                        // Comprehensive normalization for display comparison
                         const normalizeForDisplay = (str: string) => {
                           if (!str) return "";
-                          return str.trim().toLowerCase().replace(/\s+/g, ' ');
+                          return str
+                            .trim()
+                            .toLowerCase()
+                            .replace(/\s+/g, ' ')
+                            .replace(/[^\w\s]/g, '')
+                            .replace(/\n/g, ' ')
+                            .trim();
                         };
                         
                         const isUserAnswer = normalizeForDisplay(q.userAnswer || "") === normalizeForDisplay(option);
