@@ -1,0 +1,9 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.mltprep.app">
+    
+    <application
+        android:label="MLT Prep"
+        android:icon="@mipmap/ic_launcher">
+        <!-- Your app config -->
+    </application>
+</manifest>

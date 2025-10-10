@@ -1,1 +1,1 @@
-pnpm add razorpay
+npx cap open android
