@@ -229,11 +229,11 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
               {/* Logo for mobile */}
               <div className="lg:hidden flex justify-center mb-8">
                 <img
-                  src="./logo.svg"
-                  alt="Logo"
-                  width={64}
-                  height={64}
-                  className="rounded-lg cursor-pointer"
+                  src="https://harmless-tapir-303.convex.cloud/api/storage/d9da05f9-b7b1-43d8-b723-0f805bc8f673"
+                  alt="MLT Logo"
+                  width={120}
+                  height={120}
+                  className="cursor-pointer"
                   onClick={() => navigate("/")}
                 />
               </div>
