@@ -873,11 +873,6 @@ export default function QuestionManagement() {
       return;
     }
 
-    if (parsedPYQQuestions.length > 100) {
-      toast.error("Maximum 100 questions allowed");
-      return;
-    }
-
     setIsCreatingPYQTest(true);
     try {
       const result = await createPYQTestMutation({
