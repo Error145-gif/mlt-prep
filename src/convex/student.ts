@@ -650,26 +650,26 @@ export const submitTest = mutation({
       console.log("Correct Answer (raw):", question.correctAnswer);
       console.log("Correct Answer (normalized):", correctAnswer);
       
-      // For MCQ, also check if user answer matches any option that matches correct answer
-      let isCorrect = false;
+      // Direct comparison: user's answer vs correct answer
+      let isCorrect = userAnswer === correctAnswer;
       
+      // Additional logging for MCQs
       if (question.options && question.options.length > 0) {
+        console.log("Options (raw):", question.options);
         console.log("Options (normalized):", question.options.map(opt => normalize(opt)));
         
-        // Find which option is the correct one
-        const correctOption = question.options.find(opt => normalize(opt) === correctAnswer);
-        console.log("Correct Option Found:", correctOption);
+        // Also check if user answer matches any option that equals the correct answer
+        // This handles cases where correctAnswer might be stored differently
+        const userSelectedOption = question.options.find(opt => normalize(opt) === userAnswer);
+        const correctAnswerOption = question.options.find(opt => normalize(opt) === correctAnswer);
         
-        // Check if user's answer matches the correct option
-        if (correctOption) {
-          isCorrect = userAnswer === normalize(correctOption);
-        } else {
-          // Fallback: direct comparison
-          isCorrect = userAnswer === correctAnswer;
+        console.log("User Selected Option:", userSelectedOption);
+        console.log("Correct Answer Option:", correctAnswerOption);
+        
+        // If both found, compare them
+        if (userSelectedOption && correctAnswerOption) {
+          isCorrect = normalize(userSelectedOption) === normalize(correctAnswerOption);
         }
-      } else {
-        // Non-MCQ: direct comparison
-        isCorrect = userAnswer === correctAnswer;
       }
       
       console.log("Is Correct:", isCorrect);
