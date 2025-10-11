@@ -27,6 +27,9 @@ export default function QuestionManagement() {
   const [showAIBulkForm, setShowAIBulkForm] = useState(false);
   const [showMockTestCreator, setShowMockTestCreator] = useState(false);
   const [showAITestCreator, setShowAITestCreator] = useState(false);
+  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
+  const [deleteSourceType, setDeleteSourceType] = useState<"manual" | "ai" | "pyq">("manual");
+  const [isDeletingBulk, setIsDeletingBulk] = useState(false);
   const [pyqYear, setPyqYear] = useState<number>(new Date().getFullYear());
   const [pyqExamName, setPyqExamName] = useState<string>("");
   
@@ -66,6 +69,7 @@ export default function QuestionManagement() {
   const createMockTestWithQuestions = useMutation(api.questions.createMockTestWithQuestions);
   const createAITestWithQuestions = useMutation(api.questions.createAITestWithQuestions);
   const createPYQTestMutation = useMutation(api.questions.createPYQTestWithQuestions);
+  const deleteAllQuestionsBySource = useMutation(api.questions.deleteAllQuestionsBySource);
 
   // Manual question form state
   const [manualQuestion, setManualQuestion] = useState({
@@ -899,6 +903,26 @@ export default function QuestionManagement() {
     }
   };
 
+  const handleBulkDelete = async () => {
+    try {
+      setIsDeletingBulk(true);
+      
+      const result = await deleteAllQuestionsBySource({ source: deleteSourceType });
+      
+      if (result.success) {
+        toast.success(`Successfully deleted ${result.deletedCount} ${deleteSourceType === 'manual' ? 'Mock/Manual' : deleteSourceType.toUpperCase()} questions!`);
+        setShowBulkDeleteDialog(false);
+      } else {
+        toast.error("Failed to delete questions");
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to delete questions");
+      console.error("Bulk delete error:", error);
+    } finally {
+      setIsDeletingBulk(false);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "pending":
@@ -1500,6 +1524,83 @@ export default function QuestionManagement() {
                       disabled={creatingAITest}
                     >
                       Clear Form
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
+              <DialogTrigger asChild>
+                <Button className="bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30">
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Bulk Delete Questions
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="glass-card border-white/20 backdrop-blur-xl bg-white/10 max-w-md">
+                <DialogHeader>
+                  <DialogTitle className="text-white text-xl">Bulk Delete Questions</DialogTitle>
+                  <p className="text-white/60 text-sm mt-2">
+                    ⚠️ Warning: This action cannot be undone!
+                  </p>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-white font-semibold mb-2 block">Select Question Type to Delete</Label>
+                    <Select value={deleteSourceType} onValueChange={(v: "manual" | "ai" | "pyq") => setDeleteSourceType(v)}>
+                      <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="manual">
+                          Mock/Manual Questions ({questions?.filter(q => q.source === "manual" || !q.source).length || 0})
+                        </SelectItem>
+                        <SelectItem value="ai">
+                          AI Questions ({questions?.filter(q => q.source === "ai").length || 0})
+                        </SelectItem>
+                        <SelectItem value="pyq">
+                          PYQ Questions ({questions?.filter(q => q.source === "pyq").length || 0})
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
+                    <p className="text-red-300 text-sm">
+                      You are about to delete <strong>{questions?.filter(q => 
+                        deleteSourceType === "manual" ? (q.source === "manual" || !q.source) : q.source === deleteSourceType
+                      ).length || 0}</strong> questions.
+                    </p>
+                    <p className="text-red-200 text-xs mt-2">
+                      This will permanently remove all {deleteSourceType === 'manual' ? 'Mock/Manual' : deleteSourceType.toUpperCase()} questions from the database.
+                    </p>
+                  </div>
+
+                  <div className="flex gap-2 pt-4">
+                    <Button 
+                      onClick={handleBulkDelete}
+                      disabled={isDeletingBulk}
+                      className="flex-1 bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30"
+                    >
+                      {isDeletingBulk ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Deleting...
+                        </>
+                      ) : (
+                        <>
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Confirm Delete
+                        </>
+                      )}
+                    </Button>
+                    <Button 
+                      onClick={() => setShowBulkDeleteDialog(false)}
+                      variant="outline" 
+                      className="flex-1"
+                      disabled={isDeletingBulk}
+                    >
+                      Cancel
                     </Button>
                   </div>
                 </div>
