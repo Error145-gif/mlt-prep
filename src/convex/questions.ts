@@ -462,3 +462,41 @@ export const createPYQTestWithQuestions = mutation({
     };
   },
 });
+
+// Delete all AI-based questions
+export const deleteAllAIQuestions = mutation({
+  args: {},
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user || user.role !== "admin") {
+      throw new Error("Unauthorized");
+    }
+
+    // Get all AI questions
+    const aiQuestions = await ctx.db
+      .query("questions")
+      .withIndex("by_source", (q) => q.eq("source", "ai"))
+      .collect();
+
+    console.log(`Found ${aiQuestions.length} AI questions to delete`);
+
+    // Delete all AI questions
+    let deletedCount = 0;
+    for (const question of aiQuestions) {
+      try {
+        await ctx.db.delete(question._id);
+        deletedCount++;
+      } catch (error) {
+        console.error(`Failed to delete question ${question._id}:`, error);
+      }
+    }
+
+    console.log(`Successfully deleted ${deletedCount} AI questions`);
+
+    return {
+      success: true,
+      deletedCount,
+      totalFound: aiQuestions.length,
+    };
+  },
+});
