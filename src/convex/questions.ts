@@ -546,3 +546,140 @@ export const deleteAllQuestionsBySource = mutation({
     };
   },
 });
+
+// Add new mutation for automatic test set creation with shuffled options
+export const autoCreateTestSets = mutation({
+  args: {
+    source: v.union(v.literal("manual"), v.literal("ai"), v.literal("pyq")),
+    topicId: v.optional(v.id("topics")),
+    examName: v.optional(v.string()),
+    year: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user || user.role !== "admin") {
+      throw new Error("Unauthorized");
+    }
+
+    // Fetch all questions of the specified source that aren't assigned to a set
+    const allQuestions = await ctx.db
+      .query("questions")
+      .filter((q) => q.eq(q.field("source"), args.source))
+      .collect();
+
+    // Filter questions without setNumber
+    const unassignedQuestions = allQuestions.filter(q => !q.setNumber);
+
+    if (unassignedQuestions.length === 0) {
+      return { success: false, message: "No unassigned questions found" };
+    }
+
+    // Determine set size based on source
+    let setSize: number;
+    if (args.source === "manual") {
+      setSize = 100; // Mock tests
+    } else if (args.source === "pyq") {
+      setSize = 20;
+    } else {
+      setSize = 25; // AI-based
+    }
+
+    // Calculate number of complete sets
+    const numberOfSets = Math.floor(unassignedQuestions.length / setSize);
+    
+    if (numberOfSets === 0) {
+      return { 
+        success: false, 
+        message: `Not enough questions. Need ${setSize} questions per set, found ${unassignedQuestions.length}` 
+      };
+    }
+
+    // Find the highest existing set number
+    const existingSets = allQuestions
+      .filter(q => q.setNumber !== undefined)
+      .map(q => q.setNumber as number);
+    const maxSetNumber = existingSets.length > 0 ? Math.max(...existingSets) : 0;
+
+    let questionsProcessed = 0;
+    let lastCorrectPosition = -1;
+
+    // Helper function to shuffle options and track correct answer
+    const shuffleOptions = (options: string[], correctAnswer: string, avoidPosition: number) => {
+      if (!options || options.length === 0) {
+        return { shuffledOptions: [], newCorrectAnswer: correctAnswer };
+      }
+
+      const correctIndex = options.findIndex(opt => 
+        opt.trim().toLowerCase() === correctAnswer.trim().toLowerCase()
+      );
+
+      if (correctIndex === -1) {
+        return { shuffledOptions: options, newCorrectAnswer: correctAnswer };
+      }
+
+      let shuffledOptions = [...options];
+      let attempts = 0;
+      let newCorrectIndex = correctIndex;
+
+      // Shuffle until correct answer is not in the same position as last question
+      do {
+        shuffledOptions = [...options].sort(() => Math.random() - 0.5);
+        newCorrectIndex = shuffledOptions.findIndex(opt => 
+          opt.trim().toLowerCase() === correctAnswer.trim().toLowerCase()
+        );
+        attempts++;
+      } while (newCorrectIndex === avoidPosition && attempts < 10 && options.length > 1);
+
+      return {
+        shuffledOptions,
+        newCorrectAnswer: shuffledOptions[newCorrectIndex]
+      };
+    };
+
+    // Process each set
+    for (let setNum = 1; setNum <= numberOfSets; setNum++) {
+      const setNumber = maxSetNumber + setNum;
+      const startIdx = (setNum - 1) * setSize;
+      const endIdx = startIdx + setSize;
+      const setQuestions = unassignedQuestions.slice(startIdx, endIdx);
+
+      lastCorrectPosition = -1;
+
+      // Update each question in the set with shuffled options
+      for (const question of setQuestions) {
+        if (question.type === "mcq" && question.options && question.options.length > 0) {
+          const { shuffledOptions, newCorrectAnswer } = shuffleOptions(
+            question.options,
+            question.correctAnswer,
+            lastCorrectPosition
+          );
+
+          // Track the new position of correct answer
+          lastCorrectPosition = shuffledOptions.findIndex(opt =>
+            opt.trim().toLowerCase() === newCorrectAnswer.trim().toLowerCase()
+          );
+
+          await ctx.db.patch(question._id, {
+            setNumber,
+            options: shuffledOptions,
+            correctAnswer: newCorrectAnswer,
+          });
+        } else {
+          // For non-MCQ questions, just assign set number
+          await ctx.db.patch(question._id, {
+            setNumber,
+          });
+        }
+
+        questionsProcessed++;
+      }
+    }
+
+    return {
+      success: true,
+      message: `Successfully created ${numberOfSets} test sets with ${questionsProcessed} questions`,
+      setsCreated: numberOfSets,
+      questionsProcessed,
+    };
+  },
+});

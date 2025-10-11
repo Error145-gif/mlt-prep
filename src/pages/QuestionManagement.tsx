@@ -72,6 +72,10 @@ export default function QuestionManagement() {
   const createAITestWithQuestions = useMutation(api.questions.createAITestWithQuestions);
   const createPYQTestMutation = useMutation(api.questions.createPYQTestWithQuestions);
   const deleteAllQuestionsBySource = useMutation(api.questions.deleteAllQuestionsBySource);
+  const autoCreateSets = useMutation(api.questions.autoCreateTestSets);
+  const [isAutoCreating, setIsAutoCreating] = useState(false);
+  const [showAutoCreateDialog, setShowAutoCreateDialog] = useState(false);
+  const [autoCreateSource, setAutoCreateSource] = useState<"manual" | "ai" | "pyq">("manual");
 
   // Manual question form state
   const [manualQuestion, setManualQuestion] = useState({
@@ -939,6 +943,27 @@ export default function QuestionManagement() {
     }
   };
 
+  const handleAutoCreateSets = async () => {
+    setIsAutoCreating(true);
+    try {
+      const result = await autoCreateSets({
+        source: autoCreateSource,
+      });
+
+      if (result.success) {
+        toast.success(result.message);
+        setShowAutoCreateDialog(false);
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error) {
+      console.error("Error auto-creating test sets:", error);
+      toast.error("Failed to create test sets");
+    } finally {
+      setIsAutoCreating(false);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "pending":
@@ -1025,7 +1050,7 @@ export default function QuestionManagement() {
   const errorQuestions = getErrorQuestions();
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
+    <>
       {/* Animated gradient background */}
       <div className="fixed inset-0 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500 -z-10" />
       
@@ -1051,6 +1076,13 @@ export default function QuestionManagement() {
           <div className="flex items-center justify-between mb-8">
             <h1 className="text-3xl font-bold tracking-tight text-white">Question Management</h1>
             <div className="flex gap-2 flex-wrap">
+              <Button
+                onClick={() => setShowAutoCreateDialog(true)}
+                className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
+              >
+                <Sparkles className="mr-2 h-4 w-4" />
+                Auto Create Test Sets
+              </Button>
               <Dialog open={showManualForm} onOpenChange={setShowManualForm}>
                 <DialogTrigger asChild>
                   <Button className="bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/30">
@@ -2104,6 +2136,65 @@ Explanation: Explanation text here
           </Tabs>
         </div>
       </div>
-    </div>
+
+      {/* Auto Create Test Sets Dialog */}
+      <Dialog open={showAutoCreateDialog} onOpenChange={setShowAutoCreateDialog}>
+        <DialogContent className="bg-gradient-to-br from-purple-900/95 to-blue-900/95 border-purple-500/30 text-white max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+              Auto Create Test Sets
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-white/80 text-sm">
+              Automatically organize unassigned questions into test sets with shuffled options to prevent answer patterns.
+            </p>
+            
+            <div className="space-y-2">
+              <Label className="text-white">Question Source</Label>
+              <Select value={autoCreateSource} onValueChange={(value: any) => setAutoCreateSource(value)}>
+                <SelectTrigger className="bg-white/10 border-white/20 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="manual">Mock Tests (100 questions/set)</SelectItem>
+                  <SelectItem value="pyq">PYQ Tests (20 questions/set)</SelectItem>
+                  <SelectItem value="ai">AI Tests (25 questions/set)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="bg-blue-500/20 border border-blue-400/30 rounded-lg p-3 text-sm">
+              <p className="text-blue-200">
+                ✨ The system will:
+              </p>
+              <ul className="list-disc list-inside text-blue-200/80 mt-2 space-y-1">
+                <li>Shuffle options for each question</li>
+                <li>Prevent consecutive same-position answers</li>
+                <li>Create complete sets automatically</li>
+              </ul>
+            </div>
+
+            <Button
+              onClick={handleAutoCreateSets}
+              disabled={isAutoCreating}
+              className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
+            >
+              {isAutoCreating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating Sets...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  Create Test Sets
+                </>
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
