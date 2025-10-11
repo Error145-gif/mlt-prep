@@ -17,7 +17,6 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { Id } from "@/convex/_generated/dataModel";
 import { AutoGenerateQuestionsDialog } from "@/components/AutoGenerateQuestionsDialog";
-import AdminSidebar from "@/components/AdminSidebar";
 
 export default function QuestionManagement() {
   const { isLoading, isAuthenticated, user } = useAuth();
@@ -1026,8 +1025,8 @@ export default function QuestionManagement() {
   const errorQuestions = getErrorQuestions();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-pink-900 relative overflow-hidden">
-      {/* Fixed animated gradient background */}
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Animated gradient background */}
       <div className="fixed inset-0 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500 -z-10" />
       
       {/* Animated orbs */}
@@ -1048,8 +1047,6 @@ export default function QuestionManagement() {
       />
 
       <div className="relative z-10 p-8">
-        <AdminSidebar />
-        
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-8">
             <h1 className="text-3xl font-bold tracking-tight text-white">Question Management</h1>
