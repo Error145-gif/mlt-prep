@@ -633,10 +633,10 @@ export const submitTest = mutation({
         };
       }
       
-      // Simple normalization - only trim and lowercase
+      // Robust normalization - trim, lowercase, and normalize spaces
       const normalize = (text: string) => {
         if (!text) return "";
-        return text.trim().toLowerCase();
+        return text.trim().toLowerCase().replace(/\s+/g, ' ');
       };
       
       const userAnswer = normalize(ans.answer);
@@ -650,26 +650,48 @@ export const submitTest = mutation({
       console.log("Correct Answer (raw):", question.correctAnswer);
       console.log("Correct Answer (normalized):", correctAnswer);
       
-      // Direct comparison: user's answer vs correct answer
-      let isCorrect = userAnswer === correctAnswer;
+      let isCorrect = false;
       
-      // Additional logging for MCQs
+      // For MCQs, find the correct option explicitly
       if (question.options && question.options.length > 0) {
         console.log("Options (raw):", question.options);
-        console.log("Options (normalized):", question.options.map(opt => normalize(opt)));
+        const normalizedOptions = question.options.map(opt => normalize(opt));
+        console.log("Options (normalized):", normalizedOptions);
         
-        // Also check if user answer matches any option that equals the correct answer
-        // This handles cases where correctAnswer might be stored differently
-        const userSelectedOption = question.options.find(opt => normalize(opt) === userAnswer);
-        const correctAnswerOption = question.options.find(opt => normalize(opt) === correctAnswer);
-        
-        console.log("User Selected Option:", userSelectedOption);
-        console.log("Correct Answer Option:", correctAnswerOption);
-        
-        // If both found, compare them
-        if (userSelectedOption && correctAnswerOption) {
-          isCorrect = normalize(userSelectedOption) === normalize(correctAnswerOption);
+        // Find which option index matches the correctAnswer field
+        let correctOptionIndex = -1;
+        for (let i = 0; i < question.options.length; i++) {
+          if (normalize(question.options[i]) === correctAnswer) {
+            correctOptionIndex = i;
+            break;
+          }
         }
+        
+        console.log("Correct Option Index:", correctOptionIndex);
+        console.log("Correct Option Text:", correctOptionIndex >= 0 ? question.options[correctOptionIndex] : "NOT FOUND");
+        
+        // Find which option the user selected
+        let userOptionIndex = -1;
+        for (let i = 0; i < question.options.length; i++) {
+          if (normalize(question.options[i]) === userAnswer) {
+            userOptionIndex = i;
+            break;
+          }
+        }
+        
+        console.log("User Option Index:", userOptionIndex);
+        console.log("User Option Text:", userOptionIndex >= 0 ? question.options[userOptionIndex] : "NOT FOUND");
+        
+        // Compare by index if both found
+        if (correctOptionIndex >= 0 && userOptionIndex >= 0) {
+          isCorrect = correctOptionIndex === userOptionIndex;
+        } else {
+          // Fallback to direct text comparison
+          isCorrect = userAnswer === correctAnswer;
+        }
+      } else {
+        // Non-MCQ: direct comparison
+        isCorrect = userAnswer === correctAnswer;
       }
       
       console.log("Is Correct:", isCorrect);
