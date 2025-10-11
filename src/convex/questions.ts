@@ -500,3 +500,49 @@ export const deleteAllAIQuestions = mutation({
     };
   },
 });
+
+// Delete all questions by source type
+export const deleteAllQuestionsBySource = mutation({
+  args: {
+    source: v.string(), // "manual", "ai", or "pyq"
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user || user.role !== "admin") {
+      throw new Error("Unauthorized");
+    }
+
+    // Validate source type
+    if (!["manual", "ai", "pyq"].includes(args.source)) {
+      throw new Error("Invalid source type. Must be 'manual', 'ai', or 'pyq'");
+    }
+
+    // Get all questions with the specified source
+    const questions = await ctx.db
+      .query("questions")
+      .withIndex("by_source", (q) => q.eq("source", args.source))
+      .collect();
+
+    console.log(`Found ${questions.length} questions with source '${args.source}' to delete`);
+
+    // Delete all questions
+    let deletedCount = 0;
+    for (const question of questions) {
+      try {
+        await ctx.db.delete(question._id);
+        deletedCount++;
+      } catch (error) {
+        console.error(`Failed to delete question ${question._id}:`, error);
+      }
+    }
+
+    console.log(`Successfully deleted ${deletedCount} questions with source '${args.source}'`);
+
+    return {
+      success: true,
+      deletedCount,
+      totalFound: questions.length,
+      source: args.source,
+    };
+  },
+});
