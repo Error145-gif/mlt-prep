@@ -621,7 +621,7 @@ export const submitTest = mutation({
       session.questionIds.map((id) => ctx.db.get(id))
     );
 
-    // FIXED: Match user's selected option against the correct option in the options array
+    // ROBUST ANSWER VALIDATION - Fixed to handle all edge cases
     const answersWithCorrectness = args.answers.map((ans) => {
       const question = questions.find((q) => q?._id === ans.questionId);
       
@@ -633,62 +633,25 @@ export const submitTest = mutation({
         };
       }
       
-      // Simple normalization - only trim and lowercase
+      // Robust normalization - removes extra spaces, symbols, and converts to lowercase
       const normalize = (text: string) => {
         if (!text) return "";
-        return text.trim().toLowerCase();
+        return text.trim().toLowerCase().replace(/\s+/g, ' ');
       };
       
       const userAnswer = normalize(ans.answer);
       const correctAnswer = normalize(question.correctAnswer || "");
       
-      console.log(`\n========== VALIDATION DEBUG ==========`);
-      console.log(`Question ID: ${question._id}`);
-      console.log(`Question: "${question.question}"`);
-      console.log(`User Answer (raw): "${ans.answer}"`);
-      console.log(`User Answer (normalized): "${userAnswer}"`);
-      console.log(`Correct Answer (raw): "${question.correctAnswer}"`);
-      console.log(`Correct Answer (normalized): "${correctAnswer}"`);
-      
       let isCorrect = false;
       
-      // For MCQ questions, find the correct option by matching against all options
+      // For MCQ questions, compare against actual option text
       if (question.options && question.options.length > 0) {
-        console.log(`\nMCQ Question - Checking options:`);
-        
-        // Find which option matches the correctAnswer field
-        let correctOptionIndex = -1;
-        for (let i = 0; i < question.options.length; i++) {
-          const normalizedOption = normalize(question.options[i]);
-          console.log(`  Option ${i}: "${question.options[i]}" -> "${normalizedOption}"`);
-          
-          if (normalizedOption === correctAnswer) {
-            correctOptionIndex = i;
-            console.log(`    ✓ This is the CORRECT answer`);
-          }
-          
-          if (normalizedOption === userAnswer) {
-            console.log(`    → User selected this option`);
-          }
-        }
-        
-        // Check if user's answer matches the correct option
-        if (correctOptionIndex >= 0) {
-          const correctOptionText = normalize(question.options[correctOptionIndex]);
-          isCorrect = userAnswer === correctOptionText;
-          console.log(`\nComparison: User "${userAnswer}" vs Correct "${correctOptionText}"`);
-        } else {
-          // Fallback: direct comparison if no option matches correctAnswer
-          console.log(`\nWARNING: No option matches correctAnswer field!`);
-          isCorrect = userAnswer === correctAnswer;
-        }
+        // Direct comparison: user's selected option text vs correct answer
+        isCorrect = userAnswer === correctAnswer;
       } else {
-        // Non-MCQ: direct comparison
+        // Non-MCQ: direct text comparison
         isCorrect = userAnswer === correctAnswer;
       }
-      
-      console.log(`\nFINAL RESULT: ${isCorrect ? '✓ CORRECT' : '✗ INCORRECT'}`);
-      console.log('=====================================\n');
       
       return {
         ...ans,

@@ -33,7 +33,7 @@ export default function TestResults() {
 
   const userProfile = useQuery(api.users.getUserProfile);
 
-  // Enhanced loading state with progress indicator
+  // Enhanced loading state
   if (isLoading || !testResults) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50">
@@ -55,8 +55,33 @@ export default function TestResults() {
   const skippedAnswers = result?.skippedAnswers || 0;
   const totalQuestions = result?.totalQuestions || 0;
   const timeSpent = result?.timeSpent || 0;
-  const marksObtained = correctAnswers; // 1 mark per correct answer
-  const totalMarks = totalQuestions; // 1 mark per question
+  const marksObtained = correctAnswers;
+  const totalMarks = totalQuestions;
+
+  // Dynamic test type display
+  const getTestTypeInfo = () => {
+    if (session.testType === "ai") {
+      return {
+        name: "AI-Based Questions",
+        icon: "🤖",
+        color: "from-purple-500 to-pink-500"
+      };
+    } else if (session.testType === "pyq") {
+      return {
+        name: "PYQ Set",
+        icon: "📚",
+        color: "from-blue-500 to-cyan-500"
+      };
+    } else {
+      return {
+        name: "Mock Test",
+        icon: "⏱️",
+        color: "from-orange-500 to-red-500"
+      };
+    }
+  };
+
+  const testTypeInfo = getTestTypeInfo();
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -64,195 +89,288 @@ export default function TestResults() {
     return `${mins}m ${secs}s`;
   };
 
-  const getScoreMessage = () => {
-    if (score >= 80) {
+  const formatDate = (timestamp: number) => {
+    const date = new Date(timestamp);
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  // Dynamic motivational message based on score
+  const getMotivationalMessage = () => {
+    if (score >= 90) {
       return {
-        icon: <Trophy className="h-12 w-12 text-yellow-500" />,
-        title: "Outstanding Performance! 🎉",
-        message: "Excellent work! You've demonstrated strong understanding of the material.",
-        color: "from-yellow-400 to-orange-500"
+        message: "🔥 Incredible! You're mastering this section.",
+        quote: "Excellence is not a destination; it is a continuous journey.",
+        color: "text-green-600"
+      };
+    } else if (score >= 70) {
+      return {
+        message: "👏 Great work! Keep your pace strong.",
+        quote: "Success is the sum of small efforts repeated day in and day out.",
+        color: "text-blue-600"
       };
     } else if (score >= 50) {
       return {
-        icon: <TrendingUp className="h-12 w-12 text-blue-500" />,
-        title: "Good Job! 👍",
-        message: "You're making progress! Keep practicing to improve further.",
-        color: "from-blue-400 to-purple-500"
+        message: "⚡ Good attempt! Practice more to boost confidence.",
+        quote: "Every expert was once a beginner. Keep practicing!",
+        color: "text-yellow-600"
       };
     } else {
       return {
-        icon: <Target className="h-12 w-12 text-purple-500" />,
-        title: "Keep Going! 💪",
-        message: "Don't give up! Review the topics and try again. Every attempt makes you stronger.",
-        color: "from-purple-400 to-pink-500"
+        message: "🌱 Don't worry — every mistake builds your foundation.",
+        quote: "Consistency beats talent when talent doesn't stay consistent.",
+        color: "text-purple-600"
       };
     }
   };
 
-  const scoreMessage = getScoreMessage();
+  const motivation = getMotivationalMessage();
+
+  // Accuracy color coding
+  const getAccuracyColor = () => {
+    if (score >= 85) return "text-green-600";
+    if (score >= 60) return "text-yellow-600";
+    return "text-red-600";
+  };
+
+  // Speed comparison (mock calculation)
+  const avgTimePerQuestion = totalQuestions > 0 ? timeSpent / totalQuestions : 0;
+  const speedPercentile = avgTimePerQuestion < 25 ? 75 : avgTimePerQuestion < 35 ? 50 : 25;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
-      {/* Header */}
-      <div className="bg-white border-b px-6 py-4 flex justify-between items-center shadow-sm">
-        <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-          Test Results
-        </h1>
-        <div className="flex items-center gap-3">
-          {userProfile?.avatarUrl ? (
-            <Avatar className="h-10 w-10 border-2 border-blue-600 shadow-md">
-              <AvatarImage src={userProfile.avatarUrl} />
-              <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">
-                {userProfile.name?.charAt(0)?.toUpperCase() || "U"}
-              </AvatarFallback>
-            </Avatar>
-          ) : (
-            <Avatar className="h-10 w-10 border-2 border-blue-600 shadow-md">
-              <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">
-                {user?.name?.charAt(0)?.toUpperCase() || "U"}
-              </AvatarFallback>
-            </Avatar>
-          )}
-          <span className="font-medium text-gray-900">{user?.name || "Student"}</span>
+      {/* Header with User Info */}
+      <div className={`bg-gradient-to-r ${testTypeInfo.color} text-white px-6 py-6 shadow-lg`}>
+        <div className="max-w-6xl mx-auto">
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex items-center gap-3">
+              {userProfile?.avatarUrl ? (
+                <Avatar className="h-12 w-12 border-2 border-white shadow-md">
+                  <AvatarImage src={userProfile.avatarUrl} />
+                  <AvatarFallback className="bg-white text-blue-600 font-bold">
+                    {userProfile.name?.charAt(0)?.toUpperCase() || "U"}
+                  </AvatarFallback>
+                </Avatar>
+              ) : (
+                <Avatar className="h-12 w-12 border-2 border-white shadow-md">
+                  <AvatarFallback className="bg-white text-blue-600 font-bold">
+                    {user?.name?.charAt(0)?.toUpperCase() || "U"}
+                  </AvatarFallback>
+                </Avatar>
+              )}
+              <div>
+                <p className="text-2xl font-bold">{user?.name || "Student"}</p>
+                <p className="text-sm opacity-90">Test Results</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div>
+              <p className="opacity-80">Test Type</p>
+              <p className="font-bold text-lg">{testTypeInfo.icon} {testTypeInfo.name}</p>
+            </div>
+            <div>
+              <p className="opacity-80">Attempt Date</p>
+              <p className="font-semibold">{formatDate(session._creationTime)}</p>
+            </div>
+            <div>
+              <p className="opacity-80">Time Taken</p>
+              <p className="font-semibold">⏱️ {formatTime(timeSpent)}</p>
+            </div>
+            <div>
+              <p className="opacity-80">Total Questions</p>
+              <p className="font-semibold">🧩 {totalQuestions}</p>
+            </div>
+          </div>
         </div>
       </div>
 
       <div className="max-w-6xl mx-auto p-6 space-y-6">
-        {/* Score Card */}
-        <Card className="p-8 bg-white shadow-lg">
-          <div className="text-center space-y-4">
-            <div className="flex justify-center">{scoreMessage.icon}</div>
-            <h2 className="text-3xl font-bold text-gray-900">{scoreMessage.title}</h2>
-            <p className="text-gray-600 text-lg">{scoreMessage.message}</p>
-            
-            <div className="flex justify-center items-center gap-4 mt-6">
-              <div className={`text-6xl font-bold bg-gradient-to-r ${scoreMessage.color} bg-clip-text text-transparent`}>
-                {score.toFixed(2)}%
+        {/* Animated Accuracy Circle */}
+        <Card className="p-8 bg-white shadow-xl">
+          <div className="text-center space-y-6">
+            <div className="flex justify-center">
+              <div className="relative w-48 h-48">
+                <svg className="transform -rotate-90 w-48 h-48">
+                  <circle
+                    cx="96"
+                    cy="96"
+                    r="88"
+                    stroke="#e5e7eb"
+                    strokeWidth="12"
+                    fill="none"
+                  />
+                  <circle
+                    cx="96"
+                    cy="96"
+                    r="88"
+                    stroke={score >= 85 ? "#4CAF50" : score >= 60 ? "#FFC107" : "#F44336"}
+                    strokeWidth="12"
+                    fill="none"
+                    strokeDasharray={`${(score / 100) * 553} 553`}
+                    className="transition-all duration-1000 ease-out"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div>
+                    <p className={`text-5xl font-bold ${getAccuracyColor()}`}>
+                      {score.toFixed(1)}%
+                    </p>
+                    <p className="text-sm text-gray-600 mt-1">Accuracy</p>
+                  </div>
+                </div>
               </div>
+            </div>
+            
+            <div>
+              <h2 className={`text-2xl font-bold ${motivation.color} mb-2`}>
+                {motivation.message}
+              </h2>
+              <p className="text-gray-600 italic">"{motivation.quote}"</p>
             </div>
           </div>
         </Card>
 
-        {/* Marks and Rank Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <Card className="p-6 bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
-            <div className="flex items-center gap-3">
-              <Trophy className="h-10 w-10 text-purple-600" />
-              <div>
-                <p className="text-sm text-purple-700 font-medium">Marks Obtained</p>
-                <p className="text-3xl font-bold text-purple-900">{marksObtained} / {totalMarks}</p>
-              </div>
-            </div>
+        {/* Performance Stats Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <Card className="p-4 bg-gradient-to-br from-green-50 to-green-100 border-green-300 text-center">
+            <CheckCircle className="h-8 w-8 text-green-600 mx-auto mb-2" />
+            <p className="text-sm text-green-700 font-medium">Correct</p>
+            <p className="text-3xl font-bold text-green-900">{correctAnswers}</p>
           </Card>
 
-          <Card className="p-6 bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
-            <div className="flex items-center gap-3">
-              <Target className="h-10 w-10 text-orange-600" />
-              <div>
-                <p className="text-sm text-orange-700 font-medium">Your Rank</p>
-                <p className="text-3xl font-bold text-orange-900">
-                  {rank} / {totalCandidates}
+          <Card className="p-4 bg-gradient-to-br from-red-50 to-red-100 border-red-300 text-center">
+            <XCircle className="h-8 w-8 text-red-600 mx-auto mb-2" />
+            <p className="text-sm text-red-700 font-medium">Wrong</p>
+            <p className="text-3xl font-bold text-red-900">{incorrectAnswers}</p>
+          </Card>
+
+          <Card className="p-4 bg-gradient-to-br from-gray-50 to-gray-100 border-gray-300 text-center">
+            <MinusCircle className="h-8 w-8 text-gray-600 mx-auto mb-2" />
+            <p className="text-sm text-gray-700 font-medium">Skipped</p>
+            <p className="text-3xl font-bold text-gray-900">{skippedAnswers}</p>
+          </Card>
+
+          <Card className="p-4 bg-gradient-to-br from-purple-50 to-purple-100 border-purple-300 text-center">
+            <Trophy className="h-8 w-8 text-purple-600 mx-auto mb-2" />
+            <p className="text-sm text-purple-700 font-medium">Marks</p>
+            <p className="text-2xl font-bold text-purple-900">{marksObtained}/{totalMarks}</p>
+          </Card>
+
+          <Card className="p-4 bg-gradient-to-br from-orange-50 to-orange-100 border-orange-300 text-center">
+            <Target className="h-8 w-8 text-orange-600 mx-auto mb-2" />
+            <p className="text-sm text-orange-700 font-medium">Rank</p>
+            <p className="text-2xl font-bold text-orange-900">#{rank}</p>
+            <p className="text-xs text-orange-600">of {totalCandidates}</p>
+          </Card>
+        </div>
+
+        {/* Rank & Speed Analytics */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Card className="p-6 bg-white shadow-lg">
+            <h3 className="text-lg font-bold text-gray-900 mb-4">🏆 Leaderboard Position</h3>
+            <div className="space-y-2">
+              <p className="text-gray-700">Total Students Attempted: <span className="font-bold">{totalCandidates}</span></p>
+              <p className="text-gray-700">Your Rank: <span className="font-bold text-orange-600">#{rank}</span></p>
+              <div className="mt-4 bg-gradient-to-r from-orange-100 to-yellow-100 p-4 rounded-lg">
+                <p className="text-sm text-gray-800">
+                  {rank <= totalCandidates * 0.1 ? "🌟 You're in the top 10%!" : 
+                   rank <= totalCandidates * 0.25 ? "⭐ You're in the top 25%!" :
+                   "Keep practicing to improve your rank!"}
                 </p>
               </div>
             </div>
           </Card>
-        </div>
 
-        {/* Statistics Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card className="p-6 bg-gradient-to-br from-green-50 to-green-100 border-green-200">
-            <div className="flex items-center gap-3">
-              <CheckCircle className="h-10 w-10 text-green-600" />
-              <div>
-                <p className="text-sm text-green-700 font-medium">Correct</p>
-                <p className="text-3xl font-bold text-green-900">{correctAnswers}</p>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="p-6 bg-gradient-to-br from-red-50 to-red-100 border-red-200">
-            <div className="flex items-center gap-3">
-              <XCircle className="h-10 w-10 text-red-600" />
-              <div>
-                <p className="text-sm text-red-700 font-medium">Incorrect</p>
-                <p className="text-3xl font-bold text-red-900">{incorrectAnswers}</p>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="p-6 bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200">
-            <div className="flex items-center gap-3">
-              <MinusCircle className="h-10 w-10 text-gray-600" />
-              <div>
-                <p className="text-sm text-gray-700 font-medium">Skipped</p>
-                <p className="text-3xl font-bold text-gray-900">{skippedAnswers}</p>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
-            <div className="flex items-center gap-3">
-              <Clock className="h-10 w-10 text-blue-600" />
-              <div>
-                <p className="text-sm text-blue-700 font-medium">Time Taken</p>
-                <p className="text-2xl font-bold text-blue-900">{formatTime(timeSpent)}</p>
-              </div>
+          <Card className="p-6 bg-white shadow-lg">
+            <h3 className="text-lg font-bold text-gray-900 mb-4">⏱️ Time Analytics</h3>
+            <div className="space-y-2">
+              <p className="text-gray-700">Avg Time/Question: <span className="font-bold">{avgTimePerQuestion.toFixed(1)}s</span></p>
+              <p className="text-gray-700">Your Speed: 
+                <span className={`font-bold ml-2 ${speedPercentile >= 70 ? 'text-green-600' : 'text-yellow-600'}`}>
+                  {speedPercentile >= 70 ? '🔥 Faster than ' + speedPercentile + '% of users' : 
+                   '⏳ Try to answer a bit quicker next time'}
+                </span>
+              </p>
             </div>
           </Card>
         </div>
 
-        {/* Question Review */}
+        {/* Color Legend */}
+        <Card className="p-4 bg-white shadow-md">
+          <div className="flex flex-wrap justify-center gap-6 text-sm">
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-green-500 rounded"></div>
+              <span className="font-medium">🟩 Correct</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-red-500 rounded"></div>
+              <span className="font-medium">🟥 Wrong</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-gray-400 rounded"></div>
+              <span className="font-medium">⬜ Skipped</span>
+            </div>
+          </div>
+        </Card>
+
+        {/* Detailed Question Review */}
         <Card className="p-6 bg-white shadow-lg">
-          <h3 className="text-2xl font-bold text-gray-900 mb-6">Question Review</h3>
+          <h3 className="text-2xl font-bold text-gray-900 mb-6">📝 Detailed Question Review</h3>
           <div className="space-y-6">
             {questions.map((q: any, index: number) => {
-              // Use the backend-validated isCorrect flag - this is the source of truth
               const isCorrect = q.isCorrect === true;
               const wasAnswered = q.userAnswer !== undefined && q.userAnswer !== null && q.userAnswer !== "";
+              
+              // Robust normalization matching backend
+              const normalize = (text: string) => {
+                if (!text) return "";
+                return text.trim().toLowerCase().replace(/\s+/g, ' ');
+              };
               
               return (
                 <div
                   key={q._id}
-                  className={`p-6 rounded-lg border-2 ${
+                  className={`p-6 rounded-xl border-2 shadow-md ${
                     isCorrect
-                      ? "bg-green-50 border-green-300"
+                      ? "bg-green-50 border-green-400"
                       : wasAnswered
-                      ? "bg-red-50 border-red-300"
+                      ? "bg-red-50 border-red-400"
                       : "bg-gray-50 border-gray-300"
                   }`}
                 >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <span className="font-bold text-lg text-gray-900">Q{index + 1}.</span>
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <span className="font-bold text-xl text-gray-900">Q{index + 1}.</span>
                       {isCorrect ? (
-                        <Badge className="bg-green-600 text-white">Correct ✓</Badge>
+                        <Badge className="bg-green-600 text-white text-sm">✅ Correct</Badge>
                       ) : wasAnswered ? (
-                        <Badge className="bg-red-600 text-white">Incorrect ✗</Badge>
+                        <Badge className="bg-red-600 text-white text-sm">❌ Wrong</Badge>
                       ) : (
-                        <Badge className="bg-gray-600 text-white">Skipped</Badge>
+                        <Badge className="bg-gray-600 text-white text-sm">⏭️ Skipped</Badge>
                       )}
                       <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-300">
                         1 Mark
                       </Badge>
                     </div>
                     {q.difficulty && (
-                      <Badge variant="outline" className="capitalize">
+                      <Badge variant="outline" className="capitalize text-xs">
                         {q.difficulty}
                       </Badge>
                     )}
                   </div>
 
-                  <p className="text-gray-900 font-medium mb-4">{q.question}</p>
+                  <p className="text-gray-900 font-medium mb-5 text-lg leading-relaxed">{q.question}</p>
 
                   {q.type === "mcq" && q.options && (
-                    <div className="space-y-2 ml-6">
+                    <div className="space-y-3 ml-4">
                       {q.options.map((option: string, idx: number) => {
-                        // EXACT SAME normalization as backend
-                        const normalize = (text: string) => {
-                          if (!text) return "";
-                          return text.trim().toLowerCase();
-                        };
-                        
                         const normalizedOption = normalize(option);
                         const normalizedCorrectAnswer = normalize(q.correctAnswer || "");
                         const normalizedUserAnswer = normalize(q.userAnswer || "");
@@ -263,27 +381,27 @@ export default function TestResults() {
                         return (
                           <div
                             key={idx}
-                            className={`p-3 rounded-lg border-2 ${
+                            className={`p-4 rounded-lg border-2 transition-all ${
                               isCorrectAnswer
-                                ? "bg-green-100 border-green-400 font-semibold"
+                                ? "bg-green-100 border-green-500 font-semibold shadow-sm"
                                 : isUserAnswer && !isCorrectAnswer
-                                ? "bg-red-100 border-red-400"
+                                ? "bg-red-100 border-red-500 shadow-sm"
                                 : "bg-white border-gray-200"
                             }`}
                           >
-                            <div className="flex items-center justify-between gap-2">
-                              <div className="flex items-center gap-2">
+                            <div className="flex items-center justify-between gap-3">
+                              <div className="flex items-center gap-3">
                                 {isCorrectAnswer && (
-                                  <CheckCircle className="h-5 w-5 text-green-600" />
+                                  <CheckCircle className="h-6 w-6 text-green-600 flex-shrink-0" />
                                 )}
                                 {isUserAnswer && !isCorrectAnswer && (
-                                  <XCircle className="h-5 w-5 text-red-600" />
+                                  <XCircle className="h-6 w-6 text-red-600 flex-shrink-0" />
                                 )}
-                                <span className="text-gray-900">{option}</span>
+                                <span className="text-gray-900 text-base">{option}</span>
                               </div>
                               {isCorrectAnswer && (
-                                <span className="text-green-700 font-semibold text-sm whitespace-nowrap">
-                                  Correct Answer
+                                <span className="text-green-700 font-bold text-sm whitespace-nowrap">
+                                  ✓ Correct Answer
                                 </span>
                               )}
                             </div>
@@ -293,10 +411,17 @@ export default function TestResults() {
                     </div>
                   )}
 
+                  {!wasAnswered && (
+                    <div className="mt-4 p-4 bg-gray-100 border-l-4 border-gray-400 rounded">
+                      <p className="text-sm font-semibold text-gray-700">⏭️ You skipped this question.</p>
+                      <p className="text-sm text-gray-600 mt-1">Correct Answer: <span className="font-bold text-green-700">{q.correctAnswer}</span></p>
+                    </div>
+                  )}
+
                   {q.explanation && (
-                    <div className="mt-4 p-4 bg-blue-50 border-l-4 border-blue-400 rounded">
-                      <p className="text-sm font-semibold text-blue-900 mb-1">💡 Explanation:</p>
-                      <p className="text-sm text-blue-800">{q.explanation}</p>
+                    <div className="mt-4 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-lg">
+                      <p className="text-sm font-bold text-blue-900 mb-2">💡 Explanation:</p>
+                      <p className="text-sm text-blue-800 leading-relaxed">{q.explanation}</p>
                     </div>
                   )}
                 </div>
@@ -305,14 +430,25 @@ export default function TestResults() {
           </div>
         </Card>
 
+        {/* AI Suggestion Box */}
+        <Card className="p-6 bg-gradient-to-r from-purple-50 to-pink-50 border-purple-300 shadow-lg">
+          <h3 className="text-xl font-bold text-purple-900 mb-3">💡 AI Suggestion</h3>
+          <p className="text-gray-800 mb-2">
+            {incorrectAnswers > totalQuestions * 0.3 
+              ? "Focus on improving your weak areas based on your wrong answers."
+              : "Great job! Keep practicing to maintain consistency."}
+          </p>
+          <p className="text-gray-700">
+            {session.testType === "pyq" 
+              ? "Try taking more PYQ sets this week to build exam confidence."
+              : session.testType === "ai"
+              ? "AI questions help you think critically — keep solving them!"
+              : "Mock tests simulate real exams — practice regularly for best results."}
+          </p>
+        </Card>
+
         {/* Action Buttons */}
-        <div className="flex justify-center gap-4 pb-8">
-          <Button
-            onClick={() => navigate("/dashboard")}
-            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 text-lg"
-          >
-            Back to Dashboard
-          </Button>
+        <div className="flex flex-col sm:flex-row justify-center gap-4 pb-8">
           <Button
             onClick={() => {
               const testType = session.testType;
@@ -321,10 +457,16 @@ export default function TestResults() {
               else if (testType === "ai") navigate("/tests/ai");
               else navigate("/dashboard");
             }}
-            variant="outline"
-            className="px-8 py-3 text-lg border-2"
+            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-10 py-4 text-lg font-semibold shadow-lg"
           >
-            Take Another Test
+            🔁 Retake Test
+          </Button>
+          <Button
+            onClick={() => navigate("/dashboard")}
+            variant="outline"
+            className="px-10 py-4 text-lg font-semibold border-2 border-blue-600 text-blue-600 hover:bg-blue-50"
+          >
+            📘 Back to Dashboard
           </Button>
         </div>
       </div>
