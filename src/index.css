@@ -137,4 +137,14 @@
   .font-mono {
     font-family: Menlo, "Courier New", monospace;
   }
+  
+  /* Progress Circle Animation */
+  @keyframes drawCircle {
+    from {
+      stroke-dashoffset: 553;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
 }

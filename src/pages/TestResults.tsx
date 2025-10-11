@@ -214,15 +214,20 @@ export default function TestResults() {
                     strokeWidth="12"
                     fill="none"
                     strokeDasharray={`${(score / 100) * 553} 553`}
-                    className="transition-all duration-1000 ease-out"
+                    strokeLinecap="round"
+                    className="transition-all duration-2000 ease-out animate-in"
+                    style={{
+                      animation: 'drawCircle 2s ease-out forwards',
+                      strokeDashoffset: 553,
+                    }}
                   />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div>
-                    <p className={`text-5xl font-bold ${getAccuracyColor()}`}>
+                  <div className="animate-in fade-in zoom-in duration-1000" style={{ animationDelay: '500ms' }}>
+                    <p className={`text-5xl font-bold ${getAccuracyColor()} animate-in zoom-in duration-700`} style={{ animationDelay: '1000ms' }}>
                       {score.toFixed(1)}%
                     </p>
-                    <p className="text-sm text-gray-600 mt-1">Accuracy</p>
+                    <p className="text-sm text-gray-600 mt-1 animate-in fade-in duration-500" style={{ animationDelay: '1500ms' }}>Accuracy</p>
                   </div>
                 </div>
               </div>
