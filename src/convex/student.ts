@@ -633,25 +633,47 @@ export const submitTest = mutation({
         };
       }
       
-      // Robust normalization - removes extra spaces, symbols, and converts to lowercase
+      // Simple normalization - only trim and lowercase
       const normalize = (text: string) => {
         if (!text) return "";
-        return text.trim().toLowerCase().replace(/\s+/g, ' ');
+        return text.trim().toLowerCase();
       };
       
       const userAnswer = normalize(ans.answer);
       const correctAnswer = normalize(question.correctAnswer || "");
       
+      // Debug logging
+      console.log("=== Answer Validation Debug ===");
+      console.log("Question:", question.question);
+      console.log("User Answer (raw):", ans.answer);
+      console.log("User Answer (normalized):", userAnswer);
+      console.log("Correct Answer (raw):", question.correctAnswer);
+      console.log("Correct Answer (normalized):", correctAnswer);
+      
+      // For MCQ, also check if user answer matches any option that matches correct answer
       let isCorrect = false;
       
-      // For MCQ questions, compare against actual option text
       if (question.options && question.options.length > 0) {
-        // Direct comparison: user's selected option text vs correct answer
-        isCorrect = userAnswer === correctAnswer;
+        console.log("Options (normalized):", question.options.map(opt => normalize(opt)));
+        
+        // Find which option is the correct one
+        const correctOption = question.options.find(opt => normalize(opt) === correctAnswer);
+        console.log("Correct Option Found:", correctOption);
+        
+        // Check if user's answer matches the correct option
+        if (correctOption) {
+          isCorrect = userAnswer === normalize(correctOption);
+        } else {
+          // Fallback: direct comparison
+          isCorrect = userAnswer === correctAnswer;
+        }
       } else {
-        // Non-MCQ: direct text comparison
+        // Non-MCQ: direct comparison
         isCorrect = userAnswer === correctAnswer;
       }
+      
+      console.log("Is Correct:", isCorrect);
+      console.log("==============================");
       
       return {
         ...ans,
