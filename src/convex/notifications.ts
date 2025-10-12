@@ -79,7 +79,8 @@ export const createNotification = mutation({
       type: args.type,
       targetUsers: args.sendToAll ? undefined : args.targetUsers,
       sentBy: user._id,
-      status: "draft",
+      status: "sent",
+      sentAt: Date.now(),
     });
   },
 });

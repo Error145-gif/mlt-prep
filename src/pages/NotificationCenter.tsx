@@ -84,7 +84,7 @@ export default function NotificationCenter() {
         sendToAll,
         targetUsers: sendToAll ? undefined : selectedUsers,
       });
-      toast.success("Notification created!");
+      toast.success("Notification sent successfully! Users will see it now.");
       setIsDialogOpen(false);
       setFormData({ title: "", message: "", type: "both" });
       setSendToAll(true);
