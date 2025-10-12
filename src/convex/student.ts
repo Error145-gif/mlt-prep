@@ -237,15 +237,10 @@ export const getMockTests = query({
       questions = questions.filter((q) => q.topic === args.topicId);
     }
 
-    // Group by topic
+    // Group all AI questions under "General" topic
     const testsByTopic = new Map<string, typeof questions>();
-    for (const q of questions) {
-      const topicName = q.topic || "General";
-      if (!testsByTopic.has(topicName)) {
-        testsByTopic.set(topicName, []);
-      }
-      testsByTopic.get(topicName)!.push(q);
-    }
+    const topicName = "General";
+    testsByTopic.set(topicName, questions);
 
     // Get user's completed test sessions for mock tests
     const completedSessions = await ctx.db
