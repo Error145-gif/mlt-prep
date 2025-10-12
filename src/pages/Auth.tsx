@@ -141,7 +141,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       <div 
         className="absolute inset-0 bg-cover bg-center opacity-20"
         style={{
-          backgroundImage: 'url(https://images.unsplash.com/photo-1582719471384-894fbb16e074?q=80&w=2070&auto=format&fit=crop)',
+          backgroundImage: 'url(https://harmless-tapir-303.convex.cloud/api/storage/8fad9960-4961-4061-bdf4-2ba74032189d)',
           backgroundBlendMode: 'overlay'
         }}
       />
