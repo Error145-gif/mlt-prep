@@ -41,6 +41,7 @@ import PaymentSummary from "./pages/PaymentSummary";
 import StudyMaterialsManagement from "./pages/StudyMaterialsManagement.tsx";
 import FreeLibrary from "./pages/FreeLibrary.tsx";
 import { useAuth } from "@/hooks/use-auth";
+import SectionsManagement from "./pages/SectionsManagement.tsx";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
@@ -146,6 +147,7 @@ createRoot(document.getElementById("root")!).render(
             <Route path="/admin" element={<AdminLayout><AdminDashboard /></AdminLayout>} />
             <Route path="/admin/content" element={<AdminLayout><ContentManagement /></AdminLayout>} />
             <Route path="/admin/questions" element={<AdminLayout><QuestionManagement /></AdminLayout>} />
+            <Route path="/admin/sections" element={<AdminLayout><SectionsManagement /></AdminLayout>} />
             <Route path="/admin/analytics" element={<AdminLayout><UserAnalytics /></AdminLayout>} />
             <Route path="/admin/subscriptions" element={<AdminLayout><SubscriptionManagement /></AdminLayout>} />
             <Route path="/admin/coupons" element={<AdminLayout><CouponManagement /></AdminLayout>} />
