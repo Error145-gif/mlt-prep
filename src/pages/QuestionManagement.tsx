@@ -1148,14 +1148,6 @@ export default function QuestionManagement() {
                           </div>
                         </CardContent>
                       </Card>
-                      <Card className="glass-card border-red-500/20 backdrop-blur-xl bg-red-500/10">
-                        <CardContent className="pt-6">
-                          <div className="text-center">
-                            <p className="text-2xl font-bold text-red-300">{duplicateQuestions.size}</p>
-                            <p className="text-sm text-red-200">Duplicates</p>
-                          </div>
-                        </CardContent>
-                      </Card>
                     </div>
                   </CardContent>
                 </Card>
