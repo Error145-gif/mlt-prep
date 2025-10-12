@@ -138,7 +138,7 @@ Make sure:
               explanation: question.explanation,
               difficulty: question.difficulty,
               subject: question.subject,
-              topic: question.subject || "General",
+              topic: "General",
               source: "ai",
             });
             savedIds.push(id);
