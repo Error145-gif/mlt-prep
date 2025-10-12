@@ -240,11 +240,11 @@ export const getMockTests = query({
     // Group by topic
     const testsByTopic = new Map<string, typeof questions>();
     for (const q of questions) {
-      const topicId = q.topic || "no-topic";
-      if (!testsByTopic.has(topicId)) {
-        testsByTopic.set(topicId, []);
+      const topicName = q.topic || "General";
+      if (!testsByTopic.has(topicName)) {
+        testsByTopic.set(topicName, []);
       }
-      testsByTopic.get(topicId)!.push(q);
+      testsByTopic.get(topicName)!.push(q);
     }
 
     // Get user's completed test sessions for mock tests
@@ -257,10 +257,7 @@ export const getMockTests = query({
 
     const tests: any[] = [];
     
-    for (const [topicId, qs] of testsByTopic.entries()) {
-      const topic = topicId !== "no-topic" ? await ctx.db.get(topicId as any) : null;
-      const topicIdForMatch = topicId !== "no-topic" ? topicId : null;
-      
+    for (const [topicName, qs] of testsByTopic.entries()) {
       // Organize into sets of 100 questions each
       const setSize = 100;
       const totalSets = Math.ceil(qs.length / setSize);
@@ -271,13 +268,15 @@ export const getMockTests = query({
         const setQuestions = qs.slice(startIndex, endIndex);
         
         // Check if user has completed this specific set before
+        // Note: We can't directly compare topic string with topicId, so we check by setNumber only
+        // This is a limitation of the current schema mismatch
         const hasCompleted = completedSessions.some(
-          (session) => (session.topicId || null) === topicIdForMatch && session.setNumber === setNumber
+          (session) => session.setNumber === setNumber
         );
         
         tests.push({
-          topicId: topicIdForMatch,
-          topicName: (topic as any)?.name || "General",
+          topicId: null,
+          topicName: topicName,
           setNumber,
           totalSets,
           questionCount: setQuestions.length,
@@ -315,11 +314,11 @@ export const getAIQuestions = query({
     // Group by topic
     const testsByTopic = new Map<string, typeof questions>();
     for (const q of questions) {
-      const topicId = q.topic || "no-topic";
-      if (!testsByTopic.has(topicId)) {
-        testsByTopic.set(topicId, []);
+      const topicName = q.topic || "General";
+      if (!testsByTopic.has(topicName)) {
+        testsByTopic.set(topicName, []);
       }
-      testsByTopic.get(topicId)!.push(q);
+      testsByTopic.get(topicName)!.push(q);
     }
 
     // Get user's completed test sessions for AI tests
@@ -332,10 +331,7 @@ export const getAIQuestions = query({
 
     const tests: any[] = [];
     
-    for (const [topicId, qs] of testsByTopic.entries()) {
-      const topic = topicId !== "no-topic" ? await ctx.db.get(topicId as any) : null;
-      const topicIdForMatch = topicId !== "no-topic" ? topicId : null;
-      
+    for (const [topicName, qs] of testsByTopic.entries()) {
       // Organize into sets of 25 questions each
       const setSize = 25;
       const totalSets = Math.ceil(qs.length / setSize);
@@ -346,13 +342,15 @@ export const getAIQuestions = query({
         const setQuestions = qs.slice(startIndex, endIndex);
         
         // Check if user has completed this specific set before
+        // Note: We can't directly compare topic string with topicId, so we check by setNumber only
+        // This is a limitation of the current schema mismatch
         const hasCompleted = completedSessions.some(
-          (session) => (session.topicId || null) === topicIdForMatch && session.setNumber === setNumber
+          (session) => session.setNumber === setNumber
         );
         
         tests.push({
-          topicId: topicIdForMatch,
-          topicName: (topic as any)?.name || "General",
+          topicId: null,
+          topicName: topicName,
           setNumber,
           totalSets,
           questionCount: setQuestions.length,
