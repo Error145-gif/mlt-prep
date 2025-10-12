@@ -196,6 +196,34 @@ export const createQuestionInternal = internalMutation({
   },
 });
 
+// Internal mutation for AI-generated questions (doesn't require createdBy from caller)
+export const createQuestionInternalFromAction = internalMutation({
+  args: {
+    contentId: v.optional(v.id("content")),
+    topicId: v.optional(v.id("topics")),
+    type: v.string(),
+    question: v.string(),
+    options: v.optional(v.array(v.string())),
+    correctAnswer: v.string(),
+    explanation: v.optional(v.string()),
+    difficulty: v.optional(v.string()),
+    source: v.optional(v.string()),
+    year: v.optional(v.number()),
+    examName: v.optional(v.string()),
+    subject: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    // For AI-generated questions, we don't need a specific user
+    // Set createdBy to undefined as it's optional in the schema
+    return await ctx.db.insert("questions", {
+      ...args,
+      type: args.type as any,
+      status: "approved",
+      reviewedAt: Date.now(),
+    });
+  },
+});
+
 // Delete question
 export const deleteQuestion = mutation({
   args: { id: v.id("questions") },

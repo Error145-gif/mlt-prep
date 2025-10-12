@@ -33,11 +33,11 @@ export const getCurrentUser = async (ctx: QueryCtx) => {
   return await ctx.db.get(userId);
 };
 
-// Internal query to get current user (for use in actions)
+// Internal query to get current user by ID (for use in actions)
 export const getCurrentUserInternal = internalQuery({
-  args: {},
-  handler: async (ctx) => {
-    return await getCurrentUser(ctx);
+  args: { userId: v.id("users") },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.userId);
   },
 });
 
