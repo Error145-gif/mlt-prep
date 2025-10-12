@@ -483,23 +483,21 @@ export const getTestQuestions = query({
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
     if (!user) {
-      return [];
+      throw new Error("Not authenticated");
     }
 
     let questions: any[] = [];
 
     if (args.testType === "mock") {
-      // Get manual questions for mock test
+      // Get mock/manual questions
       questions = await ctx.db
         .query("questions")
         .withIndex("by_source", (q) => q.eq("source", "manual"))
         .filter((q) => q.eq(q.field("status"), "approved"))
         .collect();
-
       if (args.topicId) {
         questions = questions.filter((q) => q.topicId === args.topicId);
       }
-      
       // Apply set filtering for mock tests (100 questions per set)
       if (args.setNumber) {
         const setSize = 100;
@@ -514,17 +512,14 @@ export const getTestQuestions = query({
         .withIndex("by_source", (q) => q.eq("source", "pyq"))
         .filter((q) => q.eq(q.field("status"), "approved"))
         .collect();
-
-      if (args.year) {
-        questions = questions.filter((q) => q.year === args.year);
+      if (args.year !== undefined) {
+        // Convert year number to string for comparison with examYear field
+        questions = questions.filter((q) => q.examYear === args.year!.toString());
       }
-      
       // Apply set filtering for PYQ (20 questions per set)
       if (args.setNumber) {
-        const setSize = 20;
-        const startIndex = (args.setNumber - 1) * setSize;
-        const endIndex = startIndex + setSize;
-        questions = questions.slice(startIndex, endIndex);
+        // Filter by setNumber field directly
+        questions = questions.filter((q) => q.setNumber === args.setNumber);
       }
     } else if (args.testType === "ai") {
       // Get AI questions
@@ -533,11 +528,9 @@ export const getTestQuestions = query({
         .withIndex("by_source", (q) => q.eq("source", "ai"))
         .filter((q) => q.eq(q.field("status"), "approved"))
         .collect();
-
       if (args.topicId) {
         questions = questions.filter((q) => q.topicId === args.topicId);
       }
-      
       // Apply set filtering for AI (25 questions per set)
       if (args.setNumber) {
         const setSize = 25;
