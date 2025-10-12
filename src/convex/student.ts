@@ -258,18 +258,15 @@ export const getMockTests = query({
     const tests: any[] = [];
     
     for (const [topicName, qs] of testsByTopic.entries()) {
-      // Organize into sets of 100 questions each
+      // Organize into sets of 100 questions each - ONLY COMPLETE SETS
       const setSize = 100;
-      const totalSets = Math.ceil(qs.length / setSize);
+      const totalSets = Math.floor(qs.length / setSize); // Changed from Math.ceil to Math.floor
       
       for (let setNumber = 1; setNumber <= totalSets; setNumber++) {
         const startIndex = (setNumber - 1) * setSize;
-        const endIndex = Math.min(startIndex + setSize, qs.length);
+        const endIndex = startIndex + setSize; // Always exactly 100 questions
         const setQuestions = qs.slice(startIndex, endIndex);
         
-        // Check if user has completed this specific set before
-        // Note: We can't directly compare topic string with topicId, so we check by setNumber only
-        // This is a limitation of the current schema mismatch
         const hasCompleted = completedSessions.some(
           (session) => session.setNumber === setNumber
         );
@@ -332,18 +329,15 @@ export const getAIQuestions = query({
     const tests: any[] = [];
     
     for (const [topicName, qs] of testsByTopic.entries()) {
-      // Organize into sets of 25 questions each
+      // Organize into sets of 25 questions each - ONLY COMPLETE SETS
       const setSize = 25;
-      const totalSets = Math.ceil(qs.length / setSize);
+      const totalSets = Math.floor(qs.length / setSize); // Changed from Math.ceil to Math.floor
       
       for (let setNumber = 1; setNumber <= totalSets; setNumber++) {
         const startIndex = (setNumber - 1) * setSize;
-        const endIndex = Math.min(startIndex + setSize, qs.length);
+        const endIndex = startIndex + setSize; // Always exactly 25 questions
         const setQuestions = qs.slice(startIndex, endIndex);
         
-        // Check if user has completed this specific set before
-        // Note: We can't directly compare topic string with topicId, so we check by setNumber only
-        // This is a limitation of the current schema mismatch
         const hasCompleted = completedSessions.some(
           (session) => session.setNumber === setNumber
         );

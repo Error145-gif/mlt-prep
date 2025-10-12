@@ -53,6 +53,70 @@ export const getQuestionsBySection = query({
   },
 });
 
+// Get unassigned questions (leftover questions that don't form complete sets)
+export const getUnassignedQuestions = query({
+  args: {},
+  handler: async (ctx) => {
+    const user = await getCurrentUser(ctx);
+    if (!user || user.role !== "admin") {
+      return {
+        manual: [],
+        ai: [],
+        pyq: [],
+        counts: { manual: 0, ai: 0, pyq: 0 }
+      };
+    }
+
+    // Get all approved questions by source
+    const manualQuestions = await ctx.db
+      .query("questions")
+      .withIndex("by_source", (q) => q.eq("source", "manual"))
+      .filter((q) => q.eq(q.field("status"), "approved"))
+      .collect();
+
+    const aiQuestions = await ctx.db
+      .query("questions")
+      .withIndex("by_source", (q) => q.eq("source", "ai"))
+      .filter((q) => q.eq(q.field("status"), "approved"))
+      .collect();
+
+    const pyqQuestions = await ctx.db
+      .query("questions")
+      .withIndex("by_source", (q) => q.eq("source", "pyq"))
+      .filter((q) => q.eq(q.field("status"), "approved"))
+      .collect();
+
+    // Calculate leftover questions (questions that don't form complete sets)
+    const manualLeftover = manualQuestions.length % 100;
+    const aiLeftover = aiQuestions.length % 25;
+    const pyqLeftover = pyqQuestions.length % 20;
+
+    // Get the actual leftover questions (last incomplete set)
+    const manualUnassigned = manualLeftover > 0 
+      ? manualQuestions.slice(-manualLeftover) 
+      : [];
+    
+    const aiUnassigned = aiLeftover > 0 
+      ? aiQuestions.slice(-aiLeftover) 
+      : [];
+    
+    const pyqUnassigned = pyqLeftover > 0 
+      ? pyqQuestions.slice(-pyqLeftover) 
+      : [];
+
+    return {
+      manual: manualUnassigned,
+      ai: aiUnassigned,
+      pyq: pyqUnassigned,
+      counts: {
+        manual: manualLeftover,
+        ai: aiLeftover,
+        pyq: pyqLeftover,
+      },
+    };
+  },
+});
+
 // Get question statistics with section breakdown
 export const getQuestionStatsWithSections = query({
   args: {},
