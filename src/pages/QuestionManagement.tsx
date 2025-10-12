@@ -3,7 +3,7 @@ import { useQuery, useMutation, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Navigate } from "react-router";
 import { useState } from "react";
-import { Loader2, CheckCircle, XCircle, Plus, Upload, FileText, Trash2, Sparkles, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Loader2, CheckCircle, XCircle, Plus, Upload, FileText, Trash2, Sparkles, AlertTriangle, CheckCircle2, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -33,6 +33,7 @@ export default function QuestionManagement() {
   const [pyqYear, setPyqYear] = useState<number>(new Date().getFullYear());
   const [pyqExamName, setPyqExamName] = useState<string>("");
   const [showErrorQuestions, setShowErrorQuestions] = useState(false);
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   
   // Mock test creator state
   const [mockTestName, setMockTestName] = useState("");
@@ -76,6 +77,7 @@ export default function QuestionManagement() {
   const [isAutoCreating, setIsAutoCreating] = useState(false);
   const [showAutoCreateDialog, setShowAutoCreateDialog] = useState(false);
   const [autoCreateSource, setAutoCreateSource] = useState<"manual" | "ai" | "pyq">("manual");
+  const autoGenerateMistralQuestions = useAction(api.aiQuestions.autoGenerateMistralQuestions);
 
   // Manual question form state
   const [manualQuestion, setManualQuestion] = useState({
@@ -964,6 +966,26 @@ export default function QuestionManagement() {
     }
   };
 
+  const handleAutoGenerateAI = async () => {
+    if (isGeneratingAI) return;
+    
+    setIsGeneratingAI(true);
+    try {
+      const result = await autoGenerateMistralQuestions({});
+      
+      if (result.success) {
+        toast.success(`✅ ${result.saved} AI Questions Generated & Saved Successfully!`);
+      } else {
+        toast.error(`Failed to generate questions: ${result.message}`);
+      }
+    } catch (error: any) {
+      console.error("Error generating AI questions:", error);
+      toast.error(`Error: ${error.message || "Failed to generate AI questions"}`);
+    } finally {
+      setIsGeneratingAI(false);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "pending":
@@ -1050,7 +1072,7 @@ export default function QuestionManagement() {
   const errorQuestions = getErrorQuestions();
 
   return (
-    <>
+    <div className="min-h-screen bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500 relative overflow-hidden">
       {/* Animated gradient background */}
       <div className="fixed inset-0 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500 -z-10" />
       
@@ -1833,6 +1855,41 @@ Explanation: Explanation text here
             </div>
           </div>
 
+          {/* AI Auto-Generation Section */}
+          <Card className="mb-6 bg-white/10 backdrop-blur-md border-white/20">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Brain className="h-6 w-6" />
+                AI Question Generation
+              </CardTitle>
+              <CardDescription className="text-white/80">
+                Automatically generate 100 high-quality MLT MCQs using Mistral AI
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button
+                onClick={handleAutoGenerateAI}
+                disabled={isGeneratingAI}
+                className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+              >
+                {isGeneratingAI ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Generating 100 Questions...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    Auto Generate 100 AI Questions
+                  </>
+                )}
+              </Button>
+              <p className="text-sm text-white/70 mt-2">
+                This will generate 100 unique MLT exam questions covering Hematology, Biochemistry, Microbiology, and more.
+              </p>
+            </CardContent>
+          </Card>
+
           {/* Question Statistics */}
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
             <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
@@ -2208,6 +2265,6 @@ Explanation: Explanation text here
           </div>
         </DialogContent>
       </Dialog>
-    </>
+    </div>
   );
 }
