@@ -1757,12 +1757,25 @@ Explanation: Explanation text here
                             const options = lines.slice(1, 5);
                             const correctLine = lines.find(l => l.toLowerCase().startsWith('correct:'));
                             const explanationLine = lines.find(l => l.toLowerCase().startsWith('explanation:'));
+
+                            // Extract option texts
+                            const optionTexts = options.map(opt => opt.replace(/^[A-D]\)\s*/, '').trim());
                             
+                            // Extract correct answer letter and map to actual option text
+                            let correctAnswerText = '';
+                            if (correctLine) {
+                              const correctLetter = correctLine.replace(/^correct:\s*/i, '').trim().toUpperCase();
+                              const letterIndex = correctLetter.charCodeAt(0) - 65; // A=0, B=1, C=2, D=3
+                              if (letterIndex >= 0 && letterIndex < optionTexts.length) {
+                                correctAnswerText = optionTexts[letterIndex];
+                              }
+                            }
+
                             return {
                               type: 'mcq',
-                              question: questionLine.replace(/^\d+\.\s*/, '').trim(),
-                              options: options.map(opt => opt.replace(/^[A-D]\)\s*/, '').trim()),
-                              correctAnswer: correctLine ? correctLine.replace(/^correct:\s*/i, '').trim() : '',
+                              question: questionLine.replace(/^Q:\s*/, '').replace(/^\d+\.\s*/, '').trim(),
+                              options: optionTexts,
+                              correctAnswer: correctAnswerText,
                               explanation: explanationLine ? explanationLine.replace(/^explanation:\s*/i, '').trim() : '',
                               difficulty: 'medium',
                               subject: 'General'
