@@ -131,7 +131,15 @@ Make sure:
           try {
             // Call the internal mutation without createdBy - it will be set by the mutation itself
             const id = await ctx.runMutation(internal.questions.createQuestionInternalFromAction, {
-              ...question,
+              type: question.type,
+              question: question.question,
+              options: question.options,
+              correctAnswer: question.correctAnswer,
+              explanation: question.explanation,
+              difficulty: question.difficulty,
+              subject: question.subject,
+              topic: question.subject || "General",
+              source: "ai",
             });
             savedIds.push(id);
           } catch (error) {

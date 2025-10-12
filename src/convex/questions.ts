@@ -1,13 +1,14 @@
 import { v } from "convex/values";
 import { mutation, query, internalMutation } from "./_generated/server";
 import { getCurrentUser } from "./users";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 // Get questions with filters
 export const getQuestions = query({
   args: {
     status: v.optional(v.string()),
-    contentId: v.optional(v.id("content")),
-    topicId: v.optional(v.id("topics")),
+    topic: v.optional(v.string()),
+    sectionId: v.optional(v.id("sections")),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
@@ -22,34 +23,66 @@ export const getQuestions = query({
         .query("questions")
         .withIndex("by_status", (q) => q.eq("status", args.status as any))
         .collect();
-    } else if (args.contentId) {
+    } else if (args.topic) {
       questions = await ctx.db
         .query("questions")
-        .withIndex("by_content", (q) => q.eq("contentId", args.contentId!))
+        .withIndex("by_topic", (q) => q.eq("topic", args.topic!))
         .collect();
-    } else if (args.topicId) {
+    } else if (args.sectionId) {
       questions = await ctx.db
         .query("questions")
-        .withIndex("by_topic", (q) => q.eq("topicId", args.topicId))
+        .withIndex("by_section", (q) => q.eq("sectionId", args.sectionId))
         .collect();
     } else {
       questions = await ctx.db.query("questions").collect();
     }
 
-    // Enrich with content and topic info
-    const enrichedQuestions = await Promise.all(
-      questions.map(async (q) => {
-        const content = q.contentId ? await ctx.db.get(q.contentId) : null;
-        const topic = q.topicId ? await ctx.db.get(q.topicId) : null;
-        return {
-          ...q,
-          contentTitle: content?.title || "N/A",
-          topicName: topic?.name || "Unassigned",
-        };
-      })
-    );
+    return questions;
+  },
+});
 
-    return enrichedQuestions;
+// Get questions by section
+export const getQuestionsBySection = query({
+  args: { sectionId: v.id("sections") },
+  handler: async (ctx, args) => {
+    const questions = await ctx.db
+      .query("questions")
+      .withIndex("by_section", (q) => q.eq("sectionId", args.sectionId))
+      .collect();
+    return questions;
+  },
+});
+
+// Get question statistics with section breakdown
+export const getQuestionStatsWithSections = query({
+  args: {},
+  handler: async (ctx) => {
+    const allQuestions = await ctx.db.query("questions").collect();
+    
+    const stats = {
+      total: allQuestions.length,
+      bySource: {
+        manual: allQuestions.filter(q => q.source === "manual").length,
+        ai: allQuestions.filter(q => q.source === "ai").length,
+        pyq: allQuestions.filter(q => q.source === "pyq").length,
+      },
+      byDifficulty: {
+        easy: allQuestions.filter(q => q.difficulty === "easy").length,
+        medium: allQuestions.filter(q => q.difficulty === "medium").length,
+        hard: allQuestions.filter(q => q.difficulty === "hard").length,
+      },
+      bySection: {} as Record<string, number>,
+      unassigned: allQuestions.filter(q => !q.sectionId).length,
+    };
+
+    // Count questions per section
+    const sections = await ctx.db.query("sections").collect();
+    for (const section of sections) {
+      const count = allQuestions.filter(q => q.sectionId === section._id).length;
+      stats.bySection[section.name] = count;
+    }
+
+    return stats;
   },
 });
 
@@ -78,8 +111,6 @@ export const reviewQuestion = mutation({
 // Create question manually
 export const createQuestion = mutation({
   args: {
-    contentId: v.optional(v.id("content")),
-    topicId: v.optional(v.id("topics")),
     type: v.string(),
     question: v.string(),
     options: v.optional(v.array(v.string())),
@@ -87,9 +118,10 @@ export const createQuestion = mutation({
     explanation: v.optional(v.string()),
     difficulty: v.optional(v.string()),
     source: v.optional(v.string()),
-    year: v.optional(v.number()),
     examName: v.optional(v.string()),
     subject: v.optional(v.string()),
+    topic: v.string(),
+    sectionId: v.optional(v.id("sections")),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
@@ -98,13 +130,21 @@ export const createQuestion = mutation({
     }
 
     return await ctx.db.insert("questions", {
-      ...args,
+      question: args.question,
+      options: args.options || [],
+      correctAnswer: args.correctAnswer,
+      subject: args.subject || "General",
+      topic: args.topic,
+      difficulty: (args.difficulty || "medium") as "easy" | "medium" | "hard",
       type: args.type as any,
       status: "approved",
       reviewedBy: user._id,
       reviewedAt: Date.now(),
       createdBy: user._id,
-      source: args.source || "manual",
+      source: (args.source || "manual") as "manual" | "ai" | "pyq",
+      explanation: args.explanation,
+      examName: args.examName,
+      sectionId: args.sectionId,
     });
   },
 });
@@ -114,8 +154,6 @@ export const batchCreateQuestions = mutation({
   args: {
     questions: v.array(
       v.object({
-        contentId: v.optional(v.id("content")),
-        topicId: v.optional(v.id("topics")),
         type: v.string(),
         question: v.string(),
         options: v.optional(v.array(v.string())),
@@ -123,9 +161,10 @@ export const batchCreateQuestions = mutation({
         explanation: v.optional(v.string()),
         difficulty: v.optional(v.string()),
         source: v.optional(v.string()),
-        year: v.optional(v.number()),
         examName: v.optional(v.string()),
         subject: v.optional(v.string()),
+        topic: v.string(),
+        sectionId: v.optional(v.id("sections")),
       })
     ),
   },
@@ -147,13 +186,21 @@ export const batchCreateQuestions = mutation({
       const question = args.questions[i];
       try {
         const id = await ctx.db.insert("questions", {
-          ...question,
+          question: question.question,
+          options: question.options || [],
+          correctAnswer: question.correctAnswer,
+          subject: question.subject || "General",
+          topic: question.topic,
+          difficulty: (question.difficulty || "medium") as "easy" | "medium" | "hard",
           type: question.type as any,
           status: "approved",
           reviewedBy: user._id,
           reviewedAt: Date.now(),
           createdBy: user._id,
-          source: question.source || "manual",
+          source: (question.source || "manual") as "manual" | "ai" | "pyq",
+          explanation: question.explanation,
+          examName: question.examName,
+          sectionId: question.sectionId,
         });
         ids.push(id);
         console.log(`Backend: Successfully inserted question ${i + 1}/${args.questions.length} with ID: ${id}`);
@@ -171,8 +218,6 @@ export const batchCreateQuestions = mutation({
 // Internal mutation for batch creation (used by actions)
 export const createQuestionInternal = internalMutation({
   args: {
-    contentId: v.optional(v.id("content")),
-    topicId: v.optional(v.id("topics")),
     type: v.string(),
     question: v.string(),
     options: v.optional(v.array(v.string())),
@@ -180,18 +225,29 @@ export const createQuestionInternal = internalMutation({
     explanation: v.optional(v.string()),
     difficulty: v.optional(v.string()),
     source: v.optional(v.string()),
-    year: v.optional(v.number()),
     examName: v.optional(v.string()),
     subject: v.optional(v.string()),
+    topic: v.string(),
+    sectionId: v.optional(v.id("sections")),
     createdBy: v.id("users"),
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert("questions", {
-      ...args,
+      question: args.question,
+      options: args.options || [],
+      correctAnswer: args.correctAnswer,
+      subject: args.subject || "General",
+      topic: args.topic,
+      difficulty: (args.difficulty || "medium") as "easy" | "medium" | "hard",
       type: args.type as any,
+      source: (args.source || "manual") as "manual" | "ai" | "pyq",
       status: "approved",
+      createdBy: args.createdBy,
       reviewedBy: args.createdBy,
       reviewedAt: Date.now(),
+      explanation: args.explanation,
+      examName: args.examName,
+      sectionId: args.sectionId,
     });
   },
 });
@@ -199,8 +255,6 @@ export const createQuestionInternal = internalMutation({
 // Internal mutation for AI-generated questions (doesn't require createdBy from caller)
 export const createQuestionInternalFromAction = internalMutation({
   args: {
-    contentId: v.optional(v.id("content")),
-    topicId: v.optional(v.id("topics")),
     type: v.string(),
     question: v.string(),
     options: v.optional(v.array(v.string())),
@@ -208,18 +262,27 @@ export const createQuestionInternalFromAction = internalMutation({
     explanation: v.optional(v.string()),
     difficulty: v.optional(v.string()),
     source: v.optional(v.string()),
-    year: v.optional(v.number()),
     examName: v.optional(v.string()),
     subject: v.optional(v.string()),
+    topic: v.string(),
+    sectionId: v.optional(v.id("sections")),
   },
   handler: async (ctx, args) => {
     // For AI-generated questions, we don't need a specific user
-    // Set createdBy to undefined as it's optional in the schema
     return await ctx.db.insert("questions", {
-      ...args,
+      question: args.question,
+      options: args.options || [],
+      correctAnswer: args.correctAnswer,
+      subject: args.subject || "General",
+      topic: args.topic,
+      difficulty: (args.difficulty || "medium") as "easy" | "medium" | "hard",
       type: args.type as any,
+      source: (args.source || "ai") as "manual" | "ai" | "pyq",
       status: "approved",
       reviewedAt: Date.now(),
+      explanation: args.explanation,
+      examName: args.examName,
+      sectionId: args.sectionId,
     });
   },
 });
@@ -298,14 +361,19 @@ export const createMockTestWithQuestions = mutation({
       const question = args.questions[i];
       try {
         const id = await ctx.db.insert("questions", {
-          ...question,
+          question: question.question,
+          options: question.options || [],
+          correctAnswer: question.correctAnswer,
+          subject: question.subject || "General",
+          topic: question.subject || "General",
+          difficulty: (question.difficulty || "medium") as "easy" | "medium" | "hard",
           type: question.type as any,
-          topicId: topicId,
+          source: "manual",
           status: "approved",
           reviewedBy: user._id,
           reviewedAt: Date.now(),
           createdBy: user._id,
-          source: "manual",
+          explanation: question.explanation,
         });
         questionIds.push(id);
       } catch (error) {
@@ -384,14 +452,19 @@ export const createAITestWithQuestions = mutation({
       const question = args.questions[i];
       try {
         const id = await ctx.db.insert("questions", {
-          ...question,
+          question: question.question,
+          options: question.options || [],
+          correctAnswer: question.correctAnswer,
+          subject: question.subject || "General",
+          topic: question.subject || "General",
+          difficulty: (question.difficulty || "medium") as "easy" | "medium" | "hard",
           type: question.type as any,
-          topicId: topicId,
+          source: "ai",
           status: "approved",
           reviewedBy: user._id,
           reviewedAt: Date.now(),
           createdBy: user._id,
-          source: "ai",
+          explanation: question.explanation,
         });
         questionIds.push(id);
       } catch (error) {
@@ -456,16 +529,22 @@ export const createPYQTestWithQuestions = mutation({
         const question = setQuestions[i];
         try {
           const id = await ctx.db.insert("questions", {
-            ...question,
+            question: question.question,
+            options: question.options || [],
+            correctAnswer: question.correctAnswer,
+            subject: question.subject || "General",
+            topic: question.subject || "General",
+            difficulty: (question.difficulty || "medium") as "easy" | "medium" | "hard",
             type: question.type as any,
+            source: "pyq",
             examName: args.examName,
-            year: args.year,
+            examYear: args.year.toString(),
             setNumber: setNumber,
             status: "approved",
             reviewedBy: user._id,
             reviewedAt: Date.now(),
             createdBy: user._id,
-            source: "pyq",
+            explanation: question.explanation,
           });
           questionIds.push(id);
         } catch (error) {
@@ -548,7 +627,7 @@ export const deleteAllQuestionsBySource = mutation({
     // Get all questions with the specified source
     const questions = await ctx.db
       .query("questions")
-      .withIndex("by_source", (q) => q.eq("source", args.source))
+      .withIndex("by_source", (q) => q.eq("source", args.source as any))
       .collect();
 
     console.log(`Found ${questions.length} questions with source '${args.source}' to delete`);
@@ -572,6 +651,101 @@ export const deleteAllQuestionsBySource = mutation({
       totalFound: questions.length,
       source: args.source,
     };
+  },
+});
+
+// Bulk delete questions
+export const bulkDeleteQuestions = mutation({
+  args: { questionIds: v.array(v.id("questions")) },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Not authenticated");
+    }
+
+    const user = await ctx.db.get(userId);
+    if (!user || user.role !== "admin") {
+      throw new Error("Unauthorized: Admin access required");
+    }
+
+    let deletedCount = 0;
+    const sectionIds = new Set<string>();
+
+    for (const questionId of args.questionIds) {
+      const question = await ctx.db.get(questionId);
+      if (question && question.sectionId) {
+        sectionIds.add(question.sectionId);
+      }
+      await ctx.db.delete(questionId);
+      deletedCount++;
+    }
+
+    // Update section question counts
+    for (const sectionId of sectionIds) {
+      const questions = await ctx.db
+        .query("questions")
+        .withIndex("by_section", (q) => q.eq("sectionId", sectionId as any))
+        .collect();
+      await ctx.db.patch(sectionId as any, { questionCount: questions.length });
+    }
+
+    return { success: true, deletedCount };
+  },
+});
+
+// Enhanced bulk add with section assignment
+export const bulkAddQuestionsWithSection = mutation({
+  args: {
+    questions: v.array(v.object({
+      question: v.string(),
+      options: v.array(v.string()),
+      correctAnswer: v.string(),
+      subject: v.string(),
+      topic: v.string(),
+      difficulty: v.union(v.literal("easy"), v.literal("medium"), v.literal("hard")),
+      type: v.union(v.literal("mcq"), v.literal("true-false"), v.literal("fill-in-the-blank")),
+      source: v.union(v.literal("manual"), v.literal("ai"), v.literal("pyq")),
+      explanation: v.optional(v.string()),
+    })),
+    sectionId: v.id("sections"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Not authenticated");
+    }
+
+    const user = await ctx.db.get(userId);
+    if (!user || user.role !== "admin") {
+      throw new Error("Unauthorized: Admin access required");
+    }
+
+    if (args.questions.length > 100) {
+      throw new Error("Cannot add more than 100 questions at once");
+    }
+
+    const questionIds = [];
+    for (const question of args.questions) {
+      const questionId = await ctx.db.insert("questions", {
+        ...question,
+        sectionId: args.sectionId,
+        status: "approved",
+        createdBy: userId,
+        reviewedBy: userId,
+        reviewedAt: Date.now(),
+      });
+      questionIds.push(questionId);
+    }
+
+    // Update section question count
+    const section = await ctx.db.get(args.sectionId);
+    if (section) {
+      await ctx.db.patch(args.sectionId, {
+        questionCount: section.questionCount + questionIds.length,
+      });
+    }
+
+    return { success: true, count: questionIds.length, questionIds };
   },
 });
 

@@ -116,30 +116,33 @@ const schema = defineSchema(
 
     // AI Generated Questions
     questions: defineTable({
-      contentId: v.optional(v.id("content")),
-      topicId: v.optional(v.id("topics")),
-      type: questionTypeValidator,
       question: v.string(),
-      options: v.optional(v.array(v.string())), // for MCQ
+      options: v.array(v.string()),
       correctAnswer: v.string(),
-      explanation: v.optional(v.string()),
-      status: questionStatusValidator,
+      subject: v.string(),
+      topic: v.string(),
+      difficulty: v.union(v.literal("easy"), v.literal("medium"), v.literal("hard")),
+      type: v.union(v.literal("mcq"), v.literal("true-false"), v.literal("fill-in-the-blank")),
+      source: v.union(v.literal("manual"), v.literal("ai"), v.literal("pyq")),
+      status: v.union(v.literal("pending"), v.literal("approved"), v.literal("rejected")),
+      createdBy: v.optional(v.id("users")),
       reviewedBy: v.optional(v.id("users")),
       reviewedAt: v.optional(v.number()),
-      difficulty: v.optional(v.string()), // "easy", "medium", "hard"
-      source: v.optional(v.string()), // "manual", "ai", "pyq"
-      year: v.optional(v.number()), // for PYQ questions
-      examName: v.optional(v.string()), // for PYQ questions (e.g., "RRB Section Officer", "AIIMS MLT")
-      subject: v.optional(v.string()), // subject name (e.g., "Hematology", "Microbiology")
-      setNumber: v.optional(v.number()), // for organizing questions into sets (especially PYQ sets of 20)
-      createdBy: v.optional(v.id("users")),
+      testSetName: v.optional(v.string()),
+      setNumber: v.optional(v.number()),
+      examName: v.optional(v.string()),
+      examYear: v.optional(v.string()),
+      sectionId: v.optional(v.id("sections")),
+      explanation: v.optional(v.string()),
     })
-      .index("by_content", ["contentId"])
-      .index("by_status", ["status"])
-      .index("by_topic", ["topicId"])
       .index("by_source", ["source"])
-      .index("by_exam", ["examName"])
-      .index("by_year", ["year"]),
+      .index("by_status", ["status"])
+      .index("by_subject", ["subject"])
+      .index("by_difficulty", ["difficulty"])
+      .index("by_topic", ["topic"])
+      .index("by_testSetName", ["testSetName"])
+      .index("by_examName_and_year", ["examName", "examYear"])
+      .index("by_section", ["sectionId"]),
 
     // Test Sessions - Track active and completed tests
     testSessions: defineTable({
@@ -340,6 +343,17 @@ const schema = defineSchema(
       .index("by_status", ["status"])
       .index("by_uploader", ["uploadedBy"])
       .index("by_category", ["category"]),
+
+    // Sections
+    sections: defineTable({
+      name: v.string(),
+      description: v.optional(v.string()),
+      questionCount: v.number(),
+      order: v.number(),
+      isActive: v.boolean(),
+    })
+      .index("by_order", ["order"])
+      .index("by_active", ["isActive"]),
   },
   {
     schemaValidation: false,

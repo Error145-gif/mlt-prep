@@ -234,13 +234,13 @@ export const getMockTests = query({
       .collect();
 
     if (args.topicId) {
-      questions = questions.filter((q) => q.topicId === args.topicId);
+      questions = questions.filter((q) => q.topic === args.topicId);
     }
 
     // Group by topic
     const testsByTopic = new Map<string, typeof questions>();
     for (const q of questions) {
-      const topicId = q.topicId || "no-topic";
+      const topicId = q.topic || "no-topic";
       if (!testsByTopic.has(topicId)) {
         testsByTopic.set(topicId, []);
       }
@@ -309,13 +309,13 @@ export const getAIQuestions = query({
       .collect();
 
     if (args.topicId) {
-      questions = questions.filter((q) => q.topicId === args.topicId);
+      questions = questions.filter((q) => q.topic === args.topicId);
     }
 
     // Group by topic
     const testsByTopic = new Map<string, typeof questions>();
     for (const q of questions) {
-      const topicId = q.topicId || "no-topic";
+      const topicId = q.topic || "no-topic";
       if (!testsByTopic.has(topicId)) {
         testsByTopic.set(topicId, []);
       }
@@ -385,7 +385,7 @@ export const getPYQSets = query({
     const setsByExamYear = new Map<string, typeof pyqQuestions>();
     for (const q of pyqQuestions) {
       const examName = q.examName || "General";
-      const year = q.year || 0;
+      const year = parseInt(q.examYear || "0") || 0;
       const key = `${examName}_${year}`;
       if (!setsByExamYear.has(key)) {
         setsByExamYear.set(key, []);
@@ -463,7 +463,7 @@ export const getPracticeQuestions = query({
       .collect();
 
     if (args.topicId) {
-      questions = questions.filter((q) => q.topicId === args.topicId);
+      questions = questions.filter((q) => q.topic === args.topicId);
     }
 
     if (args.difficulty) {

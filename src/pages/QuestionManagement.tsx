@@ -87,7 +87,7 @@ export default function QuestionManagement() {
     correctAnswer: "",
     explanation: "",
     difficulty: "medium",
-    topicId: "",
+    topic: "",
     subject: "",
     examName: "",
   });
@@ -122,7 +122,8 @@ export default function QuestionManagement() {
     try {
       await createQuestion({
         ...manualQuestion,
-        topicId: manualQuestion.topicId ? (manualQuestion.topicId as Id<"topics">) : undefined,
+        topic: manualQuestion.topic || "General",
+        sectionId: undefined,
         options: manualQuestion.type === "mcq" ? manualQuestion.options : undefined,
         source: "manual",
         examName: manualQuestion.examName || undefined,
@@ -137,7 +138,7 @@ export default function QuestionManagement() {
         correctAnswer: "",
         explanation: "",
         difficulty: "medium",
-        topicId: "",
+        topic: "",
         subject: "",
         examName: "",
       });
@@ -1339,17 +1340,17 @@ export default function QuestionManagement() {
                                     <div className="flex items-center gap-4 text-sm text-white/60 flex-wrap">
                                       <span>{question.type.replace("_", " ").toUpperCase()}</span>
                                       <span>•</span>
-                                      <span>{question.topicName}</span>
+                                      <span>{question.topic}</span>
                                       {question.difficulty && (
                                         <>
                                           <span>•</span>
                                           <span className="capitalize">{question.difficulty}</span>
                                         </>
                                       )}
-                                      {question.year && (
+                                      {question.examYear && (
                                         <>
                                           <span>•</span>
-                                          <span>Year: {question.year}</span>
+                                          <span>Year: {question.examYear}</span>
                                         </>
                                       )}
                                     </div>
@@ -1544,7 +1545,7 @@ export default function QuestionManagement() {
 
                     <div>
                       <Label className="text-white">Topic</Label>
-                      <Select value={manualQuestion.topicId} onValueChange={(v) => setManualQuestion({ ...manualQuestion, topicId: v })}>
+                      <Select value={manualQuestion.topic} onValueChange={(v) => setManualQuestion({ ...manualQuestion, topic: v })}>
                         <SelectTrigger className="bg-white/5 border-white/10 text-white">
                           <SelectValue placeholder="Select topic" />
                         </SelectTrigger>
@@ -1665,7 +1666,7 @@ export default function QuestionManagement() {
 
                       <div>
                         <Label className="text-white">Topic</Label>
-                        <Select value={manualQuestion.topicId} onValueChange={(v) => setManualQuestion({ ...manualQuestion, topicId: v })}>
+                        <Select value={manualQuestion.topic} onValueChange={(v) => setManualQuestion({ ...manualQuestion, topic: v })}>
                           <SelectTrigger className="bg-white/5 border-white/10 text-white">
                             <SelectValue placeholder="Select topic" />
                           </SelectTrigger>
