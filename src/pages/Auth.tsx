@@ -209,7 +209,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.6 }}
-            className="text-white/90 text-sm font-light tracking-wide"
+            className="text-white text-sm font-light tracking-wide"
             style={{ fontFamily: "'Inter', sans-serif" }}
           >
             AI-Powered Learning for Future Medical Lab Professionals
@@ -232,7 +232,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                 <h2 className="text-3xl font-bold text-white mb-2" style={{ fontFamily: "'Poppins', sans-serif" }}>
                   {isCreatingAccount ? "Create Account" : "Welcome Back"}
                 </h2>
-                <p className="text-white/70 text-sm">
+                <p className="text-white text-sm">
                   {isCreatingAccount 
                     ? "Start your medical learning journey" 
                     : "Sign in to continue your learning"}
@@ -242,12 +242,12 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
               <form onSubmit={handleEmailSubmit} className="space-y-5">
                 <div className="space-y-4">
                   <div className="relative group">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/50 group-focus-within:text-white transition-colors" />
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/60 group-focus-within:text-white transition-colors" />
                     <Input
                       name="email"
                       placeholder="Enter your email"
                       type="email"
-                      className="pl-12 h-12 bg-white/10 border-white/30 rounded-2xl text-white placeholder:text-white/50 focus:bg-white/20 focus:border-white/50 transition-all shadow-inner"
+                      className="pl-12 h-12 bg-white/10 border-white/30 rounded-2xl text-white placeholder:text-white/60 focus:bg-white/20 focus:border-white/50 transition-all shadow-inner"
                       style={{ fontFamily: "'Inter', sans-serif" }}
                       disabled={isLoading}
                       required
@@ -274,7 +274,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                         onCheckedChange={(checked) => setRememberMe(checked as boolean)}
                         className="border-white/30 data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-[#7C3AED] data-[state=checked]:to-[#22D3EE]"
                       />
-                      <label htmlFor="remember" className="text-white/80 cursor-pointer">
+                      <label htmlFor="remember" className="text-white cursor-pointer">
                         Remember me
                       </label>
                     </div>
@@ -301,7 +301,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                   <div className="text-center">
                     <button
                       type="button"
-                      className="text-white/70 hover:text-white text-sm transition-colors"
+                      className="text-white hover:text-white/80 text-sm transition-colors"
                     >
                       Forgot Password?
                     </button>
@@ -313,7 +313,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                     <div className="w-full border-t border-white/20"></div>
                   </div>
                   <div className="relative flex justify-center text-xs">
-                    <span className="bg-transparent px-2 text-white/60">
+                    <span className="bg-transparent px-2 text-white">
                       {isCreatingAccount ? "Already have an account?" : "New to MLT Learning?"}
                     </span>
                   </div>
@@ -336,7 +336,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                 <h2 className="text-3xl font-bold text-white mb-2" style={{ fontFamily: "'Poppins', sans-serif" }}>
                   Check your email
                 </h2>
-                <p className="text-white/70 text-sm">We've sent a code to {step.email}</p>
+                <p className="text-white text-sm">We've sent a code to {step.email}</p>
               </div>
 
               <form onSubmit={handleOtpSubmit} className="space-y-6">
@@ -380,7 +380,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                   </motion.p>
                 )}
 
-                <p className="text-sm text-white/70 text-center">
+                <p className="text-sm text-white text-center">
                   Didn't receive a code?{" "}
                   <button
                     type="button"
@@ -429,7 +429,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6, duration: 0.6 }}
-          className="text-center text-white/50 text-xs mt-6"
+          className="text-center text-white text-xs mt-6"
           style={{ fontFamily: "'Inter', sans-serif" }}
         >
           © 2024 MLT Learning. Empowering future medical professionals with AI.
