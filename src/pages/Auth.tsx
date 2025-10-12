@@ -306,24 +306,13 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                   )}
                 </Button>
 
-                {!isCreatingAccount && (
-                  <div className="text-center">
-                    <button
-                      type="button"
-                      className="text-white hover:text-white/80 text-sm transition-colors"
-                    >
-                      Forgot Password?
-                    </button>
-                  </div>
-                )}
-
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center">
                     <div className="w-full border-t border-white/20"></div>
                   </div>
                   <div className="relative flex justify-center text-xs">
                     <span className="bg-transparent px-2 text-white">
-                      {isCreatingAccount ? "Already have an account?" : "New to MLT Learning?"}
+                      {isCreatingAccount ? "Already have an account?" : "New to MLT Prep?"}
                     </span>
                   </div>
                 </div>
