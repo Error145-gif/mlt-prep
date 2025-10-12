@@ -1073,82 +1073,456 @@ export default function QuestionManagement() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500 relative overflow-hidden">
-      {/* Animated gradient background */}
-      <div className="fixed inset-0 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500 -z-10" />
-      
-      {/* Animated orbs */}
-      <div className="fixed top-20 left-20 w-[500px] h-[500px] bg-blue-400/50 rounded-full blur-3xl animate-pulse -z-10" />
-      <div className="fixed top-40 right-20 w-[500px] h-[500px] bg-purple-500/50 rounded-full blur-3xl animate-pulse -z-10" style={{ animationDelay: '1s' }} />
-      <div className="fixed bottom-20 left-1/3 w-[600px] h-[600px] bg-pink-400/40 rounded-full blur-3xl animate-pulse -z-10" style={{ animationDelay: '0.5s' }} />
-      <div className="fixed bottom-40 right-1/4 w-[400px] h-[400px] bg-cyan-400/40 rounded-full blur-3xl animate-pulse -z-10" style={{ animationDelay: '0.7s' }} />
-      
-      {/* Lab background image */}
-      <div 
-        className="fixed inset-0 -z-10 opacity-10"
+      {/* Background elements */}
+      <div
+        className="absolute inset-0 opacity-20"
         style={{
-          backgroundImage: 'url("https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=1920")',
+          backgroundImage: `url('https://images.unsplash.com/photo-1582719471384?w=1920&q=80')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
+          backgroundAttachment: 'fixed',
         }}
       />
+      
+      {/* Animated orbs */}
+      <div className="absolute top-20 left-20 w-96 h-96 bg-blue-400/30 rounded-full blur-3xl" />
+      <div className="absolute bottom-20 right-20 w-96 h-96 bg-purple-400/30 rounded-full blur-3xl" />
+      <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-pink-400/30 rounded-full blur-3xl" />
 
       <div className="relative z-10 p-8">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-8">
-            <h1 className="text-3xl font-bold tracking-tight text-white">Question Management</h1>
-            <div className="flex gap-2 flex-wrap">
-              <Button
-                onClick={() => setShowAutoCreateDialog(true)}
-                className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
-              >
-                <Sparkles className="mr-2 h-4 w-4" />
-                Auto Create Test Sets
-              </Button>
-              <Dialog open={showManualForm} onOpenChange={setShowManualForm}>
-                <DialogTrigger asChild>
-                  <Button className="bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/30">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Single Question
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="glass-card border-white/20 backdrop-blur-xl bg-white/10 max-w-2xl max-h-[80vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle className="text-white">Add Question Manually</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div>
-                      <Label className="text-white">Subject</Label>
-                      <Input
-                        value={manualQuestion.subject}
-                        onChange={(e) => setManualQuestion({ ...manualQuestion, subject: e.target.value })}
-                        className="bg-white/5 border-white/10 text-white"
-                        placeholder="e.g., Hematology, Microbiology"
-                      />
-                    </div>
+            <div>
+              <h1 className="text-4xl font-bold text-white mb-2">Question Management</h1>
+              <p className="text-white/80">Manage and organize test questions</p>
+            </div>
+          </div>
 
-                    <div>
-                      <Label className="text-white">Exam Name (Optional)</Label>
-                      <Input
-                        value={manualQuestion.examName}
-                        onChange={(e) => setManualQuestion({ ...manualQuestion, examName: e.target.value })}
-                        className="bg-white/5 border-white/10 text-white"
-                        placeholder="e.g., RRB Section Officer"
-                      />
+          <Tabs defaultValue="all" className="space-y-6">
+            <TabsList className="bg-white/10 backdrop-blur-md border border-white/20">
+              <TabsTrigger value="all">All Questions</TabsTrigger>
+              <TabsTrigger value="add">Add Question</TabsTrigger>
+              <TabsTrigger value="bulk">Bulk Operations</TabsTrigger>
+              <TabsTrigger value="errors">Error Questions</TabsTrigger>
+            </TabsList>
+
+            {/* All Questions Tab */}
+            <TabsContent value="all">
+              <div className="space-y-6">
+                <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
+                  <CardHeader>
+                    <CardTitle className="text-white">Question Statistics</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                      <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
+                        <CardContent className="pt-6">
+                          <div className="text-center">
+                            <p className="text-2xl font-bold text-white">{questions?.length || 0}</p>
+                            <p className="text-sm text-white/60">Total Questions</p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                      <Card className="glass-card border-blue-500/20 backdrop-blur-xl bg-blue-500/10">
+                        <CardContent className="pt-6">
+                          <div className="text-center">
+                            <p className="text-2xl font-bold text-blue-300">{questions?.filter(q => q.source === "manual" || !q.source).length || 0}</p>
+                            <p className="text-sm text-blue-200">Manual/Mock</p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                      <Card className="glass-card border-purple-500/20 backdrop-blur-xl bg-purple-500/10">
+                        <CardContent className="pt-6">
+                          <div className="text-center">
+                            <p className="text-2xl font-bold text-purple-300">{questions?.filter(q => q.source === "ai").length || 0}</p>
+                            <p className="text-sm text-purple-200">AI Questions</p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                      <Card className="glass-card border-orange-500/20 backdrop-blur-xl bg-orange-500/10">
+                        <CardContent className="pt-6">
+                          <div className="text-center">
+                            <p className="text-2xl font-bold text-orange-300">{questions?.filter(q => q.source === "pyq").length || 0}</p>
+                            <p className="text-sm text-orange-200">PYQ</p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                      <Card className="glass-card border-red-500/20 backdrop-blur-xl bg-red-500/10">
+                        <CardContent className="pt-6">
+                          <div className="text-center">
+                            <p className="text-2xl font-bold text-red-300">{duplicateQuestions.size}</p>
+                            <p className="text-sm text-red-200">Duplicates</p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
+                  <CardHeader>
+                    <CardTitle className="text-white">AI Question Generation</CardTitle>
+                    <CardDescription className="text-white/80">
+                      Automatically generate 100 high-quality MLT MCQs using Mistral AI
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button
+                      onClick={handleAutoGenerateAI}
+                      disabled={isGeneratingAI}
+                      className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+                    >
+                      {isGeneratingAI ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Generating 100 Questions...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="mr-2 h-4 w-4" />
+                          Auto Generate 100 AI Questions
+                        </>
+                      )}
+                    </Button>
+                    <p className="text-sm text-white/70 mt-2">
+                      This will generate 100 unique MLT exam questions covering Hematology, Biochemistry, Microbiology, and more.
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
+                  <CardHeader>
+                    <CardTitle className="text-white">Error Questions</CardTitle>
+                    <CardDescription className="text-white/80">
+                      Questions with missing or mismatched answers that need to be fixed or deleted
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <AlertTriangle className="h-6 w-6 text-red-400" />
+                        <h3 className="text-white">Error Questions</h3>
+                      </div>
+                      <Button
+                        onClick={() => setShowErrorQuestions(!showErrorQuestions)}
+                        variant="outline"
+                        className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                      >
+                        {showErrorQuestions ? 'Hide' : 'Show'} ({errorQuestions.length})
+                      </Button>
                     </div>
                     
-                    <div>
-                      <Label className="text-white">Question Type</Label>
-                      <Select value={manualQuestion.type} onValueChange={(v) => setManualQuestion({ ...manualQuestion, type: v })}>
-                        <SelectTrigger className="bg-white/5 border-white/10 text-white">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="mcq">MCQ</SelectItem>
-                          <SelectItem value="true_false">True/False</SelectItem>
-                          <SelectItem value="short_answer">Short Answer</SelectItem>
-                        </SelectContent>
-                      </Select>
+                    {showErrorQuestions && (
+                      <div className="space-y-4">
+                        {errorQuestions.length === 0 ? (
+                          <div className="text-center py-8">
+                            <CheckCircle2 className="h-12 w-12 text-green-400 mx-auto mb-3" />
+                            <p className="text-white/80">No error questions found! All questions are properly formatted.</p>
+                          </div>
+                        ) : (
+                          <div className="space-y-4">
+                            {errorQuestions.map((question) => (
+                              <div
+                                key={question._id}
+                                className="bg-red-500/10 backdrop-blur-sm border border-red-500/30 rounded-lg p-4"
+                              >
+                                <div className="flex items-start justify-between gap-4">
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <Badge variant="destructive">Error</Badge>
+                                      <Badge variant="outline" className="bg-white/10 text-white border-white/20">
+                                        {question.type.toUpperCase()}
+                                      </Badge>
+                                      <Badge variant="outline" className="bg-white/10 text-white border-white/20">
+                                        {question.source || 'manual'}
+                                      </Badge>
+                                    </div>
+                                    
+                                    <p className="text-white font-medium mb-3">{question.question}</p>
+                                    
+                                    {question.options && question.options.length > 0 && (
+                                      <div className="mb-3">
+                                        <p className="text-sm font-medium text-white/80 mb-1">Options:</p>
+                                        <div className="grid grid-cols-2 gap-2">
+                                          {question.options.map((option, idx) => (
+                                            <div key={idx} className="bg-white/5 rounded px-3 py-2 text-sm text-white/90">
+                                              {option}
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
+                                    
+                                    <div className="bg-red-500/20 rounded px-3 py-2 mb-2">
+                                      <p className="text-sm font-medium text-red-300">
+                                        Correct Answer: {question.correctAnswer || '(Empty)'}
+                                      </p>
+                                    </div>
+                                    
+                                    <div className="text-sm text-yellow-300">
+                                      <AlertTriangle className="h-4 w-4 inline mr-1" />
+                                      Issue: {!question.correctAnswer || question.correctAnswer.trim() === '' 
+                                        ? 'Correct answer is missing or empty'
+                                        : !question.options || question.options.length === 0
+                                        ? 'Options are missing'
+                                        : 'Correct answer does not match any option'}
+                                    </div>
+                                  </div>
+                                  
+                                  <Button
+                                    onClick={() => handleDeleteQuestion(question._id)}
+                                    variant="destructive"
+                                    size="sm"
+                                    disabled={isDeletingQuestion === question._id}
+                                    className="shrink-0"
+                                  >
+                                    {isDeletingQuestion === question._id ? (
+                                      <>
+                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                        Deleting...
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Trash2 className="h-4 w-4 mr-2" />
+                                        Delete
+                                      </>
+                                    )}
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                  <TabsList className="glass-card border-white/20 backdrop-blur-xl bg-white/10 flex-wrap">
+                    <TabsTrigger value="all" className="data-[state=active]:bg-white/20">
+                      All Questions
+                    </TabsTrigger>
+                    <TabsTrigger value="manual" className="data-[state=active]:bg-white/20">
+                      <FileText className="h-4 w-4 mr-2" />
+                      Manual/Mock
+                    </TabsTrigger>
+                    <TabsTrigger value="ai" className="data-[state=active]:bg-white/20">
+                      <Sparkles className="h-4 w-4 mr-2" />
+                      AI Questions
+                    </TabsTrigger>
+                    <TabsTrigger value="pyq" className="data-[state=active]:bg-white/20">
+                      <Upload className="h-4 w-4 mr-2" />
+                      PYQ
+                    </TabsTrigger>
+                    <TabsTrigger value="duplicates" className="data-[state=active]:bg-white/20">
+                      <XCircle className="h-4 w-4 mr-2" />
+                      Duplicates Only
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value={activeTab} className="space-y-4 mt-6">
+                    {!questions || questions.length === 0 ? (
+                      <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
+                        <CardContent className="py-12 text-center">
+                          <p className="text-white/60">No questions found</p>
+                        </CardContent>
+                      </Card>
+                    ) : (
+                      questions
+                        .filter((q) => {
+                          // Filter by active tab
+                          if (activeTab === "manual") return q.source === "manual" || !q.source;
+                          if (activeTab === "ai") return q.source === "ai";
+                          if (activeTab === "pyq") return q.source === "pyq";
+                          if (activeTab === "duplicates") return duplicateQuestions.has(q._id);
+                          if (activeTab === "approved") return q.status === "approved";
+                          return true; // "all" tab shows everything
+                        })
+                        .map((question, index) => {
+                        const isDuplicate = duplicateQuestions.has(question._id);
+                        
+                        return (
+                          <motion.div
+                            key={question._id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.05 }}
+                          >
+                            <Card className={`glass-card backdrop-blur-xl ${
+                              isDuplicate 
+                                ? 'border-red-500/50 bg-red-500/10' 
+                                : 'border-white/20 bg-white/10'
+                            }`}>
+                              <CardHeader>
+                                <div className="flex items-start justify-between">
+                                  <div className="space-y-2 flex-1">
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <CardTitle className="text-white text-lg">{question.question}</CardTitle>
+                                      {isDuplicate && (
+                                        <Badge className="bg-red-500/30 text-red-200 border-red-500/50">
+                                          Duplicate
+                                        </Badge>
+                                      )}
+                                      {getStatusBadge(question.status)}
+                                      {getSourceBadge(question.source)}
+                                    </div>
+                                    <div className="flex items-center gap-4 text-sm text-white/60 flex-wrap">
+                                      <span>{question.type.replace("_", " ").toUpperCase()}</span>
+                                      <span>•</span>
+                                      <span>{question.topicName}</span>
+                                      {question.difficulty && (
+                                        <>
+                                          <span>•</span>
+                                          <span className="capitalize">{question.difficulty}</span>
+                                        </>
+                                      )}
+                                      {question.year && (
+                                        <>
+                                          <span>•</span>
+                                          <span>Year: {question.year}</span>
+                                        </>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <Button
+                                    onClick={async () => {
+                                      try {
+                                        await deleteQuestion({ id: question._id });
+                                        toast.success("Question deleted");
+                                      } catch {
+                                        toast.error("Failed to delete");
+                                      }
+                                    }}
+                                    variant="ghost"
+                                    size="icon"
+                                    className={`${
+                                      isDuplicate 
+                                        ? 'text-red-200 hover:bg-red-500/30' 
+                                        : 'text-red-300 hover:bg-red-500/20'
+                                    }`}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </CardHeader>
+                              <CardContent className="space-y-4">
+                                {question.options && question.options.length > 0 && (
+                                  <div className="space-y-2">
+                                    <p className="text-sm font-medium text-white/80">Options:</p>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                      {question.options.map((option, idx) => (
+                                        <div
+                                          key={idx}
+                                          className={`p-2 rounded-lg border ${
+                                            option === question.correctAnswer
+                                              ? "bg-green-500/10 border-green-500/30 text-green-300"
+                                              : "bg-white/5 border-white/10 text-white/80"
+                                          }`}
+                                        >
+                                          {option}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                                <div>
+                                  <p className="text-sm font-medium text-white/80">Correct Answer:</p>
+                                  <p className="text-white mt-1">{question.correctAnswer}</p>
+                                </div>
+                                {question.explanation && (
+                                  <div>
+                                    <p className="text-sm font-medium text-white/80">Explanation:</p>
+                                    <p className="text-white/60 mt-1">{question.explanation}</p>
+                                  </div>
+                                )}
+                                {question.status === "pending" && (
+                                  <div className="flex gap-2 pt-4">
+                                    <Button
+                                      onClick={() => handleReview(question._id, "approved")}
+                                      className="bg-green-500/20 hover:bg-green-500/30 text-green-300 border border-green-500/30"
+                                    >
+                                      <CheckCircle className="h-4 w-4 mr-2" />
+                                      Approve
+                                    </Button>
+                                    <Button
+                                      onClick={() => handleReview(question._id, "rejected")}
+                                      className="bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30"
+                                    >
+                                      <XCircle className="h-4 w-4 mr-2" />
+                                      Reject
+                                    </Button>
+                                  </div>
+                                )}
+                              </CardContent>
+                            </Card>
+                          </motion.div>
+                        );
+                      })
+                    )}
+                  </TabsContent>
+                </Tabs>
+              </div>
+            </TabsContent>
+
+            {/* Add Question Tab */}
+            <TabsContent value="add">
+              <div className="space-y-6">
+                <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
+                  <CardHeader>
+                    <CardTitle className="text-white">Add Single Question</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <Label className="text-white">Subject</Label>
+                        <Input
+                          value={manualQuestion.subject}
+                          onChange={(e) => setManualQuestion({ ...manualQuestion, subject: e.target.value })}
+                          className="bg-white/5 border-white/10 text-white"
+                          placeholder="e.g., Hematology, Microbiology"
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label className="text-white">Exam Name (Optional)</Label>
+                        <Input
+                          value={manualQuestion.examName}
+                          onChange={(e) => setManualQuestion({ ...manualQuestion, examName: e.target.value })}
+                          className="bg-white/5 border-white/10 text-white"
+                          placeholder="e.g., RRB Section Officer"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <Label className="text-white">Question Type</Label>
+                        <Select value={manualQuestion.type} onValueChange={(v) => setManualQuestion({ ...manualQuestion, type: v })}>
+                          <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="mcq">MCQ</SelectItem>
+                            <SelectItem value="true_false">True/False</SelectItem>
+                            <SelectItem value="short_answer">Short Answer</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div>
+                        <Label className="text-white">Difficulty</Label>
+                        <Select value={manualQuestion.difficulty} onValueChange={(v) => setManualQuestion({ ...manualQuestion, difficulty: v })}>
+                          <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="easy">Easy</SelectItem>
+                            <SelectItem value="medium">Medium</SelectItem>
+                            <SelectItem value="hard">Hard</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
                     
                     <div>
@@ -1215,21 +1589,7 @@ export default function QuestionManagement() {
                       </Select>
                     </div>
 
-                    <div>
-                      <Label className="text-white">Difficulty</Label>
-                      <Select value={manualQuestion.difficulty} onValueChange={(v) => setManualQuestion({ ...manualQuestion, difficulty: v })}>
-                        <SelectTrigger className="bg-white/5 border-white/10 text-white">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="easy">Easy</SelectItem>
-                          <SelectItem value="medium">Medium</SelectItem>
-                          <SelectItem value="hard">Hard</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 pt-4">
                       <Button onClick={handleManualSubmit} className="flex-1 bg-green-500/20 hover:bg-green-500/30 text-green-300 border border-green-500/30">
                         Save Question
                       </Button>
@@ -1237,195 +1597,158 @@ export default function QuestionManagement() {
                         Cancel
                       </Button>
                     </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
+                  </CardContent>
+                </Card>
 
-              <Dialog open={showAIBulkForm} onOpenChange={setShowAIBulkForm}>
-                <DialogTrigger asChild>
-                  <Button className="bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/30">
-                    <Sparkles className="h-4 w-4 mr-2" />
-                    Bulk Add AI Questions (Up to 100)
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="glass-card border-white/20 backdrop-blur-xl bg-white/10 max-w-4xl max-h-[80vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle className="text-white">Bulk Add AI Questions (Up to 100)</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-                    <div>
-                      <Label className="text-white">Paste AI Questions in Plain Text (100 Separate Sections)</Label>
-                      <p className="text-white/60 text-sm mb-2">
-                        Format each question like this:
-                      </p>
-                      <div className="bg-white/5 border border-white/10 rounded p-3 mb-4 text-xs text-white/70 font-mono">
-                        Q: What is EDTA?<br/>
-                        A: Anticoagulant<br/>
-                        Options: Anticoagulant | Stain | Buffer | Enzyme<br/>
-                        Subject: Hematology<br/>
-                        Topic: Anticoagulants<br/>
-                        Difficulty: Easy<br/>
-                        Type: MCQ<br/>
-                        Explanation: EDTA is used to prevent blood clotting
-                      </div>
-                    </div>
-                    
-                    {aiBulkQuestions.map((question, index) => (
-                      <div key={index} className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-white font-semibold">AI Question {index + 1}</Label>
-                          {question.trim() && (
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                const newQuestions = [...aiBulkQuestions];
-                                newQuestions[index] = "";
-                                setAiBulkQuestions(newQuestions);
-                              }}
-                              className="text-red-300 hover:text-red-200 hover:bg-red-500/20"
-                            >
-                              <Trash2 className="h-4 w-4 mr-1" />
-                              Clear
-                            </Button>
-                          )}
-                        </div>
-                        <Textarea
-                          value={question}
-                          onChange={(e) => {
-                            const newQuestions = [...aiBulkQuestions];
-                            newQuestions[index] = e.target.value;
-                            setAiBulkQuestions(newQuestions);
-                          }}
-                          className="bg-white/5 border-white/10 text-white font-mono text-sm"
-                          rows={8}
-                          placeholder={`Q: Question text here?&#10;A: Answer here&#10;Options: Option1 | Option2 | Option3 | Option4&#10;Subject: Subject name&#10;Topic: Topic name&#10;Difficulty: Easy&#10;Type: MCQ`}
-                        />
-                      </div>
-                    ))}
-                    <div className="flex gap-2">
-                      <Button onClick={handleAIBulkSubmit} className="flex-1 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/30">
-                        Add All AI Questions
-                      </Button>
-                      <Button onClick={() => setShowAIBulkForm(false)} variant="outline" className="flex-1">
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
-
-              <Dialog open={showBulkManualForm} onOpenChange={setShowBulkManualForm}>
-                <DialogTrigger asChild>
-                  <Button className="bg-green-500/20 hover:bg-green-500/30 text-green-300 border border-green-500/30">
-                    <Upload className="h-4 w-4 mr-2" />
-                    Bulk Add Manual Questions (Up to 100)
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="glass-card border-white/20 backdrop-blur-xl bg-white/10 max-w-4xl max-h-[80vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle className="text-white">Bulk Add Manual Questions (Up to 100)</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-                    <div>
-                      <Label className="text-white">Paste Questions in Plain Text (100 Separate Sections)</Label>
-                      <p className="text-white/60 text-sm mb-2">
-                        Format each question like this:
-                      </p>
-                      <div className="bg-white/5 border border-white/10 rounded p-3 mb-4 text-xs text-white/70 font-mono">
-                        Q: What is EDTA?<br/>
-                        A: Anticoagulant<br/>
-                        Options: Anticoagulant | Stain | Buffer | Enzyme<br/>
-                        Subject: Hematology<br/>
-                        Topic: Anticoagulants<br/>
-                        Difficulty: Easy<br/>
-                        Type: MCQ<br/>
-                        Explanation: EDTA is used to prevent blood clotting
-                      </div>
-                    </div>
-                    
-                    {bulkQuestions.map((question, index) => (
-                      <div key={index} className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-white font-semibold">Question {index + 1}</Label>
-                          {question.trim() && (
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                const newQuestions = [...bulkQuestions];
-                                newQuestions[index] = "";
-                                setBulkQuestions(newQuestions);
-                              }}
-                              className="text-red-300 hover:text-red-200 hover:bg-red-500/20"
-                            >
-                              <Trash2 className="h-4 w-4 mr-1" />
-                              Clear
-                            </Button>
-                          )}
-                        </div>
-                        <Textarea
-                          value={question}
-                          onChange={(e) => {
-                            const newQuestions = [...bulkQuestions];
-                            newQuestions[index] = e.target.value;
-                            setBulkQuestions(newQuestions);
-                          }}
-                          className="bg-white/5 border-white/10 text-white font-mono text-sm"
-                          rows={8}
-                          placeholder={`Q: Question text here?&#10;A: Answer here&#10;Options: Option1 | Option2 | Option3 | Option4&#10;Subject: Subject name&#10;Topic: Topic name&#10;Difficulty: Easy&#10;Type: MCQ`}
-                        />
-                      </div>
-                    ))}
-                    <div className="flex gap-2">
-                      <Button onClick={handleBulkManualSubmit} className="flex-1 bg-green-500/20 hover:bg-green-500/30 text-green-300 border border-green-500/30">
-                        Add All Questions
-                      </Button>
-                      <Button onClick={() => setShowBulkManualForm(false)} variant="outline" className="flex-1">
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
-
-              <Dialog open={showPYQManualForm} onOpenChange={setShowPYQManualForm}>
-                <DialogTrigger asChild>
-                  <Button className="bg-orange-500/20 hover:bg-orange-500/30 text-orange-300 border border-orange-500/30">
-                    <FileText className="h-4 w-4 mr-2" />
-                    Add PYQ Questions
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="glass-card border-white/20 backdrop-blur-xl bg-white/10 max-w-4xl max-h-[80vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle className="text-white">Add PYQ Questions</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div>
-                      <Label className="text-white">Exam Name</Label>
-                      <Input
-                        value={pyqExamName}
-                        onChange={(e) => setPyqExamName(e.target.value)}
-                        className="bg-white/5 border-white/10 text-white"
-                        placeholder="e.g., RRB Section Officer, AIIMS MLT"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-white">Year</Label>
-                      <Input
-                        type="number"
-                        value={pyqYear}
-                        onChange={(e) => setPyqYear(parseInt(e.target.value))}
-                        className="bg-white/5 border-white/10 text-white"
-                        min={2000}
-                        max={new Date().getFullYear()}
-                      />
-                    </div>
-                    <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+                <Dialog open={showManualForm} onOpenChange={setShowManualForm}>
+                  <DialogTrigger asChild>
+                    <Button className="bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/30">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Single Question
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="glass-card border-white/20 backdrop-blur-xl bg-white/10 max-w-2xl max-h-[80vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle className="text-white">Add Question Manually</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
                       <div>
-                        <Label className="text-white">Paste PYQ Questions in Plain Text (100 Separate Sections)</Label>
+                        <Label className="text-white">Subject</Label>
+                        <Input
+                          value={manualQuestion.subject}
+                          onChange={(e) => setManualQuestion({ ...manualQuestion, subject: e.target.value })}
+                          className="bg-white/5 border-white/10 text-white"
+                          placeholder="e.g., Hematology, Microbiology"
+                        />
+                      </div>
+
+                      <div>
+                        <Label className="text-white">Exam Name (Optional)</Label>
+                        <Input
+                          value={manualQuestion.examName}
+                          onChange={(e) => setManualQuestion({ ...manualQuestion, examName: e.target.value })}
+                          className="bg-white/5 border-white/10 text-white"
+                          placeholder="e.g., RRB Section Officer"
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label className="text-white">Question Type</Label>
+                        <Select value={manualQuestion.type} onValueChange={(v) => setManualQuestion({ ...manualQuestion, type: v })}>
+                          <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="mcq">MCQ</SelectItem>
+                            <SelectItem value="true_false">True/False</SelectItem>
+                            <SelectItem value="short_answer">Short Answer</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div>
+                        <Label className="text-white">Question Text</Label>
+                        <Textarea
+                          value={manualQuestion.question}
+                          onChange={(e) => setManualQuestion({ ...manualQuestion, question: e.target.value })}
+                          className="bg-white/5 border-white/10 text-white"
+                          rows={3}
+                        />
+                      </div>
+
+                      {manualQuestion.type === "mcq" && (
+                        <div>
+                          <Label className="text-white">Options</Label>
+                          {manualQuestion.options.map((opt, idx) => (
+                            <Input
+                              key={idx}
+                              value={opt}
+                              onChange={(e) => {
+                                const newOpts = [...manualQuestion.options];
+                                newOpts[idx] = e.target.value;
+                                setManualQuestion({ ...manualQuestion, options: newOpts });
+                              }}
+                              className="bg-white/5 border-white/10 text-white mt-2"
+                              placeholder={`Option ${idx + 1}`}
+                            />
+                          ))}
+                        </div>
+                      )}
+
+                      <div>
+                        <Label className="text-white">Correct Answer</Label>
+                        <Input
+                          value={manualQuestion.correctAnswer}
+                          onChange={(e) => setManualQuestion({ ...manualQuestion, correctAnswer: e.target.value })}
+                          className="bg-white/5 border-white/10 text-white"
+                        />
+                      </div>
+
+                      <div>
+                        <Label className="text-white">Explanation (Optional)</Label>
+                        <Textarea
+                          value={manualQuestion.explanation}
+                          onChange={(e) => setManualQuestion({ ...manualQuestion, explanation: e.target.value })}
+                          className="bg-white/5 border-white/10 text-white"
+                          rows={2}
+                        />
+                      </div>
+
+                      <div>
+                        <Label className="text-white">Topic</Label>
+                        <Select value={manualQuestion.topicId} onValueChange={(v) => setManualQuestion({ ...manualQuestion, topicId: v })}>
+                          <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                            <SelectValue placeholder="Select topic" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {topics?.map((topic) => (
+                              <SelectItem key={topic._id} value={topic._id}>
+                                {topic.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div>
+                        <Label className="text-white">Difficulty</Label>
+                        <Select value={manualQuestion.difficulty} onValueChange={(v) => setManualQuestion({ ...manualQuestion, difficulty: v })}>
+                          <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="easy">Easy</SelectItem>
+                            <SelectItem value="medium">Medium</SelectItem>
+                            <SelectItem value="hard">Hard</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <Button onClick={handleManualSubmit} className="flex-1 bg-green-500/20 hover:bg-green-500/30 text-green-300 border border-green-500/30">
+                          Save Question
+                        </Button>
+                        <Button onClick={() => setShowManualForm(false)} variant="outline" className="flex-1">
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </TabsContent>
+
+            {/* Bulk Operations Tab */}
+            <TabsContent value="bulk">
+              <div className="space-y-6">
+                <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
+                  <CardHeader>
+                    <CardTitle className="text-white">Bulk Add Manual Questions (Up to 100)</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div>
+                        <Label className="text-white">Paste Questions in Plain Text (100 Separate Sections)</Label>
                         <p className="text-white/60 text-sm mb-2">
                           Format each question like this:
                         </p>
@@ -1436,23 +1759,24 @@ export default function QuestionManagement() {
                           Subject: Hematology<br/>
                           Topic: Anticoagulants<br/>
                           Difficulty: Easy<br/>
-                          Type: MCQ
+                          Type: MCQ<br/>
+                          Explanation: EDTA is used to prevent blood clotting
                         </div>
                       </div>
                       
-                      {pyqBulkQuestions.map((question, index) => (
+                      {bulkQuestions.map((question, index) => (
                         <div key={index} className="space-y-2">
                           <div className="flex items-center justify-between">
-                            <Label className="text-white font-semibold">PYQ Question {index + 1}</Label>
+                            <Label className="text-white font-semibold">Question {index + 1}</Label>
                             {question.trim() && (
                               <Button
                                 type="button"
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => {
-                                  const newQuestions = [...pyqBulkQuestions];
+                                  const newQuestions = [...bulkQuestions];
                                   newQuestions[index] = "";
-                                  setPyqBulkQuestions(newQuestions);
+                                  setBulkQuestions(newQuestions);
                                 }}
                                 className="text-red-300 hover:text-red-200 hover:bg-red-500/20"
                               >
@@ -1464,9 +1788,9 @@ export default function QuestionManagement() {
                           <Textarea
                             value={question}
                             onChange={(e) => {
-                              const newQuestions = [...pyqBulkQuestions];
+                              const newQuestions = [...bulkQuestions];
                               newQuestions[index] = e.target.value;
-                              setPyqBulkQuestions(newQuestions);
+                              setBulkQuestions(newQuestions);
                             }}
                             className="bg-white/5 border-white/10 text-white font-mono text-sm"
                             rows={8}
@@ -1474,286 +1798,349 @@ export default function QuestionManagement() {
                           />
                         </div>
                       ))}
-                    </div>
-                    <div className="flex gap-2">
-                      <Button onClick={handlePYQManualSubmit} className="flex-1 bg-green-500/20 hover:bg-green-500/30 text-green-300 border border-green-500/30">
-                        Add All PYQ Questions
-                      </Button>
-                      <Button onClick={() => setShowPYQManualForm(false)} variant="outline" className="flex-1">
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
-
-              <Dialog open={showMockTestCreator} onOpenChange={setShowMockTestCreator}>
-                <DialogTrigger asChild>
-                  <Button className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white border-0 shadow-lg">
-                    <Sparkles className="h-4 w-4 mr-2" />
-                    Bulk Add & Create Mock Test
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="glass-card border-white/20 backdrop-blur-xl bg-white/10 max-w-4xl max-h-[80vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle className="text-white text-xl">Bulk Add & Create Mock Test</DialogTitle>
-                    <p className="text-white/60 text-sm">Paste up to 100 questions to automatically create a mock test</p>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div>
-                      <Label className="text-white font-semibold">Paste Questions (Up to 100) *</Label>
-                      <p className="text-white/60 text-sm mb-2 mt-1">
-                        Format each question like this (separate questions with a blank line):
-                      </p>
-                      <div className="bg-white/5 border border-white/10 rounded p-3 mb-3 text-xs text-white/70 font-mono">
-                        Q: What is EDTA?<br/>
-                        A: Anticoagulant<br/>
-                        Options: Anticoagulant | Stain | Buffer | Enzyme<br/>
-                        Subject: Hematology<br/>
-                        Difficulty: Easy<br/>
-                        Type: MCQ<br/>
-                        Explanation: EDTA is used to prevent blood clotting
+                      <div className="flex gap-2">
+                        <Button onClick={handleBulkManualSubmit} className="flex-1 bg-green-500/20 hover:bg-green-500/30 text-green-300 border border-green-500/30">
+                          Add All Questions
+                        </Button>
+                        <Button onClick={() => setShowBulkManualForm(false)} variant="outline" className="flex-1">
+                          Cancel
+                        </Button>
                       </div>
-                      <Textarea
-                        value={mockTestQuestions}
-                        onChange={(e) => setMockTestQuestions(e.target.value)}
-                        className="bg-white/5 border-white/10 text-white font-mono text-sm"
-                        rows={15}
-                        placeholder="Paste your questions here..."
-                      />
-                      <p className="text-white/60 text-xs mt-2">
-                        {mockTestQuestions.split(/\n\s*\n/).filter(b => b.trim()).length} questions detected
-                      </p>
                     </div>
+                  </CardContent>
+                </Card>
 
-                    <div className="flex gap-2 pt-4">
-                      <Button 
-                        onClick={handleCreateMockTest} 
-                        disabled={creatingMockTest}
-                        className="flex-1 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white border-0"
-                      >
-                        {creatingMockTest ? (
-                          <>
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            Creating Mock Test...
-                          </>
-                        ) : (
-                          <>
-                            <Sparkles className="h-4 w-4 mr-2" />
-                            Create Mock Test
-                          </>
-                        )}
-                      </Button>
-                      <Button 
-                        onClick={() => {
-                          setMockTestQuestions("");
-                        }}
-                        variant="outline" 
-                        className="flex-1"
-                        disabled={creatingMockTest}
-                      >
-                        Clear Form
-                      </Button>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
-
-              <Dialog open={showAITestCreator} onOpenChange={setShowAITestCreator}>
-                <DialogTrigger asChild>
-                  <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white border-0 shadow-lg">
-                    <Sparkles className="h-4 w-4 mr-2" />
-                    Bulk Add & Create AI Test
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="glass-card border-white/20 backdrop-blur-xl bg-white/10 max-w-4xl max-h-[80vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle className="text-white text-xl">Bulk Add & Create AI Test</DialogTitle>
-                    <p className="text-white/60 text-sm">Paste up to 100 AI questions to automatically create an AI test</p>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div>
-                      <Label className="text-white font-semibold">Paste AI Questions (Up to 100) *</Label>
-                      <p className="text-white/60 text-sm mb-2 mt-1">
-                        Format each question like this (separate questions with a blank line):
-                      </p>
-                      <div className="bg-white/5 border border-white/10 rounded p-3 mb-3 text-xs text-white/70 font-mono">
-                        Q: What is EDTA?<br/>
-                        A: Anticoagulant<br/>
-                        Options: Anticoagulant | Stain | Buffer | Enzyme<br/>
-                        Subject: Hematology<br/>
-                        Difficulty: Easy<br/>
-                        Type: MCQ<br/>
-                        Explanation: EDTA is used to prevent blood clotting
-                      </div>
-                      <Textarea
-                        value={aiTestQuestions}
-                        onChange={(e) => setAiTestQuestions(e.target.value)}
-                        className="bg-white/5 border-white/10 text-white font-mono text-sm"
-                        rows={15}
-                        placeholder="Paste your AI questions here..."
-                      />
-                      <p className="text-white/60 text-xs mt-2">
-                        {aiTestQuestions.split(/\n\s*\n/).filter(b => b.trim()).length} questions detected
-                      </p>
-                    </div>
-
-                    <div className="flex gap-2 pt-4">
-                      <Button 
-                        onClick={handleCreateAITest} 
-                        disabled={creatingAITest}
-                        className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white border-0"
-                      >
-                        {creatingAITest ? (
-                          <>
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            Creating AI Test...
-                          </>
-                        ) : (
-                          <>
-                            <Sparkles className="h-4 w-4 mr-2" />
-                            Create AI Test
-                          </>
-                        )}
-                      </Button>
-                      <Button 
-                        onClick={() => {
-                          setAiTestQuestions("");
-                        }}
-                        variant="outline" 
-                        className="flex-1"
-                        disabled={creatingAITest}
-                      >
-                        Clear Form
-                      </Button>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
-
-              <Dialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
-                <DialogTrigger asChild>
-                  <Button className="bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30">
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Bulk Delete Questions
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="glass-card border-white/20 backdrop-blur-xl bg-white/10 max-w-md">
-                  <DialogHeader>
-                    <DialogTitle className="text-white text-xl">Bulk Delete Questions</DialogTitle>
-                    <p className="text-white/60 text-sm mt-2">
-                      ⚠️ Warning: This action cannot be undone!
-                    </p>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div>
-                      <Label className="text-white font-semibold mb-2 block">Select Question Type to Delete</Label>
-                      <Select value={deleteSourceType} onValueChange={(v: "manual" | "ai" | "pyq") => setDeleteSourceType(v)}>
-                        <SelectTrigger className="bg-white/5 border-white/10 text-white">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="manual">
-                            Mock/Manual Questions ({questions?.filter(q => q.source === "manual" || !q.source).length || 0})
-                          </SelectItem>
-                          <SelectItem value="ai">
-                            AI Questions ({questions?.filter(q => q.source === "ai").length || 0})
-                          </SelectItem>
-                          <SelectItem value="pyq">
-                            PYQ Questions ({questions?.filter(q => q.source === "pyq").length || 0})
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
-                      <p className="text-red-300 text-sm">
-                        You are about to delete <strong>{questions?.filter(q => 
-                          deleteSourceType === "manual" ? (q.source === "manual" || !q.source) : q.source === deleteSourceType
-                        ).length || 0}</strong> questions.
-                      </p>
-                      <p className="text-red-200 text-xs mt-2">
-                        This will permanently remove all {deleteSourceType === 'manual' ? 'Mock/Manual' : deleteSourceType.toUpperCase()} questions from the database.
-                      </p>
-                    </div>
-
-                    <div className="flex gap-2 pt-4">
-                      <Button 
-                        onClick={handleBulkDelete}
-                        disabled={isDeletingBulk}
-                        className="flex-1 bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30"
-                      >
-                        {isDeletingBulk ? (
-                          <>
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            Deleting...
-                          </>
-                        ) : (
-                          <>
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Confirm Delete
-                          </>
-                        )}
-                      </Button>
-                      <Button 
-                        onClick={() => setShowBulkDeleteDialog(false)}
-                        variant="outline" 
-                        className="flex-1"
-                        disabled={isDeletingBulk}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
-
-              <Dialog open={showBulkPYQDialog} onOpenChange={setShowBulkPYQDialog}>
-                <DialogTrigger asChild>
-                  <Button className="bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Bulk Add & Create PYQ Test
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto glass-card border-white/20 backdrop-blur-xl bg-gray-900/95">
-                  <DialogHeader>
-                    <DialogTitle className="text-white text-xl">Bulk Add & Create PYQ Test</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
+                  <CardHeader>
+                    <CardTitle className="text-white">Bulk Add AI Questions (Up to 100)</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
                       <div>
-                        <label className="text-white/90 text-sm font-medium mb-2 block">
-                          Exam Name *
-                        </label>
+                        <Label className="text-white">Paste AI Questions in Plain Text (100 Separate Sections)</Label>
+                        <p className="text-white/60 text-sm mb-2">
+                          Format each question like this:
+                        </p>
+                        <div className="bg-white/5 border border-white/10 rounded p-3 mb-4 text-xs text-white/70 font-mono">
+                          Q: What is EDTA?<br/>
+                          A: Anticoagulant<br/>
+                          Options: Anticoagulant | Stain | Buffer | Enzyme<br/>
+                          Subject: Hematology<br/>
+                          Topic: Anticoagulants<br/>
+                          Difficulty: Easy<br/>
+                          Type: MCQ<br/>
+                          Explanation: EDTA is used to prevent blood clotting
+                        </div>
+                      </div>
+                      
+                      {aiBulkQuestions.map((question, index) => (
+                        <div key={index} className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-white font-semibold">AI Question {index + 1}</Label>
+                            {question.trim() && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  const newQuestions = [...aiBulkQuestions];
+                                  newQuestions[index] = "";
+                                  setAiBulkQuestions(newQuestions);
+                                }}
+                                className="text-red-300 hover:text-red-200 hover:bg-red-500/20"
+                              >
+                                <Trash2 className="h-4 w-4 mr-1" />
+                                Clear
+                              </Button>
+                            )}
+                          </div>
+                          <Textarea
+                            value={question}
+                            onChange={(e) => {
+                              const newQuestions = [...aiBulkQuestions];
+                              newQuestions[index] = e.target.value;
+                              setAiBulkQuestions(newQuestions);
+                            }}
+                            className="bg-white/5 border-white/10 text-white font-mono text-sm"
+                            rows={8}
+                            placeholder={`Q: Question text here?&#10;A: Answer here&#10;Options: Option1 | Option2 | Option3 | Option4&#10;Subject: Subject name&#10;Topic: Topic name&#10;Difficulty: Easy&#10;Type: MCQ`}
+                          />
+                        </div>
+                      ))}
+                      <div className="flex gap-2">
+                        <Button onClick={handleAIBulkSubmit} className="flex-1 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/30">
+                          Add All AI Questions
+                        </Button>
+                        <Button onClick={() => setShowAIBulkForm(false)} variant="outline" className="flex-1">
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
+                  <CardHeader>
+                    <CardTitle className="text-white">Add PYQ Questions</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div>
+                        <Label className="text-white">Exam Name</Label>
                         <Input
-                          placeholder="e.g., NEET MLT, AIIMS MLT"
-                          value={bulkPYQExamName}
-                          onChange={(e) => setBulkPYQExamName(e.target.value)}
-                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                          value={pyqExamName}
+                          onChange={(e) => setPyqExamName(e.target.value)}
+                          className="bg-white/5 border-white/10 text-white"
+                          placeholder="e.g., RRB Section Officer, AIIMS MLT"
                         />
                       </div>
                       <div>
-                        <label className="text-white/90 text-sm font-medium mb-2 block">
-                          Exam Year *
-                        </label>
+                        <Label className="text-white">Year</Label>
                         <Input
                           type="number"
-                          placeholder="e.g., 2024"
-                          value={bulkPYQYear}
-                          onChange={(e) => setBulkPYQYear(e.target.value)}
-                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
-                          min="1900"
-                          max="2100"
+                          value={pyqYear}
+                          onChange={(e) => setPyqYear(parseInt(e.target.value))}
+                          className="bg-white/5 border-white/10 text-white"
+                          min={2000}
+                          max={new Date().getFullYear()}
                         />
                       </div>
+                      <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+                        <div>
+                          <Label className="text-white">Paste PYQ Questions in Plain Text (100 Separate Sections)</Label>
+                          <p className="text-white/60 text-sm mb-2">
+                            Format each question like this:
+                          </p>
+                          <div className="bg-white/5 border border-white/10 rounded p-3 mb-4 text-xs text-white/70 font-mono">
+                            Q: What is EDTA?<br/>
+                            A: Anticoagulant<br/>
+                            Options: Anticoagulant | Stain | Buffer | Enzyme<br/>
+                            Subject: Hematology<br/>
+                            Topic: Anticoagulants<br/>
+                            Difficulty: Easy<br/>
+                            Type: MCQ
+                          </div>
+                        </div>
+                        
+                        {pyqBulkQuestions.map((question, index) => (
+                          <div key={index} className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <Label className="text-white font-semibold">PYQ Question {index + 1}</Label>
+                              {question.trim() && (
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    const newQuestions = [...pyqBulkQuestions];
+                                    newQuestions[index] = "";
+                                    setPyqBulkQuestions(newQuestions);
+                                  }}
+                                  className="text-red-300 hover:text-red-200 hover:bg-red-500/20"
+                                >
+                                  <Trash2 className="h-4 w-4 mr-1" />
+                                  Clear
+                                </Button>
+                              )}
+                            </div>
+                            <Textarea
+                              value={question}
+                              onChange={(e) => {
+                                const newQuestions = [...pyqBulkQuestions];
+                                newQuestions[index] = e.target.value;
+                                setPyqBulkQuestions(newQuestions);
+                              }}
+                              className="bg-white/5 border-white/10 text-white font-mono text-sm"
+                              rows={8}
+                              placeholder={`Q: Question text here?&#10;A: Answer here&#10;Options: Option1 | Option2 | Option3 | Option4&#10;Subject: Subject name&#10;Topic: Topic name&#10;Difficulty: Easy&#10;Type: MCQ`}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex gap-2">
+                        <Button onClick={handlePYQManualSubmit} className="flex-1 bg-green-500/20 hover:bg-green-500/30 text-green-300 border border-green-500/30">
+                          Add All PYQ Questions
+                        </Button>
+                        <Button onClick={() => setShowPYQManualForm(false)} variant="outline" className="flex-1">
+                          Cancel
+                        </Button>
+                      </div>
                     </div>
+                  </CardContent>
+                </Card>
 
-                    <div>
-                      <label className="text-white/90 text-sm font-medium mb-2 block">
-                        Paste Questions *
-                      </label>
-                      <Textarea
-                        placeholder={`Format each question as:
+                <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
+                  <CardHeader>
+                    <CardTitle className="text-white">Bulk Add & Create Mock Test</CardTitle>
+                    <p className="text-white/60 text-sm">Paste up to 100 questions to automatically create a mock test</p>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div>
+                        <Label className="text-white font-semibold">Paste Questions (Up to 100) *</Label>
+                        <p className="text-white/60 text-sm mb-2 mt-1">
+                          Format each question like this (separate questions with a blank line):
+                        </p>
+                        <div className="bg-white/5 border border-white/10 rounded p-3 mb-3 text-xs text-white/70 font-mono">
+                          Q: What is EDTA?<br/>
+                          A: Anticoagulant<br/>
+                          Options: Anticoagulant | Stain | Buffer | Enzyme<br/>
+                          Subject: Hematology<br/>
+                          Difficulty: Easy<br/>
+                          Type: MCQ<br/>
+                          Explanation: EDTA is used to prevent blood clotting
+                        </div>
+                        <Textarea
+                          value={mockTestQuestions}
+                          onChange={(e) => setMockTestQuestions(e.target.value)}
+                          className="bg-white/5 border-white/10 text-white font-mono text-sm"
+                          rows={15}
+                          placeholder="Paste your questions here..."
+                        />
+                        <p className="text-white/60 text-xs mt-2">
+                          {mockTestQuestions.split(/\n\s*\n/).filter(b => b.trim()).length} questions detected
+                        </p>
+                      </div>
+
+                      <div className="flex gap-2 pt-4">
+                        <Button 
+                          onClick={handleCreateMockTest} 
+                          disabled={creatingMockTest}
+                          className="flex-1 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white border-0"
+                        >
+                          {creatingMockTest ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Creating Mock Test...
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="h-4 w-4 mr-2" />
+                              Create Mock Test
+                            </>
+                          )}
+                        </Button>
+                        <Button 
+                          onClick={() => {
+                            setMockTestQuestions("");
+                          }}
+                          variant="outline" 
+                          className="flex-1"
+                          disabled={creatingMockTest}
+                        >
+                          Clear Form
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
+                  <CardHeader>
+                    <CardTitle className="text-white">Bulk Add & Create AI Test</CardTitle>
+                    <p className="text-white/60 text-sm">Paste up to 100 AI questions to automatically create an AI test</p>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div>
+                        <Label className="text-white font-semibold">Paste AI Questions (Up to 100) *</Label>
+                        <p className="text-white/60 text-sm mb-2 mt-1">
+                          Format each question like this (separate questions with a blank line):
+                        </p>
+                        <div className="bg-white/5 border border-white/10 rounded p-3 mb-3 text-xs text-white/70 font-mono">
+                          Q: What is EDTA?<br/>
+                          A: Anticoagulant<br/>
+                          Options: Anticoagulant | Stain | Buffer | Enzyme<br/>
+                          Subject: Hematology<br/>
+                          Difficulty: Easy<br/>
+                          Type: MCQ<br/>
+                          Explanation: EDTA is used to prevent blood clotting
+                        </div>
+                        <Textarea
+                          value={aiTestQuestions}
+                          onChange={(e) => setAiTestQuestions(e.target.value)}
+                          className="bg-white/5 border-white/10 text-white font-mono text-sm"
+                          rows={15}
+                          placeholder="Paste your AI questions here..."
+                        />
+                        <p className="text-white/60 text-xs mt-2">
+                          {aiTestQuestions.split(/\n\s*\n/).filter(b => b.trim()).length} questions detected
+                        </p>
+                      </div>
+
+                      <div className="flex gap-2 pt-4">
+                        <Button 
+                          onClick={handleCreateAITest} 
+                          disabled={creatingAITest}
+                          className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white border-0"
+                        >
+                          {creatingAITest ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Creating AI Test...
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="h-4 w-4 mr-2" />
+                              Create AI Test
+                            </>
+                          )}
+                        </Button>
+                        <Button 
+                          onClick={() => {
+                            setAiTestQuestions("");
+                          }}
+                          variant="outline" 
+                          className="flex-1"
+                          disabled={creatingAITest}
+                        >
+                          Clear Form
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
+                  <CardHeader>
+                    <CardTitle className="text-white">Bulk Add & Create PYQ Test</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-white/90 text-sm font-medium mb-2 block">
+                            Exam Name *
+                          </label>
+                          <Input
+                            placeholder="e.g., NEET MLT, AIIMS MLT"
+                            value={bulkPYQExamName}
+                            onChange={(e) => setBulkPYQExamName(e.target.value)}
+                            className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-white/90 text-sm font-medium mb-2 block">
+                            Exam Year *
+                          </label>
+                          <Input
+                            type="number"
+                            placeholder="e.g., 2024"
+                            value={bulkPYQYear}
+                            onChange={(e) => setBulkPYQYear(e.target.value)}
+                            className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                            min="1900"
+                            max="2100"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="text-white/90 text-sm font-medium mb-2 block">
+                          Paste Questions *
+                        </label>
+                        <Textarea
+                          placeholder={`Format each question as:
 Q: Question text here?
 A) Option 1
 B) Option 2
@@ -1763,445 +2150,337 @@ Correct: A
 Explanation: Explanation text here
 
 (Leave a blank line between questions)`}
-                        value={bulkPYQText}
-                        onChange={(e) => {
-                          setBulkPYQText(e.target.value);
-                          const text = e.target.value.trim();
-                          if (!text) {
-                            setParsedPYQQuestions([]);
-                            return;
-                          }
-                          
-                          const blocks = text.split(/\n\s*\n/).filter(block => block.trim());
-                          const parsed = blocks.map(block => {
-                            const lines = block.trim().split('\n');
-                            const questionLine = lines[0];
-                            const options = lines.slice(1, 5);
-                            const correctLine = lines.find(l => l.toLowerCase().startsWith('correct:'));
-                            const explanationLine = lines.find(l => l.toLowerCase().startsWith('explanation:'));
-
-                            // Extract option texts
-                            const optionTexts = options.map(opt => opt.replace(/^[A-D]\)\s*/, '').trim());
-                            
-                            // Extract correct answer letter and map to actual option text
-                            let correctAnswerText = '';
-                            if (correctLine) {
-                              const correctLetter = correctLine.replace(/^correct:\s*/i, '').trim().toUpperCase();
-                              const letterIndex = correctLetter.charCodeAt(0) - 65; // A=0, B=1, C=2, D=3
-                              if (letterIndex >= 0 && letterIndex < optionTexts.length) {
-                                correctAnswerText = optionTexts[letterIndex];
-                              }
+                          value={bulkPYQText}
+                          onChange={(e) => {
+                            setBulkPYQText(e.target.value);
+                            const text = e.target.value.trim();
+                            if (!text) {
+                              setParsedPYQQuestions([]);
+                              return;
                             }
+                            
+                            const blocks = text.split(/\n\s*\n/).filter(block => block.trim());
+                            const parsed = blocks.map(block => {
+                              const lines = block.trim().split('\n');
+                              const questionLine = lines[0];
+                              const options = lines.slice(1, 5);
+                              const correctLine = lines.find(l => l.toLowerCase().startsWith('correct:'));
+                              const explanationLine = lines.find(l => l.toLowerCase().startsWith('explanation:'));
 
-                            return {
-                              type: 'mcq',
-                              question: questionLine.replace(/^Q:\s*/, '').replace(/^\d+\.\s*/, '').trim(),
-                              options: optionTexts,
-                              correctAnswer: correctAnswerText,
-                              explanation: explanationLine ? explanationLine.replace(/^explanation:\s*/i, '').trim() : '',
-                              difficulty: 'medium',
-                              subject: 'General'
-                            };
-                          });
-                          
-                          setParsedPYQQuestions(parsed);
-                        }}
-                        className="min-h-[300px] bg-white/10 border-white/20 text-white placeholder:text-white/50 font-mono text-sm"
-                      />
-                      <p className="text-white/60 text-sm mt-2">
-                        Parsed: {parsedPYQQuestions.length} questions
-                      </p>
+                              // Extract option texts
+                              const optionTexts = options.map(opt => opt.replace(/^[A-D]\)\s*/, '').trim());
+                              
+                              // Extract correct answer letter and map to actual option text
+                              let correctAnswerText = '';
+                              if (correctLine) {
+                                const correctLetter = correctLine.replace(/^correct:\s*/i, '').trim().toUpperCase();
+                                const letterIndex = correctLetter.charCodeAt(0) - 65; // A=0, B=1, C=2, D=3
+                                if (letterIndex >= 0 && letterIndex < optionTexts.length) {
+                                  correctAnswerText = optionTexts[letterIndex];
+                                }
+                              }
+
+                              return {
+                                type: 'mcq',
+                                question: questionLine.replace(/^Q:\s*/, '').replace(/^\d+\.\s*/, '').trim(),
+                                options: optionTexts,
+                                correctAnswer: correctAnswerText,
+                                explanation: explanationLine ? explanationLine.replace(/^explanation:\s*/i, '').trim() : '',
+                                difficulty: 'medium',
+                                subject: 'General'
+                              };
+                            });
+                            
+                            setParsedPYQQuestions(parsed);
+                          }}
+                          className="min-h-[300px] bg-white/10 border-white/20 text-white placeholder:text-white/50 font-mono text-sm"
+                        />
+                        <p className="text-white/60 text-sm mt-2">
+                          Parsed: {parsedPYQQuestions.length} questions
+                        </p>
+                      </div>
+
+                      <div className="flex gap-3">
+                        <Button
+                          onClick={handleCreatePYQTest}
+                          disabled={
+                            isCreatingPYQTest ||
+                            parsedPYQQuestions.length === 0 ||
+                            !bulkPYQExamName.trim() ||
+                            !bulkPYQYear.trim()
+                          }
+                          className="flex-1 bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700"
+                        >
+                          {isCreatingPYQTest ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Creating PYQ Test...
+                            </>
+                          ) : (
+                            <>
+                              <Plus className="h-4 w-4 mr-2" />
+                              Create PYQ Test ({parsedPYQQuestions.length} questions)
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            setBulkPYQText("");
+                            setBulkPYQExamName("");
+                            setBulkPYQYear("");
+                            setParsedPYQQuestions([]);
+                          }}
+                          variant="outline"
+                          className="border-white/20 text-white hover:bg-white/10"
+                        >
+                          Clear
+                        </Button>
+                      </div>
                     </div>
+                  </CardContent>
+                </Card>
 
-                    <div className="flex gap-3">
+                <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
+                  <CardHeader>
+                    <CardTitle className="text-white">Auto Create Test Sets</CardTitle>
+                    <p className="text-white/80">
+                      Automatically organize unassigned questions into test sets with shuffled options to prevent answer patterns.
+                    </p>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label className="text-white">Question Source</Label>
+                          <Select value={autoCreateSource} onValueChange={(value: any) => setAutoCreateSource(value)}>
+                            <SelectTrigger className="bg-white/10 border-white/20 text-white">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="manual">Mock Tests (100 questions/set)</SelectItem>
+                              <SelectItem value="pyq">PYQ Tests (20 questions/set)</SelectItem>
+                              <SelectItem value="ai">AI Tests (25 questions/set)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        <div className="bg-blue-500/20 border border-blue-400/30 rounded-lg p-3 text-sm">
+                          <p className="text-blue-200">
+                            ✨ The system will:
+                          </p>
+                          <ul className="list-disc list-inside text-blue-200/80 mt-2 space-y-1">
+                            <li>Shuffle options for each question</li>
+                            <li>Prevent consecutive same-position answers</li>
+                            <li>Create complete sets automatically</li>
+                          </ul>
+                        </div>
+                      </div>
+
                       <Button
-                        onClick={handleCreatePYQTest}
-                        disabled={
-                          isCreatingPYQTest ||
-                          parsedPYQQuestions.length === 0 ||
-                          !bulkPYQExamName.trim() ||
-                          !bulkPYQYear.trim()
-                        }
-                        className="flex-1 bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700"
+                        onClick={handleAutoCreateSets}
+                        disabled={isAutoCreating}
+                        className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
                       >
-                        {isCreatingPYQTest ? (
+                        {isAutoCreating ? (
                           <>
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            Creating PYQ Test...
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Creating Sets...
                           </>
                         ) : (
                           <>
-                            <Plus className="h-4 w-4 mr-2" />
-                            Create PYQ Test ({parsedPYQQuestions.length} questions)
+                            <Sparkles className="mr-2 h-4 w-4" />
+                            Create Test Sets
                           </>
                         )}
                       </Button>
-                      <Button
-                        onClick={() => {
-                          setBulkPYQText("");
-                          setBulkPYQExamName("");
-                          setBulkPYQYear("");
-                          setParsedPYQQuestions([]);
-                        }}
-                        variant="outline"
-                        className="border-white/20 text-white hover:bg-white/10"
-                      >
-                        Clear
-                      </Button>
                     </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div>
-          </div>
-
-          {/* AI Auto-Generation Section */}
-          <Card className="mb-6 bg-white/10 backdrop-blur-md border-white/20">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
-                <Brain className="h-6 w-6" />
-                AI Question Generation
-              </CardTitle>
-              <CardDescription className="text-white/80">
-                Automatically generate 100 high-quality MLT MCQs using Mistral AI
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button
-                onClick={handleAutoGenerateAI}
-                disabled={isGeneratingAI}
-                className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
-              >
-                {isGeneratingAI ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Generating 100 Questions...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="mr-2 h-4 w-4" />
-                    Auto Generate 100 AI Questions
-                  </>
-                )}
-              </Button>
-              <p className="text-sm text-white/70 mt-2">
-                This will generate 100 unique MLT exam questions covering Hematology, Biochemistry, Microbiology, and more.
-              </p>
-            </CardContent>
-          </Card>
-
-          {/* Question Statistics */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-            <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
-              <CardContent className="pt-6">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-white">{questions?.length || 0}</p>
-                  <p className="text-sm text-white/60">Total Questions</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="glass-card border-blue-500/20 backdrop-blur-xl bg-blue-500/10">
-              <CardContent className="pt-6">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-blue-300">{questions?.filter(q => q.source === "manual" || !q.source).length || 0}</p>
-                  <p className="text-sm text-blue-200">Manual/Mock</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="glass-card border-purple-500/20 backdrop-blur-xl bg-purple-500/10">
-              <CardContent className="pt-6">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-purple-300">{questions?.filter(q => q.source === "ai").length || 0}</p>
-                  <p className="text-sm text-purple-200">AI Questions</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="glass-card border-orange-500/20 backdrop-blur-xl bg-orange-500/10">
-              <CardContent className="pt-6">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-orange-300">{questions?.filter(q => q.source === "pyq").length || 0}</p>
-                  <p className="text-sm text-orange-200">PYQ</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="glass-card border-red-500/20 backdrop-blur-xl bg-red-500/10">
-              <CardContent className="pt-6">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-red-300">{duplicateQuestions.size}</p>
-                  <p className="text-sm text-red-200">Duplicates</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Error Questions Section */}
-          <Card className="bg-white/10 backdrop-blur-md border-white/20 mb-8">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <AlertTriangle className="h-6 w-6 text-red-400" />
-                  <CardTitle className="text-white">Error Questions</CardTitle>
-                </div>
-                <Button
-                  onClick={() => setShowErrorQuestions(!showErrorQuestions)}
-                  variant="outline"
-                  className="bg-white/10 border-white/20 text-white hover:bg-white/20"
-                >
-                  {showErrorQuestions ? 'Hide' : 'Show'} ({errorQuestions.length})
-                </Button>
-              </div>
-              <CardDescription className="text-white/70">
-                Questions with missing or mismatched answers that need to be fixed or deleted
-              </CardDescription>
-            </CardHeader>
-            
-            {showErrorQuestions && (
-              <CardContent>
-                {errorQuestions.length === 0 ? (
-                  <div className="text-center py-8">
-                    <CheckCircle2 className="h-12 w-12 text-green-400 mx-auto mb-3" />
-                    <p className="text-white/80">No error questions found! All questions are properly formatted.</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {errorQuestions.map((question) => (
-                      <div
-                        key={question._id}
-                        className="bg-red-500/10 backdrop-blur-sm border border-red-500/30 rounded-lg p-4"
-                      >
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Badge variant="destructive">Error</Badge>
-                              <Badge variant="outline" className="bg-white/10 text-white border-white/20">
-                                {question.type.toUpperCase()}
-                              </Badge>
-                              <Badge variant="outline" className="bg-white/10 text-white border-white/20">
-                                {question.source || 'manual'}
-                              </Badge>
-                            </div>
-                            
-                            <p className="text-white font-medium mb-3">{question.question}</p>
-                            
-                            {question.options && question.options.length > 0 && (
-                              <div className="mb-3">
-                                <p className="text-sm font-medium text-white/80 mb-1">Options:</p>
-                                <div className="grid grid-cols-2 gap-2">
-                                  {question.options.map((option, idx) => (
-                                    <div key={idx} className="bg-white/5 rounded px-3 py-2 text-sm text-white/90">
-                                      {option}
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                            
-                            <div className="bg-red-500/20 rounded px-3 py-2 mb-2">
-                              <p className="text-sm font-medium text-red-300">
-                                Correct Answer: {question.correctAnswer || '(Empty)'}
-                              </p>
-                            </div>
-                            
-                            <div className="text-sm text-yellow-300">
-                              <AlertTriangle className="h-4 w-4 inline mr-1" />
-                              Issue: {!question.correctAnswer || question.correctAnswer.trim() === '' 
-                                ? 'Correct answer is missing or empty'
-                                : !question.options || question.options.length === 0
-                                ? 'Options are missing'
-                                : 'Correct answer does not match any option'}
-                            </div>
-                          </div>
-                          
-                          <Button
-                            onClick={() => handleDeleteQuestion(question._id)}
-                            variant="destructive"
-                            size="sm"
-                            disabled={isDeletingQuestion === question._id}
-                            className="shrink-0"
-                          >
-                            {isDeletingQuestion === question._id ? (
-                              <>
-                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                Deleting...
-                              </>
-                            ) : (
-                              <>
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Delete
-                              </>
-                            )}
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            )}
-          </Card>
-
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="glass-card border-white/20 backdrop-blur-xl bg-white/10 flex-wrap">
-              <TabsTrigger value="all" className="data-[state=active]:bg-white/20">
-                All Questions
-              </TabsTrigger>
-              <TabsTrigger value="manual" className="data-[state=active]:bg-white/20">
-                <FileText className="h-4 w-4 mr-2" />
-                Manual/Mock
-              </TabsTrigger>
-              <TabsTrigger value="ai" className="data-[state=active]:bg-white/20">
-                <Sparkles className="h-4 w-4 mr-2" />
-                AI Questions
-              </TabsTrigger>
-              <TabsTrigger value="pyq" className="data-[state=active]:bg-white/20">
-                <Upload className="h-4 w-4 mr-2" />
-                PYQ
-              </TabsTrigger>
-              <TabsTrigger value="duplicates" className="data-[state=active]:bg-white/20">
-                <XCircle className="h-4 w-4 mr-2" />
-                Duplicates Only
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value={activeTab} className="space-y-4 mt-6">
-              {!questions || questions.length === 0 ? (
-                <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
-                  <CardContent className="py-12 text-center">
-                    <p className="text-white/60">No questions found</p>
                   </CardContent>
                 </Card>
-              ) : (
-                questions
-                  .filter((q) => {
-                    // Filter by active tab
-                    if (activeTab === "manual") return q.source === "manual" || !q.source;
-                    if (activeTab === "ai") return q.source === "ai";
-                    if (activeTab === "pyq") return q.source === "pyq";
-                    if (activeTab === "duplicates") return duplicateQuestions.has(q._id);
-                    if (activeTab === "approved") return q.status === "approved";
-                    return true; // "all" tab shows everything
-                  })
-                  .map((question, index) => {
-                  const isDuplicate = duplicateQuestions.has(question._id);
-                  
-                  return (
-                    <motion.div
-                      key={question._id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.05 }}
-                    >
-                      <Card className={`glass-card backdrop-blur-xl ${
-                        isDuplicate 
-                          ? 'border-red-500/50 bg-red-500/10' 
-                          : 'border-white/20 bg-white/10'
-                      }`}>
-                        <CardHeader>
-                          <div className="flex items-start justify-between">
-                            <div className="space-y-2 flex-1">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <CardTitle className="text-white text-lg">{question.question}</CardTitle>
-                                {isDuplicate && (
-                                  <Badge className="bg-red-500/30 text-red-200 border-red-500/50">
-                                    Duplicate
-                                  </Badge>
-                                )}
-                                {getStatusBadge(question.status)}
-                                {getSourceBadge(question.source)}
-                              </div>
-                              <div className="flex items-center gap-4 text-sm text-white/60 flex-wrap">
-                                <span>{question.type.replace("_", " ").toUpperCase()}</span>
-                                <span>•</span>
-                                <span>{question.topicName}</span>
-                                {question.difficulty && (
-                                  <>
-                                    <span>•</span>
-                                    <span className="capitalize">{question.difficulty}</span>
-                                  </>
-                                )}
-                                {question.year && (
-                                  <>
-                                    <span>•</span>
-                                    <span>Year: {question.year}</span>
-                                  </>
-                                )}
-                              </div>
-                            </div>
-                            <Button
-                              onClick={async () => {
-                                try {
-                                  await deleteQuestion({ id: question._id });
-                                  toast.success("Question deleted");
-                                } catch {
-                                  toast.error("Failed to delete");
-                                }
-                              }}
-                              variant="ghost"
-                              size="icon"
-                              className={`${
-                                isDuplicate 
-                                  ? 'text-red-200 hover:bg-red-500/30' 
-                                  : 'text-red-300 hover:bg-red-500/20'
-                              }`}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+
+                <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
+                  <CardHeader>
+                    <CardTitle className="text-white">Bulk Delete Questions</CardTitle>
+                    <p className="text-white/80">
+                      ⚠️ Warning: This action cannot be undone!
+                    </p>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div>
+                        <Label className="text-white font-semibold mb-2 block">Select Question Type to Delete</Label>
+                        <Select value={deleteSourceType} onValueChange={(v: "manual" | "ai" | "pyq") => setDeleteSourceType(v)}>
+                          <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="manual">
+                              Mock/Manual Questions ({questions?.filter(q => q.source === "manual" || !q.source).length || 0})
+                            </SelectItem>
+                            <SelectItem value="ai">
+                              AI Questions ({questions?.filter(q => q.source === "ai").length || 0})
+                            </SelectItem>
+                            <SelectItem value="pyq">
+                              PYQ Questions ({questions?.filter(q => q.source === "pyq").length || 0})
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
+                        <p className="text-red-300 text-sm">
+                          You are about to delete <strong>{questions?.filter(q => 
+                            deleteSourceType === "manual" ? (q.source === "manual" || !q.source) : q.source === deleteSourceType
+                          ).length || 0}</strong> questions.
+                        </p>
+                        <p className="text-red-200 text-xs mt-2">
+                          This will permanently remove all {deleteSourceType === 'manual' ? 'Mock/Manual' : deleteSourceType.toUpperCase()} questions from the database.
+                        </p>
+                      </div>
+
+                      <div className="flex gap-2 pt-4">
+                        <Button 
+                          onClick={handleBulkDelete}
+                          disabled={isDeletingBulk}
+                          className="flex-1 bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30"
+                        >
+                          {isDeletingBulk ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Deleting...
+                            </>
+                          ) : (
+                            <>
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Confirm Delete
+                            </>
+                          )}
+                        </Button>
+                        <Button 
+                          onClick={() => setShowBulkDeleteDialog(false)}
+                          variant="outline" 
+                          className="flex-1"
+                          disabled={isDeletingBulk}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            {/* Error Questions Tab */}
+            <TabsContent value="errors">
+              <div className="space-y-6">
+                <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
+                  <CardHeader>
+                    <CardTitle className="text-white">Error Questions</CardTitle>
+                    <CardDescription className="text-white/80">
+                      Questions with missing or mismatched answers that need to be fixed or deleted
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <AlertTriangle className="h-6 w-6 text-red-400" />
+                        <h3 className="text-white">Error Questions</h3>
+                      </div>
+                      <Button
+                        onClick={() => setShowErrorQuestions(!showErrorQuestions)}
+                        variant="outline"
+                        className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                      >
+                        {showErrorQuestions ? 'Hide' : 'Show'} ({errorQuestions.length})
+                      </Button>
+                    </div>
+                    
+                    {showErrorQuestions && (
+                      <div className="space-y-4">
+                        {errorQuestions.length === 0 ? (
+                          <div className="text-center py-8">
+                            <CheckCircle2 className="h-12 w-12 text-green-400 mx-auto mb-3" />
+                            <p className="text-white/80">No error questions found! All questions are properly formatted.</p>
                           </div>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          {question.options && question.options.length > 0 && (
-                            <div className="space-y-2">
-                              <p className="text-sm font-medium text-white/80">Options:</p>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                {question.options.map((option, idx) => (
-                                  <div
-                                    key={idx}
-                                    className={`p-2 rounded-lg border ${
-                                      option === question.correctAnswer
-                                        ? "bg-green-500/10 border-green-500/30 text-green-300"
-                                        : "bg-white/5 border-white/10 text-white/80"
-                                    }`}
-                                  >
-                                    {option}
+                        ) : (
+                          <div className="space-y-4">
+                            {errorQuestions.map((question) => (
+                              <div
+                                key={question._id}
+                                className="bg-red-500/10 backdrop-blur-sm border border-red-500/30 rounded-lg p-4"
+                              >
+                                <div className="flex items-start justify-between gap-4">
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <Badge variant="destructive">Error</Badge>
+                                      <Badge variant="outline" className="bg-white/10 text-white border-white/20">
+                                        {question.type.toUpperCase()}
+                                      </Badge>
+                                      <Badge variant="outline" className="bg-white/10 text-white border-white/20">
+                                        {question.source || 'manual'}
+                                      </Badge>
+                                    </div>
+                                    
+                                    <p className="text-white font-medium mb-3">{question.question}</p>
+                                    
+                                    {question.options && question.options.length > 0 && (
+                                      <div className="mb-3">
+                                        <p className="text-sm font-medium text-white/80 mb-1">Options:</p>
+                                        <div className="grid grid-cols-2 gap-2">
+                                          {question.options.map((option, idx) => (
+                                            <div key={idx} className="bg-white/5 rounded px-3 py-2 text-sm text-white/90">
+                                              {option}
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
+                                    
+                                    <div className="bg-red-500/20 rounded px-3 py-2 mb-2">
+                                      <p className="text-sm font-medium text-red-300">
+                                        Correct Answer: {question.correctAnswer || '(Empty)'}
+                                      </p>
+                                    </div>
+                                    
+                                    <div className="text-sm text-yellow-300">
+                                      <AlertTriangle className="h-4 w-4 inline mr-1" />
+                                      Issue: {!question.correctAnswer || question.correctAnswer.trim() === '' 
+                                        ? 'Correct answer is missing or empty'
+                                        : !question.options || question.options.length === 0
+                                        ? 'Options are missing'
+                                        : 'Correct answer does not match any option'}
+                                    </div>
                                   </div>
-                                ))}
+                                  
+                                  <Button
+                                    onClick={() => handleDeleteQuestion(question._id)}
+                                    variant="destructive"
+                                    size="sm"
+                                    disabled={isDeletingQuestion === question._id}
+                                    className="shrink-0"
+                                  >
+                                    {isDeletingQuestion === question._id ? (
+                                      <>
+                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                        Deleting...
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Trash2 className="h-4 w-4 mr-2" />
+                                        Delete
+                                      </>
+                                    )}
+                                  </Button>
+                                </div>
                               </div>
-                            </div>
-                          )}
-                          <div>
-                            <p className="text-sm font-medium text-white/80">Correct Answer:</p>
-                            <p className="text-white mt-1">{question.correctAnswer}</p>
+                            ))}
                           </div>
-                          {question.explanation && (
-                            <div>
-                              <p className="text-sm font-medium text-white/80">Explanation:</p>
-                              <p className="text-white/60 mt-1">{question.explanation}</p>
-                            </div>
-                          )}
-                          {question.status === "pending" && (
-                            <div className="flex gap-2 pt-4">
-                              <Button
-                                onClick={() => handleReview(question._id, "approved")}
-                                className="bg-green-500/20 hover:bg-green-500/30 text-green-300 border border-green-500/30"
-                              >
-                                <CheckCircle className="h-4 w-4 mr-2" />
-                                Approve
-                              </Button>
-                              <Button
-                                onClick={() => handleReview(question._id, "rejected")}
-                                className="bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30"
-                              >
-                                <XCircle className="h-4 w-4 mr-2" />
-                                Reject
-                              </Button>
-                            </div>
-                          )}
-                        </CardContent>
-                      </Card>
-                    </motion.div>
-                  );
-                })
-              )}
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
             </TabsContent>
           </Tabs>
         </div>
