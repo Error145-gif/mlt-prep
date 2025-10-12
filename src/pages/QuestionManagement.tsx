@@ -1161,37 +1161,6 @@ export default function QuestionManagement() {
 
                 <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
                   <CardHeader>
-                    <CardTitle className="text-white">AI Question Generation</CardTitle>
-                    <CardDescription className="text-white/80">
-                      Automatically generate 100 high-quality MLT MCQs using Mistral AI
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Button
-                      onClick={handleAutoGenerateAI}
-                      disabled={isGeneratingAI}
-                      className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
-                    >
-                      {isGeneratingAI ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Generating 100 Questions...
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles className="mr-2 h-4 w-4" />
-                          Auto Generate 100 AI Questions
-                        </>
-                      )}
-                    </Button>
-                    <p className="text-sm text-white/70 mt-2">
-                      This will generate 100 unique MLT exam questions covering Hematology, Biochemistry, Microbiology, and more.
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
-                  <CardHeader>
                     <CardTitle className="text-white">Error Questions</CardTitle>
                     <CardDescription className="text-white/80">
                       Questions with missing or mismatched answers that need to be fixed or deleted
