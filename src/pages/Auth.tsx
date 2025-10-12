@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/input-otp";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/hooks/use-auth";
-import { ArrowRight, Loader2, Mail } from "lucide-react";
+import { ArrowRight, Loader2, Mail, Microscope, TestTube, Dna } from "lucide-react";
 import { Suspense, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
@@ -136,128 +136,119 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
   };
 
   return (
-    <div className="min-h-screen flex">
-      {/* Left Side - Decorative Lab Image Section */}
-      <motion.div 
-        initial={{ opacity: 0, x: -50 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.6 }}
-        className="hidden lg:flex lg:w-1/2 relative overflow-hidden"
-        style={{
-          backgroundImage: 'url(https://harmless-tapir-303.convex.cloud/api/storage/3031e6f7-9734-43f3-9d14-429a572529c3)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-      >
-        {/* Dark overlay for better text readability */}
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/80 via-blue-900/70 to-purple-800/80" />
-        {/* Decorative Elements */}
-        <div className="absolute top-10 left-10 w-32 h-32 border-2 border-white/30 rounded-full" />
-        <div className="absolute top-20 right-20 w-2 h-2 bg-white rounded-full" />
-        <div className="absolute top-40 right-32 w-2 h-2 bg-white rounded-full" />
-        <div className="absolute top-60 right-44 w-2 h-2 bg-white rounded-full" />
-        <div className="absolute bottom-20 left-20 w-2 h-2 bg-white rounded-full" />
-        <div className="absolute bottom-40 left-32 w-2 h-2 bg-white rounded-full" />
+    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-[#5B21B6] via-[#7C3AED] to-[#A855F7] flex items-center justify-center p-4">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        {/* Floating DNA Strands */}
+        <motion.div
+          animate={{ y: [0, -20, 0], rotate: [0, 5, 0] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-20 left-10 opacity-20"
+        >
+          <Dna className="w-24 h-24 text-white" />
+        </motion.div>
         
-        {/* Wavy Lines */}
-        <svg className="absolute top-0 left-0 w-48 h-full opacity-20" viewBox="0 0 100 500">
-          <path d="M 20 0 Q 40 50 20 100 T 20 200 T 20 300 T 20 400 T 20 500" stroke="white" strokeWidth="2" fill="none" />
-          <path d="M 40 0 Q 60 50 40 100 T 40 200 T 40 300 T 40 400 T 40 500" stroke="white" strokeWidth="2" fill="none" />
-          <path d="M 60 0 Q 80 50 60 100 T 60 200 T 60 300 T 60 400 T 60 500" stroke="white" strokeWidth="2" fill="none" />
+        <motion.div
+          animate={{ y: [0, 20, 0], rotate: [0, -5, 0] }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute bottom-32 right-16 opacity-20"
+        >
+          <Microscope className="w-32 h-32 text-white" />
+        </motion.div>
+
+        <motion.div
+          animate={{ y: [0, -15, 0], x: [0, 10, 0] }}
+          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-1/3 right-20 opacity-20"
+        >
+          <TestTube className="w-20 h-20 text-white" />
+        </motion.div>
+
+        {/* Glowing Orbs */}
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-purple-400/30 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-cyan-400/20 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-violet-500/20 rounded-full blur-3xl" />
+      </div>
+
+      {/* Home Button */}
+      <Button
+        onClick={() => navigate("/")}
+        variant="ghost"
+        className="absolute top-4 right-4 text-white/80 hover:text-white hover:bg-white/10 z-50"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+          <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <polyline points="9 22 9 12 15 12 15 22"></polyline>
         </svg>
+        Home
+      </Button>
 
-        {/* Bottom Right Wavy Pattern */}
-        <svg className="absolute bottom-0 right-0 w-96 h-96 opacity-30" viewBox="0 0 400 400">
-          <path d="M 0 200 Q 100 150 200 200 T 400 200 L 400 400 L 0 400 Z" fill="white" fillOpacity="0.1" />
-          <path d="M 0 250 Q 100 200 200 250 T 400 250 L 400 400 L 0 400 Z" fill="white" fillOpacity="0.1" />
-          <path d="M 50 300 Q 150 250 250 300 T 450 300" stroke="white" strokeWidth="2" fill="none" />
-        </svg>
-
-        {/* Plus Signs */}
-        <div className="absolute top-16 left-1/2 text-white text-4xl opacity-40">+</div>
-        <div className="absolute bottom-1/3 right-1/4 text-white text-4xl opacity-40">+</div>
-
-        {/* Circle Outlines */}
-        <div className="absolute bottom-1/4 left-1/4 w-16 h-16 border-2 border-white/30 rounded-full" />
-
-        {/* Content */}
-        <div className="relative z-10 flex flex-col justify-center px-16 text-white">
-          <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
+      {/* Main Content Container */}
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+        className="relative z-10 w-full max-w-md"
+      >
+        {/* Logo Section */}
+        <div className="text-center mb-8">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.6 }}
-            className="text-5xl font-bold mb-4"
+            transition={{ delay: 0.2, duration: 0.6 }}
+            className="flex justify-center mb-4"
           >
-            {isCreatingAccount ? "Join us today!" : "Welcome back!"}
-          </motion.h1>
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.6 }}
-            className="text-xl text-white/90"
+            <img
+              src="https://harmless-tapir-303.convex.cloud/api/storage/879d7c77-19fe-45e5-90a8-ef853693f369"
+              alt="MLT Logo"
+              className="w-32 h-32 object-contain drop-shadow-2xl"
+            />
+          </motion.div>
+          
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.6 }}
+            className="text-white/90 text-sm font-light tracking-wide"
+            style={{ fontFamily: "'Inter', sans-serif" }}
           >
-            {isCreatingAccount 
-              ? "Create your account to start your learning journey." 
-              : "You can sign in to access with your existing account."}
+            AI-Powered Learning for Future Medical Lab Professionals
           </motion.p>
         </div>
-      </motion.div>
 
-      {/* Right Side - Sign In Form */}
-      <motion.div 
-        initial={{ opacity: 0, x: 50 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.6 }}
-        className="w-full lg:w-1/2 flex items-center justify-center bg-gray-50 p-8 relative"
-      >
-        {/* Home Button */}
-        <Button
-          onClick={() => navigate("/")}
-          variant="ghost"
-          className="absolute top-4 right-4 text-gray-600 hover:text-purple-600"
+        {/* Glassmorphism Login Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.6 }}
+          className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl p-8 shadow-2xl"
+          style={{
+            boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37), 0 0 60px rgba(124, 58, 237, 0.3)',
+          }}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
-            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-            <polyline points="9 22 9 12 15 12 15 22"></polyline>
-          </svg>
-          Home
-        </Button>
-
-        <div className="w-full max-w-md">
           {step === "signIn" ? (
-            <div className="space-y-8">
-              {/* Logo for mobile */}
-              <div className="lg:hidden flex justify-center mb-8">
-                <img
-                  src="https://harmless-tapir-303.convex.cloud/api/storage/d9da05f9-b7b1-43d8-b723-0f805bc8f673"
-                  alt="MLT Logo"
-                  width={120}
-                  height={120}
-                  className="cursor-pointer"
-                  onClick={() => navigate("/")}
-                />
-              </div>
-
-              <div>
-                <h2 className="text-4xl font-bold text-gray-800 mb-2">
-                  {isCreatingAccount ? "Create Account" : "Sign In"}
+            <div className="space-y-6">
+              <div className="text-center">
+                <h2 className="text-3xl font-bold text-white mb-2" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                  {isCreatingAccount ? "Create Account" : "Welcome Back"}
                 </h2>
-                <p className="text-gray-500">
+                <p className="text-white/70 text-sm">
                   {isCreatingAccount 
-                    ? "Enter your email to create a new account" 
-                    : "Enter your credentials to access your account"}
+                    ? "Start your medical learning journey" 
+                    : "Sign in to continue your learning"}
                 </p>
               </div>
 
-              <form onSubmit={handleEmailSubmit} className="space-y-6">
+              <form onSubmit={handleEmailSubmit} className="space-y-5">
                 <div className="space-y-4">
-                  <div className="relative">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <div className="relative group">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/50 group-focus-within:text-white transition-colors" />
                     <Input
                       name="email"
-                      placeholder="Username or email"
+                      placeholder="Enter your email"
                       type="email"
-                      className="pl-12 h-14 bg-white border-gray-200 rounded-full text-gray-800 placeholder:text-gray-400"
+                      className="pl-12 h-12 bg-white/10 border-white/30 rounded-2xl text-white placeholder:text-white/50 focus:bg-white/20 focus:border-white/50 transition-all shadow-inner"
+                      style={{ fontFamily: "'Inter', sans-serif" }}
                       disabled={isLoading}
                       required
                     />
@@ -265,7 +256,13 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                 </div>
 
                 {error && (
-                  <p className="text-sm text-red-500">{error}</p>
+                  <motion.p 
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-sm text-red-300 bg-red-500/20 p-3 rounded-xl border border-red-400/30"
+                  >
+                    {error}
+                  </motion.p>
                 )}
 
                 {!isCreatingAccount && (
@@ -275,8 +272,9 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                         id="remember" 
                         checked={rememberMe}
                         onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                        className="border-white/30 data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-[#7C3AED] data-[state=checked]:to-[#22D3EE]"
                       />
-                      <label htmlFor="remember" className="text-gray-600 cursor-pointer">
+                      <label htmlFor="remember" className="text-white/80 cursor-pointer">
                         Remember me
                       </label>
                     </div>
@@ -286,52 +284,59 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full h-14 bg-purple-600 hover:bg-purple-700 text-white rounded-full text-lg font-semibold"
+                  className="w-full h-12 bg-gradient-to-r from-[#7C3AED] to-[#22D3EE] hover:shadow-[0_0_30px_rgba(124,58,237,0.6)] text-white rounded-2xl text-base font-semibold transition-all duration-300 border-0"
+                  style={{ fontFamily: "'Poppins', sans-serif" }}
                 >
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      {isCreatingAccount ? "Creating Account..." : "Signing In..."}
+                      {isCreatingAccount ? "Creating..." : "Signing In..."}
                     </>
                   ) : (
-                    isCreatingAccount ? "Create Account" : "Sign In"
+                    isCreatingAccount ? "Create Account" : "Login"
                   )}
                 </Button>
 
-                {/* Guest login removed - Gmail-only authentication */}
+                {!isCreatingAccount && (
+                  <div className="text-center">
+                    <button
+                      type="button"
+                      className="text-white/70 hover:text-white text-sm transition-colors"
+                    >
+                      Forgot Password?
+                    </button>
+                  </div>
+                )}
 
-                <p className="text-center text-gray-600">
-                  {isCreatingAccount ? (
-                    <>
-                      Already have an account?{" "}
-                      <button 
-                        type="button" 
-                        onClick={handleBackToSignIn}
-                        className="text-purple-600 hover:text-purple-700 font-semibold"
-                      >
-                        Sign In
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      New here?{" "}
-                      <button 
-                        type="button" 
-                        onClick={handleCreateAccount}
-                        className="text-purple-600 hover:text-purple-700 font-semibold"
-                      >
-                        Create an Account
-                      </button>
-                    </>
-                  )}
-                </p>
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-white/20"></div>
+                  </div>
+                  <div className="relative flex justify-center text-xs">
+                    <span className="bg-transparent px-2 text-white/60">
+                      {isCreatingAccount ? "Already have an account?" : "New to MLT Learning?"}
+                    </span>
+                  </div>
+                </div>
+
+                <Button
+                  type="button"
+                  onClick={isCreatingAccount ? handleBackToSignIn : handleCreateAccount}
+                  variant="outline"
+                  className="w-full h-12 bg-transparent border-2 border-white/30 hover:bg-white/10 hover:border-white/50 text-white rounded-2xl text-base font-semibold transition-all"
+                  style={{ fontFamily: "'Poppins', sans-serif" }}
+                >
+                  {isCreatingAccount ? "Sign In Instead" : "Create New Account"}
+                </Button>
               </form>
             </div>
           ) : (
-            <div className="space-y-8">
-              <div>
-                <h2 className="text-4xl font-bold text-gray-800 mb-2">Check your email</h2>
-                <p className="text-gray-500">We've sent a code to {step.email}</p>
+            <div className="space-y-6">
+              <div className="text-center">
+                <h2 className="text-3xl font-bold text-white mb-2" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                  Check your email
+                </h2>
+                <p className="text-white/70 text-sm">We've sent a code to {step.email}</p>
               </div>
 
               <form onSubmit={handleOtpSubmit} className="space-y-6">
@@ -358,7 +363,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                         <InputOTPSlot 
                           key={index} 
                           index={index}
-                          className="bg-white border-2 border-gray-300 text-gray-900 text-xl font-semibold w-12 h-12"
+                          className="bg-white/10 border-2 border-white/30 text-white text-xl font-semibold w-12 h-12 rounded-xl shadow-inner"
                         />
                       ))}
                     </InputOTPGroup>
@@ -366,14 +371,20 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                 </div>
 
                 {error && (
-                  <p className="text-sm text-red-500 text-center">{error}</p>
+                  <motion.p 
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-sm text-red-300 bg-red-500/20 p-3 rounded-xl border border-red-400/30 text-center"
+                  >
+                    {error}
+                  </motion.p>
                 )}
 
-                <p className="text-sm text-gray-600 text-center">
+                <p className="text-sm text-white/70 text-center">
                   Didn't receive a code?{" "}
                   <button
                     type="button"
-                    className="text-purple-600 hover:text-purple-700 font-semibold"
+                    className="text-cyan-300 hover:text-cyan-200 font-semibold transition-colors"
                     onClick={() => setStep("signIn")}
                   >
                     Try again
@@ -382,8 +393,9 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
 
                 <Button
                   type="submit"
-                  className="w-full h-14 bg-purple-600 hover:bg-purple-700 text-white rounded-full text-lg font-semibold"
+                  className="w-full h-12 bg-gradient-to-r from-[#7C3AED] to-[#22D3EE] hover:shadow-[0_0_30px_rgba(124,58,237,0.6)] text-white rounded-2xl text-base font-semibold transition-all duration-300 border-0"
                   disabled={isLoading || otp.length !== 6}
+                  style={{ fontFamily: "'Poppins', sans-serif" }}
                 >
                   {isLoading ? (
                     <>
@@ -392,7 +404,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                     </>
                   ) : (
                     <>
-                      Verify code
+                      Verify Code
                       <ArrowRight className="ml-2 h-5 w-5" />
                     </>
                   )}
@@ -400,17 +412,28 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
 
                 <Button
                   type="button"
-                  variant="ghost"
+                  variant="outline"
                   onClick={() => setStep("signIn")}
                   disabled={isLoading}
-                  className="w-full h-14 text-gray-700 hover:bg-gray-100 rounded-full"
+                  className="w-full h-12 bg-transparent border-2 border-white/30 hover:bg-white/10 hover:border-white/50 text-white rounded-2xl transition-all"
                 >
                   Use different email
                 </Button>
               </form>
             </div>
           )}
-        </div>
+        </motion.div>
+
+        {/* Footer Text */}
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6, duration: 0.6 }}
+          className="text-center text-white/50 text-xs mt-6"
+          style={{ fontFamily: "'Inter', sans-serif" }}
+        >
+          © 2024 MLT Learning. Empowering future medical professionals with AI.
+        </motion.p>
       </motion.div>
     </div>
   );
