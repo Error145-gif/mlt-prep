@@ -62,6 +62,7 @@ export default function QuestionManagement() {
   const [isDeletingQuestion, setIsDeletingQuestion] = useState<Id<"questions"> | null>(null);
 
   const questions = useQuery(api.questions.getQuestions, {});
+  const unassignedQuestions = useQuery(api.questions.getUnassignedQuestions);
   const topics = useQuery(api.topics.getAllTopics);
   const reviewQuestion = useMutation(api.questions.reviewQuestion);
   const createQuestion = useMutation(api.questions.createQuestion);
