@@ -137,7 +137,7 @@ createRoot(document.getElementById("root")!).render(
             <Route path="/profile" element={<StudentLayout><Profile /></StudentLayout>} />
             <Route path="/test/start" element={<TestStart />} />
             <Route path="/test/results" element={<TestResults />} />
-            <Route path="/contact" element={<ContactUs />} />
+            <Route path="/contact-us" element={<ContactUs />} />
             <Route path="/shipping-policy" element={<ShippingPolicy />} />
             <Route path="/terms" element={<TermsAndConditions />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
