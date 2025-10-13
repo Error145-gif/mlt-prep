@@ -66,44 +66,44 @@ export default function StudyMaterialsManagement() {
 
     setIsUploading(true);
     try {
-      // Step 1: Get upload URL from Convex
-      const uploadUrlResponse = await fetch(
-        `${import.meta.env.VITE_CONVEX_URL}/api/storage/generateUploadUrl`,
+      // Step 1: Generate upload URL
+      const uploadUrl = await fetch(
+        `${import.meta.env.VITE_CONVEX_URL.replace("/api", "")}/api/storage/generateUploadUrl`,
         {
           method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
       );
 
-      if (!uploadUrlResponse.ok) {
-        throw new Error(`Failed to generate upload URL: ${uploadUrlResponse.status}`);
+      if (!uploadUrl.ok) {
+        const errorText = await uploadUrl.text();
+        console.error("Upload URL generation failed:", errorText);
+        throw new Error(`Failed to generate upload URL: ${uploadUrl.status}`);
       }
 
-      const { uploadUrl } = await uploadUrlResponse.json();
+      const { uploadUrl: url } = await uploadUrl.json();
 
-      if (!uploadUrl) {
-        throw new Error("No upload URL received from server");
-      }
-
-      // Step 2: Upload file to the generated URL
-      const uploadResponse = await fetch(uploadUrl, {
+      // Step 2: Upload the file
+      const upload = await fetch(url, {
         method: "POST",
-        headers: {
-          "Content-Type": selectedFile.type,
-        },
         body: selectedFile,
       });
 
-      if (!uploadResponse.ok) {
-        throw new Error(`File upload failed with status: ${uploadResponse.status}`);
+      if (!upload.ok) {
+        const errorText = await upload.text();
+        console.error("File upload failed:", errorText);
+        throw new Error(`Failed to upload file: ${upload.status}`);
       }
 
-      const { storageId } = await uploadResponse.json();
+      const { storageId } = await upload.json();
 
       if (!storageId) {
-        throw new Error("Failed to get storage ID from upload response");
+        throw new Error("No storage ID returned from upload");
       }
 
-      // Step 3: Create study material record
+      // Step 3: Save to database
       await uploadMaterial({
         title: title.trim(),
         description: description.trim() || undefined,
