@@ -66,33 +66,48 @@ export default function StudyMaterialsManagement() {
 
     setIsUploading(true);
     try {
-      // Generate upload URL from Convex
-      const uploadUrl = await fetch(
-        `${import.meta.env.VITE_CONVEX_URL}/api/storage/upload`,
+      // Step 1: Get upload URL from Convex
+      const uploadUrlResponse = await fetch(
+        `${import.meta.env.VITE_CONVEX_URL}/api/storage/generateUploadUrl`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": selectedFile.type,
-          },
-          body: selectedFile,
         }
       );
 
-      if (!uploadUrl.ok) {
-        throw new Error(`Upload failed with status: ${uploadUrl.status}`);
+      if (!uploadUrlResponse.ok) {
+        throw new Error(`Failed to generate upload URL: ${uploadUrlResponse.status}`);
       }
 
-      const uploadResponse = await uploadUrl.json();
-      
-      if (!uploadResponse.storageId) {
+      const { uploadUrl } = await uploadUrlResponse.json();
+
+      if (!uploadUrl) {
+        throw new Error("No upload URL received from server");
+      }
+
+      // Step 2: Upload file to the generated URL
+      const uploadResponse = await fetch(uploadUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": selectedFile.type,
+        },
+        body: selectedFile,
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error(`File upload failed with status: ${uploadResponse.status}`);
+      }
+
+      const { storageId } = await uploadResponse.json();
+
+      if (!storageId) {
         throw new Error("Failed to get storage ID from upload response");
       }
 
-      // Create study material record
+      // Step 3: Create study material record
       await uploadMaterial({
         title: title.trim(),
         description: description.trim() || undefined,
-        fileId: uploadResponse.storageId,
+        fileId: storageId,
         category,
       });
 
