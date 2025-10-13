@@ -2,7 +2,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useNavigate } from "react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Download, Eye, FileText } from "lucide-react";
+import { BookOpen, Download, Eye, FileText, Lock } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect } from "react";
 import { useQuery, useMutation } from "convex/react";
@@ -14,6 +14,7 @@ export default function FreeLibrary() {
   const navigate = useNavigate();
   const studyMaterials = useQuery(api.studyMaterials.getAllStudyMaterials);
   const incrementViews = useMutation(api.studyMaterials.incrementViews);
+  const subscriptionAccess = useQuery(api.student.checkSubscriptionAccess);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -21,7 +22,19 @@ export default function FreeLibrary() {
     }
   }, [isAuthenticated, isLoading, navigate]);
 
+  // Check if user has 4-month or yearly subscription
+  const hasLibraryAccess = subscriptionAccess?.subscription && 
+    subscriptionAccess.isPaid && 
+    (subscriptionAccess.subscription.planName === "4 Months Plan" || 
+     subscriptionAccess.subscription.planName === "Yearly Plan");
+
   const handleDownload = async (materialId: any, fileUrl: string | null, title: string) => {
+    if (!hasLibraryAccess) {
+      toast.error("Library access is only available with 4-month or yearly subscription!");
+      setTimeout(() => navigate("/subscription"), 1500);
+      return;
+    }
+
     if (!fileUrl) {
       toast.error("File not available");
       return;
@@ -86,6 +99,45 @@ export default function FreeLibrary() {
           <div className="flex justify-center items-center py-12">
             <div className="text-white text-xl">Loading materials...</div>
           </div>
+        ) : !hasLibraryAccess ? (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
+              <CardContent className="p-12 text-center">
+                <motion.div
+                  animate={{
+                    scale: [1, 1.1, 1],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                  className="inline-block mb-6"
+                >
+                  <Lock className="h-24 w-24 text-white/80" />
+                </motion.div>
+                
+                <h2 className="text-3xl font-bold text-white mb-4">
+                  Library Access Locked
+                </h2>
+                
+                <p className="text-white/90 text-lg mb-6">
+                  Library access is only available with 4-month or yearly subscription plans.
+                </p>
+                
+                <Button
+                  onClick={() => navigate("/subscription")}
+                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                >
+                  View Subscription Plans
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
         ) : studyMaterials.length === 0 ? (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -162,9 +214,19 @@ export default function FreeLibrary() {
                       <Button
                         onClick={() => handleDownload(material._id, material.fileUrl, material.title)}
                         className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                        disabled={!hasLibraryAccess}
                       >
-                        <Download className="h-4 w-4 mr-2" />
-                        Download PDF
+                        {hasLibraryAccess ? (
+                          <>
+                            <Download className="h-4 w-4 mr-2" />
+                            Download PDF
+                          </>
+                        ) : (
+                          <>
+                            <Lock className="h-4 w-4 mr-2" />
+                            Locked
+                          </>
+                        )}
                       </Button>
                     </div>
                   </CardContent>
