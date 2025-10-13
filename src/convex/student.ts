@@ -942,7 +942,12 @@ export const canAccessTestType = query({
       .first();
 
     if (subscription && subscription.endDate >= Date.now()) {
-      return { canAccess: true, reason: "paid_subscription" };
+      // Distinguish between paid subscription and free trial
+      const isPaid = subscription.amount > 0;
+      if (isPaid) {
+        return { canAccess: true, reason: "paid_subscription" };
+      }
+      // If free trial, check if they've used it for this test type
     }
 
     // Check if user has used their free trial for this test type
