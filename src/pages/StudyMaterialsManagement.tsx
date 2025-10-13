@@ -78,13 +78,17 @@ export default function StudyMaterialsManagement() {
         }
       );
 
-      const { storageId } = await uploadUrl.json();
+      const uploadResponse = await uploadUrl.json();
+      
+      if (!uploadResponse.storageId) {
+        throw new Error("Failed to upload file to storage");
+      }
 
       // Create study material record
       await uploadMaterial({
         title: title.trim(),
         description: description.trim() || undefined,
-        fileId: storageId as Id<"_storage">,
+        fileId: uploadResponse.storageId,
         category,
       });
 
