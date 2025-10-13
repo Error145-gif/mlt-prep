@@ -94,15 +94,23 @@ export const createSubscription = mutation({
     const startDate = Date.now();
     const endDate = startDate + args.duration * 24 * 60 * 60 * 1000;
 
-    // Check if user already has an active subscription
+    // Check if user already has an active PAID subscription
     const existingSub = await ctx.db
       .query("subscriptions")
       .withIndex("by_user", (q) => q.eq("userId", user._id))
       .filter((q) => q.eq(q.field("status"), "active"))
       .first();
 
-    if (existingSub) {
-      throw new Error("You already have an active subscription");
+    // Allow upgrading from free trial to paid subscription
+    if (existingSub && existingSub.amount > 0) {
+      throw new Error("You already have an active paid subscription");
+    }
+
+    // If upgrading from free trial, deactivate the trial
+    if (existingSub && existingSub.amount === 0) {
+      await ctx.db.patch(existingSub._id, {
+        status: "cancelled",
+      });
     }
 
     const subscriptionId = await ctx.db.insert("subscriptions", {

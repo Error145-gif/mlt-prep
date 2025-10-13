@@ -885,7 +885,9 @@ export const checkSubscriptionAccess = query({
       if (subscription.endDate < Date.now()) {
         return { hasAccess: false, reason: "expired" };
       }
-      return { hasAccess: true, subscription, isPaid: true };
+      // Distinguish between paid subscription and free trial
+      const isPaid = subscription.amount > 0;
+      return { hasAccess: true, subscription, isPaid };
     }
 
     // Check if user has used their free trial
