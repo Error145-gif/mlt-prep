@@ -40,7 +40,7 @@ export default function StudentNav() {
     { path: "/tests/ai", icon: BarChart3, label: "AI Questions" },
     { path: "/subscription", icon: CreditCard, label: "Subscription" },
     { path: "/feedback", icon: MessageSquare, label: "Feedback" },
-    { path: "/free-library", icon: Library, label: "Free Library" },
+    { path: "/free-library", icon: Library, label: "Library" },
     { path: "/contact-us", icon: MessageSquare, label: "Contact Us" },
     { path: "/profile", icon: User, label: "Profile" },
   ];

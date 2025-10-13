@@ -75,7 +75,7 @@ export default function FreeLibrary() {
           className="text-center mb-8"
         >
           <h1 className="text-4xl font-bold text-white mb-4 drop-shadow-lg">
-            Free Library
+            Library
           </h1>
           <p className="text-white/90 text-lg drop-shadow-md">
             Study Material & Handwritten Notes
