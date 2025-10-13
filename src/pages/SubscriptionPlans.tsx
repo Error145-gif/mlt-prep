@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useAction } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
 import { useNavigate } from "react-router";
@@ -10,37 +10,17 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { useEffect } from "react";
 
-// Add Razorpay types
-declare global {
-  interface Window {
-    Razorpay: any;
-  }
-}
-
 export default function SubscriptionPlans() {
   const { isAuthenticated, isLoading, user } = useAuth();
   const navigate = useNavigate();
   const subscriptionAccess = useQuery(api.student.checkSubscriptionAccess);
   const startFreeTrial = useMutation(api.subscriptions.startFreeTrial);
-  const createOrder = useAction(api.razorpay.createOrder);
-  const verifyPayment = useAction(api.razorpay.verifyPayment);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       navigate("/auth");
     }
   }, [isAuthenticated, isLoading, navigate]);
-
-  // Load Razorpay script
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.async = true;
-    document.body.appendChild(script);
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, []);
 
   if (isLoading) {
     return (
