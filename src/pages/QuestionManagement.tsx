@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { Id } from "@/convex/_generated/dataModel";
 import { AutoGenerateQuestionsDialog } from "@/components/AutoGenerateQuestionsDialog";
+import AdminSidebar from "@/components/AdminSidebar";
 
 export default function QuestionManagement() {
   const { isLoading, isAuthenticated, user } = useAuth();
