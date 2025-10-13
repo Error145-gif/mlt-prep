@@ -51,7 +51,7 @@ export default function SubscriptionPlans() {
   }
 
   const handleFreeTrial = async () => {
-    if (subscriptionAccess?.hasAccess) {
+    if (subscriptionAccess?.hasAccess && subscriptionAccess?.isPaid) {
       toast.error("You already have an active subscription!");
       return;
     }
@@ -66,7 +66,7 @@ export default function SubscriptionPlans() {
   };
 
   const handleSubscribe = async (planId: string, amount: number, planName: string, duration: number) => {
-    if (subscriptionAccess?.hasAccess) {
+    if (subscriptionAccess?.hasAccess && subscriptionAccess?.isPaid) {
       toast.error("You already have an active subscription! Check your dashboard for expiry date.");
       return;
     }
@@ -143,9 +143,9 @@ export default function SubscriptionPlans() {
         "Limited practice questions",
       ],
       action: () => handleFreeTrial(),
-      buttonText: subscriptionAccess?.hasAccess ? "Already Subscribed" : "Start Free Trial",
+      buttonText: (subscriptionAccess?.hasAccess && subscriptionAccess?.isPaid) ? "Already Subscribed" : "Start Free Trial",
       gstNote: "No payment required",
-      disabled: subscriptionAccess?.hasAccess,
+      disabled: (subscriptionAccess?.hasAccess && subscriptionAccess?.isPaid),
     },
     {
       id: "monthly",
@@ -163,9 +163,9 @@ export default function SubscriptionPlans() {
         "Priority support",
       ],
       action: () => handleSubscribe("monthly", 99, "Monthly Plan", 30),
-      buttonText: subscriptionAccess?.hasAccess ? "Already Subscribed" : "Subscribe",
+      buttonText: (subscriptionAccess?.hasAccess && subscriptionAccess?.isPaid) ? "Already Subscribed" : "Subscribe",
       gstNote: "No GST",
-      disabled: subscriptionAccess?.hasAccess,
+      disabled: (subscriptionAccess?.hasAccess && subscriptionAccess?.isPaid),
     },
     {
       id: "4months",
@@ -184,9 +184,9 @@ export default function SubscriptionPlans() {
         "Weekly progress reports",
       ],
       action: () => handleSubscribe("4months", 399, "4 Months Plan", 120),
-      buttonText: subscriptionAccess?.hasAccess ? "Already Subscribed" : "Best Value",
+      buttonText: (subscriptionAccess?.hasAccess && subscriptionAccess?.isPaid) ? "Already Subscribed" : "Best Value",
       gstNote: "No GST",
-      disabled: subscriptionAccess?.hasAccess,
+      disabled: (subscriptionAccess?.hasAccess && subscriptionAccess?.isPaid),
     },
     {
       id: "yearly",
@@ -206,9 +206,9 @@ export default function SubscriptionPlans() {
         "One-on-one mentorship session",
       ],
       action: () => handleSubscribe("yearly", 599, "Yearly Plan", 365),
-      buttonText: subscriptionAccess?.hasAccess ? "Already Subscribed" : "Maximum Savings",
+      buttonText: (subscriptionAccess?.hasAccess && subscriptionAccess?.isPaid) ? "Already Subscribed" : "Maximum Savings",
       gstNote: "No GST",
-      disabled: subscriptionAccess?.hasAccess,
+      disabled: (subscriptionAccess?.hasAccess && subscriptionAccess?.isPaid),
     },
   ];
 
@@ -237,7 +237,7 @@ export default function SubscriptionPlans() {
         <div className="text-center">
           <h1 className="text-4xl font-bold text-white mb-4">Choose Your Plan</h1>
           <p className="text-white/70 text-lg">Start with a 7-day free trial, then select the plan that works best for you</p>
-          {subscriptionAccess?.hasAccess && (
+          {(subscriptionAccess?.hasAccess && subscriptionAccess?.isPaid) && (
             <Badge className="mt-4 bg-green-500/20 text-green-300 border-green-500/30 text-lg px-4 py-2">
               ✓ You have an active subscription
             </Badge>

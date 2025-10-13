@@ -906,7 +906,7 @@ export const checkSubscriptionAccess = query({
 
     if (hasFreeMockAccess || hasFreePYQAccess || hasFreeAIAccess) {
       return {
-        hasAccess: true,
+        hasAccess: false, // Changed to false - free trial is NOT full access
         reason: "free_trial",
         isPaid: false,
         freeTrialRemaining: {
