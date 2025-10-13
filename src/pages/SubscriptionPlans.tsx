@@ -44,8 +44,8 @@ export default function SubscriptionPlans() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="text-gray-600 text-xl">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
+        <div className="text-white text-xl">Loading...</div>
       </div>
     );
   }
@@ -210,16 +210,34 @@ export default function SubscriptionPlans() {
   ];
 
   return (
-    <div className="min-h-screen bg-white p-4 md:p-8">
-      <div className="max-w-4xl mx-auto space-y-6">
+    <div className="min-h-screen p-4 md:p-8 relative overflow-hidden">
+      {/* Animated Background Gradients */}
+      <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
+        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-400/30 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-500/30 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 w-[600px] h-[600px] bg-pink-400/25 rounded-full blur-3xl" />
+      </div>
+
+      {/* Lab Background Image */}
+      <div 
+        className="fixed inset-0 z-0 opacity-10"
+        style={{
+          backgroundImage: 'url(https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=1920&q=80)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      />
+
+      <div className="relative z-10 max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div className="text-center space-y-2 mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Choose Your Plan</h1>
-          <p className="text-gray-600 text-sm md:text-base">
+          <h1 className="text-3xl md:text-4xl font-bold text-white drop-shadow-lg">Choose Your Plan</h1>
+          <p className="text-white/90 text-sm md:text-base drop-shadow-md">
             Start with a 7-day Free Trial, then unlock full access to all study sections.
           </p>
           {hasAnySubscription && (
-            <Badge className="mt-4 bg-green-100 text-green-700 border-green-300 text-sm px-4 py-2">
+            <Badge className="mt-4 bg-white/20 text-white border-white/30 backdrop-blur-xl text-sm px-4 py-2">
               ✓ You have an active subscription
             </Badge>
           )}
@@ -234,17 +252,17 @@ export default function SubscriptionPlans() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
             >
-              <Card className={`border-2 ${plan.popular ? 'border-blue-500 shadow-lg' : 'border-gray-200'} rounded-2xl overflow-hidden ${plan.disabled ? 'opacity-60' : ''}`}>
-                <CardHeader className="bg-gradient-to-r from-blue-50 to-white pb-4">
+              <Card className={`border-2 ${plan.popular ? 'border-white/50 shadow-2xl' : 'border-white/30'} rounded-2xl overflow-hidden ${plan.disabled ? 'opacity-60' : ''} glass-card backdrop-blur-xl bg-white/20`}>
+                <CardHeader className="bg-gradient-to-r from-white/10 to-white/5 pb-4">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-xl bg-blue-100">
-                        <plan.icon className="h-6 w-6 text-blue-600" />
+                      <div className="p-2 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600">
+                        <plan.icon className="h-6 w-6 text-white" />
                       </div>
                       <div>
-                        <CardTitle className="text-xl text-gray-900">{plan.name}</CardTitle>
+                        <CardTitle className="text-xl text-white">{plan.name}</CardTitle>
                         {plan.badge && (
-                          <Badge className="mt-1 bg-blue-100 text-blue-700 border-blue-300 text-xs">
+                          <Badge className="mt-1 bg-white/20 text-white border-white/30 text-xs">
                             {plan.badge}
                           </Badge>
                         )}
@@ -253,13 +271,13 @@ export default function SubscriptionPlans() {
                     <div className="text-right">
                       {plan.originalPrice && (
                         <div className="flex items-center gap-2">
-                          <span className="text-gray-400 line-through text-sm">₹{plan.originalPrice}</span>
-                          <Badge className="bg-red-100 text-red-700 border-red-300 text-xs">{plan.savings}</Badge>
+                          <span className="text-white/60 line-through text-sm">₹{plan.originalPrice}</span>
+                          <Badge className="bg-red-500/80 text-white border-red-400/50 text-xs">{plan.savings}</Badge>
                         </div>
                       )}
                       <div className="flex items-baseline gap-1">
-                        <span className="text-3xl font-bold text-gray-900">₹{plan.price}</span>
-                        <span className="text-gray-500 text-sm">/{plan.durationText}</span>
+                        <span className="text-3xl font-bold text-white">₹{plan.price}</span>
+                        <span className="text-white/70 text-sm">/{plan.durationText}</span>
                       </div>
                     </div>
                   </div>
@@ -268,16 +286,16 @@ export default function SubscriptionPlans() {
                   <div className="space-y-2">
                     {plan.features.map((feature, idx) => (
                       <div key={idx} className="flex items-center gap-3">
-                        <div className="p-1 rounded-full bg-blue-50">
-                          <feature.icon className="h-4 w-4 text-blue-600" />
+                        <div className="p-1 rounded-full bg-white/20">
+                          <feature.icon className="h-4 w-4 text-white" />
                         </div>
-                        <span className="text-gray-700 text-sm">{feature.text}</span>
+                        <span className="text-white/90 text-sm">{feature.text}</span>
                       </div>
                     ))}
                   </div>
                   <Button
                     onClick={plan.action}
-                    className={`w-full ${plan.popular ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-900 hover:bg-gray-800'} text-white rounded-xl py-6 text-base font-semibold`}
+                    className={`w-full ${plan.popular ? 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700' : 'bg-white/20 hover:bg-white/30 backdrop-blur-xl'} text-white rounded-xl py-6 text-base font-semibold`}
                     disabled={plan.disabled}
                   >
                     {plan.buttonText}
@@ -289,54 +307,54 @@ export default function SubscriptionPlans() {
         </div>
 
         {/* Comparison Table */}
-        <div className="mt-12 bg-gray-50 rounded-2xl p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4 text-center">Feature Comparison</h2>
+        <div className="mt-12 glass-card border border-white/30 backdrop-blur-xl bg-white/20 rounded-2xl p-6">
+          <h2 className="text-xl font-bold text-white mb-4 text-center">Feature Comparison</h2>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-2 font-semibold text-gray-700">Feature</th>
-                  <th className="text-center py-3 px-2 font-semibold text-gray-700">Free Trial</th>
-                  <th className="text-center py-3 px-2 font-semibold text-gray-700">Monthly</th>
-                  <th className="text-center py-3 px-2 font-semibold text-gray-700">4 Months</th>
-                  <th className="text-center py-3 px-2 font-semibold text-gray-700">Yearly</th>
+                <tr className="border-b border-white/20">
+                  <th className="text-left py-3 px-2 font-semibold text-white">Feature</th>
+                  <th className="text-center py-3 px-2 font-semibold text-white">Free Trial</th>
+                  <th className="text-center py-3 px-2 font-semibold text-white">Monthly</th>
+                  <th className="text-center py-3 px-2 font-semibold text-white">4 Months</th>
+                  <th className="text-center py-3 px-2 font-semibold text-white">Yearly</th>
                 </tr>
               </thead>
               <tbody>
-                <tr className="border-b border-gray-100">
-                  <td className="py-3 px-2 text-gray-700">Mock Tests</td>
-                  <td className="text-center py-3 px-2 text-gray-500">Limited</td>
+                <tr className="border-b border-white/10">
+                  <td className="py-3 px-2 text-white/90">Mock Tests</td>
+                  <td className="text-center py-3 px-2 text-white/70">Limited</td>
                   <td className="text-center py-3 px-2"><Check className="h-5 w-5 text-green-600 mx-auto" /></td>
                   <td className="text-center py-3 px-2"><Check className="h-5 w-5 text-green-600 mx-auto" /></td>
                   <td className="text-center py-3 px-2"><Check className="h-5 w-5 text-green-600 mx-auto" /></td>
                 </tr>
-                <tr className="border-b border-gray-100">
-                  <td className="py-3 px-2 text-gray-700">PYQ Sets</td>
-                  <td className="text-center py-3 px-2 text-gray-500">Limited</td>
+                <tr className="border-b border-white/10">
+                  <td className="py-3 px-2 text-white/90">PYQ Sets</td>
+                  <td className="text-center py-3 px-2 text-white/70">Limited</td>
                   <td className="text-center py-3 px-2"><Check className="h-5 w-5 text-green-600 mx-auto" /></td>
                   <td className="text-center py-3 px-2"><Check className="h-5 w-5 text-green-600 mx-auto" /></td>
                   <td className="text-center py-3 px-2"><Check className="h-5 w-5 text-green-600 mx-auto" /></td>
                 </tr>
-                <tr className="border-b border-gray-100">
-                  <td className="py-3 px-2 text-gray-700">AI-Based Questions</td>
-                  <td className="text-center py-3 px-2 text-gray-500">Limited</td>
+                <tr className="border-b border-white/10">
+                  <td className="py-3 px-2 text-white/90">AI-Based Questions</td>
+                  <td className="text-center py-3 px-2 text-white/70">Limited</td>
                   <td className="text-center py-3 px-2"><Check className="h-5 w-5 text-green-600 mx-auto" /></td>
                   <td className="text-center py-3 px-2"><Check className="h-5 w-5 text-green-600 mx-auto" /></td>
                   <td className="text-center py-3 px-2"><Check className="h-5 w-5 text-green-600 mx-auto" /></td>
                 </tr>
-                <tr className="border-b border-gray-100">
-                  <td className="py-3 px-2 text-gray-700">Library Access</td>
+                <tr className="border-b border-white/10">
+                  <td className="py-3 px-2 text-white/90">Library Access</td>
                   <td className="text-center py-3 px-2"><X className="h-5 w-5 text-red-500 mx-auto" /></td>
                   <td className="text-center py-3 px-2"><X className="h-5 w-5 text-red-500 mx-auto" /></td>
                   <td className="text-center py-3 px-2"><Check className="h-5 w-5 text-green-600 mx-auto" /></td>
                   <td className="text-center py-3 px-2"><Check className="h-5 w-5 text-green-600 mx-auto" /></td>
                 </tr>
                 <tr>
-                  <td className="py-3 px-2 text-gray-700">Analytics</td>
-                  <td className="text-center py-3 px-2 text-gray-500">Basic</td>
-                  <td className="text-center py-3 px-2 text-gray-700">Advanced</td>
-                  <td className="text-center py-3 px-2 text-gray-700">Advanced</td>
-                  <td className="text-center py-3 px-2 text-gray-700">Advanced</td>
+                  <td className="py-3 px-2 text-white/90">Analytics</td>
+                  <td className="text-center py-3 px-2 text-white/70">Basic</td>
+                  <td className="text-center py-3 px-2 text-white/90">Advanced</td>
+                  <td className="text-center py-3 px-2 text-white/90">Advanced</td>
+                  <td className="text-center py-3 px-2 text-white/90">Advanced</td>
                 </tr>
               </tbody>
             </table>
@@ -344,8 +362,8 @@ export default function SubscriptionPlans() {
         </div>
 
         {/* Bottom Note */}
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center">
-          <p className="text-sm text-blue-800">
+        <div className="glass-card border border-white/30 backdrop-blur-xl bg-white/20 rounded-xl p-4 text-center">
+          <p className="text-sm text-white">
             <strong>Note:</strong> Users with 4-Month or Yearly subscriptions get Library Access in addition to all other features.
           </p>
         </div>
