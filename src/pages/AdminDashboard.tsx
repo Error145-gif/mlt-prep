@@ -82,6 +82,24 @@ export default function AdminDashboard() {
       icon: AlertCircle,
       color: "from-red-400 to-red-600",
     },
+    {
+      title: "Mock Test Sets",
+      value: stats?.mockTestSets || 0,
+      icon: FileText,
+      color: "from-emerald-400 to-emerald-600",
+    },
+    {
+      title: "AI Test Sets",
+      value: stats?.aiTestSets || 0,
+      icon: FileText,
+      color: "from-violet-400 to-violet-600",
+    },
+    {
+      title: "PYQ Test Sets",
+      value: stats?.pyqTestSets || 0,
+      icon: FileText,
+      color: "from-rose-400 to-rose-600",
+    },
   ];
 
   return (

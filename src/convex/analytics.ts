@@ -56,6 +56,17 @@ export const getDashboardStats = query({
     // Get recent content
     const recentContent = await ctx.db.query("content").order("desc").take(5);
 
+    // Calculate test set counts
+    const allQuestions = await ctx.db.query("questions").collect();
+    
+    const mockQuestions = allQuestions.filter(q => q.source === "manual" && q.status === "approved");
+    const aiQuestions = allQuestions.filter(q => q.source === "ai" && q.status === "approved");
+    const pyqQuestions = allQuestions.filter(q => q.source === "pyq" && q.status === "approved");
+    
+    const mockTestSets = Math.floor(mockQuestions.length / 100);
+    const aiTestSets = Math.floor(aiQuestions.length / 25);
+    const pyqTestSets = Math.floor(pyqQuestions.length / 20);
+
     return {
       totalUsers,
       activeSubscriptions,
@@ -65,6 +76,9 @@ export const getDashboardStats = query({
       totalQuestions,
       approvedQuestions,
       manualQuestions,
+      mockTestSets,
+      aiTestSets,
+      pyqTestSets,
       recentContent,
       recentPayments,
     };
