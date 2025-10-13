@@ -20,6 +20,21 @@ export const createOrder = action({
     });
 
     try {
+      // Validate environment variables
+      if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+        console.error("Missing Razorpay credentials");
+        return {
+          success: false,
+          error: "Razorpay credentials not configured",
+        };
+      }
+
+      console.log("Creating Razorpay order:", {
+        amount: args.amount * 100,
+        currency: "INR",
+        planName: args.planName,
+      });
+
       const order = await razorpay.orders.create({
         amount: args.amount * 100, // Convert to paise
         currency: "INR",
@@ -30,6 +45,8 @@ export const createOrder = action({
         },
       });
 
+      console.log("Razorpay order created successfully:", order.id);
+
       return {
         success: true,
         orderId: order.id,
@@ -37,10 +54,17 @@ export const createOrder = action({
         currency: order.currency,
       };
     } catch (error: any) {
-      console.error("Razorpay order creation error:", error);
+      console.error("Razorpay order creation error:", {
+        message: error.message,
+        description: error.error?.description,
+        code: error.error?.code,
+        statusCode: error.statusCode,
+        fullError: JSON.stringify(error, null, 2),
+      });
+      
       return {
         success: false,
-        error: error.message || "Failed to create order",
+        error: error.error?.description || error.message || "Failed to create order",
       };
     }
   },
