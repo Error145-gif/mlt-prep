@@ -513,8 +513,31 @@ export const getTestQuestions = query({
       }
       // Apply set filtering for PYQ (20 questions per set)
       if (args.setNumber) {
-        // Filter by setNumber field directly
+        // Filter by setNumber field directly - this ensures exactly 20 questions per set
         questions = questions.filter((q) => q.setNumber === args.setNumber);
+        
+        // If no questions found with setNumber, fall back to slicing (for legacy data)
+        // but strictly enforce 20 questions per set
+        if (questions.length === 0) {
+          const allPyqForYear = await ctx.db
+            .query("questions")
+            .withIndex("by_source", (q) => q.eq("source", "pyq"))
+            .filter((q) => q.eq(q.field("status"), "approved"))
+            .collect();
+          const filteredByYear = args.year !== undefined 
+            ? allPyqForYear.filter((q) => q.examYear === args.year!.toString())
+            : allPyqForYear;
+          
+          const setSize = 20;
+          const startIndex = (args.setNumber - 1) * setSize;
+          const endIndex = startIndex + setSize;
+          questions = filteredByYear.slice(startIndex, endIndex);
+        }
+        
+        // Ensure we never return more than 20 questions
+        if (questions.length > 20) {
+          questions = questions.slice(0, 20);
+        }
       }
     } else if (args.testType === "ai") {
       // Get AI questions
