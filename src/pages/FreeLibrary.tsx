@@ -99,45 +99,6 @@ export default function FreeLibrary() {
           <div className="flex justify-center items-center py-12">
             <div className="text-white text-xl">Loading materials...</div>
           </div>
-        ) : !hasLibraryAccess ? (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2 }}
-          >
-            <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
-              <CardContent className="p-12 text-center">
-                <motion.div
-                  animate={{
-                    scale: [1, 1.1, 1],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
-                  className="inline-block mb-6"
-                >
-                  <Lock className="h-24 w-24 text-white/80" />
-                </motion.div>
-                
-                <h2 className="text-3xl font-bold text-white mb-4">
-                  Library Access Locked
-                </h2>
-                
-                <p className="text-white/90 text-lg mb-6">
-                  Library access is only available with 4-month or yearly subscription plans.
-                </p>
-                
-                <Button
-                  onClick={() => navigate("/subscription")}
-                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
-                >
-                  View Subscription Plans
-                </Button>
-              </CardContent>
-            </Card>
-          </motion.div>
         ) : studyMaterials.length === 0 ? (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -172,8 +133,37 @@ export default function FreeLibrary() {
             </Card>
           </motion.div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {studyMaterials.map((material, index) => (
+          <>
+            {!hasLibraryAccess && (
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-6"
+              >
+                <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
+                  <CardContent className="p-6 text-center">
+                    <div className="flex items-center justify-center gap-3 mb-3">
+                      <Lock className="h-6 w-6 text-white" />
+                      <h3 className="text-xl font-bold text-white">
+                        Library Access Locked
+                      </h3>
+                    </div>
+                    <p className="text-white/90 mb-4">
+                      Subscribe to 4-month or yearly plan to download these materials.
+                    </p>
+                    <Button
+                      onClick={() => navigate("/subscription")}
+                      className="bg-gradient-to-r from-[#3b82f6] to-[#2563eb] hover:from-[#2563eb] hover:to-[#1d4ed8] shadow-lg"
+                    >
+                      View Subscription Plans
+                    </Button>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {studyMaterials.map((material, index) => (
               <motion.div
                 key={material._id}
                 initial={{ opacity: 0, y: 20 }}
@@ -232,8 +222,9 @@ export default function FreeLibrary() {
                   </CardContent>
                 </Card>
               </motion.div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
     </div>
