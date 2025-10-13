@@ -66,7 +66,7 @@ export default function StudyMaterialsManagement() {
 
     setIsUploading(true);
     try {
-      // Upload file to Convex storage
+      // Generate upload URL from Convex
       const uploadUrl = await fetch(
         `${import.meta.env.VITE_CONVEX_URL}/api/storage/upload`,
         {
@@ -78,10 +78,14 @@ export default function StudyMaterialsManagement() {
         }
       );
 
+      if (!uploadUrl.ok) {
+        throw new Error(`Upload failed with status: ${uploadUrl.status}`);
+      }
+
       const uploadResponse = await uploadUrl.json();
       
       if (!uploadResponse.storageId) {
-        throw new Error("Failed to upload file to storage");
+        throw new Error("Failed to get storage ID from upload response");
       }
 
       // Create study material record
@@ -103,6 +107,7 @@ export default function StudyMaterialsManagement() {
         fileInputRef.current.value = "";
       }
     } catch (error: any) {
+      console.error("Upload error:", error);
       toast.error(error.message || "Failed to upload study material");
     } finally {
       setIsUploading(false);
