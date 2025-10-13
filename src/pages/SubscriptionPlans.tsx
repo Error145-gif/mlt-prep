@@ -5,7 +5,7 @@ import { useNavigate } from "react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, Sparkles, Zap, Crown } from "lucide-react";
+import { Check, X, BookOpen, Brain, Library, BarChart3, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { useEffect } from "react";
@@ -44,8 +44,8 @@ export default function SubscriptionPlans() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-white text-xl">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="text-gray-600 text-xl">Loading...</div>
       </div>
     );
   }
@@ -121,7 +121,7 @@ export default function SubscriptionPlans() {
           name: user?.name || "",
         },
         theme: {
-          color: "#7C3AED",
+          color: "#007BFF",
         },
       };
 
@@ -140,16 +140,15 @@ export default function SubscriptionPlans() {
       duration: 7,
       durationText: "7 days",
       icon: Sparkles,
-      color: "from-blue-500 to-cyan-600",
+      badge: hasAnySubscription && !hasPaidSubscription ? "Active" : null,
       features: [
-        "Access to all mock tests",
-        "PYQ practice sets",
-        "Basic analytics",
-        "Limited practice questions",
+        { text: "Limited Mock Tests", icon: BookOpen },
+        { text: "Limited PYQ Sets", icon: BookOpen },
+        { text: "Limited AI-Based Questions", icon: Brain },
+        { text: "Basic Analytics", icon: BarChart3 },
       ],
       action: () => handleFreeTrial(),
       buttonText: hasAnySubscription ? "Already Subscribed" : "Start Free Trial",
-      gstNote: "No payment required",
       disabled: hasAnySubscription,
     },
     {
@@ -157,40 +156,37 @@ export default function SubscriptionPlans() {
       name: "Monthly",
       price: 99,
       duration: 30,
-      durationText: "per month",
-      icon: Zap,
-      color: "from-purple-500 to-pink-600",
+      durationText: "month",
+      icon: BookOpen,
+      badge: "Popular Choice",
       features: [
-        "Unlimited mock tests",
-        "All PYQ sets",
-        "Advanced analytics",
-        "Unlimited practice questions",
-        "Priority support",
+        { text: "Unlimited Mock Tests", icon: BookOpen },
+        { text: "All PYQ Sets", icon: BookOpen },
+        { text: "All AI-Based Question Sets", icon: Brain },
+        { text: "Advanced Analytics", icon: BarChart3 },
       ],
       action: () => handleSubscribe("monthly", 99, "Monthly Plan", 30),
-      buttonText: hasPaidSubscription ? "Already Subscribed" : "Subscribe",
-      gstNote: "No GST",
+      buttonText: hasPaidSubscription ? "Already Subscribed" : "Subscribe Now",
       disabled: hasPaidSubscription,
     },
     {
       id: "4months",
       name: "4 Months",
       price: 399,
+      originalPrice: 496,
+      savings: "Save ₹97",
       duration: 120,
       durationText: "4 months",
-      icon: Crown,
-      color: "from-orange-500 to-red-600",
+      icon: Library,
+      badge: "Most Popular",
       popular: true,
       features: [
-        "Everything in Monthly",
-        "Save ₹97",
-        "Extended validity",
-        "Exam preparation guide",
-        "Weekly progress reports",
+        { text: "Everything in Monthly Plan", icon: Check },
+        { text: "Library Access", icon: Library },
+        { text: "Extended Validity (4 Months)", icon: Check },
       ],
       action: () => handleSubscribe("4months", 399, "4 Months Plan", 120),
-      buttonText: hasPaidSubscription ? "Already Subscribed" : "Best Value",
-      gstNote: "No GST",
+      buttonText: hasPaidSubscription ? "Already Subscribed" : "Get 4-Month Plan",
       disabled: hasPaidSubscription,
     },
     {
@@ -198,102 +194,90 @@ export default function SubscriptionPlans() {
       name: "Yearly",
       price: 599,
       originalPrice: 1188,
+      savings: "Save ₹589",
       duration: 365,
-      durationText: "12 months",
-      icon: Crown,
-      color: "from-green-500 to-teal-600",
-      discount: "Save ₹589",
+      durationText: "year",
+      icon: Library,
+      badge: "Best Value",
       features: [
-        "Everything in 4 Months",
-        "Maximum savings",
-        "1 year full access",
-        "Personalized study plan",
-        "One-on-one mentorship session",
+        { text: "Everything in 4-Month Plan", icon: Check },
+        { text: "1 Year Full Access to All Content", icon: Check },
       ],
       action: () => handleSubscribe("yearly", 599, "Yearly Plan", 365),
-      buttonText: hasPaidSubscription ? "Already Subscribed" : "Maximum Savings",
-      gstNote: "No GST",
+      buttonText: hasPaidSubscription ? "Already Subscribed" : "Go Yearly – Save Big",
       disabled: hasPaidSubscription,
     },
   ];
 
   return (
-    <div className="min-h-screen p-6 lg:p-8 relative overflow-hidden">
-      {/* Animated Background Gradients */}
-      <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
-        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-400/30 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-500/30 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 w-[600px] h-[600px] bg-pink-400/25 rounded-full blur-3xl" />
-        <div className="absolute top-1/4 right-1/3 w-[400px] h-[400px] bg-cyan-400/25 rounded-full blur-3xl" />
-      </div>
-      
-      {/* Lab Background Image */}
-      <div 
-        className="fixed inset-0 z-0 opacity-10"
-        style={{
-          backgroundImage: 'url(https://harmless-tapir-303.convex.cloud/api/storage/b5c7b06f-8b6e-4419-949e-f800852edc5e)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
-        }}
-      />
-      
-      <div className="relative z-10 max-w-7xl mx-auto space-y-8">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-white mb-4">Choose Your Plan</h1>
-          <p className="text-white/70 text-lg">Start with a 7-day free trial, then select the plan that works best for you</p>
+    <div className="min-h-screen bg-white p-4 md:p-8">
+      <div className="max-w-4xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="text-center space-y-2 mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Choose Your Plan</h1>
+          <p className="text-gray-600 text-sm md:text-base">
+            Start with a 7-day Free Trial, then unlock full access to all study sections.
+          </p>
           {hasAnySubscription && (
-            <Badge className="mt-4 bg-green-500/20 text-green-300 border-green-500/30 text-lg px-4 py-2">
+            <Badge className="mt-4 bg-green-100 text-green-700 border-green-300 text-sm px-4 py-2">
               ✓ You have an active subscription
             </Badge>
           )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Plans */}
+        <div className="space-y-4">
           {plans.map((plan, index) => (
             <motion.div
               key={plan.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="relative"
             >
-              {plan.popular && (
-                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-orange-500 to-red-600 border-0">
-                  Most Popular
-                </Badge>
-              )}
-              <Card className={`glass-card border-white/20 backdrop-blur-xl bg-white/10 h-full ${plan.popular ? 'border-orange-500/50' : ''} ${plan.disabled ? 'opacity-60' : ''}`}>
-                <CardHeader>
-                  <div className={`p-3 rounded-xl bg-gradient-to-br ${plan.color} w-fit mb-4`}>
-                    <plan.icon className="h-6 w-6 text-white" />
-                  </div>
-                  <CardTitle className="text-white text-2xl">{plan.name}</CardTitle>
-                  <div className="mt-4">
-                    {plan.originalPrice && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-white/50 line-through text-lg">₹{plan.originalPrice}</span>
-                        <Badge className="bg-red-500/20 text-red-300 border-red-500/30">{plan.discount}</Badge>
+              <Card className={`border-2 ${plan.popular ? 'border-blue-500 shadow-lg' : 'border-gray-200'} rounded-2xl overflow-hidden ${plan.disabled ? 'opacity-60' : ''}`}>
+                <CardHeader className="bg-gradient-to-r from-blue-50 to-white pb-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-xl bg-blue-100">
+                        <plan.icon className="h-6 w-6 text-blue-600" />
                       </div>
-                    )}
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-4xl font-bold text-white">₹{plan.price}</span>
-                      <span className="text-white/60">/{plan.durationText}</span>
+                      <div>
+                        <CardTitle className="text-xl text-gray-900">{plan.name}</CardTitle>
+                        {plan.badge && (
+                          <Badge className="mt-1 bg-blue-100 text-blue-700 border-blue-300 text-xs">
+                            {plan.badge}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      {plan.originalPrice && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-gray-400 line-through text-sm">₹{plan.originalPrice}</span>
+                          <Badge className="bg-red-100 text-red-700 border-red-300 text-xs">{plan.savings}</Badge>
+                        </div>
+                      )}
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-3xl font-bold text-gray-900">₹{plan.price}</span>
+                        <span className="text-gray-500 text-sm">/{plan.durationText}</span>
+                      </div>
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-3">
+                <CardContent className="pt-4 space-y-4">
+                  <div className="space-y-2">
                     {plan.features.map((feature, idx) => (
-                      <div key={idx} className="flex items-start gap-2">
-                        <Check className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
-                        <span className="text-white/80 text-sm">{feature}</span>
+                      <div key={idx} className="flex items-center gap-3">
+                        <div className="p-1 rounded-full bg-blue-50">
+                          <feature.icon className="h-4 w-4 text-blue-600" />
+                        </div>
+                        <span className="text-gray-700 text-sm">{feature.text}</span>
                       </div>
                     ))}
                   </div>
                   <Button
                     onClick={plan.action}
-                    className={`w-full bg-gradient-to-r ${plan.color} hover:opacity-90`}
+                    className={`w-full ${plan.popular ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-900 hover:bg-gray-800'} text-white rounded-xl py-6 text-base font-semibold`}
                     disabled={plan.disabled}
                   >
                     {plan.buttonText}
@@ -302,6 +286,68 @@ export default function SubscriptionPlans() {
               </Card>
             </motion.div>
           ))}
+        </div>
+
+        {/* Comparison Table */}
+        <div className="mt-12 bg-gray-50 rounded-2xl p-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-4 text-center">Feature Comparison</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="text-left py-3 px-2 font-semibold text-gray-700">Feature</th>
+                  <th className="text-center py-3 px-2 font-semibold text-gray-700">Free Trial</th>
+                  <th className="text-center py-3 px-2 font-semibold text-gray-700">Monthly</th>
+                  <th className="text-center py-3 px-2 font-semibold text-gray-700">4 Months</th>
+                  <th className="text-center py-3 px-2 font-semibold text-gray-700">Yearly</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b border-gray-100">
+                  <td className="py-3 px-2 text-gray-700">Mock Tests</td>
+                  <td className="text-center py-3 px-2 text-gray-500">Limited</td>
+                  <td className="text-center py-3 px-2"><Check className="h-5 w-5 text-green-600 mx-auto" /></td>
+                  <td className="text-center py-3 px-2"><Check className="h-5 w-5 text-green-600 mx-auto" /></td>
+                  <td className="text-center py-3 px-2"><Check className="h-5 w-5 text-green-600 mx-auto" /></td>
+                </tr>
+                <tr className="border-b border-gray-100">
+                  <td className="py-3 px-2 text-gray-700">PYQ Sets</td>
+                  <td className="text-center py-3 px-2 text-gray-500">Limited</td>
+                  <td className="text-center py-3 px-2"><Check className="h-5 w-5 text-green-600 mx-auto" /></td>
+                  <td className="text-center py-3 px-2"><Check className="h-5 w-5 text-green-600 mx-auto" /></td>
+                  <td className="text-center py-3 px-2"><Check className="h-5 w-5 text-green-600 mx-auto" /></td>
+                </tr>
+                <tr className="border-b border-gray-100">
+                  <td className="py-3 px-2 text-gray-700">AI-Based Questions</td>
+                  <td className="text-center py-3 px-2 text-gray-500">Limited</td>
+                  <td className="text-center py-3 px-2"><Check className="h-5 w-5 text-green-600 mx-auto" /></td>
+                  <td className="text-center py-3 px-2"><Check className="h-5 w-5 text-green-600 mx-auto" /></td>
+                  <td className="text-center py-3 px-2"><Check className="h-5 w-5 text-green-600 mx-auto" /></td>
+                </tr>
+                <tr className="border-b border-gray-100">
+                  <td className="py-3 px-2 text-gray-700">Library Access</td>
+                  <td className="text-center py-3 px-2"><X className="h-5 w-5 text-red-500 mx-auto" /></td>
+                  <td className="text-center py-3 px-2"><X className="h-5 w-5 text-red-500 mx-auto" /></td>
+                  <td className="text-center py-3 px-2"><Check className="h-5 w-5 text-green-600 mx-auto" /></td>
+                  <td className="text-center py-3 px-2"><Check className="h-5 w-5 text-green-600 mx-auto" /></td>
+                </tr>
+                <tr>
+                  <td className="py-3 px-2 text-gray-700">Analytics</td>
+                  <td className="text-center py-3 px-2 text-gray-500">Basic</td>
+                  <td className="text-center py-3 px-2 text-gray-700">Advanced</td>
+                  <td className="text-center py-3 px-2 text-gray-700">Advanced</td>
+                  <td className="text-center py-3 px-2 text-gray-700">Advanced</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Bottom Note */}
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center">
+          <p className="text-sm text-blue-800">
+            <strong>Note:</strong> Users with 4-Month or Yearly subscriptions get Library Access in addition to all other features.
+          </p>
         </div>
       </div>
     </div>
