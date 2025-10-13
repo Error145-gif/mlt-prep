@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "convex/react";
+import { useMutation, useQuery, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
 import { useNavigate } from "react-router";
@@ -10,17 +10,37 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { useEffect } from "react";
 
+// Razorpay types
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
+
 export default function SubscriptionPlans() {
   const { isAuthenticated, isLoading, user } = useAuth();
   const navigate = useNavigate();
   const subscriptionAccess = useQuery(api.student.checkSubscriptionAccess);
   const startFreeTrial = useMutation(api.subscriptions.startFreeTrial);
+  const createOrder = useAction(api.razorpay.createOrder);
+  const verifyPayment = useAction(api.razorpay.verifyPayment);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       navigate("/auth");
     }
   }, [isAuthenticated, isLoading, navigate]);
+
+  // Load Razorpay script
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    document.body.appendChild(script);
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
   if (isLoading) {
     return (
@@ -31,7 +51,6 @@ export default function SubscriptionPlans() {
   }
 
   const handleFreeTrial = async () => {
-    // Check if user already has active subscription
     if (subscriptionAccess?.hasAccess) {
       toast.error("You already have an active subscription!");
       return;
@@ -47,14 +66,65 @@ export default function SubscriptionPlans() {
   };
 
   const handleSubscribe = async (planId: string, amount: number, planName: string, duration: number) => {
-    // Check if user already has active subscription
     if (subscriptionAccess?.hasAccess) {
       toast.error("You already have an active subscription! Check your dashboard for expiry date.");
       return;
     }
 
-    // Navigate to payment summary page instead of directly opening Razorpay
-    navigate(`/payment-summary?plan=${planId}&name=${encodeURIComponent(planName)}&price=${amount}&duration=${duration}`);
+    try {
+      // Create Razorpay order
+      const orderResult = await createOrder({ amount, planName, duration });
+
+      if (!orderResult.success) {
+        toast.error(orderResult.error || "Failed to create order");
+        return;
+      }
+
+      // Open Razorpay checkout
+      const options = {
+        key: "rzp_live_RStd1rQAde32Tp",
+        amount: orderResult.amount,
+        currency: orderResult.currency,
+        name: "MLT Prep",
+        description: planName,
+        order_id: orderResult.orderId,
+        handler: async function (response: any) {
+          try {
+            const verifyResult = await verifyPayment({
+              razorpayOrderId: response.razorpay_order_id,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpaySignature: response.razorpay_signature,
+              planName,
+              amount,
+              duration,
+            });
+
+            if (verifyResult.success) {
+              toast.success("Payment successful! Subscription activated.");
+              navigate("/payment-status?status=success");
+            } else {
+              toast.error("Payment verification failed");
+              navigate("/payment-status?status=failed");
+            }
+          } catch (error: any) {
+            toast.error(error.message || "Payment verification failed");
+            navigate("/payment-status?status=failed");
+          }
+        },
+        prefill: {
+          email: user?.email || "",
+          name: user?.name || "",
+        },
+        theme: {
+          color: "#7C3AED",
+        },
+      };
+
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to initiate payment");
+    }
   };
 
   const plans = [

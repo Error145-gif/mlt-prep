@@ -26,6 +26,8 @@ import type * as invoices from "../invoices.js";
 import type * as invoicesInternal from "../invoicesInternal.js";
 import type * as notifications from "../notifications.js";
 import type * as questions from "../questions.js";
+import type * as razorpay from "../razorpay.js";
+import type * as razorpayInternal from "../razorpayInternal.js";
 import type * as sections from "../sections.js";
 import type * as student from "../student.js";
 import type * as studyMaterials from "../studyMaterials.js";
@@ -57,6 +59,8 @@ declare const fullApi: ApiFromModules<{
   invoicesInternal: typeof invoicesInternal;
   notifications: typeof notifications;
   questions: typeof questions;
+  razorpay: typeof razorpay;
+  razorpayInternal: typeof razorpayInternal;
   sections: typeof sections;
   student: typeof student;
   studyMaterials: typeof studyMaterials;

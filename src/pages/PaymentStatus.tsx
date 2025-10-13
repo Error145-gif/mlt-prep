@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AlertCircle } from "lucide-react";
+import { CheckCircle, XCircle } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function PaymentStatus() {
@@ -10,6 +10,7 @@ export default function PaymentStatus() {
   const navigate = useNavigate();
   
   const status = searchParams.get("status");
+  const isSuccess = status === "success";
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -38,36 +39,41 @@ export default function PaymentStatus() {
               transition={{ delay: 0.2, type: "spring" }}
               className="flex justify-center mb-4"
             >
-              <div className="p-4 bg-yellow-500/20 rounded-full">
-                <AlertCircle className="h-16 w-16 text-yellow-400" />
+              <div className={`p-4 ${isSuccess ? 'bg-green-500/20' : 'bg-red-500/20'} rounded-full`}>
+                {isSuccess ? (
+                  <CheckCircle className="h-16 w-16 text-green-400" />
+                ) : (
+                  <XCircle className="h-16 w-16 text-red-400" />
+                )}
               </div>
             </motion.div>
             <CardTitle className="text-3xl text-white">
-              Payment Processing Unavailable
+              {isSuccess ? "Payment Successful!" : "Payment Failed"}
             </CardTitle>
             <p className="text-white/70 mt-2">
-              Payment processing is currently being set up
+              {isSuccess 
+                ? "Your subscription has been activated successfully. An invoice has been sent to your email."
+                : "There was an issue processing your payment. Please try again or contact support."}
             </p>
           </CardHeader>
           
           <CardContent className="space-y-4">
-            <p className="text-white/70 text-center">
-              Please contact support to activate your subscription.
-            </p>
             <div className="space-y-3">
               <Button
-                onClick={() => navigate("/contact-us")}
-                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
-              >
-                Contact Support
-              </Button>
-              <Button
                 onClick={() => navigate("/dashboard")}
-                variant="outline"
-                className="w-full border-white/20 text-white hover:bg-white/10"
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
               >
                 Go to Dashboard
               </Button>
+              {!isSuccess && (
+                <Button
+                  onClick={() => navigate("/subscription")}
+                  variant="outline"
+                  className="w-full border-white/20 text-white hover:bg-white/10"
+                >
+                  Try Again
+                </Button>
+              )}
             </div>
             <p className="text-xs text-white/50 text-center">
               Redirecting to dashboard in 5 seconds...
