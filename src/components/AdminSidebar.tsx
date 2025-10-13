@@ -59,7 +59,7 @@ export default function AdminSidebar() {
             animate={{ x: 0 }}
             exit={{ x: -300 }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="fixed left-0 top-0 h-screen w-64 glass-card border-r border-white/20 backdrop-blur-xl bg-white/10 p-6 z-40"
+            className="fixed left-0 top-0 h-screen w-64 border-r border-white/20 backdrop-blur-xl bg-gradient-to-b from-gray-900/95 to-gray-800/95 p-6 z-40 shadow-2xl"
           >
             <div className="flex flex-col h-full">
               <div className="flex items-center gap-3 mb-8">
