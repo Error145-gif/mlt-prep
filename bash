@@ -1,3 +1,5 @@
-npm run build
-npx cap copy
-npx cap open android
+# Development mode (local testing)
+npx convex dev
+
+# Production deployment
+npx convex deploy --prod
