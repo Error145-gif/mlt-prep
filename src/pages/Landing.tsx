@@ -363,7 +363,7 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-6">
             <div>
-              <h3 className="text-white font-semibold mb-3">MLT Learning</h3>
+              <h3 className="text-white font-semibold mb-3">MLT Prep</h3>
               <p className="text-white/60 text-sm">
                 Comprehensive Medical Lab Technology education platform for government and technical exam preparation.
               </p>
@@ -385,7 +385,7 @@ export default function Landing() {
             </div>
           </div>
           <div className="text-center text-white/60 pt-6 border-t border-white/20">
-            <p>© 2024 MLT Learning. Powered by <a href="https://vly.ai" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">vly.ai</a></p>
+            <p>© 2024 MLT Prep. Powered by <a href="https://vly.ai" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">vly.ai</a></p>
           </div>
         </div>
       </footer>
