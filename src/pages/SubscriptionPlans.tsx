@@ -182,7 +182,7 @@ export default function SubscriptionPlans() {
       popular: true,
       features: [
         { text: "Everything in Monthly Plan", icon: Check },
-        { text: "Library Access", icon: Library },
+        { text: "Library Access (Coming Soon)", icon: Library },
         { text: "Extended Validity (4 Months)", icon: Check },
       ],
       action: () => handleSubscribe("4months", 399, "4 Months Plan", 120),
@@ -344,10 +344,10 @@ export default function SubscriptionPlans() {
                 </tr>
                 <tr className="border-b border-white/10">
                   <td className="py-3 px-2 text-white/90">Library Access</td>
-                  <td className="text-center py-3 px-2"><X className="h-5 w-5 text-red-500 mx-auto" /></td>
-                  <td className="text-center py-3 px-2"><X className="h-5 w-5 text-red-500 mx-auto" /></td>
-                  <td className="text-center py-3 px-2"><Check className="h-5 w-5 text-green-600 mx-auto" /></td>
-                  <td className="text-center py-3 px-2"><Check className="h-5 w-5 text-green-600 mx-auto" /></td>
+                  <td className="text-center py-3 px-2 text-white/70 text-sm">Coming Soon</td>
+                  <td className="text-center py-3 px-2 text-white/70 text-sm">Coming Soon</td>
+                  <td className="text-center py-3 px-2 text-white/70 text-sm">Coming Soon</td>
+                  <td className="text-center py-3 px-2 text-white/70 text-sm">Coming Soon</td>
                 </tr>
                 <tr>
                   <td className="py-3 px-2 text-white/90">Analytics</td>
@@ -364,7 +364,7 @@ export default function SubscriptionPlans() {
         {/* Bottom Note */}
         <div className="glass-card border border-white/30 backdrop-blur-xl bg-white/20 rounded-xl p-4 text-center">
           <p className="text-sm text-white">
-            <strong>Note:</strong> Users with 4-Month or Yearly subscriptions get Library Access in addition to all other features.
+            <strong>Note:</strong> Library Access feature is coming soon and will be available to all subscription plans.
           </p>
         </div>
       </div>
