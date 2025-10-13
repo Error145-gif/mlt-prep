@@ -119,7 +119,7 @@ export default function AIQuestions() {
                       </Badge>
                     </div>
                     <CardTitle className="text-white mt-4 flex items-center gap-2">
-                      {test.topicName}
+                      AI Challenge Test
                       {isLocked && (
                         <img 
                           src="https://harmless-tapir-303.convex.cloud/api/storage/22271688-6e3c-45a0-a31d-8c82daf67b1e" 
