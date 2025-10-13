@@ -295,7 +295,7 @@ export default function SubscriptionPlans() {
                   </div>
                   <Button
                     onClick={plan.action}
-                    className={`w-full ${plan.popular ? 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700' : 'bg-white/20 hover:bg-white/30 backdrop-blur-xl'} text-white rounded-xl py-6 text-base font-semibold`}
+                    className="w-full bg-gradient-to-r from-[#3b82f6] to-[#2563eb] hover:from-[#2563eb] hover:to-[#1d4ed8] shadow-lg text-white rounded-xl py-6 text-base font-semibold"
                     disabled={plan.disabled}
                   >
                     {plan.buttonText}
