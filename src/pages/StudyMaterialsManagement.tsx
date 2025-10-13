@@ -66,48 +66,52 @@ export default function StudyMaterialsManagement() {
 
     setIsUploading(true);
     try {
-      // Step 1: Generate upload URL
-      const uploadUrl = await fetch(
-        `${import.meta.env.VITE_CONVEX_URL.replace("/api", "")}/api/storage/generateUploadUrl`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      // Step 1: Generate upload URL using Convex's storage endpoint
+      const convexUrl = import.meta.env.VITE_CONVEX_URL;
+      const uploadUrlResponse = await fetch(`${convexUrl}/api/storage/generateUploadUrl`, {
+        method: "POST",
+      });
 
-      if (!uploadUrl.ok) {
-        const errorText = await uploadUrl.text();
-        console.error("Upload URL generation failed:", errorText);
-        throw new Error(`Failed to generate upload URL: ${uploadUrl.status}`);
+      if (!uploadUrlResponse.ok) {
+        const errorText = await uploadUrlResponse.text();
+        console.error("Upload URL generation failed:", uploadUrlResponse.status, errorText);
+        throw new Error(`Failed to generate upload URL: ${uploadUrlResponse.status}`);
       }
 
-      const { uploadUrl: url } = await uploadUrl.json();
+      const uploadUrlData = await uploadUrlResponse.json();
+      console.log("Upload URL data:", uploadUrlData);
 
-      // Step 2: Upload the file
-      const upload = await fetch(url, {
+      if (!uploadUrlData.uploadUrl) {
+        throw new Error("No upload URL returned from server");
+      }
+
+      // Step 2: Upload the file to the generated URL
+      const uploadResponse = await fetch(uploadUrlData.uploadUrl, {
         method: "POST",
+        headers: {
+          "Content-Type": selectedFile.type,
+        },
         body: selectedFile,
       });
 
-      if (!upload.ok) {
-        const errorText = await upload.text();
-        console.error("File upload failed:", errorText);
-        throw new Error(`Failed to upload file: ${upload.status}`);
+      if (!uploadResponse.ok) {
+        const errorText = await uploadResponse.text();
+        console.error("File upload failed:", uploadResponse.status, errorText);
+        throw new Error(`Upload failed with status: ${uploadResponse.status}`);
       }
 
-      const { storageId } = await upload.json();
+      const uploadResult = await uploadResponse.json();
+      console.log("Upload result:", uploadResult);
 
-      if (!storageId) {
+      if (!uploadResult.storageId) {
         throw new Error("No storage ID returned from upload");
       }
 
-      // Step 3: Save to database
+      // Step 3: Save to database with the storage ID
       await uploadMaterial({
         title: title.trim(),
         description: description.trim() || undefined,
-        fileId: storageId,
+        fileId: uploadResult.storageId,
         category,
       });
 
