@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Mail, MapPin, Phone, Home } from "lucide-react";
+import { Mail, MapPin, Phone, Home, Send } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router";
@@ -102,7 +102,28 @@ export default function ContactUs() {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex items-start gap-4">
-                <Mail className="h-6 w-6 text-blue-400 flex-shrink-0 mt-1" />
+                <Send className="h-6 w-6 text-blue-400 flex-shrink-0 mt-1" />
+                <div>
+                  <h3 className="text-white font-semibold mb-1">Telegram Support</h3>
+                  <p className="text-white/70 mb-2">
+                    Join our Telegram channel for instant support, updates, and community discussions:
+                  </p>
+                  <a 
+                    href="https://t.me/MLT_prep" 
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+                  >
+                    <Send className="h-4 w-4" />
+                    Join Telegram Channel
+                  </a>
+                  <p className="text-white/60 text-sm mt-2">
+                    Get instant responses and connect with other students preparing for MLT exams.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
+                <Mail className="h-6 w-6 text-green-400 flex-shrink-0 mt-1" />
                 <div>
                   <h3 className="text-white font-semibold mb-1">Email Support</h3>
                   <p className="text-white/70 mb-2">
@@ -110,7 +131,7 @@ export default function ContactUs() {
                   </p>
                   <a 
                     href="mailto:ak6722909@gmail.com" 
-                    className="text-blue-400 hover:text-blue-300 underline"
+                    className="text-green-400 hover:text-green-300 underline"
                   >
                     ak6722909@gmail.com
                   </a>
@@ -121,7 +142,7 @@ export default function ContactUs() {
               </div>
 
               <div className="flex items-start gap-4">
-                <MapPin className="h-6 w-6 text-green-400 flex-shrink-0 mt-1" />
+                <MapPin className="h-6 w-6 text-orange-400 flex-shrink-0 mt-1" />
                 <div>
                   <h3 className="text-white font-semibold mb-1">Location</h3>
                   <p className="text-white/70">

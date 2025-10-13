@@ -41,6 +41,7 @@ export default function StudentNav() {
     { path: "/subscription", icon: CreditCard, label: "Subscription" },
     { path: "/feedback", icon: MessageSquare, label: "Feedback" },
     { path: "/free-library", icon: Library, label: "Free Library" },
+    { path: "/contact-us", icon: MessageSquare, label: "Contact Us" },
     { path: "/profile", icon: User, label: "Profile" },
   ];
 
