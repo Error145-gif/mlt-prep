@@ -104,9 +104,9 @@ export default function ContactUs() {
               <div className="flex items-start gap-4">
                 <Send className="h-6 w-6 text-blue-400 flex-shrink-0 mt-1" />
                 <div>
-                  <h3 className="text-white font-semibold mb-1">Telegram Support</h3>
+                  <h3 className="text-white font-semibold mb-1">🎓 The Hub for MLT Students</h3>
                   <p className="text-white/70 mb-2">
-                    Join our Telegram channel for instant support, updates, and community discussions:
+                    Join our Telegram community to share your problems and doubts, and discuss topics with fellow students:
                   </p>
                   <a 
                     href="https://t.me/MLT_prep" 
@@ -115,10 +115,10 @@ export default function ContactUs() {
                     className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
                   >
                     <Send className="h-4 w-4" />
-                    Join Telegram Channel
+                    Join Telegram Group
                   </a>
                   <p className="text-white/60 text-sm mt-2">
-                    Get instant responses and connect with other students preparing for MLT exams.
+                    Connect with other MLT students, get instant support, and collaborate on your exam preparation.
                   </p>
                 </div>
               </div>
