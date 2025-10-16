@@ -1,19 +1,29 @@
-import { useQuery } from "convex/react";
+import { useQuery, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
 import { useNavigate, useSearchParams } from "react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { User, Mail, MapPin, BookOpen, AlertCircle, CheckCircle } from "lucide-react";
+import { User, Mail, MapPin, BookOpen, CheckCircle } from "lucide-react";
 import { motion } from "framer-motion";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
 
 export default function PaymentSummary() {
   const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const userProfile = useQuery(api.users.getUserProfile);
+  const createOrder = useAction(api.razorpay.createOrder);
+  const verifyPayment = useAction(api.razorpay.verifyPayment);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const planName = searchParams.get("name");
   const basePrice = parseFloat(searchParams.get("price") || "0");
@@ -24,6 +34,17 @@ export default function PaymentSummary() {
       navigate("/auth");
     }
   }, [isAuthenticated, isLoading, navigate]);
+
+  // Load Razorpay script
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    document.body.appendChild(script);
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
   if (isLoading || !userProfile) {
     return (
@@ -109,6 +130,82 @@ export default function PaymentSummary() {
     );
   }
 
+  const handlePayment = async () => {
+    if (!userProfile.email) {
+      toast.error("Email not found. Please complete your profile.");
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      const orderResult = await createOrder({
+        amount: basePrice,
+        planName: planName,
+        duration: duration,
+      });
+
+      if (!orderResult.success || !orderResult.orderId) {
+        toast.error(orderResult.error || "Failed to create order");
+        setIsProcessing(false);
+        return;
+      }
+
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: orderResult.amount,
+        currency: orderResult.currency,
+        name: "MLT Prep",
+        description: `${planName} Subscription`,
+        order_id: orderResult.orderId,
+        prefill: {
+          name: userProfile.name || "",
+          email: userProfile.email,
+          contact: "",
+        },
+        theme: {
+          color: "#3b82f6",
+        },
+        handler: async function (response: any) {
+          try {
+            const verifyResult = await verifyPayment({
+              razorpayOrderId: response.razorpay_order_id,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpaySignature: response.razorpay_signature,
+              planName: planName,
+              amount: basePrice,
+              duration: duration,
+            });
+
+            if (verifyResult.success) {
+              toast.success("Payment successful! Your subscription is now active.");
+              navigate("/payment-status?status=success");
+            } else {
+              toast.error(verifyResult.error || "Payment verification failed");
+              navigate("/payment-status?status=failed");
+            }
+          } catch (error) {
+            console.error("Payment verification error:", error);
+            toast.error("Payment verification failed");
+            navigate("/payment-status?status=failed");
+          }
+        },
+        modal: {
+          ondismiss: function () {
+            setIsProcessing(false);
+            toast.info("Payment cancelled");
+          },
+        },
+      };
+
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
+    } catch (error) {
+      console.error("Payment error:", error);
+      toast.error("Failed to initiate payment");
+      setIsProcessing(false);
+    }
+  };
+
   return (
     <div className="min-h-screen p-6 lg:p-8 relative overflow-hidden">
       <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
@@ -131,10 +228,7 @@ export default function PaymentSummary() {
         >
           <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
             <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
-                <AlertCircle className="h-5 w-5 text-yellow-400" />
-                Payment Processing Temporarily Unavailable
-              </CardTitle>
+              <CardTitle className="text-white">Payment Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4 bg-white/5 p-6 rounded-lg">
@@ -154,18 +248,38 @@ export default function PaymentSummary() {
                 </div>
               </div>
 
-              <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
-                <p className="text-yellow-200 text-sm">
-                  Payment processing is currently being set up. Please contact support for subscription activation.
-                </p>
+              <div className="space-y-4 bg-white/5 p-6 rounded-lg">
+                <h3 className="text-white font-medium flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  Your Information
+                </h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-center gap-2 text-white/70">
+                    <User className="h-4 w-4" />
+                    <span>{userProfile.name}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-white/70">
+                    <Mail className="h-4 w-4" />
+                    <span>{userProfile.email}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-white/70">
+                    <MapPin className="h-4 w-4" />
+                    <span>{userProfile.state}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-white/70">
+                    <BookOpen className="h-4 w-4" />
+                    <span>{userProfile.examPreparation}</span>
+                  </div>
+                </div>
               </div>
 
               <div className="flex flex-col gap-3">
                 <Button
-                  onClick={() => navigate("/contact-us")}
+                  onClick={handlePayment}
+                  disabled={isProcessing}
                   className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
                 >
-                  Contact Support
+                  {isProcessing ? "Processing..." : `Pay ₹${basePrice}`}
                 </Button>
                 <Button
                   onClick={() => navigate("/subscription")}

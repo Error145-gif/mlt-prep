@@ -140,15 +140,6 @@ export default function Landing() {
           <div className="flex items-center gap-4">
             {isAuthenticated ? (
               <>
-                {user?.role !== "admin" && (
-                  <Button
-                    onClick={handleMakeAdmin}
-                    className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
-                  >
-                    <Shield className="h-4 w-4 mr-2" />
-                    Become Admin
-                  </Button>
-                )}
                 {user?.role === "admin" && (
                   <Button
                     onClick={() => navigate("/admin")}
