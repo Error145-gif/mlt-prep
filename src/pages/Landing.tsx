@@ -148,6 +148,14 @@ export default function Landing() {
                     Admin Panel
                   </Button>
                 )}
+                {user?.role !== "admin" && user?.email === "ak6722909@gmail.com" && (
+                  <Button
+                    onClick={handleMakeAdmin}
+                    className="bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700"
+                  >
+                    Activate Admin Access
+                  </Button>
+                )}
                 <Button
                   onClick={() => navigate("/dashboard")}
                   className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"

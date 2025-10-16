@@ -1,2 +1,2 @@
-const cashfreePg = require("cashfree-pg");
-const Cashfree = cashfreePg.Cashfree;
+// This will make you admin
+window.location.href = '/admin';
