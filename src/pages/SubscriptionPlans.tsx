@@ -66,26 +66,37 @@ export default function SubscriptionPlans() {
 
     setIsValidatingCoupon(true);
     try {
-      const validateCoupon = await fetch(`${import.meta.env.VITE_CONVEX_URL}/api/query`, {
+      const convexUrl = import.meta.env.VITE_CONVEX_URL;
+      const response = await fetch(`${convexUrl}/api/query`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           path: "coupons:validateCoupon",
           args: { code: couponCode.toUpperCase() },
+          format: "json",
         }),
-      }).then(res => res.json());
+      });
 
-      const result = validateCoupon.value;
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const result = data.value || data;
       
-      if (result.valid) {
+      if (result && result.valid) {
         setAppliedCoupon(result);
-        toast.success(result.message);
+        toast.success(result.message || "Coupon applied successfully!");
       } else {
         setAppliedCoupon(null);
-        toast.error(result.message);
+        toast.error(result?.message || "Invalid coupon code");
       }
     } catch (error: any) {
-      toast.error("Failed to validate coupon");
+      console.error("Coupon validation error:", error);
+      toast.error("Failed to validate coupon. Please try again.");
+      setAppliedCoupon(null);
     } finally {
       setIsValidatingCoupon(false);
     }
