@@ -21,7 +21,6 @@ export default function SubscriptionPlans() {
   const { isAuthenticated, isLoading, user } = useAuth();
   const navigate = useNavigate();
   const subscriptionAccess = useQuery(api.student.checkSubscriptionAccess);
-  const startFreeTrial = useMutation(api.subscriptions.startFreeTrial);
   const createOrder = useAction(api.razorpay.createOrder);
   const verifyPayment = useAction(api.razorpay.verifyPayment);
 
@@ -54,21 +53,6 @@ export default function SubscriptionPlans() {
   const hasAnySubscription = subscriptionAccess?.subscription?.status === "active";
   const hasPaidSubscription = subscriptionAccess?.hasAccess && subscriptionAccess?.isPaid;
   const hasFreeTrial = subscriptionAccess?.reason === "free_trial" && hasAnySubscription;
-
-  const handleFreeTrial = async () => {
-    if (hasAnySubscription) {
-      toast.error("You already have an active subscription!");
-      return;
-    }
-
-    try {
-      await startFreeTrial({});
-      toast.success("7-day free trial activated!");
-      navigate("/dashboard");
-    } catch (error: any) {
-      toast.error(error.message || "Failed to start trial");
-    }
-  };
 
   const handleSubscribe = async (planId: string, amount: number, planName: string, duration: number) => {
     if (hasPaidSubscription) {
@@ -140,16 +124,19 @@ export default function SubscriptionPlans() {
       duration: 7,
       durationText: "7 days",
       icon: Sparkles,
-      badge: hasAnySubscription && !hasPaidSubscription ? "Active" : null,
+      badge: hasFreeTrial ? "Active" : "Auto-Activated",
       features: [
-        { text: "Limited Mock Tests", icon: BookOpen },
-        { text: "Limited PYQ Sets", icon: BookOpen },
-        { text: "Limited AI-Based Questions", icon: Brain },
+        { text: "First Mock Test (Free)", icon: BookOpen },
+        { text: "First PYQ Set (Free)", icon: BookOpen },
+        { text: "First AI Test (Free)", icon: Brain },
         { text: "Basic Analytics", icon: BarChart3 },
       ],
-      action: () => handleFreeTrial(),
-      buttonText: hasAnySubscription ? "Already Subscribed" : "Start Free Trial",
-      disabled: hasAnySubscription,
+      action: () => {
+        toast.info("Free trial is automatically activated when you register!");
+        navigate("/dashboard");
+      },
+      buttonText: hasFreeTrial ? "Active - Go to Dashboard" : "Already Activated",
+      disabled: true, // Always disabled since it's auto-activated
     },
     {
       id: "monthly",
@@ -234,11 +221,16 @@ export default function SubscriptionPlans() {
         <div className="text-center space-y-2 mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-white drop-shadow-lg">Choose Your Plan</h1>
           <p className="text-white/90 text-sm md:text-base drop-shadow-md">
-            Start with a 7-day Free Trial, then unlock full access to all study sections.
+            Your 7-day Free Trial is automatically activated! Upgrade anytime for full access.
           </p>
-          {hasAnySubscription && (
-            <Badge className="mt-4 bg-white/20 text-white border-white/30 backdrop-blur-xl text-sm px-4 py-2">
-              ✓ You have an active subscription
+          {hasFreeTrial && (
+            <Badge className="mt-4 bg-green-500/30 text-white border-green-400/50 backdrop-blur-xl text-sm px-4 py-2">
+              ✓ Free Trial Active - First test of each type unlocked!
+            </Badge>
+          )}
+          {hasPaidSubscription && (
+            <Badge className="mt-4 bg-white/90 text-purple-700 border-white backdrop-blur-xl text-sm px-4 py-2 shadow-lg">
+              ✓ You have an active paid subscription
             </Badge>
           )}
         </div>
@@ -252,7 +244,7 @@ export default function SubscriptionPlans() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
             >
-              <Card className={`border-2 ${plan.popular ? 'border-white/50 shadow-2xl' : 'border-white/30'} rounded-2xl overflow-hidden ${plan.disabled ? 'opacity-60' : ''} glass-card backdrop-blur-xl bg-white/20`}>
+              <Card className={`border-2 ${plan.popular ? 'border-white/50 shadow-2xl' : 'border-white/30'} rounded-2xl overflow-hidden ${plan.disabled && plan.id !== 'trial' ? 'opacity-60' : ''} glass-card backdrop-blur-xl bg-white/20`}>
                 <CardHeader className="bg-gradient-to-r from-white/10 to-white/5 pb-4">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
@@ -296,7 +288,7 @@ export default function SubscriptionPlans() {
                   <Button
                     onClick={plan.action}
                     className="w-full bg-gradient-to-r from-[#3b82f6] to-[#2563eb] hover:from-[#2563eb] hover:to-[#1d4ed8] shadow-lg text-white rounded-xl py-6 text-base font-semibold"
-                    disabled={plan.disabled}
+                    disabled={plan.disabled && plan.id !== 'trial'}
                   >
                     {plan.buttonText}
                   </Button>
@@ -323,21 +315,21 @@ export default function SubscriptionPlans() {
               <tbody>
                 <tr className="border-b border-white/10">
                   <td className="py-3 px-2 text-white/90">Mock Tests</td>
-                  <td className="text-center py-3 px-2 text-white/70">Limited</td>
+                  <td className="text-center py-3 px-2 text-white/70">First Test Only</td>
                   <td className="text-center py-3 px-2"><Check className="h-5 w-5 text-green-600 mx-auto" /></td>
                   <td className="text-center py-3 px-2"><Check className="h-5 w-5 text-green-600 mx-auto" /></td>
                   <td className="text-center py-3 px-2"><Check className="h-5 w-5 text-green-600 mx-auto" /></td>
                 </tr>
                 <tr className="border-b border-white/10">
                   <td className="py-3 px-2 text-white/90">PYQ Sets</td>
-                  <td className="text-center py-3 px-2 text-white/70">Limited</td>
+                  <td className="text-center py-3 px-2 text-white/70">First Set Only</td>
                   <td className="text-center py-3 px-2"><Check className="h-5 w-5 text-green-600 mx-auto" /></td>
                   <td className="text-center py-3 px-2"><Check className="h-5 w-5 text-green-600 mx-auto" /></td>
                   <td className="text-center py-3 px-2"><Check className="h-5 w-5 text-green-600 mx-auto" /></td>
                 </tr>
                 <tr className="border-b border-white/10">
                   <td className="py-3 px-2 text-white/90">AI-Based Questions</td>
-                  <td className="text-center py-3 px-2 text-white/70">Limited</td>
+                  <td className="text-center py-3 px-2 text-white/70">First Test Only</td>
                   <td className="text-center py-3 px-2"><Check className="h-5 w-5 text-green-600 mx-auto" /></td>
                   <td className="text-center py-3 px-2"><Check className="h-5 w-5 text-green-600 mx-auto" /></td>
                   <td className="text-center py-3 px-2"><Check className="h-5 w-5 text-green-600 mx-auto" /></td>
@@ -364,7 +356,7 @@ export default function SubscriptionPlans() {
         {/* Bottom Note */}
         <div className="glass-card border border-white/30 backdrop-blur-xl bg-white/20 rounded-xl p-4 text-center">
           <p className="text-sm text-white">
-            <strong>Note:</strong> Library Access feature is coming soon and will be available to all subscription plans.
+            <strong>Note:</strong> Free trial is automatically activated when you register. You get access to the first test of each type (Mock, PYQ, AI). Upgrade anytime for unlimited access!
           </p>
         </div>
       </div>

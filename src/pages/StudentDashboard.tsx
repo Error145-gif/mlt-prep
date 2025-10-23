@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { BookOpen, FileText, TrendingUp, Award, Clock, AlertCircle, CreditCard, User, Target, Brain, BookMarked, BarChart, Zap, Trophy, Flame, Sparkles, TrendingDown } from "lucide-react";
+import { BookOpen, FileText, TrendingUp, Award, Clock, AlertCircle, CreditCard, User, Target, Brain, BookMarked, BarChart, Zap, Trophy, Flame, Sparkles, TrendingDown, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -37,6 +37,8 @@ export default function StudentDashboard() {
     (userProfile.avatarUrl ? 25 : 0) + 
     (userProfile.examPreparation ? 25 : 0) + 
     (userProfile.state ? 25 : 0) : 0;
+
+  const isProfileIncomplete = profileCompletion < 100;
 
   // Format subscription expiry date
   const formatExpiryDate = (timestamp: number) => {
@@ -104,8 +106,111 @@ export default function StudentDashboard() {
           backgroundRepeat: 'no-repeat'
         }}
       />
-      
-      <div className="relative z-10 max-w-7xl mx-auto space-y-6">
+
+      {/* Profile Completion Gate Overlay */}
+      {isProfileIncomplete && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md"
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="relative max-w-md mx-4 p-8 rounded-2xl bg-gradient-to-br from-violet-500/20 via-purple-500/20 to-pink-500/20 backdrop-blur-xl border border-white/30 shadow-2xl"
+          >
+            {/* Glowing particles effect */}
+            <div className="absolute inset-0 overflow-hidden rounded-2xl">
+              <div className="absolute top-0 left-1/4 w-32 h-32 bg-violet-400/30 rounded-full blur-3xl animate-pulse" />
+              <div className="absolute bottom-0 right-1/4 w-32 h-32 bg-pink-400/30 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+            </div>
+
+            <div className="relative z-10 text-center space-y-6">
+              {/* Lock Icon */}
+              <motion.div
+                animate={{ 
+                  scale: [1, 1.1, 1],
+                  rotate: [0, 5, -5, 0]
+                }}
+                transition={{ 
+                  duration: 2,
+                  repeat: Infinity,
+                  repeatType: "reverse"
+                }}
+                className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-violet-500 to-pink-500 shadow-lg shadow-violet-500/50"
+              >
+                <span className="text-4xl">🔒</span>
+              </motion.div>
+
+              {/* Title */}
+              <div>
+                <h2 className="text-2xl font-bold text-white mb-2">Complete Your Profile</h2>
+                <p className="text-white/80 text-sm">
+                  Unlock AI Tests, Mock Tests, and PYQ Questions by completing your profile setup.
+                </p>
+              </div>
+
+              {/* Progress */}
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm text-white/90">
+                  <span>Profile Completion</span>
+                  <span className="font-bold">{profileCompletion}%</span>
+                </div>
+                <div className="w-full h-3 bg-white/20 rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${profileCompletion}%` }}
+                    transition={{ duration: 1, ease: "easeOut" }}
+                    className="h-full bg-gradient-to-r from-violet-500 via-purple-500 to-pink-500 rounded-full shadow-lg shadow-violet-500/50"
+                  />
+                </div>
+              </div>
+
+              {/* Missing Fields */}
+              <div className="text-left space-y-2 p-4 rounded-xl bg-white/5 border border-white/10">
+                <p className="text-white/70 text-xs font-semibold uppercase tracking-wide mb-2">Required Fields:</p>
+                {!userProfile?.name && (
+                  <div className="flex items-center gap-2 text-white/80 text-sm">
+                    <X className="h-4 w-4 text-red-400" />
+                    <span>Full Name</span>
+                  </div>
+                )}
+                {!userProfile?.avatarUrl && (
+                  <div className="flex items-center gap-2 text-white/80 text-sm">
+                    <X className="h-4 w-4 text-red-400" />
+                    <span>Profile Avatar</span>
+                  </div>
+                )}
+                {!userProfile?.examPreparation && (
+                  <div className="flex items-center gap-2 text-white/80 text-sm">
+                    <X className="h-4 w-4 text-red-400" />
+                    <span>Exam Preparation</span>
+                  </div>
+                )}
+                {!userProfile?.state && (
+                  <div className="flex items-center gap-2 text-white/80 text-sm">
+                    <X className="h-4 w-4 text-red-400" />
+                    <span>State</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Complete Profile Button */}
+              <Button
+                onClick={() => navigate("/profile")}
+                className="w-full bg-gradient-to-r from-violet-500 via-purple-500 to-pink-500 hover:from-violet-600 hover:via-purple-600 hover:to-pink-600 text-white font-semibold py-6 rounded-xl shadow-lg shadow-violet-500/50 hover:shadow-violet-500/70 transition-all duration-300"
+              >
+                <User className="h-5 w-5 mr-2" />
+                Complete Profile Now
+              </Button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+
+      {/* Main Dashboard Content - Blurred when profile incomplete */}
+      <div className={`relative z-10 max-w-7xl mx-auto space-y-6 transition-all duration-500 ${isProfileIncomplete ? 'blur-sm pointer-events-none' : ''}`}>
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -286,95 +391,168 @@ export default function StudentDashboard() {
         </div>
 
         {/* Performance Breakdown */}
-        <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
-              <BarChart className="h-5 w-5" />
-              Performance Breakdown
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {/* Mock Tests */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <FileText className="h-5 w-5 text-blue-400" />
-                  <h3 className="text-white font-semibold">Mock Tests</h3>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <Card className="glass-card border-white/30 backdrop-blur-xl bg-gradient-to-br from-white/10 via-purple-500/10 to-pink-500/10 shadow-2xl">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <div className="p-2 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 shadow-lg shadow-purple-500/50">
+                  <BarChart className="h-5 w-5 text-white" />
                 </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-white/90 text-sm">Accuracy</span>
-                    <span className="text-white font-bold text-lg">{stats.mockTests.avgScore}%</span>
+                Performance Breakdown
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Mock Tests */}
+                <motion.div 
+                  className="space-y-3 p-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-blue-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/20"
+                  whileHover={{ scale: 1.02 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg shadow-blue-500/30">
+                      <FileText className="h-5 w-5 text-white" />
+                    </div>
+                    <h3 className="text-white font-semibold">Mock Tests</h3>
                   </div>
-                  <Progress value={stats.mockTests.avgScore} className="h-2" />
-                </div>
-              </div>
-
-              {/* PYQ Tests */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <BookMarked className="h-5 w-5 text-green-400" />
-                  <h3 className="text-white font-semibold">PYQ Tests</h3>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-white/90 text-sm">Accuracy</span>
-                    <span className="text-white font-bold text-lg">{stats.pyqTests.avgScore}%</span>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-white/90 text-sm">Accuracy</span>
+                      <span className="text-white font-bold text-lg">{stats.mockTests.avgScore}%</span>
+                    </div>
+                    <div className="relative h-2 bg-white/10 rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${stats.mockTests.avgScore}%` }}
+                        transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
+                        className="absolute h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full shadow-lg shadow-blue-500/50"
+                      />
+                    </div>
                   </div>
-                  <Progress value={stats.pyqTests.avgScore} className="h-2" />
-                </div>
-              </div>
+                </motion.div>
 
-              {/* AI Tests */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <Brain className="h-5 w-5 text-purple-400" />
-                  <h3 className="text-white font-semibold">AI Tests</h3>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-white/90 text-sm">Accuracy</span>
-                    <span className="text-white font-bold text-lg">{stats.aiTests.avgScore}%</span>
+                {/* PYQ Tests */}
+                <motion.div 
+                  className="space-y-3 p-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-green-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-green-500/20"
+                  whileHover={{ scale: 1.02 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 rounded-lg bg-gradient-to-br from-green-500 to-green-600 shadow-lg shadow-green-500/30">
+                      <BookMarked className="h-5 w-5 text-white" />
+                    </div>
+                    <h3 className="text-white font-semibold">PYQ Tests</h3>
                   </div>
-                  <Progress value={stats.aiTests.avgScore} className="h-2" />
-                </div>
-              </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-white/90 text-sm">Accuracy</span>
+                      <span className="text-white font-bold text-lg">{stats.pyqTests.avgScore}%</span>
+                    </div>
+                    <div className="relative h-2 bg-white/10 rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${stats.pyqTests.avgScore}%` }}
+                        transition={{ duration: 1, delay: 0.6, ease: "easeOut" }}
+                        className="absolute h-full bg-gradient-to-r from-green-500 to-green-400 rounded-full shadow-lg shadow-green-500/50"
+                      />
+                    </div>
+                  </div>
+                </motion.div>
 
-              {/* Strongest Subject */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <Trophy className="h-5 w-5 text-yellow-400" />
-                  <h3 className="text-white font-semibold">Strongest Subject</h3>
-                </div>
-                <div className="text-white/90 text-lg font-medium">{stats.strongestSubject}</div>
-              </div>
+                {/* AI Tests */}
+                <motion.div 
+                  className="space-y-3 p-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-purple-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/20"
+                  whileHover={{ scale: 1.02 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 shadow-lg shadow-purple-500/30">
+                      <Brain className="h-5 w-5 text-white" />
+                    </div>
+                    <h3 className="text-white font-semibold">AI Tests</h3>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-white/90 text-sm">Accuracy</span>
+                      <span className="text-white font-bold text-lg">{stats.aiTests.avgScore}%</span>
+                    </div>
+                    <div className="relative h-2 bg-white/10 rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${stats.aiTests.avgScore}%` }}
+                        transition={{ duration: 1, delay: 0.7, ease: "easeOut" }}
+                        className="absolute h-full bg-gradient-to-r from-purple-500 to-purple-400 rounded-full shadow-lg shadow-purple-500/50"
+                      />
+                    </div>
+                  </div>
+                </motion.div>
 
-              {/* Weakest Subject */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <BookOpen className="h-5 w-5 text-red-400" />
-                  <h3 className="text-white font-semibold">Needs Improvement</h3>
-                </div>
-                <div className="text-white/90 text-lg font-medium">{stats.weakestSubject}</div>
-              </div>
+                {/* Strongest Subject */}
+                <motion.div 
+                  className="space-y-3 p-4 rounded-xl bg-gradient-to-br from-yellow-500/10 to-orange-500/10 backdrop-blur-sm border border-yellow-400/30 hover:border-yellow-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/20"
+                  whileHover={{ scale: 1.02 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 rounded-lg bg-gradient-to-br from-yellow-500 to-orange-500 shadow-lg shadow-yellow-500/30">
+                      <Trophy className="h-5 w-5 text-white" />
+                    </div>
+                    <h3 className="text-white font-semibold">Strongest Subject</h3>
+                  </div>
+                  <div className="text-white/90 text-xl font-bold">{stats.strongestSubject}</div>
+                </motion.div>
 
-              {/* Improvement Rate */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  {stats.improvementRate >= 0 ? (
-                    <TrendingUp className="h-5 w-5 text-green-400" />
-                  ) : (
-                    <TrendingDown className="h-5 w-5 text-red-400" />
-                  )}
-                  <h3 className="text-white font-semibold">Last Test Change</h3>
-                </div>
-                <div className={`text-lg font-bold ${stats.improvementRate >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                  {stats.improvementRate >= 0 ? '+' : ''}{stats.improvementRate}%
-                </div>
+                {/* Weakest Subject */}
+                <motion.div 
+                  className="space-y-3 p-4 rounded-xl bg-gradient-to-br from-red-500/10 to-pink-500/10 backdrop-blur-sm border border-red-400/30 hover:border-red-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-red-500/20"
+                  whileHover={{ scale: 1.02 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 rounded-lg bg-gradient-to-br from-red-500 to-pink-500 shadow-lg shadow-red-500/30">
+                      <BookOpen className="h-5 w-5 text-white" />
+                    </div>
+                    <h3 className="text-white font-semibold">Needs Improvement</h3>
+                  </div>
+                  <div className="text-white/90 text-xl font-bold">{stats.weakestSubject}</div>
+                </motion.div>
+
+                {/* Improvement Rate */}
+                <motion.div 
+                  className={`space-y-3 p-4 rounded-xl backdrop-blur-sm border transition-all duration-300 hover:shadow-lg ${
+                    stats.improvementRate >= 0 
+                      ? 'bg-gradient-to-br from-green-500/10 to-teal-500/10 border-green-400/30 hover:border-green-400/50 hover:shadow-green-500/20' 
+                      : 'bg-gradient-to-br from-red-500/10 to-orange-500/10 border-red-400/30 hover:border-red-400/50 hover:shadow-red-500/20'
+                  }`}
+                  whileHover={{ scale: 1.02 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
+                  <div className="flex items-center gap-2">
+                    <div className={`p-2 rounded-lg shadow-lg ${
+                      stats.improvementRate >= 0 
+                        ? 'bg-gradient-to-br from-green-500 to-teal-500 shadow-green-500/30' 
+                        : 'bg-gradient-to-br from-red-500 to-orange-500 shadow-red-500/30'
+                    }`}>
+                      {stats.improvementRate >= 0 ? (
+                        <TrendingUp className="h-5 w-5 text-white" />
+                      ) : (
+                        <TrendingDown className="h-5 w-5 text-white" />
+                      )}
+                    </div>
+                    <h3 className="text-white font-semibold">Last Test Change</h3>
+                  </div>
+                  <div className={`text-2xl font-bold ${stats.improvementRate >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    {stats.improvementRate >= 0 ? '+' : ''}{stats.improvementRate}%
+                  </div>
+                </motion.div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </motion.div>
 
         {/* Engagement Metrics */}
         <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
