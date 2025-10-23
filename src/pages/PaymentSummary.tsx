@@ -5,7 +5,8 @@ import { useNavigate, useSearchParams } from "react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { User, Mail, MapPin, BookOpen, CheckCircle } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { User, Mail, MapPin, BookOpen, CheckCircle, Tag } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -24,6 +25,10 @@ export default function PaymentSummary() {
   const createOrder = useAction(api.razorpay.createOrder);
   const verifyPayment = useAction(api.razorpay.verifyPayment);
   const [isProcessing, setIsProcessing] = useState(false);
+  
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+  const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
 
   const planName = searchParams.get("name");
   const basePrice = parseFloat(searchParams.get("price") || "0");
@@ -130,6 +135,52 @@ export default function PaymentSummary() {
     );
   }
 
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) {
+      toast.error("Please enter a coupon code");
+      return;
+    }
+
+    setIsValidatingCoupon(true);
+    try {
+      const validateCoupon = await fetch(`${import.meta.env.VITE_CONVEX_URL}/api/query`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          path: "coupons:validateCoupon",
+          args: { code: couponCode.toUpperCase() },
+        }),
+      }).then(res => res.json());
+
+      const result = validateCoupon.value;
+      
+      if (result.valid) {
+        setAppliedCoupon(result);
+        toast.success(result.message);
+      } else {
+        setAppliedCoupon(null);
+        toast.error(result.message);
+      }
+    } catch (error: any) {
+      toast.error("Failed to validate coupon");
+    } finally {
+      setIsValidatingCoupon(false);
+    }
+  };
+
+  const calculateFinalAmount = () => {
+    if (!appliedCoupon) return basePrice;
+    
+    if (appliedCoupon.type === "percentage") {
+      return Math.round(basePrice - (basePrice * appliedCoupon.discount / 100));
+    } else {
+      return Math.max(0, basePrice - appliedCoupon.discount);
+    }
+  };
+
+  const finalAmount = calculateFinalAmount();
+  const discountAmount = basePrice - finalAmount;
+
   const handlePayment = async () => {
     if (!userProfile.email) {
       toast.error("Email not found. Please complete your profile.");
@@ -139,7 +190,7 @@ export default function PaymentSummary() {
     setIsProcessing(true);
     try {
       const orderResult = await createOrder({
-        amount: basePrice,
+        amount: finalAmount,
         planName: planName,
         duration: duration,
       });
@@ -172,7 +223,7 @@ export default function PaymentSummary() {
               razorpayPaymentId: response.razorpay_payment_id,
               razorpaySignature: response.razorpay_signature,
               planName: planName,
-              amount: basePrice,
+              amount: finalAmount,
               duration: duration,
             });
 
@@ -228,9 +279,53 @@ export default function PaymentSummary() {
         >
           <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
             <CardHeader>
-              <CardTitle className="text-white">Payment Details</CardTitle>
+              <CardTitle className="text-white text-2xl">Payment Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
+              <div className="bg-white/5 p-4 rounded-lg">
+                <div className="flex items-center gap-2 mb-3">
+                  <Tag className="h-5 w-5 text-white" />
+                  <h3 className="text-white font-semibold">Apply Coupon Code</h3>
+                </div>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Enter coupon code"
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                    className="bg-white/10 border-white/30 text-white placeholder:text-white/60"
+                    disabled={isValidatingCoupon || !!appliedCoupon}
+                  />
+                  {!appliedCoupon ? (
+                    <Button
+                      onClick={handleApplyCoupon}
+                      disabled={isValidatingCoupon || !couponCode.trim()}
+                      className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
+                    >
+                      {isValidatingCoupon ? "Validating..." : "Apply"}
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={() => {
+                        setAppliedCoupon(null);
+                        setCouponCode("");
+                      }}
+                      variant="outline"
+                      className="border-white/30 text-white hover:bg-white/10"
+                    >
+                      Remove
+                    </Button>
+                  )}
+                </div>
+                {appliedCoupon && (
+                  <div className="mt-3 p-3 bg-green-500/20 border border-green-400/50 rounded-lg">
+                    <p className="text-green-300 text-sm flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4" />
+                      {appliedCoupon.message}
+                    </p>
+                  </div>
+                )}
+              </div>
+
               <div className="space-y-4 bg-white/5 p-6 rounded-lg">
                 <div className="flex justify-between items-center">
                   <span className="text-white/70">Selected Plan</span>
@@ -243,8 +338,18 @@ export default function PaymentSummary() {
                   <span className="text-white font-medium">{duration} days</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-white/70">Amount</span>
+                  <span className="text-white/70">Base Amount</span>
                   <span className="text-white font-medium">₹{basePrice}</span>
+                </div>
+                {appliedCoupon && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-green-300">Discount</span>
+                    <span className="text-green-300 font-medium">- ₹{discountAmount}</span>
+                  </div>
+                )}
+                <div className="border-t border-white/20 pt-4 flex justify-between items-center">
+                  <span className="text-white font-semibold text-lg">Total Amount</span>
+                  <span className="text-white font-bold text-2xl">₹{finalAmount}</span>
                 </div>
               </div>
 
@@ -279,7 +384,7 @@ export default function PaymentSummary() {
                   disabled={isProcessing}
                   className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
                 >
-                  {isProcessing ? "Processing..." : `Pay ₹${basePrice}`}
+                  {isProcessing ? "Processing..." : `Pay ₹${finalAmount}`}
                 </Button>
                 <Button
                   onClick={() => navigate("/subscription")}

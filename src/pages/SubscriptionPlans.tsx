@@ -5,10 +5,11 @@ import { useNavigate } from "react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, X, BookOpen, Brain, Library, BarChart3, Sparkles } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Check, X, BookOpen, Brain, Library, BarChart3, Sparkles, Tag } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 // Razorpay types
 declare global {
@@ -23,6 +24,9 @@ export default function SubscriptionPlans() {
   const subscriptionAccess = useQuery(api.student.checkSubscriptionAccess);
   const createOrder = useAction(api.razorpay.createOrder);
   const verifyPayment = useAction(api.razorpay.verifyPayment);
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+  const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -54,66 +58,57 @@ export default function SubscriptionPlans() {
   const hasPaidSubscription = subscriptionAccess?.hasAccess && subscriptionAccess?.isPaid;
   const hasFreeTrial = subscriptionAccess?.reason === "free_trial" && hasAnySubscription;
 
-  const handleSubscribe = async (planId: string, amount: number, planName: string, duration: number) => {
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) {
+      toast.error("Please enter a coupon code");
+      return;
+    }
+
+    setIsValidatingCoupon(true);
+    try {
+      const validateCoupon = await fetch(`${import.meta.env.VITE_CONVEX_URL}/api/query`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          path: "coupons:validateCoupon",
+          args: { code: couponCode.toUpperCase() },
+        }),
+      }).then(res => res.json());
+
+      const result = validateCoupon.value;
+      
+      if (result.valid) {
+        setAppliedCoupon(result);
+        toast.success(result.message);
+      } else {
+        setAppliedCoupon(null);
+        toast.error(result.message);
+      }
+    } catch (error: any) {
+      toast.error("Failed to validate coupon");
+    } finally {
+      setIsValidatingCoupon(false);
+    }
+  };
+
+  const calculateDiscountedPrice = (originalPrice: number) => {
+    if (!appliedCoupon) return originalPrice;
+    
+    if (appliedCoupon.type === "percentage") {
+      return Math.round(originalPrice - (originalPrice * appliedCoupon.discount / 100));
+    } else {
+      return Math.max(0, originalPrice - appliedCoupon.discount);
+    }
+  };
+
+  const handleSubscribe = (planId: string, amount: number, planName: string, duration: number) => {
     if (hasPaidSubscription) {
       toast.error("You already have an active paid subscription! Check your dashboard for expiry date.");
       return;
     }
 
-    try {
-      // Create Razorpay order
-      const orderResult = await createOrder({ amount, planName, duration });
-
-      if (!orderResult.success) {
-        toast.error(orderResult.error || "Failed to create order");
-        return;
-      }
-
-      // Open Razorpay checkout
-      const options = {
-        key: "rzp_live_RStd1rQAde32Tp",
-        amount: orderResult.amount,
-        currency: orderResult.currency,
-        name: "MLT Prep",
-        description: planName,
-        order_id: orderResult.orderId,
-        handler: async function (response: any) {
-          try {
-            const verifyResult = await verifyPayment({
-              razorpayOrderId: response.razorpay_order_id,
-              razorpayPaymentId: response.razorpay_payment_id,
-              razorpaySignature: response.razorpay_signature,
-              planName,
-              amount,
-              duration,
-            });
-
-            if (verifyResult.success) {
-              toast.success("Payment successful! Subscription activated.");
-              navigate("/payment-status?status=success");
-            } else {
-              toast.error("Payment verification failed");
-              navigate("/payment-status?status=failed");
-            }
-          } catch (error: any) {
-            toast.error(error.message || "Payment verification failed");
-            navigate("/payment-status?status=failed");
-          }
-        },
-        prefill: {
-          email: user?.email || "",
-          name: user?.name || "",
-        },
-        theme: {
-          color: "#007BFF",
-        },
-      };
-
-      const razorpay = new window.Razorpay(options);
-      razorpay.open();
-    } catch (error: any) {
-      toast.error(error.message || "Failed to initiate payment");
-    }
+    // Navigate to Payment Summary page with plan details
+    navigate(`/payment-summary?name=${encodeURIComponent(planName)}&price=${amount}&duration=${duration}`);
   };
 
   const plans = [
@@ -235,6 +230,46 @@ export default function SubscriptionPlans() {
           )}
         </div>
 
+        {/* Coupon Code Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <Card className="border-2 border-white/30 rounded-2xl overflow-hidden glass-card backdrop-blur-xl bg-white/20">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-2 mb-3">
+                <Tag className="h-5 w-5 text-white" />
+                <h3 className="text-lg font-semibold text-white">Have a Coupon Code?</h3>
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Enter coupon code"
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                  className="bg-white/10 border-white/30 text-white placeholder:text-white/60"
+                  disabled={isValidatingCoupon}
+                />
+                <Button
+                  onClick={handleApplyCoupon}
+                  disabled={isValidatingCoupon || !couponCode.trim()}
+                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
+                >
+                  {isValidatingCoupon ? "Validating..." : "Apply"}
+                </Button>
+              </div>
+              {appliedCoupon && (
+                <div className="mt-3 p-3 bg-green-500/20 border border-green-400/50 rounded-lg">
+                  <p className="text-green-300 text-sm flex items-center gap-2">
+                    <Check className="h-4 w-4" />
+                    {appliedCoupon.message}
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
+
         {/* Plans */}
         <div className="space-y-4">
           {plans.map((plan, index) => (
@@ -268,7 +303,14 @@ export default function SubscriptionPlans() {
                         </div>
                       )}
                       <div className="flex items-baseline gap-1">
-                        <span className="text-3xl font-bold text-white">₹{plan.price}</span>
+                        {appliedCoupon && plan.price > 0 ? (
+                          <>
+                            <span className="text-xl font-bold text-white/60 line-through">₹{plan.price}</span>
+                            <span className="text-3xl font-bold text-green-300">₹{calculateDiscountedPrice(plan.price)}</span>
+                          </>
+                        ) : (
+                          <span className="text-3xl font-bold text-white">₹{plan.price}</span>
+                        )}
                         <span className="text-white/70 text-sm">/{plan.durationText}</span>
                       </div>
                     </div>
