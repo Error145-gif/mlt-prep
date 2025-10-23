@@ -384,7 +384,7 @@ export default function Landing() {
             </div>
           </div>
           <div className="text-center text-white/60 pt-6 border-t border-white/20">
-            <p>© 2024 MLT Prep. Powered by <a href="https://vly.ai" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">vly.ai</a></p>
+            <p>© 2024 MLT Prep. All rights reserved.</p>
           </div>
         </div>
       </footer>

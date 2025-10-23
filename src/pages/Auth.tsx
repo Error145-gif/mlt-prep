@@ -430,7 +430,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
           className="text-center text-white text-xs mt-6"
           style={{ fontFamily: "'Inter', sans-serif" }}
         >
-          © 2024 MLT Prep. Empowering future medical professionals with AI.
+          © 2024 MLT Prep. All rights reserved.
         </motion.p>
       </motion.div>
     </div>
