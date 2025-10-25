@@ -14,20 +14,24 @@ export const createOrder = action({
   handler: async (ctx, args) => {
     const Razorpay = (await import("razorpay")).default;
     
-    const razorpay = new Razorpay({
-      key_id: process.env.RAZORPAY_KEY_ID!,
-      key_secret: process.env.RAZORPAY_KEY_SECRET!,
-    });
-
     try {
-      // Validate environment variables
+      // Validate environment variables first
       if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
-        console.error("Missing Razorpay credentials");
+        console.error("Missing Razorpay credentials:", {
+          hasKeyId: !!process.env.RAZORPAY_KEY_ID,
+          hasKeySecret: !!process.env.RAZORPAY_KEY_SECRET,
+        });
         return {
           success: false,
-          error: "Razorpay credentials not configured",
+          error: "Razorpay credentials not configured. Please contact support.",
         };
       }
+
+      console.log("Initializing Razorpay with credentials...");
+      const razorpay = new Razorpay({
+        key_id: process.env.RAZORPAY_KEY_ID,
+        key_secret: process.env.RAZORPAY_KEY_SECRET,
+      });
 
       console.log("Creating Razorpay order:", {
         amount: args.amount * 100,
@@ -45,7 +49,11 @@ export const createOrder = action({
         },
       });
 
-      console.log("Razorpay order created successfully:", order.id);
+      console.log("Razorpay order created successfully:", {
+        orderId: order.id,
+        amount: order.amount,
+        currency: order.currency,
+      });
 
       return {
         success: true,
@@ -64,7 +72,7 @@ export const createOrder = action({
       
       return {
         success: false,
-        error: error.error?.description || error.message || "Failed to create order",
+        error: error.error?.description || error.message || "Failed to create order. Please try again.",
       };
     }
   },
@@ -81,18 +89,39 @@ export const verifyPayment = action({
     duration: v.number(),
   },
   handler: async (ctx, args): Promise<{ success: boolean; subscriptionId?: any; error?: string }> => {
-    const crypto = await import("crypto");
-    
-    const generatedSignature = crypto
-      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
-      .update(`${args.razorpayOrderId}|${args.razorpayPaymentId}`)
-      .digest("hex");
-
-    if (generatedSignature !== args.razorpaySignature) {
-      return { success: false, error: "Invalid payment signature" };
-    }
-
     try {
+      console.log("Starting payment verification:", {
+        orderId: args.razorpayOrderId,
+        paymentId: args.razorpayPaymentId,
+        planName: args.planName,
+        amount: args.amount,
+      });
+
+      if (!process.env.RAZORPAY_KEY_SECRET) {
+        console.error("Missing RAZORPAY_KEY_SECRET during verification");
+        return { success: false, error: "Payment verification failed: Missing credentials" };
+      }
+
+      const crypto = await import("crypto");
+      
+      const generatedSignature = crypto
+        .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+        .update(`${args.razorpayOrderId}|${args.razorpayPaymentId}`)
+        .digest("hex");
+
+      console.log("Signature verification:", {
+        receivedSignature: args.razorpaySignature,
+        generatedSignature: generatedSignature,
+        match: generatedSignature === args.razorpaySignature,
+      });
+
+      if (generatedSignature !== args.razorpaySignature) {
+        console.error("Signature mismatch - payment verification failed");
+        return { success: false, error: "Invalid payment signature" };
+      }
+
+      console.log("Signature verified successfully, creating subscription...");
+
       // Create subscription and payment records
       const result: { subscriptionId: any; paymentId: any } = await ctx.runMutation(internal.razorpayInternal.createSubscriptionAfterPayment, {
         razorpayOrderId: args.razorpayOrderId,
@@ -102,10 +131,19 @@ export const verifyPayment = action({
         duration: args.duration,
       });
 
+      console.log("Subscription created successfully:", {
+        subscriptionId: result.subscriptionId,
+        paymentId: result.paymentId,
+      });
+
       return { success: true, subscriptionId: result.subscriptionId };
     } catch (error: any) {
-      console.error("Payment verification error:", error);
-      return { success: false, error: error.message };
+      console.error("Payment verification error:", {
+        message: error.message,
+        stack: error.stack,
+        fullError: JSON.stringify(error, null, 2),
+      });
+      return { success: false, error: error.message || "Payment verification failed" };
     }
   },
 });

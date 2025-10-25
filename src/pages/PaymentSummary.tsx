@@ -193,21 +193,31 @@ export default function PaymentSummary() {
   const discountAmount = basePrice - finalAmount;
 
   const handlePayment = async () => {
-    if (!userProfile.email) {
+    if (!userProfile?.email) {
       toast.error("Email not found. Please complete your profile.");
       return;
     }
 
     setIsProcessing(true);
     try {
+      console.log("Initiating payment for:", { planName, finalAmount, duration });
+      
       const orderResult = await createOrder({
         amount: finalAmount,
-        planName: planName,
+        planName: planName!,
         duration: duration,
       });
 
+      console.log("Order creation result:", orderResult);
+
       if (!orderResult.success || !orderResult.orderId) {
-        toast.error(orderResult.error || "Failed to create order");
+        toast.error(orderResult.error || "Failed to create order. Please try again.");
+        setIsProcessing(false);
+        return;
+      }
+
+      if (!import.meta.env.VITE_RAZORPAY_KEY_ID) {
+        toast.error("Payment system not configured. Please contact support.");
         setIsProcessing(false);
         return;
       }
@@ -229,14 +239,18 @@ export default function PaymentSummary() {
         },
         handler: async function (response: any) {
           try {
+            console.log("Payment successful, verifying:", response);
+            
             const verifyResult = await verifyPayment({
               razorpayOrderId: response.razorpay_order_id,
               razorpayPaymentId: response.razorpay_payment_id,
               razorpaySignature: response.razorpay_signature,
-              planName: planName,
+              planName: planName!,
               amount: finalAmount,
               duration: duration,
             });
+
+            console.log("Verification result:", verifyResult);
 
             if (verifyResult.success) {
               toast.success("Payment successful! Your subscription is now active.");
@@ -245,9 +259,9 @@ export default function PaymentSummary() {
               toast.error(verifyResult.error || "Payment verification failed");
               navigate("/payment-status?status=failed");
             }
-          } catch (error) {
+          } catch (error: any) {
             console.error("Payment verification error:", error);
-            toast.error("Payment verification failed");
+            toast.error("Payment verification failed: " + (error.message || "Unknown error"));
             navigate("/payment-status?status=failed");
           }
         },
@@ -259,11 +273,12 @@ export default function PaymentSummary() {
         },
       };
 
+      console.log("Opening Razorpay checkout...");
       const razorpay = new window.Razorpay(options);
       razorpay.open();
-    } catch (error) {
-      console.error("Payment error:", error);
-      toast.error("Failed to initiate payment");
+    } catch (error: any) {
+      console.error("Payment initiation error:", error);
+      toast.error("Failed to initiate payment: " + (error.message || "Unknown error"));
       setIsProcessing(false);
     }
   };
