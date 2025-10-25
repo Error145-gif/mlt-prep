@@ -370,7 +370,7 @@ export default function Landing() {
             <div>
               <h3 className="text-white font-semibold mb-3">Quick Links</h3>
               <div className="space-y-2">
-                <a href="/contact" className="block text-white/60 hover:text-white text-sm transition-colors">Contact Us</a>
+                <a href="/contact-us" className="block text-white/60 hover:text-white text-sm transition-colors">Contact Us</a>
                 <a href="/terms" className="block text-white/60 hover:text-white text-sm transition-colors">Terms & Conditions</a>
                 <a href="/privacy" className="block text-white/60 hover:text-white text-sm transition-colors">Privacy Policy</a>
               </div>
