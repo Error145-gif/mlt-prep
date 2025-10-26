@@ -216,14 +216,19 @@ export default function PaymentSummary() {
         return;
       }
 
-      if (!import.meta.env.VITE_RAZORPAY_KEY_ID) {
+      const razorpayKeyId = import.meta.env.VITE_RAZORPAY_KEY_ID;
+      
+      if (!razorpayKeyId) {
+        console.error("VITE_RAZORPAY_KEY_ID is missing from environment variables");
         toast.error("Payment system not configured. Please contact support.");
         setIsProcessing(false);
         return;
       }
 
+      console.log("Razorpay Key ID configured:", razorpayKeyId.substring(0, 10) + "...");
+
       const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        key: razorpayKeyId,
         amount: orderResult.amount,
         currency: orderResult.currency,
         name: "MLT Prep",
