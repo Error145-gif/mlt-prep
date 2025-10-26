@@ -1,49 +1,25 @@
-import { useMutation, useQuery, useAction } from "convex/react";
+import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
 import { useNavigate } from "react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Check, X, BookOpen, Brain, Library, BarChart3, Sparkles, Tag } from "lucide-react";
+import { Check, BookOpen, Brain, Library, BarChart3, Sparkles, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { useEffect, useState } from "react";
-
-// Razorpay types
-declare global {
-  interface Window {
-    Razorpay: any;
-  }
-}
+import { useEffect } from "react";
 
 export default function SubscriptionPlans() {
-  const { isAuthenticated, isLoading, user } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
   const subscriptionAccess = useQuery(api.student.checkSubscriptionAccess);
-  const createOrder = useAction(api.razorpay.createOrder);
-  const verifyPayment = useAction(api.razorpay.verifyPayment);
-  const [couponCode, setCouponCode] = useState("");
-  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
-  const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       navigate("/auth");
     }
   }, [isAuthenticated, isLoading, navigate]);
-
-  // Load Razorpay script
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.async = true;
-    document.body.appendChild(script);
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, []);
 
   if (isLoading) {
     return (
@@ -53,64 +29,9 @@ export default function SubscriptionPlans() {
     );
   }
 
-  // Check if user has any active subscription (paid or free trial)
   const hasAnySubscription = subscriptionAccess?.subscription?.status === "active";
   const hasPaidSubscription = subscriptionAccess?.hasAccess && subscriptionAccess?.isPaid;
   const hasFreeTrial = subscriptionAccess?.reason === "free_trial" && hasAnySubscription;
-
-  const handleApplyCoupon = async () => {
-    if (!couponCode.trim()) {
-      toast.error("Please enter a coupon code");
-      return;
-    }
-
-    setIsValidatingCoupon(true);
-    try {
-      const convexUrl = import.meta.env.VITE_CONVEX_URL;
-      const response = await fetch(`${convexUrl}/api/query`, {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          path: "coupons:validateCoupon",
-          args: { code: couponCode.toUpperCase() },
-          format: "json",
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      const result = data.value || data;
-      
-      if (result && result.valid) {
-        setAppliedCoupon(result);
-        toast.success(result.message || "Coupon applied successfully!");
-      } else {
-        setAppliedCoupon(null);
-        toast.error(result?.message || "Invalid coupon code");
-      }
-    } catch (error: any) {
-      console.error("Coupon validation error:", error);
-      toast.error("Failed to validate coupon. Please try again.");
-      setAppliedCoupon(null);
-    } finally {
-      setIsValidatingCoupon(false);
-    }
-  };
-
-  const calculateDiscountedPrice = (originalPrice: number) => {
-    if (!appliedCoupon) return originalPrice;
-    
-    if (appliedCoupon.type === "percentage") {
-      return Math.round(originalPrice - (originalPrice * appliedCoupon.discount / 100));
-    } else {
-      return Math.max(0, originalPrice - appliedCoupon.discount);
-    }
-  };
 
   const handleSubscribe = (planId: string, amount: number, planName: string, duration: number) => {
     if (hasPaidSubscription) {
@@ -118,8 +39,8 @@ export default function SubscriptionPlans() {
       return;
     }
 
-    // Navigate to Payment Summary page with plan details
-    navigate(`/payment-summary?name=${encodeURIComponent(planName)}&price=${amount}&duration=${duration}`);
+    toast.info("Payment gateway is under maintenance. Please contact us for subscription.");
+    navigate("/contact-us");
   };
 
   const plans = [
@@ -142,7 +63,7 @@ export default function SubscriptionPlans() {
         navigate("/dashboard");
       },
       buttonText: hasFreeTrial ? "Active - Go to Dashboard" : "Already Activated",
-      disabled: true, // Always disabled since it's auto-activated
+      disabled: true,
     },
     {
       id: "monthly",
@@ -159,7 +80,7 @@ export default function SubscriptionPlans() {
         { text: "Advanced Analytics", icon: BarChart3 },
       ],
       action: () => handleSubscribe("monthly", 99, "Monthly Plan", 30),
-      buttonText: hasPaidSubscription ? "Already Subscribed" : "Subscribe Now",
+      buttonText: hasPaidSubscription ? "Already Subscribed" : "Contact Us",
       disabled: hasPaidSubscription,
     },
     {
@@ -179,7 +100,7 @@ export default function SubscriptionPlans() {
         { text: "Extended Validity (4 Months)", icon: Check },
       ],
       action: () => handleSubscribe("4months", 399, "4 Months Plan", 120),
-      buttonText: hasPaidSubscription ? "Already Subscribed" : "Get 4-Month Plan",
+      buttonText: hasPaidSubscription ? "Already Subscribed" : "Contact Us",
       disabled: hasPaidSubscription,
     },
     {
@@ -197,21 +118,19 @@ export default function SubscriptionPlans() {
         { text: "1 Year Full Access to All Content", icon: Check },
       ],
       action: () => handleSubscribe("yearly", 599, "Yearly Plan", 365),
-      buttonText: hasPaidSubscription ? "Already Subscribed" : "Go Yearly – Save Big",
+      buttonText: hasPaidSubscription ? "Already Subscribed" : "Contact Us",
       disabled: hasPaidSubscription,
     },
   ];
 
   return (
     <div className="min-h-screen p-4 md:p-8 relative overflow-hidden">
-      {/* Animated Background Gradients */}
       <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
         <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-400/30 rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-500/30 rounded-full blur-3xl" />
         <div className="absolute top-1/2 left-1/2 w-[600px] h-[600px] bg-pink-400/25 rounded-full blur-3xl" />
       </div>
 
-      {/* Lab Background Image */}
       <div 
         className="fixed inset-0 z-0 opacity-10"
         style={{
@@ -223,7 +142,6 @@ export default function SubscriptionPlans() {
       />
 
       <div className="relative z-10 max-w-4xl mx-auto space-y-6">
-        {/* Header */}
         <div className="text-center space-y-2 mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-white drop-shadow-lg">Choose Your Plan</h1>
           <p className="text-white/90 text-sm md:text-base drop-shadow-md">
@@ -241,47 +159,30 @@ export default function SubscriptionPlans() {
           )}
         </div>
 
-        {/* Coupon Code Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <Card className="border-2 border-white/30 rounded-2xl overflow-hidden glass-card backdrop-blur-xl bg-white/20">
+          <Card className="border-2 border-yellow-400/50 rounded-2xl overflow-hidden glass-card backdrop-blur-xl bg-yellow-500/20">
             <CardContent className="pt-6">
-              <div className="flex items-center gap-2 mb-3">
-                <Tag className="h-5 w-5 text-white" />
-                <h3 className="text-lg font-semibold text-white">Have a Coupon Code?</h3>
+              <div className="flex items-center gap-3 mb-3">
+                <AlertCircle className="h-6 w-6 text-yellow-300" />
+                <h3 className="text-lg font-semibold text-white">Payment Gateway Under Maintenance</h3>
               </div>
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Enter coupon code"
-                  value={couponCode}
-                  onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                  className="bg-white/10 border-white/30 text-white placeholder:text-white/60"
-                  disabled={isValidatingCoupon}
-                />
-                <Button
-                  onClick={handleApplyCoupon}
-                  disabled={isValidatingCoupon || !couponCode.trim()}
-                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
-                >
-                  {isValidatingCoupon ? "Validating..." : "Apply"}
-                </Button>
-              </div>
-              {appliedCoupon && (
-                <div className="mt-3 p-3 bg-green-500/20 border border-green-400/50 rounded-lg">
-                  <p className="text-green-300 text-sm flex items-center gap-2">
-                    <Check className="h-4 w-4" />
-                    {appliedCoupon.message}
-                  </p>
-                </div>
-              )}
+              <p className="text-white/90 mb-2">
+                We are currently updating our payment system. For immediate subscription, please contact us directly.
+              </p>
+              <Button
+                onClick={() => navigate("/contact-us")}
+                className="mt-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+              >
+                Contact Us
+              </Button>
             </CardContent>
           </Card>
         </motion.div>
 
-        {/* Plans */}
         <div className="space-y-4">
           {plans.map((plan, index) => (
             <motion.div
@@ -314,14 +215,7 @@ export default function SubscriptionPlans() {
                         </div>
                       )}
                       <div className="flex items-baseline gap-1">
-                        {appliedCoupon && plan.price > 0 ? (
-                          <>
-                            <span className="text-xl font-bold text-white/60 line-through">₹{plan.price}</span>
-                            <span className="text-3xl font-bold text-green-300">₹{calculateDiscountedPrice(plan.price)}</span>
-                          </>
-                        ) : (
-                          <span className="text-3xl font-bold text-white">₹{plan.price}</span>
-                        )}
+                        <span className="text-3xl font-bold text-white">₹{plan.price}</span>
                         <span className="text-white/70 text-sm">/{plan.durationText}</span>
                       </div>
                     </div>
@@ -351,7 +245,6 @@ export default function SubscriptionPlans() {
           ))}
         </div>
 
-        {/* Comparison Table */}
         <div className="mt-12 glass-card border border-white/30 backdrop-blur-xl bg-white/20 rounded-2xl p-6">
           <h2 className="text-xl font-bold text-white mb-4 text-center">Feature Comparison</h2>
           <div className="overflow-x-auto">
@@ -406,10 +299,9 @@ export default function SubscriptionPlans() {
           </div>
         </div>
 
-        {/* Bottom Note */}
         <div className="glass-card border border-white/30 backdrop-blur-xl bg-white/20 rounded-xl p-4 text-center">
           <p className="text-sm text-white">
-            <strong>Note:</strong> Free trial is automatically activated when you register. You get access to the first test of each type (Mock, PYQ, AI). Upgrade anytime for unlimited access!
+            <strong>Note:</strong> Free trial is automatically activated when you register. You get access to the first test of each type (Mock, PYQ, AI). Contact us for paid subscriptions!
           </p>
         </div>
       </div>
