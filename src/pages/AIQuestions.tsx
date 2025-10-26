@@ -93,7 +93,9 @@ export default function AIQuestions() {
           {aiTests.map((test, index) => {
             const isFirstTest = index === 0;
             const hasPaidSubscription = canAccessAI?.reason === "paid_subscription";
-            const isLocked = !isFirstTest && !hasPaidSubscription;
+            // If user has paid subscription, nothing is locked
+            // If no paid subscription, only first test is unlocked (free trial)
+            const isLocked = !hasPaidSubscription && !isFirstTest;
             
             return (
               <motion.div
