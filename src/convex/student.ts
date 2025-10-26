@@ -934,6 +934,9 @@ export const canAccessTestType = query({
       return { canAccess: false, reason: "not_authenticated" };
     }
 
+    console.log(`=== Checking access for test type: ${args.testType} ===`);
+    console.log("User ID:", user._id);
+
     // Check for active subscription FIRST (highest priority)
     const subscription = await ctx.db
       .query("subscriptions")
@@ -941,10 +944,22 @@ export const canAccessTestType = query({
       .filter((q) => q.eq(q.field("status"), "active"))
       .first();
 
+    console.log("Found subscription:", subscription ? "YES" : "NO");
+    if (subscription) {
+      console.log("Subscription details:", {
+        amount: subscription.amount,
+        endDate: subscription.endDate,
+        currentTime: Date.now(),
+        isExpired: subscription.endDate < Date.now()
+      });
+    }
+
     // If user has an active paid subscription, grant full access immediately
     if (subscription && subscription.endDate >= Date.now()) {
       const isPaid = subscription.amount > 0;
+      console.log("Is paid subscription:", isPaid);
       if (isPaid) {
+        console.log("✅ Access granted - paid subscription");
         return { canAccess: true, reason: "paid_subscription" };
       }
     }
@@ -958,10 +973,14 @@ export const canAccessTestType = query({
       .filter((q) => q.eq(q.field("testType"), args.testType))
       .collect();
 
+    console.log("Completed tests of this type:", completedTests.length);
+
     if (completedTests.length === 0) {
+      console.log("✅ Access granted - free trial available");
       return { canAccess: true, reason: "free_trial" };
     }
 
+    console.log("❌ Access denied - free trial used, no paid subscription");
     return { canAccess: false, reason: "free_trial_used" };
   },
 });
