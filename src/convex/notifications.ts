@@ -232,7 +232,7 @@ export const getUserNotifications = query({
   handler: async (ctx) => {
     const user = await getCurrentUser(ctx);
     if (!user) {
-      throw new Error("Unauthorized");
+      return []; // Return empty array instead of throwing error
     }
 
     // Get all sent notifications
