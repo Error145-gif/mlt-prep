@@ -934,22 +934,22 @@ export const canAccessTestType = query({
       return { canAccess: false, reason: "not_authenticated" };
     }
 
-    // Check for active subscription
+    // Check for active subscription FIRST (highest priority)
     const subscription = await ctx.db
       .query("subscriptions")
       .withIndex("by_user", (q) => q.eq("userId", user._id))
       .filter((q) => q.eq(q.field("status"), "active"))
       .first();
 
+    // If user has an active paid subscription, grant full access immediately
     if (subscription && subscription.endDate >= Date.now()) {
-      // Distinguish between paid subscription and free trial
       const isPaid = subscription.amount > 0;
       if (isPaid) {
         return { canAccess: true, reason: "paid_subscription" };
       }
-      // If free trial, check if they've used it for this test type
     }
 
+    // Only check free trial if no paid subscription exists
     // Check if user has used their free trial for this test type
     const completedTests = await ctx.db
       .query("testSessions")
