@@ -5,7 +5,7 @@ import { useNavigate } from "react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, BookOpen, Brain, Library, BarChart3, Sparkles, AlertCircle } from "lucide-react";
+import { Check, BookOpen, Brain, Library, BarChart3, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { useEffect } from "react";
@@ -39,8 +39,7 @@ export default function SubscriptionPlans() {
       return;
     }
 
-    toast.info("Payment gateway is under maintenance. Please contact us for subscription.");
-    navigate("/contact-us");
+    navigate(`/payment-summary?name=${encodeURIComponent(planName)}&price=${amount}&duration=${duration}`);
   };
 
   const plans = [
@@ -80,7 +79,7 @@ export default function SubscriptionPlans() {
         { text: "Advanced Analytics", icon: BarChart3 },
       ],
       action: () => handleSubscribe("monthly", 99, "Monthly Plan", 30),
-      buttonText: hasPaidSubscription ? "Already Subscribed" : "Contact Us",
+      buttonText: hasPaidSubscription ? "Already Subscribed" : "Subscribe Now",
       disabled: hasPaidSubscription,
     },
     {
@@ -100,7 +99,7 @@ export default function SubscriptionPlans() {
         { text: "Extended Validity (4 Months)", icon: Check },
       ],
       action: () => handleSubscribe("4months", 399, "4 Months Plan", 120),
-      buttonText: hasPaidSubscription ? "Already Subscribed" : "Contact Us",
+      buttonText: hasPaidSubscription ? "Already Subscribed" : "Subscribe Now",
       disabled: hasPaidSubscription,
     },
     {
@@ -118,7 +117,7 @@ export default function SubscriptionPlans() {
         { text: "1 Year Full Access to All Content", icon: Check },
       ],
       action: () => handleSubscribe("yearly", 599, "Yearly Plan", 365),
-      buttonText: hasPaidSubscription ? "Already Subscribed" : "Contact Us",
+      buttonText: hasPaidSubscription ? "Already Subscribed" : "Subscribe Now",
       disabled: hasPaidSubscription,
     },
   ];
@@ -158,30 +157,6 @@ export default function SubscriptionPlans() {
             </Badge>
           )}
         </div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <Card className="border-2 border-yellow-400/50 rounded-2xl overflow-hidden glass-card backdrop-blur-xl bg-yellow-500/20">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-3 mb-3">
-                <AlertCircle className="h-6 w-6 text-yellow-300" />
-                <h3 className="text-lg font-semibold text-white">Payment Gateway Under Maintenance</h3>
-              </div>
-              <p className="text-white/90 mb-2">
-                We are currently updating our payment system. For immediate subscription, please contact us directly.
-              </p>
-              <Button
-                onClick={() => navigate("/contact-us")}
-                className="mt-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
-              >
-                Contact Us
-              </Button>
-            </CardContent>
-          </Card>
-        </motion.div>
 
         <div className="space-y-4">
           {plans.map((plan, index) => (
@@ -301,7 +276,7 @@ export default function SubscriptionPlans() {
 
         <div className="glass-card border border-white/30 backdrop-blur-xl bg-white/20 rounded-xl p-4 text-center">
           <p className="text-sm text-white">
-            <strong>Note:</strong> Free trial is automatically activated when you register. You get access to the first test of each type (Mock, PYQ, AI). Contact us for paid subscriptions!
+            <strong>Note:</strong> Free trial is automatically activated when you register. You get access to the first test of each type (Mock, PYQ, AI). Upgrade anytime for unlimited access!
           </p>
         </div>
       </div>
