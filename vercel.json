@@ -1,16 +1,5 @@
-<<<<<<< SEARCH
-{
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "framework": "vite",
-  "env": {
-    "VITE_CONVEX_URL": "@VITE_CONVEX_URL"
-  }
-}
->>>>>>> REPLACE
 {
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite"
 }
->>>>>>> REPLACE
