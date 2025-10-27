@@ -87,6 +87,7 @@ const schema = defineSchema(
       avatarUrl: v.optional(v.string()),
       isRegistered: v.optional(v.boolean()),
       registrationCompleted: v.optional(v.boolean()),
+      phone: v.optional(v.string()),
     })
       .index("by_email", ["email"]),
 

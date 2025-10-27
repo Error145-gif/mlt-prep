@@ -18,11 +18,17 @@ export const autoCompleteRegistration = mutation({
     // Only mark as registered if Gmail and not already registered
     if (user.email?.endsWith("@gmail.com") && !user.isRegistered) {
       try {
-        await ctx.db.patch(userId, {
+        // Ensure user has default role set
+        const updates: any = {
           isRegistered: true,
           registrationCompleted: true,
-          role: "user", // Explicitly set default role
-        });
+        };
+        
+        if (!user.role) {
+          updates.role = "user";
+        }
+
+        await ctx.db.patch(userId, updates);
 
         // Automatically create 7-day free trial subscription for new users
         const existingSubscription = await ctx.db
@@ -47,7 +53,6 @@ export const autoCompleteRegistration = mutation({
         }
       } catch (error) {
         console.error("Error completing registration:", error);
-        // If patch fails, try to continue anyway
         return userId;
       }
     }
