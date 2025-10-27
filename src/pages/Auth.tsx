@@ -60,24 +60,6 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
         return;
       }
 
-      // For sign-in (not creating account), check if email is registered
-      if (!isCreatingAccount) {
-        const checkResult = await fetch(`${import.meta.env.VITE_CONVEX_URL}/api/query`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            path: "users:checkEmailRegistered",
-            args: { email },
-          }),
-        }).then(res => res.json());
-
-        if (checkResult.value && !checkResult.value.isValid) {
-          setError(checkResult.value.message);
-          setIsLoading(false);
-          return;
-        }
-      }
-
       await signIn("email-otp", formData);
       setStep({ email });
       setIsLoading(false);
