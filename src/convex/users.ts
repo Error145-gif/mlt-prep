@@ -101,7 +101,7 @@ export const setUserAsAdmin = mutation({
   handler: async (ctx, args) => {
     const user = await ctx.db
       .query("users")
-      .withIndex("email", (q) => q.eq("email", args.email))
+      .withIndex("by_email", (q) => q.eq("email", args.email))
       .unique();
 
     if (!user) {
@@ -165,7 +165,7 @@ export const checkEmailRegistered = query({
     // Check if user exists and is registered
     const user = await ctx.db
       .query("users")
-      .withIndex("email", (q) => q.eq("email", email))
+      .withIndex("by_email", (q) => q.eq("email", email))
       .first();
 
     if (!user) {
