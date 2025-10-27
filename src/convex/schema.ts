@@ -82,12 +82,13 @@ const schema = defineSchema(
       isAnonymous: v.optional(v.boolean()),
       role: v.optional(roleValidator),
       lastActive: v.optional(v.number()),
-      examPreparation: v.optional(v.string()), // Which exam they're preparing for
-      state: v.optional(v.string()), // User's state/location
-      avatarUrl: v.optional(v.string()), // Selected avatar
-      isRegistered: v.optional(v.boolean()), // Track if user completed registration
-      registrationCompleted: v.optional(v.boolean()), // Full registration status
-    }).index("email", ["email"]),
+      examPreparation: v.optional(v.string()),
+      state: v.optional(v.string()),
+      avatarUrl: v.optional(v.string()),
+      isRegistered: v.optional(v.boolean()),
+      registrationCompleted: v.optional(v.boolean()),
+    })
+      .index("by_email", ["email"]),
 
     // Content Management
     content: defineTable({
