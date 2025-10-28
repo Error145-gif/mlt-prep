@@ -4,10 +4,11 @@ import { InstrumentationProvider } from "@/instrumentation.tsx";
 import AuthPage from "@/pages/Auth.tsx";
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { ConvexReactClient } from "convex/react";
-import { StrictMode, useEffect } from "react";
+import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { BrowserRouter, Route, Routes, useLocation, useNavigate, Navigate } from "react-router";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router";
 import "./index.css";
+
 import Landing from "./pages/Landing.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import AdminDashboard from "./pages/AdminDashboard.tsx";
@@ -17,7 +18,6 @@ import UserAnalytics from "./pages/UserAnalytics.tsx";
 import SubscriptionManagement from "./pages/SubscriptionManagement.tsx";
 import NotificationCenter from "./pages/NotificationCenter.tsx";
 import AdminSidebar from "./components/AdminSidebar.tsx";
-import "./types/global.d.ts";
 import StudentNav from "./components/StudentNav.tsx";
 import StudentDashboard from "./pages/StudentDashboard.tsx";
 import MockTests from "./pages/MockTests.tsx";
@@ -47,28 +47,70 @@ const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
-  
+
   if (isLoading) {
-    return <div className="min-h-screen flex items-center justify-center"><div className="text-white">Loading...</div></div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-white">Loading...</div>
+      </div>
+    );
   }
-  
+
   if (!isAuthenticated) {
     return <Navigate to="/auth" />;
   }
-  
+
   return <>{children}</>;
 }
 
 function AdminRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading, user } = useAuth();
-  
+
   if (isLoading) {
-    return <div className="min-h-screen flex items-center justify-center"><div className="text-white">Loading...</div></div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-white">Loading...</div>
+      </div>
+    );
   }
-  
+
   if (!isAuthenticated || user?.role !== "admin") {
     return <Navigate to="/" />;
   }
-  
+
   return <>{children}</>;
 }
+
+createRoot(document.getElementById("root")!).render(
+  <StrictMode>
+    <InstrumentationProvider>
+      <ConvexAuthProvider client={convex}>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/auth" element={<AuthPage />} />
+            <Route
+              path="/student"
+              element={
+                <ProtectedRoute>
+                  <StudentDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <AdminRoute>
+                  <AdminDashboard />
+                </AdminRoute>
+              }
+            />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+          <Toaster />
+          <VlyToolbar />
+        </BrowserRouter>
+      </ConvexAuthProvider>
+    </InstrumentationProvider>
+  </StrictMode>
+);
