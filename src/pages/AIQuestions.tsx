@@ -5,13 +5,14 @@ import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Menu, X, Lock } from "lucide-react";
+import { Menu, X, Lock, ExternalLink } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { AnimatePresence } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 export default function AIQuestions() {
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -365,22 +366,43 @@ export default function AIQuestions() {
                       </Badge>
                     )}
 
-                    <Button
-                      onClick={() => handleSelectTest(test)}
-                      disabled={isLocked}
-                      className={`w-full ${isLocked ? 'bg-gray-500 cursor-not-allowed' : 'bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700'}`}
-                    >
-                      {isLocked ? (
-                        <>
-                          <Lock className="h-4 w-4 mr-2" />
-                          Locked
-                        </>
-                      ) : test.hasCompleted ? (
-                        "Re-Take Test"
-                      ) : (
-                        "Start Test"
-                      )}
-                    </Button>
+                    {isLocked ? (
+                      <Button
+                        disabled
+                        className="w-full bg-gray-500 cursor-not-allowed"
+                      >
+                        <Lock className="h-4 w-4 mr-2" />
+                        Locked
+                      </Button>
+                    ) : (
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700">
+                            {test.hasCompleted ? "Re-Take Test" : "Start Test"}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-48 p-2 space-y-2">
+                          <Button
+                            onClick={() => handleSelectTest(test)}
+                            variant="ghost"
+                            className="w-full justify-start text-sm"
+                          >
+                            Click to test
+                          </Button>
+                          <Button
+                            onClick={() => {
+                              const topicParam = test.topicId ? `&topicId=${test.topicId}` : "";
+                              window.open(`/test-start?type=ai${topicParam}&setNumber=${test.setNumber}`, '_blank');
+                            }}
+                            variant="ghost"
+                            className="w-full justify-start text-sm"
+                          >
+                            <ExternalLink className="h-4 w-4 mr-2" />
+                            Open in new tab
+                          </Button>
+                        </PopoverContent>
+                      </Popover>
+                    )}
                   </div>
                 </Card>
               </motion.div>

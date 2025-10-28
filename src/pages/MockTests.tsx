@@ -5,11 +5,12 @@ import { useNavigate } from "react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Clock, Target, Menu, X } from "lucide-react";
+import { FileText, Clock, Target, Menu, X, ExternalLink } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { AnimatePresence } from "framer-motion";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 export default function MockTests() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -220,12 +221,37 @@ export default function MockTests() {
                         Unlock with Subscription
                       </Button>
                     ) : (
-                      <Button
-                        onClick={() => handleStartTest(test.topicId, test.setNumber, isFirstTest)}
-                        className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
-                      >
-                        {test.hasCompleted ? (canAccessMock?.canAccess ? "Re-Test" : "Subscribe to Re-Test") : isFirstTest && canAccessMock?.reason === "free_trial" ? "Start Free Test" : "Start Test"}
-                      </Button>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                          >
+                            {test.hasCompleted ? (canAccessMock?.canAccess ? "Re-Test" : "Subscribe to Re-Test") : isFirstTest && canAccessMock?.reason === "free_trial" ? "Start Free Test" : "Start Test"}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-48 p-2 space-y-2">
+                          <Button
+                            onClick={() => handleStartTest(test.topicId, test.setNumber, isFirstTest)}
+                            variant="ghost"
+                            className="w-full justify-start text-sm"
+                          >
+                            Click to test
+                          </Button>
+                          <Button
+                            onClick={() => {
+                              const url = test.topicId 
+                                ? `/test-start?type=mock&topicId=${test.topicId}&setNumber=${test.setNumber}`
+                                : `/test-start?type=mock&setNumber=${test.setNumber}`;
+                              window.open(url, '_blank');
+                            }}
+                            variant="ghost"
+                            className="w-full justify-start text-sm"
+                          >
+                            <ExternalLink className="h-4 w-4 mr-2" />
+                            Open in new tab
+                          </Button>
+                        </PopoverContent>
+                      </Popover>
                     )}
                   </CardContent>
                 </Card>

@@ -8,9 +8,10 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { User, Lock, Menu, X } from "lucide-react";
+import { User, Lock, Menu, X, ExternalLink } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AnimatePresence } from "framer-motion";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 export default function PYQSets() {
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -372,22 +373,40 @@ export default function PYQSets() {
                       </Badge>
                     )}
 
-                    <Button
-                      onClick={() => handleSelectSet(set)}
-                      disabled={isLocked}
-                      className={`w-full ${isLocked ? 'bg-gray-500 cursor-not-allowed' : 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700'}`}
-                    >
-                      {isLocked ? (
-                        <>
-                          <Lock className="h-4 w-4 mr-2" />
-                          Locked
-                        </>
-                      ) : set.hasCompleted ? (
-                        "Re-Take Test"
-                      ) : (
-                        "Start Test"
-                      )}
-                    </Button>
+                    {isLocked ? (
+                      <Button
+                        disabled
+                        className="w-full bg-gray-500 cursor-not-allowed"
+                      >
+                        <Lock className="h-4 w-4 mr-2" />
+                        Locked
+                      </Button>
+                    ) : (
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
+                            {set.hasCompleted ? "Re-Take Test" : "Start Test"}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-48 p-2 space-y-2">
+                          <Button
+                            onClick={() => handleSelectSet(set)}
+                            variant="ghost"
+                            className="w-full justify-start text-sm"
+                          >
+                            Click to test
+                          </Button>
+                          <Button
+                            onClick={() => window.open(`/test-start?type=pyq&year=${set.year}&setNumber=${set.setNumber}`, '_blank')}
+                            variant="ghost"
+                            className="w-full justify-start text-sm"
+                          >
+                            <ExternalLink className="h-4 w-4 mr-2" />
+                            Open in new tab
+                          </Button>
+                        </PopoverContent>
+                      </Popover>
+                    )}
                   </div>
                 </Card>
               </motion.div>
