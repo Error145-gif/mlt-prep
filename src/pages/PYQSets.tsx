@@ -21,10 +21,25 @@ export default function PYQSets() {
     }
   }, [isAuthenticated, isLoading, navigate]);
 
-  if (isLoading || !pyqSets) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-white text-xl">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!pyqSets || pyqSets.length === 0) {
+    return (
+      <div className="min-h-screen p-6 lg:p-8 relative overflow-hidden">
+        <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
+          <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-400/50 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-500/50 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        </div>
+        <div className="relative z-10 max-w-7xl mx-auto text-center">
+          <h1 className="text-3xl font-bold text-white">No PYQ Sets Available</h1>
+          <p className="text-white/70 mt-2">Check back soon for previous year questions</p>
+        </div>
       </div>
     );
   }
