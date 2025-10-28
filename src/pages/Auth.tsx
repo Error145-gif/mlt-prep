@@ -39,7 +39,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       if (user?.role === "admin") {
         navigate("/admin");
       } else {
-        const redirect = redirectAfterAuth || "/dashboard";
+        const redirect = redirectAfterAuth || "/student";
         navigate(redirect);
       }
     }
