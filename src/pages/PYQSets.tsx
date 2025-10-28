@@ -230,18 +230,16 @@ export default function PYQSets() {
       </div>
 
       {/* Hamburger Menu - Mobile Only */}
-      {typeof window !== 'undefined' && (
-        <div className="fixed top-4 right-4 z-50 md:hidden">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-white hover:bg-white/20"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </Button>
-        </div>
-      )}
+      <div className="fixed top-4 right-4 z-50 md:hidden">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-white hover:bg-white/20 bg-white/10"
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+        >
+          {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+        </Button>
+      </div>
 
       {/* Mobile Menu */}
       <AnimatePresence>
