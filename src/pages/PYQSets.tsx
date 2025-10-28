@@ -8,8 +8,9 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { User, Lock } from "lucide-react";
+import { User, Lock, Menu, X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { AnimatePresence } from "framer-motion";
 
 export default function PYQSets() {
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -18,6 +19,7 @@ export default function PYQSets() {
   const userProfile = useQuery(api.users.getUserProfile);
   const canAccessPYQ = useQuery(api.student.canAccessTestType, { testType: "pyq" });
   const [selectedSet, setSelectedSet] = useState<any>(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -49,14 +51,12 @@ export default function PYQSets() {
     const isFirstTest = pyqSets.length > 0 && pyqSets[0] === set;
     const hasPaidSubscription = canAccessPYQ?.reason === "paid_subscription";
     
-    // If not first test and no paid subscription, it's locked
     if (!isFirstTest && !hasPaidSubscription) {
       toast.error("This test is locked! Subscribe to unlock all tests.");
       setTimeout(() => navigate("/subscription"), 1000);
       return;
     }
     
-    // If first test but free trial already used, redirect to subscription
     if (isFirstTest && canAccessPYQ?.reason === "free_trial_used") {
       toast.error("Your free trial is used. Please subscribe to continue.");
       setTimeout(() => navigate("/subscription"), 500);
@@ -221,13 +221,79 @@ export default function PYQSets() {
     );
   }
 
-  // Show list of available PYQ sets
+  // Show list of available PYQ sets with hamburger menu
   return (
     <div className="min-h-screen p-6 lg:p-8 relative overflow-hidden">
       <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
         <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-400/50 rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-500/50 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
       </div>
+
+      {/* Hamburger Menu - Mobile Only */}
+      {typeof window !== 'undefined' && (
+        <div className="fixed top-4 right-4 z-50 md:hidden">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-white hover:bg-white/20"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          >
+            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </Button>
+        </div>
+      )}
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, x: 300 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 300 }}
+            className="fixed top-16 right-0 z-40 md:hidden bg-white/10 backdrop-blur-xl border-l border-white/20 w-64 h-screen p-4 space-y-3"
+          >
+            <Button
+              onClick={() => {
+                navigate("/student");
+                setIsMenuOpen(false);
+              }}
+              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+            >
+              Dashboard
+            </Button>
+            <Button
+              onClick={() => {
+                navigate("/mock-tests");
+                setIsMenuOpen(false);
+              }}
+              variant="outline"
+              className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30"
+            >
+              Mock Tests
+            </Button>
+            <Button
+              onClick={() => {
+                navigate("/ai-questions");
+                setIsMenuOpen(false);
+              }}
+              variant="outline"
+              className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30"
+            >
+              AI Questions
+            </Button>
+            <Button
+              onClick={() => {
+                navigate("/profile");
+                setIsMenuOpen(false);
+              }}
+              variant="outline"
+              className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30"
+            >
+              Profile
+            </Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="relative z-10 max-w-7xl mx-auto space-y-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
