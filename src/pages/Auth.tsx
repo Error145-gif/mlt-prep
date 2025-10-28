@@ -37,10 +37,10 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       }
       
       if (user?.role === "admin") {
-        navigate("/admin");
+        navigate("/admin", { replace: true });
       } else {
         const redirect = redirectAfterAuth || "/student";
-        navigate(redirect);
+        navigate(redirect, { replace: true });
       }
     }
   }, [authLoading, isAuthenticated, user, navigate, redirectAfterAuth, isCreatingAccount, autoCompleteRegistration]);

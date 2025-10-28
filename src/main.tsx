@@ -57,7 +57,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/auth" />;
+    return <Navigate to="/auth" replace />;
   }
 
   return <>{children}</>;
@@ -101,7 +101,7 @@ createRoot(document.getElementById("root")!).render(
               path="/dashboard"
               element={
                 <ProtectedRoute>
-                  <StudentDashboard />
+                  <Navigate to="/student" replace />
                 </ProtectedRoute>
               }
             />
