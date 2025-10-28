@@ -42,6 +42,11 @@ import StudyMaterialsManagement from "./pages/StudyMaterialsManagement.tsx";
 import FreeLibrary from "./pages/FreeLibrary.tsx";
 import { useAuth } from "@/hooks/use-auth";
 import SectionsManagement from "./pages/SectionsManagement.tsx";
+import AIPractice from "./pages/AIPractice.tsx";
+import MockTest from "./pages/MockTest.tsx";
+import PYQ from "./pages/PYQ.tsx";
+import AboutMLT from "./pages/AboutMLT.tsx";
+import Library from "./pages/Library.tsx";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
