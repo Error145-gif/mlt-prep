@@ -33,13 +33,8 @@ export default function PYQSets() {
   const handleStartPYQ = (year: number, setNumber: number, isFirstTest: boolean) => {
     // Check if user can access
     if (!canAccessPYQ?.canAccess) {
-      if (canAccessPYQ?.reason === "free_trial_used") {
-        toast.error("Your free trial is used. Please subscribe to continue.");
-        setTimeout(() => navigate("/subscription"), 500);
-      } else {
-        toast.error("This test is locked! Subscribe to unlock all tests.");
-        setTimeout(() => navigate("/subscription"), 1000);
-      }
+      toast.error("This test is locked! Subscribe to unlock all tests.");
+      setTimeout(() => navigate("/subscription"), 1000);
       return;
     }
     
@@ -83,7 +78,7 @@ export default function PYQSets() {
           {pyqSets.map((set, index) => {
             const isFirstTest = index === 0;
             // Lock tests if user cannot access OR if it's not the first test and they only have free trial
-            const isLocked = !canAccessPYQ?.canAccess || (isFirstTest && canAccessPYQ?.reason === "free_trial_used");
+            const isLocked = !canAccessPYQ?.canAccess;
             
             return (
               <motion.div
@@ -148,7 +143,7 @@ export default function PYQSets() {
                         onClick={() => handleStartPYQ(set.year, set.setNumber, isFirstTest)}
                         className="w-full bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700"
                       >
-                        {set.hasCompleted ? "Re-Test" : isFirstTest && canAccessPYQ?.reason === "free_trial" ? "Start Free Test" : "Start PYQ Set"}
+                        {set.hasCompleted ? "Re-Test" : "Start PYQ Set"}
                       </Button>
                     )}
                   </CardContent>

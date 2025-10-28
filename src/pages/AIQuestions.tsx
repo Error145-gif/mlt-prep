@@ -33,13 +33,8 @@ export default function AIQuestions() {
   const handleStartTest = (topicId: string | null, setNumber: number, isFirstTest: boolean) => {
     // Check if user can access
     if (!canAccessAI?.canAccess) {
-      if (canAccessAI?.reason === "free_trial_used") {
-        toast.error("Your free trial is used. Please subscribe to continue.");
-        setTimeout(() => navigate("/subscription"), 500);
-      } else {
-        toast.error("This test is locked! Subscribe to unlock all tests.");
-        setTimeout(() => navigate("/subscription"), 1000);
-      }
+      toast.error("This test is locked! Subscribe to unlock all tests.");
+      setTimeout(() => navigate("/subscription"), 1000);
       return;
     }
     
@@ -88,7 +83,7 @@ export default function AIQuestions() {
           {aiTests.map((test, index) => {
             const isFirstTest = index === 0;
             // Lock tests if user cannot access OR if it's not the first test and they only have free trial
-            const isLocked = !canAccessAI?.canAccess || (isFirstTest && canAccessAI?.reason === "free_trial_used");
+            const isLocked = !canAccessAI?.canAccess;
             
             return (
               <motion.div
@@ -153,7 +148,7 @@ export default function AIQuestions() {
                         onClick={() => handleStartTest(test.topicId, test.setNumber, isFirstTest)}
                         className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700"
                       >
-                        {test.hasCompleted ? "Re-Test" : isFirstTest && canAccessAI?.reason === "free_trial" ? "Start Free Test" : "Start AI Test"}
+                        {test.hasCompleted ? "Re-Test" : "Start AI Test"}
                       </Button>
                     )}
                   </CardContent>
