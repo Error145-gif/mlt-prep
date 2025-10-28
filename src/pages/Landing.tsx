@@ -157,7 +157,7 @@ export default function Landing() {
                   </Button>
                 )}
                 <Button
-                  onClick={() => navigate("/dashboard")}
+                  onClick={() => navigate("/student")}
                   className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
                 >
                   Dashboard
@@ -227,7 +227,7 @@ export default function Landing() {
                 whileTap={{ scale: 0.95 }}
               >
                 <Button
-                  onClick={() => navigate(isAuthenticated ? (user?.role === "admin" ? "/admin" : "/dashboard") : "/auth")}
+                  onClick={() => navigate(isAuthenticated ? (user?.role === "admin" ? "/admin" : "/student") : "/auth")}
                   size="lg"
                   className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-lg px-8 shadow-lg hover:shadow-2xl transition-shadow"
                 >
