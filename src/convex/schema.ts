@@ -89,7 +89,7 @@ const schema = defineSchema(
       registrationCompleted: v.optional(v.boolean()),
       phone: v.optional(v.string()),
     })
-      .index("by_email", ["email"]),
+      .index("email", ["email"]),
 
     // Content Management
     content: defineTable({
