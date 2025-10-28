@@ -88,25 +88,13 @@ export default function AIQuestions() {
         </div>
 
         <div className="max-w-2xl mx-auto">
-          {/* Header with title and user profile */}
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-3xl font-bold text-white">AI Test Set {selectedTest.setNumber}</h1>
-            </div>
-            <div className="flex items-center gap-3 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full">
-              {userProfile?.avatarUrl ? (
-                <Avatar className="h-10 w-10 border-2 border-white shadow-md">
-                  <AvatarImage src={userProfile.avatarUrl} />
-                  <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-600 text-white font-semibold">
-                    {userProfile.name?.charAt(0)?.toUpperCase() || "U"}
-                  </AvatarFallback>
-                </Avatar>
-              ) : (
-                <User className="h-10 w-10 text-white" />
-              )}
-              <span className="font-semibold text-white">{userProfile?.name || "Student"}</span>
-            </div>
-          </div>
+          <Button
+            onClick={() => setSelectedTest(null)}
+            variant="outline"
+            className="mb-6 bg-white/20 text-white border-white/30 hover:bg-white/30"
+          >
+            ← Back to Tests
+          </Button>
 
           <Card className="p-6 mb-6 shadow-xl border-0 bg-white/95 backdrop-blur-sm">
             <div className="grid grid-cols-3 gap-4 text-center">
@@ -133,7 +121,7 @@ export default function AIQuestions() {
               📋 General Instructions
             </h2>
 
-            <div className="space-y-6 max-h-96 overflow-y-auto">
+            <div className="space-y-6">
               <div className="p-4 bg-gradient-to-r from-orange-50 to-red-50 rounded-lg border-l-4 border-orange-500">
                 <h3 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
                   ⏰ Timer & Auto-Submit
