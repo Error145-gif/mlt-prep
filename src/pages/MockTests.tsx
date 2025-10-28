@@ -50,9 +50,9 @@ export default function MockTests() {
     
     // Build URL with set number
     if (topicId) {
-      navigate(`/test/start?type=mock&topicId=${topicId}&setNumber=${setNumber}`);
+      navigate(`/test-start?type=mock&topicId=${topicId}&setNumber=${setNumber}`);
     } else {
-      navigate(`/test/start?type=mock&setNumber=${setNumber}`);
+      navigate(`/test-start?type=mock&setNumber=${setNumber}`);
     }
   };
 

@@ -223,7 +223,7 @@ createRoot(document.getElementById("root")!).render(
               }
             />
             <Route
-              path="/test-start/:testId"
+              path="/test-start"
               element={
                 <ProtectedRoute>
                   <TestStart />
