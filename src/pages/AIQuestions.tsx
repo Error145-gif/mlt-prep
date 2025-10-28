@@ -5,16 +5,18 @@ import { useNavigate } from "react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BarChart3, Clock, Target, Sparkles } from "lucide-react";
+import { BarChart3, Clock, Target, Sparkles, Menu, X } from "lucide-react";
 import { motion } from "framer-motion";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { AnimatePresence } from "framer-motion";
 
 export default function AIQuestions() {
   const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
   const aiTests = useQuery(api.student.getAIQuestions, {});
   const canAccessAI = useQuery(api.student.canAccessTestType, { testType: "ai" });
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -69,7 +71,7 @@ export default function AIQuestions() {
 
   return (
     <div className="min-h-screen p-6 lg:p-8 relative overflow-hidden">
-      {/* Animated Background Gradients - Same as Landing */}
+      {/* Animated Background Gradients */}
       <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
         <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-400/50 rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-500/50 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
@@ -87,6 +89,70 @@ export default function AIQuestions() {
           backgroundRepeat: 'no-repeat'
         }}
       />
+
+      {/* Hamburger Menu - Mobile Only */}
+      <div className="fixed top-4 right-4 z-50 md:hidden">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-white hover:bg-white/20 bg-white/10"
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+        >
+          {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+        </Button>
+      </div>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, x: 300 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 300 }}
+            className="fixed top-16 right-0 z-40 md:hidden bg-white/10 backdrop-blur-xl border-l border-white/20 w-64 h-screen p-4 space-y-3"
+          >
+            <Button
+              onClick={() => {
+                navigate("/student");
+                setIsMenuOpen(false);
+              }}
+              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+            >
+              Dashboard
+            </Button>
+            <Button
+              onClick={() => {
+                navigate("/mock-tests");
+                setIsMenuOpen(false);
+              }}
+              variant="outline"
+              className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30"
+            >
+              Mock Tests
+            </Button>
+            <Button
+              onClick={() => {
+                navigate("/pyq-sets");
+                setIsMenuOpen(false);
+              }}
+              variant="outline"
+              className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30"
+            >
+              PYQ Sets
+            </Button>
+            <Button
+              onClick={() => {
+                navigate("/profile");
+                setIsMenuOpen(false);
+              }}
+              variant="outline"
+              className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30"
+            >
+              Profile
+            </Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="relative z-10 max-w-7xl mx-auto space-y-6">
         <div>
