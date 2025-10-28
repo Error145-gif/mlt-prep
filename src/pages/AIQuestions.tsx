@@ -2,22 +2,26 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
 import { useNavigate } from "react-router";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { BarChart3, Clock, Target, Sparkles, Menu, X, Lock } from "lucide-react";
+import { Menu, X, Lock } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { AnimatePresence } from "framer-motion";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { User } from "lucide-react";
 
 export default function AIQuestions() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
   const navigate = useNavigate();
   const aiTests = useQuery(api.student.getAIQuestions, {});
+  const userProfile = useQuery(api.users.getUserProfile);
   const canAccessAI = useQuery(api.student.canAccessTestType, { testType: "ai" });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [selectedTest, setSelectedTest] = useState<any>(null);
+  const [instructionsRead, setInstructionsRead] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -25,9 +29,9 @@ export default function AIQuestions() {
     }
   }, [isAuthenticated, isLoading, navigate]);
 
-  if (isLoading) {
+  if (isLoading || !aiTests) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
         <div className="text-white text-xl">Loading...</div>
       </div>
     );
@@ -36,11 +40,8 @@ export default function AIQuestions() {
   if (!aiTests || aiTests.length === 0) {
     return (
       <div className="min-h-screen p-6 lg:p-8 relative overflow-hidden">
-        <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
-          <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-400/50 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-500/50 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-        </div>
-        <div className="relative z-10 max-w-7xl mx-auto text-center">
+        <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500" />
+        <div className="relative z-10 max-w-2xl mx-auto text-center">
           <h1 className="text-3xl font-bold text-white">No AI Tests Available</h1>
           <p className="text-white/70 mt-2">Check back soon for new AI-generated questions</p>
         </div>
@@ -65,10 +66,14 @@ export default function AIQuestions() {
     }
     
     setSelectedTest(test);
+    setInstructionsRead(false);
   };
 
   const handleStartTest = () => {
-    if (!selectedTest) return;
+    if (!selectedTest || !instructionsRead) {
+      toast.error("Please read and confirm the instructions before starting.");
+      return;
+    }
     const topicParam = selectedTest.topicId ? `&topicId=${selectedTest.topicId}` : "";
     navigate(`/test-start?type=ai${topicParam}&setNumber=${selectedTest.setNumber}`);
   };
@@ -83,13 +88,25 @@ export default function AIQuestions() {
         </div>
 
         <div className="max-w-2xl mx-auto">
-          <Button
-            onClick={() => setSelectedTest(null)}
-            variant="outline"
-            className="mb-6 bg-white/20 text-white border-white/30 hover:bg-white/30"
-          >
-            ← Back to Tests
-          </Button>
+          {/* Header with title and user profile */}
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-3xl font-bold text-white">AI Test Set {selectedTest.setNumber}</h1>
+            </div>
+            <div className="flex items-center gap-3 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full">
+              {userProfile?.avatarUrl ? (
+                <Avatar className="h-10 w-10 border-2 border-white shadow-md">
+                  <AvatarImage src={userProfile.avatarUrl} />
+                  <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-600 text-white font-semibold">
+                    {userProfile.name?.charAt(0)?.toUpperCase() || "U"}
+                  </AvatarFallback>
+                </Avatar>
+              ) : (
+                <User className="h-10 w-10 text-white" />
+              )}
+              <span className="font-semibold text-white">{userProfile?.name || "Student"}</span>
+            </div>
+          </div>
 
           <Card className="p-6 mb-6 shadow-xl border-0 bg-white/95 backdrop-blur-sm">
             <div className="grid grid-cols-3 gap-4 text-center">
@@ -99,9 +116,9 @@ export default function AIQuestions() {
                 <p className="text-lg font-bold text-purple-900">AI Test</p>
               </div>
               <div className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg">
-                <p className="text-3xl mb-1">📊</p>
-                <p className="text-sm text-gray-600 font-medium">Set</p>
-                <p className="text-lg font-bold text-blue-900">{selectedTest.setNumber}/{selectedTest.totalSets}</p>
+                <p className="text-3xl mb-1">⏱️</p>
+                <p className="text-sm text-gray-600 font-medium">Duration</p>
+                <p className="text-lg font-bold text-blue-900">30 mins</p>
               </div>
               <div className="p-4 bg-gradient-to-br from-pink-50 to-pink-100 rounded-lg">
                 <p className="text-3xl mb-1">❓</p>
@@ -116,7 +133,7 @@ export default function AIQuestions() {
               📋 General Instructions
             </h2>
 
-            <div className="space-y-6">
+            <div className="space-y-6 max-h-96 overflow-y-auto">
               <div className="p-4 bg-gradient-to-r from-orange-50 to-red-50 rounded-lg border-l-4 border-orange-500">
                 <h3 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
                   ⏰ Timer & Auto-Submit
@@ -202,6 +219,20 @@ export default function AIQuestions() {
               </p>
             </div>
 
+            {/* Checkbox for instructions confirmation */}
+            <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200 flex items-start gap-3">
+              <input
+                type="checkbox"
+                id="instructions-read"
+                checked={instructionsRead}
+                onChange={(e) => setInstructionsRead(e.target.checked)}
+                className="mt-1 w-5 h-5 cursor-pointer"
+              />
+              <label htmlFor="instructions-read" className="text-sm text-gray-700 cursor-pointer">
+                I have read and understood the instructions. I declare that I am not carrying any prohibited items and agree to follow all test guidelines.
+              </label>
+            </div>
+
             <div className="mt-6 flex justify-center gap-4">
               <Button
                 onClick={() => setSelectedTest(null)}
@@ -212,7 +243,12 @@ export default function AIQuestions() {
               </Button>
               <Button
                 onClick={handleStartTest}
-                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-12 py-3 text-lg font-bold shadow-lg hover:shadow-xl transition-all"
+                disabled={!instructionsRead}
+                className={`px-12 py-3 text-lg font-bold shadow-lg hover:shadow-xl transition-all ${
+                  instructionsRead
+                    ? "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+                    : "bg-gray-400 text-gray-600 cursor-not-allowed"
+                }`}
               >
                 Start Test 🚀
               </Button>
@@ -226,24 +262,10 @@ export default function AIQuestions() {
   // Show list of available AI tests
   return (
     <div className="min-h-screen p-6 lg:p-8 relative overflow-hidden">
-      {/* Animated Background Gradients */}
       <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
         <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-400/50 rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-500/50 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-        <div className="absolute top-1/2 left-1/2 w-[600px] h-[600px] bg-pink-400/40 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '0.5s' }} />
-        <div className="absolute top-1/4 right-1/3 w-[400px] h-[400px] bg-cyan-400/40 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '0.7s' }} />
       </div>
-
-      {/* Lab Background Image */}
-      <div 
-        className="fixed inset-0 z-0 opacity-10"
-        style={{
-          backgroundImage: 'url(https://harmless-tapir-303.convex.cloud/api/storage/248a8492-0c51-4de9-a100-32eccdb346c2)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
-        }}
-      />
 
       {/* Hamburger Menu - Mobile Only */}
       <div className="fixed top-4 right-4 z-50 md:hidden">
@@ -342,12 +364,10 @@ export default function AIQuestions() {
 
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 text-white/70">
-                        <Clock className="h-4 w-4" />
-                        <span className="text-sm">30 mins</span>
+                        <span className="text-sm">⏱️ 30 mins</span>
                       </div>
                       <div className="flex items-center gap-2 text-white/70">
-                        <Target className="h-4 w-4" />
-                        <span className="text-sm">{test.questionCount} Questions</span>
+                        <span className="text-sm">❓ {test.questionCount} Questions</span>
                       </div>
                     </div>
 
