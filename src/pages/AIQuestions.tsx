@@ -30,14 +30,7 @@ export default function AIQuestions() {
     );
   }
 
-  const handleStartTest = (topicId: string | null, setNumber: number, isFirstTest: boolean) => {
-    // Check if user can access
-    if (!canAccessAI?.canAccess) {
-      toast.error("This test is locked! Subscribe to unlock all tests.");
-      setTimeout(() => navigate("/subscription"), 1000);
-      return;
-    }
-    
+  const handleStartTest = (topicId: string | null, setNumber: number) => {
     // Build URL with set number
     if (topicId) {
       navigate(`/test/start?type=ai&topicId=${topicId}&setNumber=${setNumber}`);
@@ -71,20 +64,10 @@ export default function AIQuestions() {
         <div>
           <h1 className="text-3xl font-bold text-white">AI-Generated Questions</h1>
           <p className="text-white/70 mt-1">Practice with AI-curated topic-wise questions (25 questions per set)</p>
-          {canAccessAI?.reason === "free_trial" && (
-            <p className="text-yellow-400 mt-2">🎁 Free trial: You can take one AI test for free!</p>
-          )}
-          {canAccessAI?.reason === "free_trial_used" && (
-            <p className="text-red-400 mt-2">⚠️ Free trial used. Subscribe to continue testing.</p>
-          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {aiTests.map((test, index) => {
-            const isFirstTest = index === 0;
-            // Lock tests if user cannot access OR if it's not the first test and they only have free trial
-            const isLocked = !canAccessAI?.canAccess;
-            
             return (
               <motion.div
                 key={`${test.topicId}-${test.setNumber}`}
@@ -92,32 +75,15 @@ export default function AIQuestions() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
               >
-                <Card className={`glass-card border-white/20 backdrop-blur-xl bg-white/10 hover:bg-white/15 transition-all ${isLocked ? 'opacity-60' : ''}`}>
+                <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10 hover:bg-white/15 transition-all">
                   <CardHeader>
                     <div className="flex items-center justify-between">
-                      {isLocked ? (
-                        <img 
-                          src="https://harmless-tapir-303.convex.cloud/api/storage/22271688-6e3c-45a0-a31d-8c82daf67b1e" 
-                          alt="Locked"
-                          className="h-12 w-12 object-contain"
-                        />
-                      ) : (
-                        <Sparkles className="h-8 w-8 text-purple-400" />
-                      )}
+                      <Sparkles className="h-8 w-8 text-purple-400" />
                       <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30">
                         Set {test.setNumber}/{test.totalSets}
                       </Badge>
                     </div>
-                    <CardTitle className="text-white mt-4 flex items-center gap-2">
-                      AI Challenge Test
-                      {isLocked && (
-                        <img 
-                          src="https://harmless-tapir-303.convex.cloud/api/storage/22271688-6e3c-45a0-a31d-8c82daf67b1e" 
-                          alt="Locked"
-                          className="h-6 w-6 object-contain"
-                        />
-                      )}
-                    </CardTitle>
+                    <CardTitle className="text-white mt-4">AI Challenge Test</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex items-center gap-2 text-white/70">
@@ -128,29 +94,12 @@ export default function AIQuestions() {
                       <Target className="h-4 w-4" />
                       <span className="text-sm">{test.questionCount} Questions</span>
                     </div>
-                    {isLocked ? (
-                      <Button
-                        onClick={() => {
-                          toast.error("This test is locked! Subscribe to unlock all tests.");
-                          setTimeout(() => navigate("/subscription"), 1000);
-                        }}
-                        className="w-full bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700"
-                      >
-                        <img 
-                          src="https://harmless-tapir-303.convex.cloud/api/storage/22271688-6e3c-45a0-a31d-8c82daf67b1e" 
-                          alt="Locked"
-                          className="h-4 w-4 mr-2"
-                        />
-                        Unlock with Subscription
-                      </Button>
-                    ) : (
-                      <Button
-                        onClick={() => handleStartTest(test.topicId, test.setNumber, isFirstTest)}
-                        className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700"
-                      >
-                        {test.hasCompleted ? "Re-Test" : "Start AI Test"}
-                      </Button>
-                    )}
+                    <Button
+                      onClick={() => handleStartTest(test.topicId, test.setNumber)}
+                      className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700"
+                    >
+                      Start AI Test
+                    </Button>
                   </CardContent>
                 </Card>
               </motion.div>

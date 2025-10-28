@@ -30,14 +30,7 @@ export default function PYQSets() {
     );
   }
 
-  const handleStartPYQ = (year: number, setNumber: number, isFirstTest: boolean) => {
-    // Check if user can access
-    if (!canAccessPYQ?.canAccess) {
-      toast.error("This test is locked! Subscribe to unlock all tests.");
-      setTimeout(() => navigate("/subscription"), 1000);
-      return;
-    }
-    
+  const handleStartPYQ = (year: number, setNumber: number) => {
     navigate(`/test/start?type=pyq&year=${year}&setNumber=${setNumber}`);
   };
 
@@ -66,20 +59,10 @@ export default function PYQSets() {
         <div>
           <h1 className="text-3xl font-bold text-white">Previous Year Questions</h1>
           <p className="text-white/70 mt-1">Practice with past exam papers (20 questions per set)</p>
-          {canAccessPYQ?.reason === "free_trial" && (
-            <p className="text-yellow-400 mt-2">🎁 Free trial: You can take one PYQ test for free!</p>
-          )}
-          {canAccessPYQ?.reason === "free_trial_used" && (
-            <p className="text-red-400 mt-2">⚠️ Free trial used. Subscribe to continue testing.</p>
-          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {pyqSets.map((set, index) => {
-            const isFirstTest = index === 0;
-            // Lock tests if user cannot access OR if it's not the first test and they only have free trial
-            const isLocked = !canAccessPYQ?.canAccess;
-            
             return (
               <motion.div
                 key={`${set.year}-${set.setNumber}`}
@@ -87,31 +70,16 @@ export default function PYQSets() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
               >
-                <Card className={`glass-card border-white/20 backdrop-blur-xl bg-white/10 hover:bg-white/15 transition-all ${isLocked ? 'opacity-60' : ''}`}>
+                <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10 hover:bg-white/15 transition-all">
                   <CardHeader>
                     <div className="flex items-center justify-between">
-                      {isLocked ? (
-                        <img 
-                          src="https://harmless-tapir-303.convex.cloud/api/storage/22271688-6e3c-45a0-a31d-8c82daf67b1e" 
-                          alt="Locked"
-                          className="h-12 w-12 object-contain"
-                        />
-                      ) : (
-                        <BookOpen className="h-8 w-8 text-green-400" />
-                      )}
+                      <BookOpen className="h-8 w-8 text-green-400" />
                       <Badge className="bg-green-500/20 text-green-300 border-green-500/30">
                         Set {set.setNumber}/{set.totalSets}
                       </Badge>
                     </div>
-                    <CardTitle className="text-white mt-4 flex items-center gap-2">
+                    <CardTitle className="text-white mt-4">
                       {set.examName} - {set.year}
-                      {isLocked && (
-                        <img 
-                          src="https://harmless-tapir-303.convex.cloud/api/storage/22271688-6e3c-45a0-a31d-8c82daf67b1e" 
-                          alt="Locked"
-                          className="h-6 w-6 object-contain"
-                        />
-                      )}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -123,29 +91,12 @@ export default function PYQSets() {
                       <Calendar className="h-4 w-4" />
                       <span className="text-sm">{Math.ceil(set.questionCount / 20) * 10} mins</span>
                     </div>
-                    {isLocked ? (
-                      <Button
-                        onClick={() => {
-                          toast.error("This test is locked! Subscribe to unlock all tests.");
-                          setTimeout(() => navigate("/subscription"), 1000);
-                        }}
-                        className="w-full bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700"
-                      >
-                        <img 
-                          src="https://harmless-tapir-303.convex.cloud/api/storage/22271688-6e3c-45a0-a31d-8c82daf67b1e" 
-                          alt="Locked"
-                          className="h-4 w-4 mr-2"
-                        />
-                        Unlock with Subscription
-                      </Button>
-                    ) : (
-                      <Button
-                        onClick={() => handleStartPYQ(set.year, set.setNumber, isFirstTest)}
-                        className="w-full bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700"
-                      >
-                        {set.hasCompleted ? "Re-Test" : "Start PYQ Set"}
-                      </Button>
-                    )}
+                    <Button
+                      onClick={() => handleStartPYQ(set.year, set.setNumber)}
+                      className="w-full bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700"
+                    >
+                      Start PYQ Set
+                    </Button>
                   </CardContent>
                 </Card>
               </motion.div>
