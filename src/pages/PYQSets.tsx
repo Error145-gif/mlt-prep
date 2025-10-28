@@ -16,6 +16,7 @@ export default function PYQSets() {
   const navigate = useNavigate();
   const pyqSets = useQuery(api.student.getPYQSets);
   const userProfile = useQuery(api.users.getUserProfile);
+  const canAccessPYQ = useQuery(api.student.canAccessTestType, { testType: "pyq" });
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -46,6 +47,23 @@ export default function PYQSets() {
   const firstSet = pyqSets[0];
 
   const handleStartPYQ = () => {
+    const isFirstTest = pyqSets.length > 0 && pyqSets[0] === firstSet;
+    const hasPaidSubscription = canAccessPYQ?.reason === "paid_subscription";
+    
+    // If not first test and no paid subscription, it's locked
+    if (!isFirstTest && !hasPaidSubscription) {
+      toast.error("This test is locked! Subscribe to unlock all tests.");
+      setTimeout(() => navigate("/subscription"), 1000);
+      return;
+    }
+    
+    // If first test but free trial already used, redirect to subscription
+    if (isFirstTest && canAccessPYQ?.reason === "free_trial_used") {
+      toast.error("Your free trial is used. Please subscribe to continue.");
+      setTimeout(() => navigate("/subscription"), 500);
+      return;
+    }
+    
     navigate(`/test-start?type=pyq&year=${firstSet.year}&setNumber=${firstSet.setNumber}`);
   };
 
