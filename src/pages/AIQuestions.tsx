@@ -5,7 +5,7 @@ import { useNavigate } from "react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BarChart3, Clock, Target, Sparkles, Menu, X } from "lucide-react";
+import { BarChart3, Clock, Target, Sparkles, Menu, X, Lock } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -17,6 +17,7 @@ export default function AIQuestions() {
   const aiTests = useQuery(api.student.getAIQuestions, {});
   const canAccessAI = useQuery(api.student.canAccessTestType, { testType: "ai" });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [selectedTest, setSelectedTest] = useState<any>(null);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -47,28 +48,182 @@ export default function AIQuestions() {
     );
   }
 
-  const handleStartTest = (topicId: string | null, setNumber: number, isFirstTest: boolean) => {
-    // Check if user has paid subscription
+  const handleSelectTest = (test: any) => {
+    const isFirstTest = aiTests.length > 0 && aiTests[0] === test;
     const hasPaidSubscription = canAccessAI?.reason === "paid_subscription";
     
-    // If not first test and no paid subscription, it's locked
     if (!isFirstTest && !hasPaidSubscription) {
       toast.error("This test is locked! Subscribe to unlock all tests.");
       setTimeout(() => navigate("/subscription"), 1000);
       return;
     }
     
-    // If first test but free trial already used, redirect to subscription
     if (isFirstTest && canAccessAI?.reason === "free_trial_used") {
       toast.error("Your free trial is used. Please subscribe to continue.");
       setTimeout(() => navigate("/subscription"), 500);
       return;
     }
     
-    const topicParam = topicId ? `&topicId=${topicId}` : "";
-    navigate(`/test-start?type=ai${topicParam}&setNumber=${setNumber}`);
+    setSelectedTest(test);
   };
 
+  const handleStartTest = () => {
+    if (!selectedTest) return;
+    const topicParam = selectedTest.topicId ? `&topicId=${selectedTest.topicId}` : "";
+    navigate(`/test-start?type=ai${topicParam}&setNumber=${selectedTest.setNumber}`);
+  };
+
+  // If a test is selected, show instructions
+  if (selectedTest) {
+    return (
+      <div className="min-h-screen p-4 md:p-8 relative overflow-hidden">
+        <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
+          <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-400/50 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-500/50 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        </div>
+
+        <div className="max-w-2xl mx-auto">
+          <Button
+            onClick={() => setSelectedTest(null)}
+            variant="outline"
+            className="mb-6 bg-white/20 text-white border-white/30 hover:bg-white/30"
+          >
+            ← Back to Tests
+          </Button>
+
+          <Card className="p-6 mb-6 shadow-xl border-0 bg-white/95 backdrop-blur-sm">
+            <div className="grid grid-cols-3 gap-4 text-center">
+              <div className="p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg">
+                <p className="text-3xl mb-1">🤖</p>
+                <p className="text-sm text-gray-600 font-medium">Type</p>
+                <p className="text-lg font-bold text-purple-900">AI Test</p>
+              </div>
+              <div className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg">
+                <p className="text-3xl mb-1">📊</p>
+                <p className="text-sm text-gray-600 font-medium">Set</p>
+                <p className="text-lg font-bold text-blue-900">{selectedTest.setNumber}/{selectedTest.totalSets}</p>
+              </div>
+              <div className="p-4 bg-gradient-to-br from-pink-50 to-pink-100 rounded-lg">
+                <p className="text-3xl mb-1">❓</p>
+                <p className="text-sm text-gray-600 font-medium">Questions</p>
+                <p className="text-lg font-bold text-pink-900">{selectedTest.questionCount}</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-6 md:p-8 shadow-xl border-0 bg-white/95 backdrop-blur-sm">
+            <h2 className="text-2xl font-bold mb-6 text-gray-900 flex items-center gap-2">
+              📋 General Instructions
+            </h2>
+
+            <div className="space-y-6">
+              <div className="p-4 bg-gradient-to-r from-orange-50 to-red-50 rounded-lg border-l-4 border-orange-500">
+                <h3 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
+                  ⏰ Timer & Auto-Submit
+                </h3>
+                <p className="text-sm text-gray-700">
+                  The countdown timer (top-right) will auto-submit your test when it reaches <strong>00:00</strong>. No manual submission needed!
+                </p>
+              </div>
+
+              <div className="p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border-l-4 border-blue-500">
+                <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                  🎨 Question Status Colors
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                  <div className="flex items-center gap-2">
+                    <div className="w-5 h-5 border-2 border-gray-400 bg-white rounded"></div>
+                    <span className="text-gray-700">⚪ Not Visited</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-5 h-5 bg-red-500 rounded"></div>
+                    <span className="text-gray-700">🔴 Visited / Not Answered</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-5 h-5 bg-green-500 rounded"></div>
+                    <span className="text-gray-700">🟢 Answered</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-5 h-5 bg-purple-500 rounded"></div>
+                    <span className="text-gray-700">🟣 Marked for Review</span>
+                  </div>
+                  <div className="flex items-center gap-2 md:col-span-2">
+                    <div className="w-5 h-5 bg-orange-500 rounded"></div>
+                    <span className="text-gray-700">🟠 Answered + Marked</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border-l-4 border-green-500">
+                <h3 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
+                  🧭 Navigation Tips
+                </h3>
+                <ul className="text-sm text-gray-700 space-y-1 ml-4">
+                  <li>• Click question numbers to jump directly</li>
+                  <li>• Use <strong className="text-green-700">Save & Next</strong> to record and move ahead</li>
+                  <li>• Use <strong className="text-purple-700">Mark for Review & Next</strong> to flag questions</li>
+                  <li>• ⚠️ Switching without saving loses your answer!</li>
+                </ul>
+              </div>
+
+              <div className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border-l-4 border-purple-500">
+                <h3 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
+                  ✍️ Answering Questions
+                </h3>
+                <ul className="text-sm text-gray-700 space-y-1 ml-4">
+                  <li>• Select one option (A–D) by clicking</li>
+                  <li>• Click again or press <strong>Clear Response</strong> to deselect</li>
+                  <li>• Always click <strong className="text-green-700">Save & Next</strong> to confirm</li>
+                  <li>• You can revisit and change answers anytime</li>
+                </ul>
+              </div>
+
+              <div className="p-4 bg-gradient-to-r from-yellow-50 to-amber-50 rounded-lg border-l-4 border-yellow-500">
+                <h3 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
+                  🛡️ Safety Reminders
+                </h3>
+                <ul className="text-sm text-gray-700 space-y-1 ml-4">
+                  <li>• Don't refresh or close the browser</li>
+                  <li>• Responses are autosaved when you click Save & Next</li>
+                  <li>• Short network drops won't affect saved data</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="mt-6 p-4 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-lg border border-indigo-200">
+              <p className="text-sm text-indigo-900 text-center">
+                🤖 <strong>AI-Powered Analysis:</strong> Our system will analyze your responses to improve your next test performance.
+              </p>
+            </div>
+
+            <div className="mt-6 p-4 bg-gradient-to-r from-pink-50 to-rose-50 rounded-lg border border-pink-200">
+              <p className="text-center text-gray-700 italic">
+                "Every click brings you closer to mastery. Focus on learning, not just scores." 💪
+              </p>
+            </div>
+
+            <div className="mt-6 flex justify-center gap-4">
+              <Button
+                onClick={() => setSelectedTest(null)}
+                variant="outline"
+                className="px-8 py-3"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleStartTest}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-12 py-3 text-lg font-bold shadow-lg hover:shadow-xl transition-all"
+              >
+                Start Test 🚀
+              </Button>
+            </div>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // Show list of available AI tests
   return (
     <div className="min-h-screen p-6 lg:p-8 relative overflow-hidden">
       {/* Animated Background Gradients */}
@@ -157,7 +312,7 @@ export default function AIQuestions() {
       <div className="relative z-10 max-w-7xl mx-auto space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-white">AI-Generated Questions</h1>
-          <p className="text-white/70 mt-1">Practice with AI-curated topic-wise questions (25 questions per set)</p>
+          <p className="text-white/70 mt-1">Select an AI test set to practice with AI-curated topic-wise questions (25 questions per set)</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -173,66 +328,52 @@ export default function AIQuestions() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
               >
-                <Card className={`glass-card border-white/20 backdrop-blur-xl bg-white/10 hover:bg-white/15 transition-all ${isLocked ? 'opacity-60' : ''}`}>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      {isLocked ? (
-                        <img 
-                          src="https://harmless-tapir-303.convex.cloud/api/storage/22271688-6e3c-45a0-a31d-8c82daf67b1e" 
-                          alt="Locked"
-                          className="h-12 w-12 object-contain"
-                        />
-                      ) : (
-                        <Sparkles className="h-8 w-8 text-purple-400" />
-                      )}
-                      <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30">
-                        Set {test.setNumber}/{test.totalSets}
-                      </Badge>
-                    </div>
-                    <CardTitle className="text-white mt-4 flex items-center gap-2">
-                      AI Challenge Test
+                <Card className={`glass-card border-white/20 backdrop-blur-xl bg-white/10 hover:bg-white/15 transition-all cursor-pointer ${isLocked ? 'opacity-60' : ''}`}>
+                  <div className="p-6 space-y-4">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="text-xl font-bold text-white">AI Challenge Test</h3>
+                        <p className="text-white/70 text-sm">Set {test.setNumber}/{test.totalSets}</p>
+                      </div>
                       {isLocked && (
-                        <img 
-                          src="https://harmless-tapir-303.convex.cloud/api/storage/22271688-6e3c-45a0-a31d-8c82daf67b1e" 
-                          alt="Locked"
-                          className="h-6 w-6 object-contain"
-                        />
+                        <Lock className="h-6 w-6 text-yellow-400" />
                       )}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex items-center gap-2 text-white/70">
-                      <Clock className="h-4 w-4" />
-                      <span className="text-sm">30 mins</span>
                     </div>
-                    <div className="flex items-center gap-2 text-white/70">
-                      <Target className="h-4 w-4" />
-                      <span className="text-sm">{test.questionCount} Questions</span>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-white/70">
+                        <Clock className="h-4 w-4" />
+                        <span className="text-sm">30 mins</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-white/70">
+                        <Target className="h-4 w-4" />
+                        <span className="text-sm">{test.questionCount} Questions</span>
+                      </div>
                     </div>
-                    {isLocked ? (
-                      <Button
-                        onClick={() => {
-                          toast.error("This test is locked! Subscribe to unlock all tests.");
-                          setTimeout(() => navigate("/subscription"), 1000);
-                        }}
-                        className="w-full bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700"
-                      >
-                        <img 
-                          src="https://harmless-tapir-303.convex.cloud/api/storage/22271688-6e3c-45a0-a31d-8c82daf67b1e" 
-                          alt="Locked"
-                          className="h-4 w-4 mr-2"
-                        />
-                        Unlock with Subscription
-                      </Button>
-                    ) : (
-                      <Button
-                        onClick={() => handleStartTest(test.topicId, test.setNumber, isFirstTest)}
-                        className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700"
-                      >
-                        {test.hasCompleted ? (canAccessAI?.canAccess ? "Re-Test" : "Subscribe to Re-Test") : isFirstTest && canAccessAI?.reason === "free_trial" ? "Start Free Test" : "Start Test"}
-                      </Button>
+
+                    {test.hasCompleted && (
+                      <Badge className="bg-green-500/20 text-green-300 border-green-500/30 w-full text-center justify-center">
+                        ✓ Completed
+                      </Badge>
                     )}
-                  </CardContent>
+
+                    <Button
+                      onClick={() => handleSelectTest(test)}
+                      disabled={isLocked}
+                      className={`w-full ${isLocked ? 'bg-gray-500 cursor-not-allowed' : 'bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700'}`}
+                    >
+                      {isLocked ? (
+                        <>
+                          <Lock className="h-4 w-4 mr-2" />
+                          Locked
+                        </>
+                      ) : test.hasCompleted ? (
+                        "Re-Take Test"
+                      ) : (
+                        "Start Test"
+                      )}
+                    </Button>
+                  </div>
                 </Card>
               </motion.div>
             );
