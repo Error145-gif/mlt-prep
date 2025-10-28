@@ -31,20 +31,15 @@ export default function PYQSets() {
   }
 
   const handleStartPYQ = (year: number, setNumber: number, isFirstTest: boolean) => {
-    // Check if user has paid subscription
-    const hasPaidSubscription = canAccessPYQ?.reason === "paid_subscription";
-    
-    // If not first test and no paid subscription, it's locked
-    if (!isFirstTest && !hasPaidSubscription) {
-      toast.error("This test is locked! Subscribe to unlock all tests.");
-      setTimeout(() => navigate("/subscription"), 1000);
-      return;
-    }
-    
-    // If first test but free trial already used, redirect to subscription
-    if (isFirstTest && canAccessPYQ?.reason === "free_trial_used") {
-      toast.error("Your free trial is used. Please subscribe to continue.");
-      setTimeout(() => navigate("/subscription"), 500);
+    // Check if user can access
+    if (!canAccessPYQ?.canAccess) {
+      if (canAccessPYQ?.reason === "free_trial_used") {
+        toast.error("Your free trial is used. Please subscribe to continue.");
+        setTimeout(() => navigate("/subscription"), 500);
+      } else {
+        toast.error("This test is locked! Subscribe to unlock all tests.");
+        setTimeout(() => navigate("/subscription"), 1000);
+      }
       return;
     }
     
@@ -87,10 +82,8 @@ export default function PYQSets() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {pyqSets.map((set, index) => {
             const isFirstTest = index === 0;
-            const hasPaidSubscription = canAccessPYQ?.reason === "paid_subscription";
-            // If user has paid subscription, nothing is locked
-            // If no paid subscription, only first test is unlocked (free trial)
-            const isLocked = !hasPaidSubscription && !isFirstTest;
+            // Lock tests if user cannot access OR if it's not the first test and they only have free trial
+            const isLocked = !canAccessPYQ?.canAccess || (isFirstTest && canAccessPYQ?.reason === "free_trial_used");
             
             return (
               <motion.div
@@ -155,7 +148,7 @@ export default function PYQSets() {
                         onClick={() => handleStartPYQ(set.year, set.setNumber, isFirstTest)}
                         className="w-full bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700"
                       >
-                        {set.hasCompleted ? (canAccessPYQ?.canAccess ? "Re-Test" : "Subscribe to Re-Test") : isFirstTest && canAccessPYQ?.reason === "free_trial" ? "Start Free Test" : "Start PYQ Set"}
+                        {set.hasCompleted ? "Re-Test" : isFirstTest && canAccessPYQ?.reason === "free_trial" ? "Start Free Test" : "Start PYQ Set"}
                       </Button>
                     )}
                   </CardContent>

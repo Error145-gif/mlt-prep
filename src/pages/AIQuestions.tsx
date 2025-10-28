@@ -31,20 +31,15 @@ export default function AIQuestions() {
   }
 
   const handleStartTest = (topicId: string | null, setNumber: number, isFirstTest: boolean) => {
-    // Check if user has paid subscription
-    const hasPaidSubscription = canAccessAI?.reason === "paid_subscription";
-    
-    // If not first test and no paid subscription, it's locked
-    if (!isFirstTest && !hasPaidSubscription) {
-      toast.error("This test is locked! Subscribe to unlock all tests.");
-      setTimeout(() => navigate("/subscription"), 1000);
-      return;
-    }
-    
-    // If first test but free trial already used, redirect to subscription
-    if (isFirstTest && canAccessAI?.reason === "free_trial_used") {
-      toast.error("Your free trial is used. Please subscribe to continue.");
-      setTimeout(() => navigate("/subscription"), 500);
+    // Check if user can access
+    if (!canAccessAI?.canAccess) {
+      if (canAccessAI?.reason === "free_trial_used") {
+        toast.error("Your free trial is used. Please subscribe to continue.");
+        setTimeout(() => navigate("/subscription"), 500);
+      } else {
+        toast.error("This test is locked! Subscribe to unlock all tests.");
+        setTimeout(() => navigate("/subscription"), 1000);
+      }
       return;
     }
     
@@ -92,10 +87,8 @@ export default function AIQuestions() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {aiTests.map((test, index) => {
             const isFirstTest = index === 0;
-            const hasPaidSubscription = canAccessAI?.reason === "paid_subscription";
-            // If user has paid subscription, nothing is locked
-            // If no paid subscription, only first test is unlocked (free trial)
-            const isLocked = !hasPaidSubscription && !isFirstTest;
+            // Lock tests if user cannot access OR if it's not the first test and they only have free trial
+            const isLocked = !canAccessAI?.canAccess || (isFirstTest && canAccessAI?.reason === "free_trial_used");
             
             return (
               <motion.div
@@ -160,7 +153,7 @@ export default function AIQuestions() {
                         onClick={() => handleStartTest(test.topicId, test.setNumber, isFirstTest)}
                         className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700"
                       >
-                        {test.hasCompleted ? (canAccessAI?.canAccess ? "Re-Test" : "Subscribe to Re-Test") : isFirstTest && canAccessAI?.reason === "free_trial" ? "Start Free Test" : "Start AI Test"}
+                        {test.hasCompleted ? "Re-Test" : isFirstTest && canAccessAI?.reason === "free_trial" ? "Start Free Test" : "Start AI Test"}
                       </Button>
                     )}
                   </CardContent>
