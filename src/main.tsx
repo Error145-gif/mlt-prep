@@ -113,6 +113,198 @@ createRoot(document.getElementById("root")!).render(
                 </AdminRoute>
               }
             />
+            {/* Student Routes */}
+            <Route
+              path="/tests/mock"
+              element={
+                <ProtectedRoute>
+                  <MockTests />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/tests/pyq"
+              element={
+                <ProtectedRoute>
+                  <PYQSets />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/tests/ai"
+              element={
+                <ProtectedRoute>
+                  <AIQuestions />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/practice"
+              element={
+                <ProtectedRoute>
+                  <Practice />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/subscription"
+              element={
+                <ProtectedRoute>
+                  <SubscriptionPlans />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/feedback"
+              element={
+                <ProtectedRoute>
+                  <Feedback />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/free-library"
+              element={
+                <ProtectedRoute>
+                  <FreeLibrary />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/contact-us"
+              element={<ContactUs />}
+            />
+            <Route
+              path="/shipping-policy"
+              element={<ShippingPolicy />}
+            />
+            <Route
+              path="/terms"
+              element={<TermsAndConditions />}
+            />
+            <Route
+              path="/privacy"
+              element={<PrivacyPolicy />}
+            />
+            <Route
+              path="/refund-policy"
+              element={<RefundPolicy />}
+            />
+            <Route
+              path="/payment-status"
+              element={
+                <ProtectedRoute>
+                  <PaymentStatus />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/payment-summary"
+              element={
+                <ProtectedRoute>
+                  <PaymentSummary />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/notifications"
+              element={
+                <ProtectedRoute>
+                  <NotificationCenter />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/test-start/:testId"
+              element={
+                <ProtectedRoute>
+                  <TestStart />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/test-results/:testId"
+              element={
+                <ProtectedRoute>
+                  <TestResults />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Admin Routes */}
+            <Route
+              path="/admin/content"
+              element={
+                <AdminRoute>
+                  <ContentManagement />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/questions"
+              element={
+                <AdminRoute>
+                  <QuestionManagement />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/analytics"
+              element={
+                <AdminRoute>
+                  <UserAnalytics />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/subscriptions"
+              element={
+                <AdminRoute>
+                  <SubscriptionManagement />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/feedback"
+              element={
+                <AdminRoute>
+                  <AdminFeedback />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/coupons"
+              element={
+                <AdminRoute>
+                  <CouponManagement />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/study-materials"
+              element={
+                <AdminRoute>
+                  <StudyMaterialsManagement />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/sections"
+              element={
+                <AdminRoute>
+                  <SectionsManagement />
+                </AdminRoute>
+              }
+            />
+
             <Route path="*" element={<NotFound />} />
           </Routes>
           <Toaster />
