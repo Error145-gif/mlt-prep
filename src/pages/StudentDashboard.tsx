@@ -10,6 +10,9 @@ import { BookOpen, FileText, TrendingUp, Award, Clock, AlertCircle, CreditCard, 
 import { motion } from "framer-motion";
 import { useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import DashboardHeader from "@/components/DashboardHeader";
+import PerformanceScore from "@/components/PerformanceScore";
+import SubscriptionStatus from "@/components/SubscriptionStatus";
 
 export default function StudentDashboard() {
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -212,68 +215,10 @@ export default function StudentDashboard() {
       {/* Main Dashboard Content - Blurred when profile incomplete */}
       <div className={`relative z-10 max-w-7xl mx-auto space-y-6 transition-all duration-500 ${isProfileIncomplete ? 'blur-sm pointer-events-none' : ''}`}>
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            {userProfile?.avatarUrl && (
-              <Avatar className="h-16 w-16 border-2 border-white/20">
-                <AvatarImage src={userProfile.avatarUrl} />
-                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-xl">
-                  {userProfile.name?.charAt(0)?.toUpperCase() || "U"}
-                </AvatarFallback>
-              </Avatar>
-            )}
-            <div>
-              <h1 className="text-3xl font-bold text-white drop-shadow-lg">Welcome back, {userProfile?.name || "Student"}!</h1>
-              <p className="text-white/90 mt-1 drop-shadow-md">Continue your MLT learning journey</p>
-            </div>
-          </div>
-          {subscriptionAccess && !subscriptionAccess.hasAccess && (
-            <Button 
-              onClick={() => navigate("/subscription")}
-              className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
-            >
-              <CreditCard className="h-4 w-4 mr-2" />
-              View Plans
-            </Button>
-          )}
-        </div>
+        <DashboardHeader userProfile={userProfile} subscriptionAccess={subscriptionAccess} />
 
         {/* Performance Score - PROMINENT DISPLAY */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-          className="glass-card border border-white/30 backdrop-blur-xl bg-white/10 p-6 rounded-xl"
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex-1">
-              <h2 className="text-white/90 text-lg mb-2 flex items-center gap-2">
-                <Target className="h-5 w-5" />
-                Exam Readiness Score
-              </h2>
-              <div className="flex items-center gap-4">
-                <div className={`w-24 h-24 rounded-full bg-gradient-to-br ${getPerformanceColor(stats.performanceScore)} flex items-center justify-center shadow-lg`}>
-                  <span className="text-4xl font-bold text-white">{stats.performanceScore}</span>
-                </div>
-                <div>
-                  <Badge className={`${getPerformanceBadgeColor(stats.performanceScore)} text-lg px-4 py-1`}>
-                    {getPerformanceLabel(stats.performanceScore)}
-                  </Badge>
-                  <p className="text-white/80 text-sm mt-2">
-                    Based on accuracy, consistency & improvement
-                  </p>
-                </div>
-              </div>
-            </div>
-            {stats.consistencyStreak > 0 && (
-              <div className="text-center">
-                <Flame className="h-12 w-12 text-orange-400 mx-auto mb-2" />
-                <p className="text-3xl font-bold text-white">{stats.consistencyStreak}</p>
-                <p className="text-white/80 text-sm">Day Streak</p>
-              </div>
-            )}
-          </div>
-        </motion.div>
+        <PerformanceScore performanceScore={stats.performanceScore} consistencyStreak={stats.consistencyStreak} />
 
         {/* AI Insights Card */}
         {stats.aiInsights && stats.aiInsights.length > 0 && (
@@ -305,34 +250,7 @@ export default function StudentDashboard() {
 
         {/* Subscription Status Card */}
         {subscriptionAccess && subscriptionAccess.hasAccess && subscriptionAccess.subscription && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="glass-card border border-green-500/50 backdrop-blur-xl bg-green-500/10 p-4 rounded-xl"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-lg bg-gradient-to-br from-green-500 to-teal-600">
-                  <CreditCard className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <p className="text-white font-medium text-lg">Active Subscription</p>
-                  <p className="text-white/90 text-sm">
-                    {subscriptionAccess.subscription.planName}
-                  </p>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="text-white/80 text-sm">Expires on</p>
-                <p className="text-white font-bold text-lg">
-                  {formatExpiryDate(subscriptionAccess.subscription.endDate)}
-                </p>
-                <Badge className="mt-1 bg-green-500/20 text-green-300 border-green-500/30">
-                  {getDaysRemaining(subscriptionAccess.subscription.endDate)} days left
-                </Badge>
-              </div>
-            </div>
-          </motion.div>
+          <SubscriptionStatus subscription={subscriptionAccess.subscription} />
         )}
 
         {/* User Overview Grid */}
