@@ -45,7 +45,8 @@ export default function AIQuestions() {
   }
 
   const handleStartTest = (topicId: string | null, setNumber: number) => {
-    navigate(`/test-start?type=ai&topicId=${topicId}&setNumber=${setNumber}`);
+    const topicParam = topicId ? `&topicId=${topicId}` : "";
+    navigate(`/test-start?type=ai${topicParam}&setNumber=${setNumber}`);
   };
 
   return (
