@@ -14,7 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { TestHeader } from "@/components/TestHeader";
 import { QuestionCard } from "@/components/QuestionCard";
 import { QuestionPalette } from "@/components/QuestionPalette";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,6 +36,7 @@ export default function TestStart() {
   const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const userProfile = useQuery(api.users.getUserProfile);
   const [showInstructions, setShowInstructions] = useState(true);
   const [acceptedInstructions, setAcceptedInstructions] = useState(false);
@@ -502,6 +503,79 @@ export default function TestStart() {
 
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden">
+      {/* Hamburger Menu Button - Mobile Only */}
+      <button
+        onClick={() => setIsMenuOpen(!isMenuOpen)}
+        className="fixed top-6 right-6 z-50 md:hidden bg-white/20 backdrop-blur-sm p-2 rounded-lg hover:bg-white/30 transition-all"
+      >
+        {isMenuOpen ? (
+          <X className="h-6 w-6 text-white" />
+        ) : (
+          <Menu className="h-6 w-6 text-white" />
+        )}
+      </button>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, x: 300 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 300 }}
+            transition={{ duration: 0.3 }}
+            className="fixed top-0 right-0 h-screen w-64 bg-gradient-to-br from-blue-600 to-purple-700 z-40 md:hidden shadow-2xl p-6 space-y-4"
+          >
+            <div className="mt-12 space-y-3">
+              <button
+                onClick={() => {
+                  navigate("/dashboard");
+                  setIsMenuOpen(false);
+                }}
+                className="w-full text-left px-4 py-3 text-white hover:bg-white/20 rounded-lg transition-all"
+              >
+                📊 Dashboard
+              </button>
+              <button
+                onClick={() => {
+                  navigate("/tests/mock");
+                  setIsMenuOpen(false);
+                }}
+                className="w-full text-left px-4 py-3 text-white hover:bg-white/20 rounded-lg transition-all"
+              >
+                🧩 Mock Tests
+              </button>
+              <button
+                onClick={() => {
+                  navigate("/tests/pyq");
+                  setIsMenuOpen(false);
+                }}
+                className="w-full text-left px-4 py-3 text-white hover:bg-white/20 rounded-lg transition-all"
+              >
+                📚 PYQ Sets
+              </button>
+              <button
+                onClick={() => {
+                  navigate("/tests/ai");
+                  setIsMenuOpen(false);
+                }}
+                className="w-full text-left px-4 py-3 text-white hover:bg-white/20 rounded-lg transition-all"
+              >
+                🤖 AI Questions
+              </button>
+              <button
+                onClick={() => {
+                  navigate("/profile");
+                  setIsMenuOpen(false);
+                }}
+                className="w-full text-left px-4 py-3 text-white hover:bg-white/20 rounded-lg transition-all"
+              >
+                👤 Profile
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Animated Background Gradients - Same as Landing */}
       <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
         <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-400/50 rounded-full blur-3xl animate-pulse" />

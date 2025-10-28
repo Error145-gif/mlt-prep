@@ -6,9 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { BookOpen, FileText, TrendingUp, Award, Clock, AlertCircle, CreditCard, User, Target, Brain, BookMarked, BarChart, Zap, Trophy, Flame, Sparkles, TrendingDown, X } from "lucide-react";
-import { motion } from "framer-motion";
-import { useEffect } from "react";
+import { BookOpen, FileText, TrendingUp, Award, Clock, AlertCircle, CreditCard, User, Target, Brain, BookMarked, BarChart, Zap, Trophy, Flame, Sparkles, TrendingDown, X, Menu } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import DashboardHeader from "@/components/DashboardHeader";
 import PerformanceScore from "@/components/PerformanceScore";
@@ -17,8 +17,9 @@ import StudentNav from "@/components/StudentNav";
 import TestResultsHistory from "@/components/TestResultsHistory";
 
 export default function StudentDashboard() {
-  const { isAuthenticated, isLoading, user } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const stats = useQuery(api.student.getStudentDashboardStats);
   const subscriptionAccess = useQuery(api.student.checkSubscriptionAccess);
   const userProfile = useQuery(api.users.getUserProfile);
@@ -92,15 +93,84 @@ export default function StudentDashboard() {
   };
 
   return (
-    <div className="min-h-screen p-6 lg:p-8 relative overflow-hidden">
-      <StudentNav />
-      
-      {/* Animated Background Gradients */}
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Hamburger Menu Button - Mobile Only */}
+      <button
+        onClick={() => setIsMenuOpen(!isMenuOpen)}
+        className="fixed top-6 right-6 z-50 md:hidden bg-white/20 backdrop-blur-sm p-2 rounded-lg hover:bg-white/30 transition-all"
+      >
+        {isMenuOpen ? (
+          <X className="h-6 w-6 text-white" />
+        ) : (
+          <Menu className="h-6 w-6 text-white" />
+        )}
+      </button>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, x: 300 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 300 }}
+            transition={{ duration: 0.3 }}
+            className="fixed top-0 right-0 h-screen w-64 bg-gradient-to-br from-blue-600 to-purple-700 z-40 md:hidden shadow-2xl p-6 space-y-4"
+          >
+            <div className="mt-12 space-y-3">
+              <button
+                onClick={() => {
+                  navigate("/dashboard");
+                  setIsMenuOpen(false);
+                }}
+                className="w-full text-left px-4 py-3 text-white hover:bg-white/20 rounded-lg transition-all"
+              >
+                📊 Dashboard
+              </button>
+              <button
+                onClick={() => {
+                  navigate("/tests/mock");
+                  setIsMenuOpen(false);
+                }}
+                className="w-full text-left px-4 py-3 text-white hover:bg-white/20 rounded-lg transition-all"
+              >
+                🧩 Mock Tests
+              </button>
+              <button
+                onClick={() => {
+                  navigate("/tests/pyq");
+                  setIsMenuOpen(false);
+                }}
+                className="w-full text-left px-4 py-3 text-white hover:bg-white/20 rounded-lg transition-all"
+              >
+                📚 PYQ Sets
+              </button>
+              <button
+                onClick={() => {
+                  navigate("/tests/ai");
+                  setIsMenuOpen(false);
+                }}
+                className="w-full text-left px-4 py-3 text-white hover:bg-white/20 rounded-lg transition-all"
+              >
+                🤖 AI Questions
+              </button>
+              <button
+                onClick={() => {
+                  navigate("/profile");
+                  setIsMenuOpen(false);
+                }}
+                className="w-full text-left px-4 py-3 text-white hover:bg-white/20 rounded-lg transition-all"
+              >
+                👤 Profile
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Animated Background */}
       <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
         <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-400/30 rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-500/30 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 w-[600px] h-[600px] bg-pink-400/25 rounded-full blur-3xl" />
-        <div className="absolute top-1/4 right-1/3 w-[400px] h-[400px] bg-cyan-400/25 rounded-full blur-3xl" />
       </div>
 
       {/* Lab Background Image */}
