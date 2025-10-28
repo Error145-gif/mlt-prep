@@ -17,6 +17,8 @@ export default function StudentNav() {
 
   // Open sidebar by default on desktop
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     const handleResize = () => {
       if (window.innerWidth >= 1024) {
         setIsOpen(true);
@@ -93,7 +95,7 @@ export default function StudentNav() {
                       to={item.path}
                       onClick={() => {
                         // Only close on mobile
-                        if (window.innerWidth < 1024) {
+                        if (typeof window !== 'undefined' && window.innerWidth < 1024) {
                           setIsOpen(false);
                         }
                       }}
@@ -123,7 +125,7 @@ export default function StudentNav() {
       </AnimatePresence>
 
       {/* Overlay for mobile */}
-      {isOpen && window.innerWidth < 1024 && (
+      {isOpen && typeof window !== 'undefined' && window.innerWidth < 1024 && (
         <div
           className="fixed inset-0 bg-black/50 z-30"
           onClick={() => setIsOpen(false)}

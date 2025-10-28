@@ -12,6 +12,8 @@ export default function AdminSidebar() {
 
   // Open sidebar by default on desktop
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     const handleResize = () => {
       if (window.innerWidth >= 768) {
         setIsOpen(true);
@@ -76,7 +78,7 @@ export default function AdminSidebar() {
                       to={item.path}
                       onClick={() => {
                         // Only close on mobile
-                        if (window.innerWidth < 768) {
+                        if (typeof window !== 'undefined' && window.innerWidth < 768) {
                           setIsOpen(false);
                         }
                       }}
@@ -106,7 +108,7 @@ export default function AdminSidebar() {
       </AnimatePresence>
 
       {/* Overlay - Visible when sidebar is open on mobile */}
-      {isOpen && window.innerWidth < 768 && (
+      {isOpen && typeof window !== 'undefined' && window.innerWidth < 768 && (
         <div
           className="fixed inset-0 bg-black/50 z-30"
           onClick={() => setIsOpen(false)}
