@@ -31,7 +31,7 @@ export default function PYQSets() {
   }
 
   const handleStartPYQ = (year: number, setNumber: number) => {
-    navigate(`/test/start?type=pyq&year=${year}&setNumber=${setNumber}`);
+    navigate(`/test-start?type=pyq&year=${year}&setNumber=${setNumber}`);
   };
 
   return (

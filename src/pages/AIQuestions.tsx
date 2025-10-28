@@ -33,9 +33,9 @@ export default function AIQuestions() {
   const handleStartTest = (topicId: string | null, setNumber: number) => {
     // Build URL with set number
     if (topicId) {
-      navigate(`/test/start?type=ai&topicId=${topicId}&setNumber=${setNumber}`);
+      navigate(`/test-start?type=ai&topicId=${topicId}&setNumber=${setNumber}`);
     } else {
-      navigate(`/test/start?type=ai&setNumber=${setNumber}`);
+      navigate(`/test-start?type=ai&setNumber=${setNumber}`);
     }
   };
 
