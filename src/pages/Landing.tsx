@@ -54,10 +54,11 @@ export default function Landing() {
       <div 
         className="fixed inset-0 z-0 opacity-20"
         style={{
-          backgroundImage: 'url(https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=1920&q=80)',
+          backgroundImage: 'url(https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=1920&q=80&auto=format&fit=crop)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
+          backgroundRepeat: 'no-repeat',
+          backgroundAttachment: 'fixed'
         }}
       />
 
@@ -137,7 +138,7 @@ export default function Landing() {
       <nav className="glass-card border-b border-white/20 backdrop-blur-xl bg-white/10 sticky top-0 z-50 shadow-lg">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate("/")}>
-            <img src="https://harmless-tapir-303.convex.cloud/api/storage/d9da05f9-b7b1-43d8-b723-0f805bc8f673" alt="MLT Logo" className="h-10 w-10" />
+            <img src="https://harmless-tapir-303.convex.cloud/api/storage/d9da05f9-b7b1-43d8-b723-0f805bc8f673" alt="MLT Logo" loading="eager" className="h-10 w-10" />
             <span className="text-xl font-bold text-white drop-shadow-lg">MLT Prep</span>
           </div>
           
@@ -345,6 +346,7 @@ export default function Landing() {
               <motion.img
                 src="https://harmless-tapir-303.convex.cloud/api/storage/95eceda1-7789-4d29-bf58-640afb9f4499"
                 alt="MLT Mascot"
+                loading="lazy"
                 className="w-64 h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 drop-shadow-2xl"
                 animate={{
                   scale: [1, 1.05, 1],
