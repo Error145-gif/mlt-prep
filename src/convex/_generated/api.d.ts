@@ -24,6 +24,7 @@ import type * as questions from "../questions.js";
 import type * as razorpay from "../razorpay.js";
 import type * as razorpayInternal from "../razorpayInternal.js";
 import type * as sections from "../sections.js";
+import type * as seedTestData from "../seedTestData.js";
 import type * as student from "../student.js";
 import type * as studyMaterials from "../studyMaterials.js";
 import type * as subscriptions from "../subscriptions.js";
@@ -63,6 +64,7 @@ declare const fullApi: ApiFromModules<{
   razorpay: typeof razorpay;
   razorpayInternal: typeof razorpayInternal;
   sections: typeof sections;
+  seedTestData: typeof seedTestData;
   student: typeof student;
   studyMaterials: typeof studyMaterials;
   subscriptions: typeof subscriptions;
