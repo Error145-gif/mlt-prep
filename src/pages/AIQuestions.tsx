@@ -14,7 +14,6 @@ export default function AIQuestions() {
   const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
   const aiTests = useQuery(api.student.getAIQuestions, {});
-  const canAccessAI = useQuery(api.student.canAccessTestType, { testType: "ai" });
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -31,12 +30,7 @@ export default function AIQuestions() {
   }
 
   const handleStartTest = (topicId: string | null, setNumber: number) => {
-    // Build URL with set number
-    if (topicId) {
-      navigate(`/test-start?type=ai&topicId=${topicId}&setNumber=${setNumber}`);
-    } else {
-      navigate(`/test-start?type=ai&setNumber=${setNumber}`);
-    }
+    navigate(`/test-start?type=ai&topicId=${topicId}&setNumber=${setNumber}`);
   };
 
   return (

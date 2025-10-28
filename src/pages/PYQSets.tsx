@@ -14,7 +14,6 @@ export default function PYQSets() {
   const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
   const pyqSets = useQuery(api.student.getPYQSets);
-  const canAccessPYQ = useQuery(api.student.canAccessTestType, { testType: "pyq" });
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
