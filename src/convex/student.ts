@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
 import { getCurrentUser } from "./users";
+import { paginationOptsValidator } from "convex/server";
 
 // Get student dashboard statistics - ENHANCED VERSION
 export const getStudentDashboardStats = query({
@@ -839,6 +840,25 @@ export const getTestHistory = query({
     );
 
     return enrichedSessions;
+  },
+});
+
+// Get paginated test history
+export const getTestHistoryPaginated = query({
+  args: {
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) {
+      return { page: [], isDone: true, continueCursor: null };
+    }
+
+    return await ctx.db
+      .query("testResults")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .order("desc")
+      .paginate(args.paginationOpts);
   },
 });
 

@@ -14,6 +14,7 @@ import DashboardHeader from "@/components/DashboardHeader";
 import PerformanceScore from "@/components/PerformanceScore";
 import SubscriptionStatus from "@/components/SubscriptionStatus";
 import StudentNav from "@/components/StudentNav";
+import TestResultsHistory from "@/components/TestResultsHistory";
 
 export default function StudentDashboard() {
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -548,6 +549,15 @@ export default function StudentDashboard() {
             </Card>
           </motion.div>
         </div>
+
+        {/* Test Results History with Pagination */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8 }}
+        >
+          <TestResultsHistory />
+        </motion.div>
       </div>
     </div>
   );
