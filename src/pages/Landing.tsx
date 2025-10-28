@@ -2,15 +2,18 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router";
 import { useAuth } from "@/hooks/use-auth";
-import { BookOpen, Brain, Award, TrendingUp, Sparkles, ArrowRight, Shield } from "lucide-react";
+import { BookOpen, Brain, Award, TrendingUp, Sparkles, ArrowRight, Shield, Menu, X } from "lucide-react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
+import { useState } from "react";
+import { AnimatePresence } from "framer-motion";
 
 export default function Landing() {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
   const makeAdmin = useMutation(api.users.makeCurrentUserAdmin);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleMakeAdmin = async () => {
     try {
@@ -137,7 +140,19 @@ export default function Landing() {
             <img src="https://harmless-tapir-303.convex.cloud/api/storage/d9da05f9-b7b1-43d8-b723-0f805bc8f673" alt="MLT Logo" className="h-10 w-10" />
             <span className="text-xl font-bold text-white drop-shadow-lg">MLT Prep</span>
           </div>
-          <div className="flex items-center gap-4">
+          
+          {/* Hamburger Menu Button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden text-white hover:bg-white/20"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          >
+            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </Button>
+
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center gap-4">
             {isAuthenticated ? (
               <>
                 {user?.role === "admin" && (
@@ -173,6 +188,66 @@ export default function Landing() {
             )}
           </div>
         </div>
+
+        {/* Mobile Menu */}
+        <AnimatePresence>
+          {isMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="md:hidden border-t border-white/20 bg-white/5 backdrop-blur-xl"
+            >
+              <div className="px-6 py-4 space-y-3">
+                {isAuthenticated ? (
+                  <>
+                    {user?.role === "admin" && (
+                      <Button
+                        onClick={() => {
+                          navigate("/admin");
+                          setIsMenuOpen(false);
+                        }}
+                        className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700"
+                      >
+                        Admin Panel
+                      </Button>
+                    )}
+                    {user?.role !== "admin" && user?.email === "ak6722909@gmail.com" && (
+                      <Button
+                        onClick={() => {
+                          handleMakeAdmin();
+                          setIsMenuOpen(false);
+                        }}
+                        className="w-full bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700"
+                      >
+                        Activate Admin Access
+                      </Button>
+                    )}
+                    <Button
+                      onClick={() => {
+                        navigate("/student");
+                        setIsMenuOpen(false);
+                      }}
+                      className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                    >
+                      Dashboard
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    onClick={() => {
+                      navigate("/auth");
+                      setIsMenuOpen(false);
+                    }}
+                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                  >
+                    Get Started
+                  </Button>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </nav>
 
       {/* Hero Section */}
