@@ -2,9 +2,9 @@ import { useAuth } from "@/hooks/use-auth";
 import { useNavigate } from "react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Download, Eye, FileText, Lock } from "lucide-react";
-import { motion } from "framer-motion";
-import { useEffect } from "react";
+import { BookOpen, Download, Eye, FileText, Lock, Menu, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
@@ -15,6 +15,7 @@ export default function FreeLibrary() {
   const studyMaterials = useQuery(api.studyMaterials.getAllStudyMaterials);
   const incrementViews = useMutation(api.studyMaterials.incrementViews);
   const subscriptionAccess = useQuery(api.student.checkSubscriptionAccess);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -80,6 +81,78 @@ export default function FreeLibrary() {
           backgroundRepeat: 'no-repeat'
         }}
       />
+
+      {/* Hamburger Menu Button */}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="fixed top-4 right-4 z-50 glass-card border-white/20 backdrop-blur-xl bg-white/10 text-white md:hidden"
+        onClick={() => setIsMenuOpen(!isMenuOpen)}
+      >
+        {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+      </Button>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, x: 300 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 300 }}
+            className="fixed top-16 right-0 z-40 md:hidden bg-white/10 backdrop-blur-xl border-l border-white/20 w-64 h-screen p-4 space-y-3"
+          >
+            <Button
+              onClick={() => {
+                navigate("/student");
+                setIsMenuOpen(false);
+              }}
+              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+            >
+              Dashboard
+            </Button>
+            <Button
+              onClick={() => {
+                navigate("/tests/mock");
+                setIsMenuOpen(false);
+              }}
+              variant="outline"
+              className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30"
+            >
+              Mock Tests
+            </Button>
+            <Button
+              onClick={() => {
+                navigate("/tests/pyq");
+                setIsMenuOpen(false);
+              }}
+              variant="outline"
+              className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30"
+            >
+              PYQ Sets
+            </Button>
+            <Button
+              onClick={() => {
+                navigate("/tests/ai");
+                setIsMenuOpen(false);
+              }}
+              variant="outline"
+              className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30"
+            >
+              AI Questions
+            </Button>
+            <Button
+              onClick={() => {
+                navigate("/profile");
+                setIsMenuOpen(false);
+              }}
+              variant="outline"
+              className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30"
+            >
+              Profile
+            </Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="relative z-10 max-w-6xl mx-auto">
         <motion.div

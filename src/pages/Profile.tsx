@@ -8,8 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, Mail, MapPin, BookOpen, Check } from "lucide-react";
-import { motion } from "framer-motion";
+import { User, Mail, MapPin, BookOpen, Check, Menu, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -86,6 +86,7 @@ export default function Profile() {
   const [examPreparation, setExamPreparation] = useState("");
   const [state, setState] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -153,6 +154,78 @@ export default function Profile() {
         <div className="absolute top-1/2 left-1/2 w-[600px] h-[600px] bg-pink-400/40 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '0.5s' }} />
         <div className="absolute top-1/4 right-1/3 w-[400px] h-[400px] bg-cyan-400/40 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '0.7s' }} />
       </div>
+
+      {/* Hamburger Menu Button */}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="fixed top-4 right-4 z-50 glass-card border-white/20 backdrop-blur-xl bg-white/10 text-white md:hidden"
+        onClick={() => setIsMenuOpen(!isMenuOpen)}
+      >
+        {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+      </Button>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, x: 300 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 300 }}
+            className="fixed top-16 right-0 z-40 md:hidden bg-white/10 backdrop-blur-xl border-l border-white/20 w-64 h-screen p-4 space-y-3"
+          >
+            <Button
+              onClick={() => {
+                navigate("/student");
+                setIsMenuOpen(false);
+              }}
+              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+            >
+              Dashboard
+            </Button>
+            <Button
+              onClick={() => {
+                navigate("/tests/mock");
+                setIsMenuOpen(false);
+              }}
+              variant="outline"
+              className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30"
+            >
+              Mock Tests
+            </Button>
+            <Button
+              onClick={() => {
+                navigate("/tests/pyq");
+                setIsMenuOpen(false);
+              }}
+              variant="outline"
+              className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30"
+            >
+              PYQ Sets
+            </Button>
+            <Button
+              onClick={() => {
+                navigate("/tests/ai");
+                setIsMenuOpen(false);
+              }}
+              variant="outline"
+              className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30"
+            >
+              AI Questions
+            </Button>
+            <Button
+              onClick={() => {
+                navigate("/subscription");
+                setIsMenuOpen(false);
+              }}
+              variant="outline"
+              className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30"
+            >
+              Subscription
+            </Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
       
       <div className="relative z-10 max-w-4xl mx-auto space-y-6">
         {/* Header */}

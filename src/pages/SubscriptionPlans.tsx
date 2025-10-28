@@ -5,15 +5,16 @@ import { useNavigate } from "react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, BookOpen, Brain, Library, BarChart3, Sparkles } from "lucide-react";
-import { motion } from "framer-motion";
+import { Check, BookOpen, Brain, Library, BarChart3, Sparkles, Menu, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function SubscriptionPlans() {
   const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
   const subscriptionAccess = useQuery(api.student.checkSubscriptionAccess);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -139,6 +140,78 @@ export default function SubscriptionPlans() {
           backgroundRepeat: 'no-repeat'
         }}
       />
+
+      {/* Hamburger Menu Button */}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="fixed top-4 right-4 z-50 glass-card border-white/20 backdrop-blur-xl bg-white/10 text-white md:hidden"
+        onClick={() => setIsMenuOpen(!isMenuOpen)}
+      >
+        {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+      </Button>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, x: 300 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 300 }}
+            className="fixed top-16 right-0 z-40 md:hidden bg-white/10 backdrop-blur-xl border-l border-white/20 w-64 h-screen p-4 space-y-3"
+          >
+            <Button
+              onClick={() => {
+                navigate("/student");
+                setIsMenuOpen(false);
+              }}
+              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+            >
+              Dashboard
+            </Button>
+            <Button
+              onClick={() => {
+                navigate("/tests/mock");
+                setIsMenuOpen(false);
+              }}
+              variant="outline"
+              className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30"
+            >
+              Mock Tests
+            </Button>
+            <Button
+              onClick={() => {
+                navigate("/tests/pyq");
+                setIsMenuOpen(false);
+              }}
+              variant="outline"
+              className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30"
+            >
+              PYQ Sets
+            </Button>
+            <Button
+              onClick={() => {
+                navigate("/tests/ai");
+                setIsMenuOpen(false);
+              }}
+              variant="outline"
+              className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30"
+            >
+              AI Questions
+            </Button>
+            <Button
+              onClick={() => {
+                navigate("/profile");
+                setIsMenuOpen(false);
+              }}
+              variant="outline"
+              className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30"
+            >
+              Profile
+            </Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="relative z-10 max-w-4xl mx-auto space-y-6">
         <div className="text-center space-y-2 mb-8">
