@@ -237,7 +237,7 @@ export default function TestStart() {
       });
 
       toast.success("Test submitted successfully!");
-      navigate(`/test/results?sessionId=${sessionId}`);
+      navigate(`/test-results?sessionId=${sessionId}`);
     } catch (error) {
       toast.error("Failed to submit test");
     }
