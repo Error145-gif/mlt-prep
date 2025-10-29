@@ -1,4 +1,14 @@
 {
   "$schema": "https://raw.githubusercontent.com/get-convex/convex-backend/refs/heads/main/npm-packages/convex/schemas/convex.schema.json",
-  "functions": "src/convex/"
+  "functions": "src/convex/",
+  "env": {
+    "RAZORPAY_KEY_ID": {
+      "doc": "Razorpay API Key ID",
+      "default": ""
+    },
+    "RAZORPAY_KEY_SECRET": {
+      "doc": "Razorpay API Key Secret",
+      "default": ""
+    }
+  }
 }
