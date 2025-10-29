@@ -281,6 +281,14 @@ createRoot(document.getElementById("root")!).render(
               }
             />
             <Route
+              path="/admin/notifications"
+              element={
+                <AdminRoute>
+                  <NotificationCenter />
+                </AdminRoute>
+              }
+            />
+            <Route
               path="/admin/coupons"
               element={
                 <AdminRoute>
