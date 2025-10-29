@@ -9,7 +9,23 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { AnimatePresence } from "framer-motion";
 
+import { useEffect } from "react";
+
 export default function Landing() {
+  useEffect(() => {
+    // Set meta tags for SEO
+    document.title = "MLT Prep - AI-Powered Medical Lab Technology Learning";
+    
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute("content", "Master MLT with AI-powered questions, previous year papers, mock tests, and progress tracking. 7-day free trial for medical lab technology students.");
+    }
+    
+    const metaKeywords = document.querySelector('meta[name="keywords"]');
+    if (metaKeywords) {
+      metaKeywords.setAttribute("content", "MLT, Medical Lab Technology, ESIC MLT, mock tests, PYQ, AI questions, exam preparation");
+    }
+  }, []);
   const navigate = useNavigate();
   const { isAuthenticated, user, isLoading } = useAuth();
   const makeAdmin = useMutation(api.users.makeCurrentUserAdmin);
