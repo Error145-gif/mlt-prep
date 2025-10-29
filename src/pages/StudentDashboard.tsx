@@ -19,7 +19,6 @@ import TestResultsHistory from "@/components/TestResultsHistory";
 export default function StudentDashboard() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const stats = useQuery(api.student.getStudentDashboardStats);
   const subscriptionAccess = useQuery(api.student.checkSubscriptionAccess);
   const userProfile = useQuery(api.users.getUserProfile);
@@ -95,79 +94,6 @@ export default function StudentDashboard() {
   return (
     <div className="min-h-screen relative overflow-hidden">
       <StudentNav />
-      
-      {/* Hamburger Menu Button - Mobile Only */}
-      <button
-        onClick={() => setIsMenuOpen(!isMenuOpen)}
-        className="fixed top-6 right-6 z-50 md:hidden bg-white/20 backdrop-blur-sm p-2 rounded-lg hover:bg-white/30 transition-all"
-      >
-        {isMenuOpen ? (
-          <X className="h-6 w-6 text-white" />
-        ) : (
-          <Menu className="h-6 w-6 text-white" />
-        )}
-      </button>
-
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {isMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, x: 300 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 300 }}
-            transition={{ duration: 0.3 }}
-            className="fixed top-0 right-0 h-screen w-64 bg-gradient-to-br from-blue-600 to-purple-700 z-40 md:hidden shadow-2xl p-6 space-y-4"
-          >
-            <div className="mt-12 space-y-3">
-              <button
-                onClick={() => {
-                  navigate("/dashboard");
-                  setIsMenuOpen(false);
-                }}
-                className="w-full text-left px-4 py-3 text-white hover:bg-white/20 rounded-lg transition-all"
-              >
-                📊 Dashboard
-              </button>
-              <button
-                onClick={() => {
-                  navigate("/tests/mock");
-                  setIsMenuOpen(false);
-                }}
-                className="w-full text-left px-4 py-3 text-white hover:bg-white/20 rounded-lg transition-all"
-              >
-                🧩 Mock Tests
-              </button>
-              <button
-                onClick={() => {
-                  navigate("/tests/pyq");
-                  setIsMenuOpen(false);
-                }}
-                className="w-full text-left px-4 py-3 text-white hover:bg-white/20 rounded-lg transition-all"
-              >
-                📚 PYQ Sets
-              </button>
-              <button
-                onClick={() => {
-                  navigate("/tests/ai");
-                  setIsMenuOpen(false);
-                }}
-                className="w-full text-left px-4 py-3 text-white hover:bg-white/20 rounded-lg transition-all"
-              >
-                🤖 AI Questions
-              </button>
-              <button
-                onClick={() => {
-                  navigate("/profile");
-                  setIsMenuOpen(false);
-                }}
-                className="w-full text-left px-4 py-3 text-white hover:bg-white/20 rounded-lg transition-all"
-              >
-                👤 Profile
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Animated Background */}
       <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
