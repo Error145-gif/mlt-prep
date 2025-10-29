@@ -207,3 +207,42 @@ export const completeRegistration = mutation({
     return userId;
   },
 });
+
+// Generate upload URL for profile image
+export const generateUploadUrl = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Not authenticated");
+    }
+    return await ctx.storage.generateUploadUrl();
+  },
+});
+
+// Save uploaded image storage ID
+export const saveProfileImage = mutation({
+  args: {
+    storageId: v.id("_storage"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Not authenticated");
+    }
+
+    // Get the URL for the uploaded image
+    const imageUrl = await ctx.storage.getUrl(args.storageId);
+    
+    if (!imageUrl) {
+      throw new Error("Failed to get image URL");
+    }
+
+    // Update user profile with the new image URL
+    await ctx.db.patch(userId, {
+      avatarUrl: imageUrl,
+    });
+
+    return imageUrl;
+  },
+});

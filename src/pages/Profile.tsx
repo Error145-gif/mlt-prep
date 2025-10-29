@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, Mail, MapPin, BookOpen, Check, Menu, X } from "lucide-react";
+import { User, Mail, MapPin, BookOpen, Check, Menu, X, Upload, Camera } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -100,6 +100,8 @@ export default function Profile() {
   const navigate = useNavigate();
   const userProfile = useQuery(api.users.getUserProfile);
   const updateProfile = useMutation(api.users.updateUserProfile);
+  const generateUploadUrl = useMutation(api.users.generateUploadUrl);
+  const saveProfileImage = useMutation(api.users.saveProfileImage);
 
   const [name, setName] = useState("");
   const [selectedAvatar, setSelectedAvatar] = useState("");
@@ -107,6 +109,7 @@ export default function Profile() {
   const [state, setState] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -122,6 +125,49 @@ export default function Profile() {
       setState(userProfile.state || "");
     }
   }, [userProfile]);
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file");
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image size must be less than 5MB");
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      // Step 1: Get upload URL
+      const postUrl = await generateUploadUrl();
+      
+      // Step 2: Upload the file
+      const result = await fetch(postUrl, {
+        method: "POST",
+        headers: { "Content-Type": file.type },
+        body: file,
+      });
+      
+      const { storageId } = await result.json();
+      
+      // Step 3: Save the storage ID and get the URL
+      const imageUrl = await saveProfileImage({ storageId });
+      
+      setSelectedAvatar(imageUrl);
+      toast.success("Profile image uploaded successfully!");
+    } catch (error) {
+      toast.error("Failed to upload image");
+      console.error(error);
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const handleSave = async () => {
     if (!name || name.length < 2) {
@@ -348,9 +394,35 @@ export default function Profile() {
                 )}
               </div>
 
+              {/* Upload Custom Image */}
+              <div className="space-y-2">
+                <Label className="text-white flex items-center gap-2">
+                  <Camera className="h-4 w-4" />
+                  Upload Custom Profile Image
+                </Label>
+                <div className="flex items-center gap-4">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                    id="image-upload"
+                    disabled={isUploading}
+                  />
+                  <Label
+                    htmlFor="image-upload"
+                    className="cursor-pointer flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-lg transition-all"
+                  >
+                    <Upload className="h-4 w-4" />
+                    {isUploading ? "Uploading..." : "Choose Image"}
+                  </Label>
+                  <span className="text-white/70 text-sm">Max 5MB (JPG, PNG, GIF)</span>
+                </div>
+              </div>
+
               {/* Avatar Selection */}
               <div className="space-y-2">
-                <Label className="text-white">Select Avatar</Label>
+                <Label className="text-white">Or Select Avatar</Label>
                 <div className="grid grid-cols-4 md:grid-cols-8 gap-3">
                   {AVATAR_OPTIONS.map((avatar, index) => (
                     <motion.div
@@ -419,7 +491,7 @@ export default function Profile() {
               {/* Save Button */}
               <Button
                 onClick={handleSave}
-                disabled={isSaving || !name || name.length < 2}
+                disabled={isSaving || !name || name.length < 2 || isUploading}
                 className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
               >
                 {isSaving ? "Saving..." : "Save Profile"}
