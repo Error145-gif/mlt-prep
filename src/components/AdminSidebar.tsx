@@ -43,7 +43,7 @@ export default function AdminSidebar() {
 
   return (
     <>
-      {/* Menu Toggle Button - Visible on all screens */}
+      {/* Menu Toggle Button - Now visible on all screens */}
       <Button
         variant="ghost"
         size="icon"
