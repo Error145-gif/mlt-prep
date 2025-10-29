@@ -5,12 +5,10 @@ import { useNavigate } from "react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Clock, Target, Menu, X, ExternalLink } from "lucide-react";
+import { FileText, Clock, Target } from "lucide-react";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { toast } from "sonner";
-import { AnimatePresence } from "framer-motion";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import StudentNav from "@/components/StudentNav";
 
 export default function MockTests() {
@@ -18,7 +16,6 @@ export default function MockTests() {
   const navigate = useNavigate();
   const mockTests = useQuery(api.student.getMockTests, {});
   const canAccessMock = useQuery(api.student.canAccessTestType, { testType: "mock" });
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -35,24 +32,20 @@ export default function MockTests() {
   }
 
   const handleStartTest = (topicId: string | null, setNumber: number, isFirstTest: boolean) => {
-    // Check if user has paid subscription
     const hasPaidSubscription = canAccessMock?.reason === "paid_subscription";
     
-    // If not first test and no paid subscription, it's locked
     if (!isFirstTest && !hasPaidSubscription) {
       toast.error("This test is locked! Subscribe to unlock all tests.");
       setTimeout(() => navigate("/subscription"), 1000);
       return;
     }
     
-    // If first test but free trial already used, redirect to subscription
     if (isFirstTest && canAccessMock?.reason === "free_trial_used") {
       toast.error("Your free trial is used. Please subscribe to continue.");
       setTimeout(() => navigate("/subscription"), 500);
       return;
     }
     
-    // Build URL with set number
     if (topicId) {
       navigate(`/test-start?type=mock&topicId=${topicId}&setNumber=${setNumber}`);
     } else {
@@ -81,70 +74,6 @@ export default function MockTests() {
           backgroundRepeat: 'no-repeat'
         }}
       />
-
-      {/* Hamburger Menu - Mobile Only */}
-      <div className="fixed top-4 right-4 z-50 md:hidden">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-white hover:bg-white/20 bg-white/10"
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-        >
-          {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </Button>
-      </div>
-
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {isMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, x: 300 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 300 }}
-            className="fixed top-16 right-0 z-40 md:hidden bg-white/10 backdrop-blur-xl border-l border-white/20 w-64 h-screen p-4 space-y-3"
-          >
-            <Button
-              onClick={() => {
-                navigate("/student");
-                setIsMenuOpen(false);
-              }}
-              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
-            >
-              Dashboard
-            </Button>
-            <Button
-              onClick={() => {
-                navigate("/pyq-sets");
-                setIsMenuOpen(false);
-              }}
-              variant="outline"
-              className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30"
-            >
-              PYQ Sets
-            </Button>
-            <Button
-              onClick={() => {
-                navigate("/ai-questions");
-                setIsMenuOpen(false);
-              }}
-              variant="outline"
-              className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30"
-            >
-              AI Questions
-            </Button>
-            <Button
-              onClick={() => {
-                navigate("/profile");
-                setIsMenuOpen(false);
-              }}
-              variant="outline"
-              className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30"
-            >
-              Profile
-            </Button>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       <div className="relative z-10 max-w-7xl mx-auto space-y-6">
         <div>
@@ -223,37 +152,12 @@ export default function MockTests() {
                         Unlock with Subscription
                       </Button>
                     ) : (
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
-                          >
-                            {test.hasCompleted ? (canAccessMock?.canAccess ? "Re-Test" : "Subscribe to Re-Test") : isFirstTest && canAccessMock?.reason === "free_trial" ? "Start Free Test" : "Start Test"}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-48 p-2 space-y-2">
-                          <Button
-                            onClick={() => handleStartTest(test.topicId, test.setNumber, isFirstTest)}
-                            variant="ghost"
-                            className="w-full justify-start text-sm"
-                          >
-                            Click to test
-                          </Button>
-                          <Button
-                            onClick={() => {
-                              const url = test.topicId 
-                                ? `/test-start?type=mock&topicId=${test.topicId}&setNumber=${test.setNumber}`
-                                : `/test-start?type=mock&setNumber=${test.setNumber}`;
-                              window.open(url, '_blank');
-                            }}
-                            variant="ghost"
-                            className="w-full justify-start text-sm"
-                          >
-                            <ExternalLink className="h-4 w-4 mr-2" />
-                            Open in new tab
-                          </Button>
-                        </PopoverContent>
-                      </Popover>
+                      <Button
+                        onClick={() => handleStartTest(test.topicId, test.setNumber, isFirstTest)}
+                        className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                      >
+                        {test.hasCompleted ? (canAccessMock?.canAccess ? "Re-Test" : "Subscribe to Re-Test") : isFirstTest && canAccessMock?.reason === "free_trial" ? "Start Free Test" : "Start Test"}
+                      </Button>
                     )}
                   </CardContent>
                 </Card>
