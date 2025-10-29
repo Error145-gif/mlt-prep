@@ -25,6 +25,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import StudentNav from "@/components/StudentNav";
 
 type Answer = {
   questionId: Id<"questions">;
@@ -503,6 +504,7 @@ export default function TestStart() {
 
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden">
+      <StudentNav />
       {/* Hamburger Menu Button - Mobile Only */}
       <button
         onClick={() => setIsMenuOpen(!isMenuOpen)}

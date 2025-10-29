@@ -17,6 +17,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { Id } from "@/convex/_generated/dataModel";
+import StudentNav from "@/components/StudentNav";
 
 export default function NotificationCenter() {
   const { isLoading, isAuthenticated, user } = useAuth();
@@ -134,6 +135,8 @@ export default function NotificationCenter() {
 
   return (
     <div className="min-h-screen p-6 relative">
+      <StudentNav />
+      
       {/* Animated Gradient Background */}
       <div className="fixed inset-0 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500 z-0" />
       

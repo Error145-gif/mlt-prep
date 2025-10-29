@@ -94,6 +94,8 @@ export default function StudentDashboard() {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
+      <StudentNav />
+      
       {/* Hamburger Menu Button - Mobile Only */}
       <button
         onClick={() => setIsMenuOpen(!isMenuOpen)}
