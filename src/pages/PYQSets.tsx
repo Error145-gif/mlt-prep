@@ -65,12 +65,8 @@ export default function PYQSets() {
       return;
     }
     
-    setSelectedSet(set);
-  };
-
-  const handleStartTest = () => {
-    if (!selectedSet) return;
-    navigate(`/test-start?type=pyq&year=${selectedSet.year}&setNumber=${selectedSet.setNumber}`);
+    // Direct start - navigate immediately
+    navigate(`/test-start?type=pyq&year=${set.year}&setNumber=${set.setNumber}`);
   };
 
   // If a set is selected, show instructions
@@ -211,7 +207,7 @@ export default function PYQSets() {
                 Cancel
               </Button>
               <Button
-                onClick={handleStartTest}
+                onClick={() => handleSelectSet(selectedSet)}
                 className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-12 py-3 text-lg font-bold shadow-lg hover:shadow-xl transition-all"
               >
                 Start Test 🚀
@@ -306,30 +302,12 @@ export default function PYQSets() {
                         Locked
                       </Button>
                     ) : (
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
-                            {set.hasCompleted ? "Re-Take Test" : "Start Test"}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-48 p-2 space-y-2">
-                          <Button
-                            onClick={() => handleSelectSet(set)}
-                            variant="ghost"
-                            className="w-full justify-start text-sm"
-                          >
-                            Click to test
-                          </Button>
-                          <Button
-                            onClick={() => window.open(`/test-start?type=pyq&year=${set.year}&setNumber=${set.setNumber}`, '_blank')}
-                            variant="ghost"
-                            className="w-full justify-start text-sm"
-                          >
-                            <ExternalLink className="h-4 w-4 mr-2" />
-                            Open in new tab
-                          </Button>
-                        </PopoverContent>
-                      </Popover>
+                      <Button
+                        onClick={() => handleSelectSet(set)}
+                        className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                      >
+                        {set.hasCompleted ? "Re-Take Test" : "Start Test"}
+                      </Button>
                     )}
                   </div>
                 </Card>
