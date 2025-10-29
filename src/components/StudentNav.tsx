@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import { Home, BookOpen, FileText, BarChart3, Library, Menu, X, MessageSquare, User, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -11,6 +11,7 @@ import NotificationBell from "@/components/NotificationBell";
 
 export default function StudentNav() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const { signOut } = useAuth();
   const userProfile = useQuery(api.users.getUserProfile);
@@ -46,6 +47,11 @@ export default function StudentNav() {
     { path: "/contact-us", icon: MessageSquare, label: "Contact Us" },
     { path: "/profile", icon: User, label: "Profile" },
   ];
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
 
   return (
     <>
@@ -118,7 +124,7 @@ export default function StudentNav() {
               </nav>
 
               <Button
-                onClick={() => signOut()}
+                onClick={handleSignOut}
                 variant="ghost"
                 className="w-full justify-start text-white/70 hover:text-white hover:bg-white/10"
               >
