@@ -1,1 +1,1 @@
-const coupons = useQuery(api.coupons.getAllCoupons);
+navigate(`/test-start?type=ai&topicId=${test.topicId}&setNumber=${test.setNumber}`);

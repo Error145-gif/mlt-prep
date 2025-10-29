@@ -59,7 +59,7 @@ export default function AIQuestions() {
       return;
     }
     
-    navigate(`/test-start?type=ai&topicId=${test.topicId}&setNumber=${test.setNumber}`);
+    navigate(`/test-start?type=ai&topicId=general&setNumber=${test.setNumber}`);
   };
 
   // Show list of available AI tests

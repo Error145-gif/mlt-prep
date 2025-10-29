@@ -53,8 +53,8 @@ export default function TestStart() {
 
   const testType = searchParams.get("type") || "mock";
   const topicIdParam = searchParams.get("topicId");
-  // Only set topicId if it exists and is not "general"
-  const topicId = topicIdParam && topicIdParam !== "general" ? (topicIdParam as Id<"topics">) : undefined;
+  // Only set topicId if it exists and is not "general" or "null"
+  const topicId = topicIdParam && topicIdParam !== "general" && topicIdParam !== "null" ? (topicIdParam as Id<"topics">) : undefined;
   const year = searchParams.get("year") ? parseInt(searchParams.get("year")!) : undefined;
   const setNumber = searchParams.get("setNumber") ? parseInt(searchParams.get("setNumber")!) : undefined;
 
