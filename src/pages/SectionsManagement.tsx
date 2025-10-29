@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { useNavigate } from "react-router";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,10 +11,12 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Plus, Edit, Trash2, BookOpen, AlertCircle } from "lucide-react";
+import { Plus, Edit, Trash2, BookOpen, AlertCircle, Menu, X } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 import { Id } from "@/convex/_generated/dataModel";
 
 export default function SectionsManagement() {
+  const navigate = useNavigate();
   const sections = useQuery(api.sections.getAllSections);
   const createSection = useMutation(api.sections.createSection);
   const updateSection = useMutation(api.sections.updateSection);
@@ -23,6 +26,7 @@ export default function SectionsManagement() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedSection, setSelectedSection] = useState<any>(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const [newSection, setNewSection] = useState({
     name: "",
@@ -154,9 +158,17 @@ export default function SectionsManagement() {
       <div className="container mx-auto p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-bold text-white mb-2">Sections Management</h1>
-            <p className="text-white/80">Organize questions into sections (Maximum: 50)</p>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white"
+            >
+              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
+            <div>
+              <h1 className="text-4xl font-bold text-white mb-2">Sections Management</h1>
+              <p className="text-white/80">Organize questions into sections (Maximum: 50)</p>
+            </div>
           </div>
           <div className="flex items-center gap-4">
             <Badge variant="secondary" className="text-lg px-4 py-2">
@@ -172,6 +184,30 @@ export default function SectionsManagement() {
             </Button>
           </div>
         </div>
+
+        {/* Mobile Navigation Menu */}
+        <AnimatePresence>
+          {isMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="glass-card border-white/20 backdrop-blur-xl bg-white/10 rounded-lg overflow-hidden"
+            >
+              <div className="flex flex-col p-4 space-y-2">
+                <button onClick={() => { navigate("/admin"); setIsMenuOpen(false); }} className="text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Dashboard</button>
+                <button onClick={() => { navigate("/admin/questions"); setIsMenuOpen(false); }} className="text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Questions</button>
+                <button onClick={() => { navigate("/admin/content"); setIsMenuOpen(false); }} className="text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Content</button>
+                <button onClick={() => { navigate("/admin/study-materials"); setIsMenuOpen(false); }} className="text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Study Materials</button>
+                <button onClick={() => { navigate("/admin/analytics"); setIsMenuOpen(false); }} className="text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Analytics</button>
+                <button onClick={() => { navigate("/admin/subscriptions"); setIsMenuOpen(false); }} className="text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Subscriptions</button>
+                <button onClick={() => { navigate("/admin/coupons"); setIsMenuOpen(false); }} className="text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Coupons</button>
+                <button onClick={() => { navigate("/admin/notifications"); setIsMenuOpen(false); }} className="text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Notifications</button>
+                <button onClick={() => { navigate("/admin/feedback"); setIsMenuOpen(false); }} className="text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Feedback</button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Warning when approaching limit */}
         {sections.length >= 45 && (
