@@ -173,7 +173,7 @@ export default function Profile() {
       <div 
         className="fixed inset-0 -z-10 opacity-15"
         style={{
-          backgroundImage: 'url(https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1920&q=80)',
+          backgroundImage: 'url(https://harmless-tapir-303.convex.cloud/api/storage/27dfb36c-ac7c-4a7c-930b-57ef6b7163d1)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',

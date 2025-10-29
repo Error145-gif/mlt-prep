@@ -260,6 +260,18 @@ export default function AIQuestions() {
         <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-500/50 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
       </div>
 
+      {/* Lab Background Image */}
+      <div 
+        className="fixed inset-0 -z-10 opacity-15"
+        style={{
+          backgroundImage: 'url(https://harmless-tapir-303.convex.cloud/api/storage/1e73bac3-1079-442a-b8f9-4e8b71bf087f)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          backgroundAttachment: 'fixed'
+        }}
+      />
+
       <div className="relative z-10 max-w-7xl mx-auto space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-white">AI-Generated Questions</h1>

@@ -76,9 +76,9 @@ export default function FreeLibrary() {
 
       {/* Lab Background Image */}
       <div 
-        className="fixed inset-0 z-0 opacity-10"
+        className="fixed inset-0 z-0 opacity-15"
         style={{
-          backgroundImage: 'url(https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=1920&q=80&auto=format&fit=crop)',
+          backgroundImage: 'url(https://harmless-tapir-303.convex.cloud/api/storage/5d790ddc-cd7f-4bb6-bad0-66ff850ea5ed)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',

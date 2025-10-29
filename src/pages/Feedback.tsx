@@ -73,6 +73,18 @@ export default function Feedback() {
         <div className="absolute top-1/4 right-1/3 w-[400px] h-[400px] bg-cyan-400/40 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '0.7s' }} />
       </div>
 
+      {/* Lab Background Image */}
+      <div 
+        className="fixed inset-0 -z-10 opacity-15"
+        style={{
+          backgroundImage: 'url(https://harmless-tapir-303.convex.cloud/api/storage/8bc8f98d-c6cd-4f01-bf46-c5c4f7e11a17)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          backgroundAttachment: 'fixed'
+        }}
+      />
+
       {/* Hamburger Menu Button */}
       <Button
         variant="ghost"

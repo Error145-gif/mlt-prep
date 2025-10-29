@@ -134,12 +134,13 @@ export default function SubscriptionPlans() {
       </div>
 
       <div 
-        className="fixed inset-0 z-0 opacity-10"
+        className="fixed inset-0 z-0 opacity-15"
         style={{
-          backgroundImage: 'url(https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=1920&q=80)',
+          backgroundImage: 'url(https://harmless-tapir-303.convex.cloud/api/storage/79e8f0e0-a158-4a75-93f3-29c5c9224309)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
+          backgroundRepeat: 'no-repeat',
+          backgroundAttachment: 'fixed'
         }}
       />
 

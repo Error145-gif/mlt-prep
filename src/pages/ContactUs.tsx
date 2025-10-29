@@ -68,12 +68,13 @@ export default function ContactUs() {
 
       {/* Lab Background Image */}
       <div 
-        className="fixed inset-0 opacity-10"
+        className="fixed inset-0 opacity-15"
         style={{
-          backgroundImage: 'url(https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=1920&q=80)',
+          backgroundImage: 'url(https://harmless-tapir-303.convex.cloud/api/storage/0e53265d-8c31-44c1-b791-3be9b7cd1490)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
+          backgroundRepeat: 'no-repeat',
+          backgroundAttachment: 'fixed'
         }}
       />
       
