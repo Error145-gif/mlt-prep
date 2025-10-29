@@ -206,37 +206,42 @@ export default function Landing() {
               <div className="px-6 py-4 space-y-3">
                 {isAuthenticated ? (
                   <>
-                    {user?.role === "admin" && (
-                      <Button
-                        onClick={() => {
-                          navigate("/admin");
-                          setIsMenuOpen(false);
-                        }}
-                        className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700"
-                      >
-                        Admin Panel
-                      </Button>
+                    {user?.role === "admin" ? (
+                      <>
+                        <button onClick={() => { navigate("/admin"); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Dashboard</button>
+                        <button onClick={() => { navigate("/admin/questions"); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Questions</button>
+                        <button onClick={() => { navigate("/admin/content"); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Content</button>
+                        <button onClick={() => { navigate("/admin/study-materials"); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Study Materials</button>
+                        <button onClick={() => { navigate("/admin/analytics"); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Analytics</button>
+                        <button onClick={() => { navigate("/admin/subscriptions"); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Subscriptions</button>
+                        <button onClick={() => { navigate("/admin/coupons"); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Coupons</button>
+                        <button onClick={() => { navigate("/admin/notifications"); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Notifications</button>
+                        <button onClick={() => { navigate("/admin/feedback"); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Feedback</button>
+                      </>
+                    ) : (
+                      <>
+                        {user?.email === "ak6722909@gmail.com" && (
+                          <Button
+                            onClick={() => {
+                              handleMakeAdmin();
+                              setIsMenuOpen(false);
+                            }}
+                            className="w-full bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700"
+                          >
+                            Activate Admin Access
+                          </Button>
+                        )}
+                        <Button
+                          onClick={() => {
+                            navigate("/student");
+                            setIsMenuOpen(false);
+                          }}
+                          className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                        >
+                          Dashboard
+                        </Button>
+                      </>
                     )}
-                    {user?.role !== "admin" && user?.email === "ak6722909@gmail.com" && (
-                      <Button
-                        onClick={() => {
-                          handleMakeAdmin();
-                          setIsMenuOpen(false);
-                        }}
-                        className="w-full bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700"
-                      >
-                        Activate Admin Access
-                      </Button>
-                    )}
-                    <Button
-                      onClick={() => {
-                        navigate("/student");
-                        setIsMenuOpen(false);
-                      }}
-                      className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
-                    >
-                      Dashboard
-                    </Button>
                   </>
                 ) : (
                   <Button
