@@ -84,7 +84,7 @@ export default function TestStart() {
       setTestName("Mock Test");
     } else if (testType === "pyq") {
       // Get exam name from first question if available
-      if (questions.length > 0 && questions[0].examName) {
+      if (questions && questions.length > 0 && questions[0] && questions[0].examName) {
         setTestName(questions[0].examName);
       } else {
         setTestName(`PYQ ${year || ""}`);
@@ -96,7 +96,7 @@ export default function TestStart() {
 
   // Set initial timer based on test type and question count
   useEffect(() => {
-    if (questions.length > 0 && timeRemaining === 0) {
+    if (questions && questions.length > 0 && timeRemaining === 0) {
       let duration = 60 * 60; // Default 60 minutes
       
       if (testType === "pyq") {
@@ -300,7 +300,7 @@ export default function TestStart() {
   };
 
   // Enhanced loading state
-  if (isLoading || !questions.length) {
+  if (isLoading || !questions || questions.length === 0) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-blue-50">
         <div className="text-center space-y-4">
@@ -316,7 +316,7 @@ export default function TestStart() {
 
   if (showInstructions) {
     const testTypeIcon = testType === "ai" ? "🤖" : testType === "pyq" ? "📘" : "🧩";
-    const duration = testType === "mock" ? 60 : testType === "pyq" ? Math.ceil(questions.length / 20) * 10 : 30;
+    const duration = testType === "mock" ? 60 : testType === "pyq" ? (questions && questions.length > 0 ? Math.ceil(questions.length / 20) * 10 : 10) : 30;
     
     return (
       <div className="min-h-screen p-4 md:p-8 relative overflow-hidden">
@@ -354,7 +354,7 @@ export default function TestStart() {
               <div className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg">
                 <p className="text-3xl mb-1">{testTypeIcon}</p>
                 <p className="text-sm text-gray-600 font-medium">Test Type</p>
-                <p className="text-lg font-bold text-blue-900">{testType === "ai" ? "AI Questions" : testType === "pyq" ? questions[0]?.examName || `PYQ ${year}` : "Mock Test"}</p>
+                <p className="text-lg font-bold text-blue-900">{testType === "ai" ? "AI Questions" : testType === "pyq" ? (questions && questions.length > 0 && questions[0]?.examName ? questions[0].examName : `PYQ ${year}`) : "Mock Test"}</p>
               </div>
               <div className="p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg">
                 <p className="text-3xl mb-1">🕒</p>
@@ -364,7 +364,7 @@ export default function TestStart() {
               <div className="p-4 bg-gradient-to-br from-pink-50 to-pink-100 rounded-lg">
                 <p className="text-3xl mb-1">❓</p>
                 <p className="text-sm text-gray-600 font-medium">Questions</p>
-                <p className="text-lg font-bold text-pink-900">{questions.length}</p>
+                <p className="text-lg font-bold text-pink-900">{questions && questions.length > 0 ? questions.length : 0}</p>
               </div>
             </div>
           </Card>
@@ -502,9 +502,22 @@ export default function TestStart() {
     );
   }
 
-  const currentQuestion = questions[currentQuestionIndex];
-  const currentAnswer = answers.get(currentQuestion._id);
+  const currentQuestion = questions && questions.length > 0 ? questions[currentQuestionIndex] : null;
+  const currentAnswer = currentQuestion ? answers.get(currentQuestion._id) : null;
   const answeredCount = Array.from(answers.values()).filter(a => a.answer).length;
+  
+  if (!currentQuestion) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-blue-50">
+        <div className="text-center space-y-4">
+          <div className="text-gray-700 text-xl font-medium">No questions available</div>
+          <Button onClick={() => navigate("/student")} className="bg-blue-600 hover:bg-blue-700">
+            Return to Dashboard
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden">
