@@ -41,7 +41,7 @@ export default function SubscriptionPlans() {
       return;
     }
 
-    toast.info("Payment setup is being configured. Please check back soon!");
+    navigate(`/payment-summary?name=${planName}&price=${amount}&duration=${duration}`);
   };
 
   const plans = [

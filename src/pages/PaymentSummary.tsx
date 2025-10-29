@@ -1,4 +1,4 @@
-import { useQuery } from "convex/react";
+import { useQuery, useMutation, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
 import { useNavigate, useSearchParams } from "react-router";
@@ -29,6 +29,9 @@ export default function PaymentSummary() {
   const planName = searchParams.get("name");
   const basePrice = parseFloat(searchParams.get("price") || "0");
   const duration = parseInt(searchParams.get("duration") || "0");
+  
+  const createOrder = useAction(api.razorpay.createOrder);
+  const verifyPayment = useAction(api.razorpay.verifyPayment);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -144,8 +147,66 @@ export default function PaymentSummary() {
     }
   };
 
-  const handlePayment = () => {
-    toast.info("Payment setup is being configured. Please check back soon!");
+  const handlePayment = async () => {
+    if (!user?._id) {
+      toast.error("User not found");
+      return;
+    }
+
+    try {
+      toast.loading("Initializing payment...");
+      
+      const order = await createOrder({
+        amount: finalAmount,
+        currency: "INR",
+        receipt: `receipt_${Date.now()}`,
+        notes: {
+          userId: user._id,
+          planName: planName || "",
+          duration: duration,
+        },
+      });
+
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        order_id: order.id,
+        amount: finalAmount * 100,
+        currency: "INR",
+        name: "MLT Prep",
+        description: `${planName} Plan`,
+        prefill: {
+          name: userProfile?.name || "",
+          email: userProfile?.email || "",
+        },
+        handler: async (response: any) => {
+          try {
+            await verifyPayment({
+              orderId: order.id,
+              paymentId: response.razorpay_payment_id,
+              signature: response.razorpay_signature,
+              userId: user._id,
+              planName: planName || "",
+              amount: finalAmount,
+              duration: duration,
+            });
+            navigate("/payment-status?status=success");
+          } catch (error) {
+            toast.error("Payment verification failed");
+            navigate("/payment-status?status=failed");
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            toast.error("Payment cancelled");
+          },
+        },
+      };
+
+      const razorpay = new (window as any).Razorpay(options);
+      razorpay.open();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to initiate payment");
+    }
   };
 
   return (
@@ -325,10 +386,9 @@ export default function PaymentSummary() {
               <div className="flex flex-col gap-3">
                 <Button
                   onClick={handlePayment}
-                  disabled={true}
                   className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
                 >
-                  Payment Coming Soon
+                  Proceed to Payment
                 </Button>
                 <Button
                   onClick={() => navigate("/subscription")}
