@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useAction } from "convex/react";
+import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
 import { useNavigate, useSearchParams } from "react-router";
@@ -12,20 +12,12 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Menu, X } from "lucide-react";
 
-declare global {
-  interface Window {
-    Razorpay: any;
-  }
-}
-
 export default function PaymentSummary() {
   const { isAuthenticated, isLoading, user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const userProfile = useQuery(api.users.getUserProfile);
-  const createOrder = useAction(api.razorpay.createOrder);
-  const verifyPayment = useAction(api.razorpay.verifyPayment);
   
   const [couponCode, setCouponCode] = useState("");
   const validateCoupon = useQuery(
@@ -33,7 +25,6 @@ export default function PaymentSummary() {
     couponCode ? { code: couponCode } : "skip"
   );
   const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
 
   const planName = searchParams.get("name");
   const basePrice = parseFloat(searchParams.get("price") || "0");
@@ -44,16 +35,6 @@ export default function PaymentSummary() {
       navigate("/auth");
     }
   }, [isAuthenticated, isLoading, navigate]);
-
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.async = true;
-    document.body.appendChild(script);
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, []);
 
   if (isLoading || !userProfile) {
     return (
@@ -163,68 +144,8 @@ export default function PaymentSummary() {
     }
   };
 
-  const handlePayment = async () => {
-    if (!user?._id) {
-      toast.error("User not authenticated");
-      return;
-    }
-
-    setIsProcessing(true);
-
-    try {
-      const order = await createOrder({
-        amount: finalAmount,
-        currency: "INR",
-        receipt: `receipt_${Date.now()}`,
-        notes: {
-          userId: user._id,
-          planName: planName || "",
-          duration,
-        },
-      });
-
-      const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        amount: order.amount,
-        currency: order.currency,
-        name: "MLT Prep",
-        description: `${planName} Subscription`,
-        order_id: order.id,
-        handler: async (response: any) => {
-          try {
-            await verifyPayment({
-              orderId: response.razorpay_order_id,
-              paymentId: response.razorpay_payment_id,
-              signature: response.razorpay_signature,
-              userId: user._id,
-              planName: planName || "",
-              amount: finalAmount,
-              duration,
-            });
-
-            toast.success("Payment successful! Subscription activated.");
-            navigate("/dashboard");
-          } catch (error: any) {
-            toast.error(error.message || "Payment verification failed");
-          }
-        },
-        prefill: {
-          name: userProfile.name,
-          email: userProfile.email,
-        },
-        theme: {
-          color: "#7C3AED",
-        },
-      };
-
-      const razorpay = new window.Razorpay(options);
-      razorpay.open();
-      setIsProcessing(false);
-    } catch (error: any) {
-      console.error("Payment error:", error);
-      toast.error(error.message || "Failed to initiate payment");
-      setIsProcessing(false);
-    }
+  const handlePayment = () => {
+    toast.info("Payment setup is being configured. Please check back soon!");
   };
 
   return (
@@ -404,10 +325,10 @@ export default function PaymentSummary() {
               <div className="flex flex-col gap-3">
                 <Button
                   onClick={handlePayment}
-                  disabled={isProcessing}
+                  disabled={true}
                   className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
                 >
-                  {isProcessing ? "Processing..." : `Pay ₹${finalAmount.toFixed(2)}`}
+                  Payment Coming Soon
                 </Button>
                 <Button
                   onClick={() => navigate("/subscription")}
