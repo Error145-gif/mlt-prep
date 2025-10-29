@@ -231,15 +231,14 @@ export default function Landing() {
                             Activate Admin Access
                           </Button>
                         )}
-                        <Button
-                          onClick={() => {
-                            navigate("/student");
-                            setIsMenuOpen(false);
-                          }}
-                          className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
-                        >
-                          Dashboard
-                        </Button>
+                        <button onClick={() => { navigate("/student"); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Dashboard</button>
+                        <button onClick={() => { navigate("/student/mock-tests"); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Mock Tests</button>
+                        <button onClick={() => { navigate("/student/pyq-sets"); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">PYQ Sets</button>
+                        <button onClick={() => { navigate("/student/ai-questions"); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">AI Questions</button>
+                        <button onClick={() => { navigate("/student/free-library"); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Free Library</button>
+                        <button onClick={() => { navigate("/student/profile"); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Profile</button>
+                        <button onClick={() => { navigate("/student/subscription"); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Subscription</button>
+                        <button onClick={() => { navigate("/student/feedback"); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Feedback</button>
                       </>
                     )}
                   </>
