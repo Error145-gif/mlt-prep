@@ -9,6 +9,7 @@ import { Check, BookOpen, Brain, Library, BarChart3, Sparkles, Menu, X } from "l
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
+import StudentNav from "@/components/StudentNav";
 
 export default function SubscriptionPlans() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -125,6 +126,7 @@ export default function SubscriptionPlans() {
 
   return (
     <div className="min-h-screen p-4 md:p-8 relative overflow-hidden">
+      <StudentNav />
       <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
         <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-400/30 rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-500/30 rounded-full blur-3xl" />

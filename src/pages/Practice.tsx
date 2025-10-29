@@ -10,6 +10,7 @@ import { Library, Target, Filter } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { Id } from "@/convex/_generated/dataModel";
+import StudentNav from "@/components/StudentNav";
 
 export default function Practice() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -50,6 +51,7 @@ export default function Practice() {
 
   return (
     <div className="min-h-screen p-6 lg:p-8 relative">
+      <StudentNav />
       {/* Lab Background Image */}
       <div 
         className="fixed inset-0 z-0 opacity-10"

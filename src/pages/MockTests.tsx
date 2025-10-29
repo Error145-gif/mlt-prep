@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { AnimatePresence } from "framer-motion";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import StudentNav from "@/components/StudentNav";
 
 export default function MockTests() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -61,6 +62,7 @@ export default function MockTests() {
 
   return (
     <div className="min-h-screen p-6 lg:p-8 relative overflow-hidden">
+      <StudentNav />
       {/* Animated Background Gradients */}
       <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
         <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-400/50 rounded-full blur-3xl animate-pulse" />
