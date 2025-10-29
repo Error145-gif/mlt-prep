@@ -184,7 +184,7 @@ export default function StudyMaterialsManagement() {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="lg:hidden p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white"
+                className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all"
               >
                 {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               </button>
