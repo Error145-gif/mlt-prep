@@ -354,7 +354,7 @@ export default function TestStart() {
               <div className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg">
                 <p className="text-3xl mb-1">{testTypeIcon}</p>
                 <p className="text-sm text-gray-600 font-medium">Test Type</p>
-                <p className="text-lg font-bold text-blue-900">{testType === "ai" ? "AI Questions" : testType === "pyq" ? "PYQ Set" : "Mock Test"}</p>
+                <p className="text-lg font-bold text-blue-900">{testType === "ai" ? "AI Questions" : testType === "pyq" ? questions[0]?.examName || `PYQ ${year}` : "Mock Test"}</p>
               </div>
               <div className="p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg">
                 <p className="text-3xl mb-1">🕒</p>
