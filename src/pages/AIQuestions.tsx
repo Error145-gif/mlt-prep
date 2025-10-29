@@ -13,6 +13,7 @@ import { AnimatePresence } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import StudentNav from "@/components/StudentNav";
 
 export default function AIQuestions() {
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -41,6 +42,7 @@ export default function AIQuestions() {
   if (!aiTests || aiTests.length === 0) {
     return (
       <div className="min-h-screen p-6 lg:p-8 relative overflow-hidden">
+        <StudentNav />
         <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500" />
         <div className="relative z-10 max-w-2xl mx-auto text-center">
           <h1 className="text-3xl font-bold text-white">No AI Tests Available</h1>
@@ -83,6 +85,7 @@ export default function AIQuestions() {
   if (selectedTest) {
     return (
       <div className="min-h-screen p-4 md:p-8 relative overflow-hidden">
+        <StudentNav />
         <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
           <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-400/50 rounded-full blur-3xl animate-pulse" />
           <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-500/50 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
@@ -251,74 +254,11 @@ export default function AIQuestions() {
   // Show list of available AI tests
   return (
     <div className="min-h-screen p-6 lg:p-8 relative overflow-hidden">
+      <StudentNav />
       <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
         <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-400/50 rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-500/50 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
       </div>
-
-      {/* Hamburger Menu - Mobile Only */}
-      <div className="fixed top-4 right-4 z-50 md:hidden">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-white hover:bg-white/20 bg-white/10"
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-        >
-          {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </Button>
-      </div>
-
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {isMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, x: 300 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 300 }}
-            className="fixed top-16 right-0 z-40 md:hidden bg-white/10 backdrop-blur-xl border-l border-white/20 w-64 h-screen p-4 space-y-3"
-          >
-            <Button
-              onClick={() => {
-                navigate("/student");
-                setIsMenuOpen(false);
-              }}
-              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
-            >
-              Dashboard
-            </Button>
-            <Button
-              onClick={() => {
-                navigate("/mock-tests");
-                setIsMenuOpen(false);
-              }}
-              variant="outline"
-              className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30"
-            >
-              Mock Tests
-            </Button>
-            <Button
-              onClick={() => {
-                navigate("/pyq-sets");
-                setIsMenuOpen(false);
-              }}
-              variant="outline"
-              className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30"
-            >
-              PYQ Sets
-            </Button>
-            <Button
-              onClick={() => {
-                navigate("/profile");
-                setIsMenuOpen(false);
-              }}
-              variant="outline"
-              className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30"
-            >
-              Profile
-            </Button>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       <div className="relative z-10 max-w-7xl mx-auto space-y-6">
         <div>
