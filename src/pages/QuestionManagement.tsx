@@ -1078,21 +1078,27 @@ export default function QuestionManagement() {
 
   return (
     <div className="min-h-screen p-6 relative">
-      {/* Background elements */}
-      <div
-        className="absolute inset-0 opacity-20"
+      {/* Animated Gradient Background */}
+      <div className="fixed inset-0 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500 z-0" />
+      
+      {/* Animated Orbs */}
+      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-blue-400/50 rounded-full blur-3xl" />
+        <div className="absolute top-1/4 right-0 w-[500px] h-[500px] bg-purple-500/50 rounded-full blur-3xl" style={{ animationDelay: '1s' }} />
+        <div className="absolute bottom-0 left-1/4 w-[600px] h-[600px] bg-pink-400/40 rounded-full blur-3xl" style={{ animationDelay: '0.5s' }} />
+        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-cyan-400/40 rounded-full blur-3xl" style={{ animationDelay: '0.7s' }} />
+      </div>
+
+      {/* Lab Background Image */}
+      <div 
+        className="fixed inset-0 z-0 opacity-10"
         style={{
-          backgroundImage: `url('https://images.unsplash.com/photo-1582719471384?w=1920&q=80')`,
+          backgroundImage: 'url(https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=1920&q=80)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          backgroundAttachment: 'fixed',
+          backgroundRepeat: 'no-repeat'
         }}
       />
-      
-      {/* Animated orbs */}
-      <div className="absolute top-20 left-20 w-96 h-96 bg-blue-400/30 rounded-full blur-3xl" />
-      <div className="absolute bottom-20 right-20 w-96 h-96 bg-purple-400/30 rounded-full blur-3xl" />
-      <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-pink-400/30 rounded-full blur-3xl" />
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -1103,7 +1109,7 @@ export default function QuestionManagement() {
           <div className="flex items-center gap-4">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white"
+              className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
             >
               {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
