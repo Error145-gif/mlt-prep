@@ -21,7 +21,6 @@ export default function AIQuestions() {
   const aiTests = useQuery(api.student.getAIQuestions, {});
   const userProfile = useQuery(api.users.getUserProfile);
   const canAccessAI = useQuery(api.student.canAccessTestType, { testType: "ai" });
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [selectedTest, setSelectedTest] = useState<any>(null);
   const [instructionsRead, setInstructionsRead] = useState(false);
 
@@ -72,20 +71,10 @@ export default function AIQuestions() {
     setInstructionsRead(false);
   };
 
-  const handleStartTest = () => {
-    if (!selectedTest || !instructionsRead) {
-      toast.error("Please read and confirm the instructions before starting.");
-      return;
-    }
-    const topicParam = selectedTest.topicId ? `&topicId=${selectedTest.topicId}` : "";
-    navigate(`/test-start?type=ai${topicParam}&setNumber=${selectedTest.setNumber}`);
-  };
-
   // If a test is selected, show instructions
   if (selectedTest) {
     return (
       <div className="min-h-screen p-4 md:p-8 relative overflow-hidden">
-        <StudentNav />
         <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
           <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-400/50 rounded-full blur-3xl animate-pulse" />
           <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-500/50 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
@@ -234,7 +223,7 @@ export default function AIQuestions() {
                 Cancel
               </Button>
               <Button
-                onClick={handleStartTest}
+                onClick={() => setSelectedTest(null)}
                 disabled={!instructionsRead}
                 className={`px-12 py-3 text-lg font-bold shadow-lg hover:shadow-xl transition-all ${
                   instructionsRead
@@ -327,33 +316,12 @@ export default function AIQuestions() {
                         Locked
                       </Button>
                     ) : (
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700">
-                            {test.hasCompleted ? "Re-Take Test" : "Start Test"}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-48 p-2 space-y-2">
-                          <Button
-                            onClick={() => handleSelectTest(test)}
-                            variant="ghost"
-                            className="w-full justify-start text-sm"
-                          >
-                            Click to test
-                          </Button>
-                          <Button
-                            onClick={() => {
-                              const topicParam = test.topicId ? `&topicId=${test.topicId}` : "";
-                              window.open(`/test-start?type=ai${topicParam}&setNumber=${test.setNumber}`, '_blank');
-                            }}
-                            variant="ghost"
-                            className="w-full justify-start text-sm"
-                          >
-                            <ExternalLink className="h-4 w-4 mr-2" />
-                            Open in new tab
-                          </Button>
-                        </PopoverContent>
-                      </Popover>
+                      <Button
+                        onClick={() => handleSelectTest(test)}
+                        className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700"
+                      >
+                        {test.hasCompleted ? "Re-Take Test" : "Start Test"}
+                      </Button>
                     )}
                   </div>
                 </Card>
