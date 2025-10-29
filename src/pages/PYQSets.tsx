@@ -12,6 +12,7 @@ import { User, Lock, Menu, X, ExternalLink } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AnimatePresence } from "framer-motion";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import StudentNav from "@/components/StudentNav";
 
 export default function PYQSets() {
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -222,97 +223,20 @@ export default function PYQSets() {
     );
   }
 
-  // Show list of available PYQ sets with hamburger menu
+  // Show list of available PYQ sets
   return (
     <div className="min-h-screen p-6 lg:p-8 relative overflow-hidden">
+      <StudentNav />
+      
       <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
         <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-400/50 rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-500/50 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
       </div>
 
-      {/* Hamburger Menu - Mobile Only */}
-      <div className="fixed top-4 right-4 z-50 md:hidden">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-white hover:bg-white/20 bg-white/10"
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-        >
-          {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </Button>
-      </div>
-
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {isMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, x: 300 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 300 }}
-            className="fixed top-16 right-0 z-40 md:hidden bg-white/10 backdrop-blur-xl border-l border-white/20 w-64 h-screen p-4 space-y-3"
-          >
-            <Button
-              onClick={() => {
-                navigate("/student");
-                setIsMenuOpen(false);
-              }}
-              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
-            >
-              Dashboard
-            </Button>
-            <Button
-              onClick={() => {
-                navigate("/mock-tests");
-                setIsMenuOpen(false);
-              }}
-              variant="outline"
-              className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30"
-            >
-              Mock Tests
-            </Button>
-            <Button
-              onClick={() => {
-                navigate("/ai-questions");
-                setIsMenuOpen(false);
-              }}
-              variant="outline"
-              className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30"
-            >
-              AI Questions
-            </Button>
-            <Button
-              onClick={() => {
-                navigate("/profile");
-                setIsMenuOpen(false);
-              }}
-              variant="outline"
-              className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30"
-            >
-              Profile
-            </Button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <div className="relative z-10 max-w-7xl mx-auto space-y-6">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-white">Previous Year Questions</h1>
-            <p className="text-white/70 mt-1">Select an exam and year to practice with previous year questions</p>
-          </div>
-          <div className="flex items-center gap-3 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full">
-            {userProfile?.avatarUrl ? (
-              <Avatar className="h-10 w-10 border-2 border-white shadow-md">
-                <AvatarImage src={userProfile.avatarUrl} />
-                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">
-                  {userProfile.name?.charAt(0)?.toUpperCase() || "U"}
-                </AvatarFallback>
-              </Avatar>
-            ) : (
-              <User className="h-10 w-10 text-white" />
-            )}
-            <span className="font-semibold text-white">{userProfile?.name || "Student"}</span>
-          </div>
+      <div className="relative z-10 max-w-7xl mx-auto space-y-6 pt-20">
+        <div>
+          <h1 className="text-3xl font-bold text-white">Previous Year Questions</h1>
+          <p className="text-white/70 mt-1">Select an exam and year to practice with previous year questions</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
