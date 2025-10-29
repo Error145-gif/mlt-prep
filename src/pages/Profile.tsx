@@ -169,6 +169,18 @@ export default function Profile() {
     <div className="min-h-screen p-6 lg:p-8 relative overflow-hidden">
       <StudentNav />
       
+      {/* Lab Background Image */}
+      <div 
+        className="fixed inset-0 -z-10 opacity-15"
+        style={{
+          backgroundImage: 'url(https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1920&q=80)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          backgroundAttachment: 'fixed'
+        }}
+      />
+      
       {/* Animated Background Gradients */}
       <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
         <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-400/50 rounded-full blur-3xl animate-pulse" />
