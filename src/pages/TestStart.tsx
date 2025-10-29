@@ -69,6 +69,7 @@ export default function TestStart() {
     ...(setNumber && { setNumber }),
   });
 
+  const questions = testQuestions || [];
   const [testName, setTestName] = useState("");
 
   useEffect(() => {
@@ -82,13 +83,16 @@ export default function TestStart() {
     if (testType === "mock") {
       setTestName("Mock Test");
     } else if (testType === "pyq") {
-      setTestName(`PYQ ${year || ""}`);
+      // Get exam name from first question if available
+      if (questions.length > 0 && questions[0].examName) {
+        setTestName(questions[0].examName);
+      } else {
+        setTestName(`PYQ ${year || ""}`);
+      }
     } else if (testType === "ai") {
       setTestName("AI Generated Questions");
     }
-  }, [testType, year]);
-
-  const questions = testQuestions || [];
+  }, [testType, year, questions]);
 
   // Set initial timer based on test type and question count
   useEffect(() => {
@@ -504,18 +508,21 @@ export default function TestStart() {
 
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden">
-      <StudentNav />
-      {/* Hamburger Menu Button - Mobile Only */}
-      <button
-        onClick={() => setIsMenuOpen(!isMenuOpen)}
-        className="fixed top-6 right-6 z-50 md:hidden bg-white/20 backdrop-blur-sm p-2 rounded-lg hover:bg-white/30 transition-all"
-      >
-        {isMenuOpen ? (
-          <X className="h-6 w-6 text-white" />
-        ) : (
-          <Menu className="h-6 w-6 text-white" />
-        )}
-      </button>
+      {/* Hide StudentNav during test */}
+      {showInstructions && <StudentNav />}
+      {/* Hamburger Menu Button - Mobile Only (hidden during test) */}
+      {showInstructions && (
+        <button
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          className="fixed top-6 right-6 z-50 md:hidden bg-white/20 backdrop-blur-sm p-2 rounded-lg hover:bg-white/30 transition-all"
+        >
+          {isMenuOpen ? (
+            <X className="h-6 w-6 text-white" />
+          ) : (
+            <Menu className="h-6 w-6 text-white" />
+          )}
+        </button>
+      )}
 
       {/* Mobile Menu */}
       <AnimatePresence>
