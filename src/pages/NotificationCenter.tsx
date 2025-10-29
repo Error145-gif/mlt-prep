@@ -4,7 +4,7 @@ import { api } from "@/convex/_generated/api";
 import { Navigate, useNavigate } from "react-router";
 import { useState } from "react";
 import { Loader2, Plus, Send, Trash2, Users, Mail, Bell, Menu, X } from "lucide-react";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -15,9 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
 import { Id } from "@/convex/_generated/dataModel";
-import StudentNav from "@/components/StudentNav";
 
 export default function NotificationCenter() {
   const { isLoading, isAuthenticated, user } = useAuth();
@@ -135,8 +133,6 @@ export default function NotificationCenter() {
 
   return (
     <div className="min-h-screen p-6 relative">
-      <StudentNav />
-      
       {/* Animated Gradient Background */}
       <div className="fixed inset-0 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500 z-0" />
       
@@ -168,7 +164,7 @@ export default function NotificationCenter() {
           <div className="flex items-center gap-4">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="lg:hidden p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white"
+              className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all"
             >
               {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
@@ -315,7 +311,7 @@ export default function NotificationCenter() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="lg:hidden glass-card border-white/20 backdrop-blur-xl bg-white/10 rounded-lg overflow-hidden"
+              className="glass-card border-white/20 backdrop-blur-xl bg-white/10 rounded-lg overflow-hidden"
             >
               <div className="flex flex-col p-4 space-y-2">
                 <button onClick={() => { navigate("/admin"); setIsMenuOpen(false); }} className="text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Dashboard</button>
