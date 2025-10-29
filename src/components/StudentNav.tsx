@@ -81,7 +81,12 @@ export default function StudentNav() {
                   ) : (
                     <img src="/logo.svg" alt="Logo" className="h-10 w-10" />
                   )}
-                  <h2 className="text-xl font-bold text-white">MLT Prep</h2>
+                  <div className="flex flex-col">
+                    <h2 className="text-xl font-bold text-white">MLT Prep</h2>
+                    {userProfile?.name && (
+                      <span className="text-sm text-white/70">{userProfile.name}</span>
+                    )}
+                  </div>
                 </div>
                 <NotificationBell />
               </div>
