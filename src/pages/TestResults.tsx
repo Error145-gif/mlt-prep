@@ -12,13 +12,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import StudentNav from "@/components/StudentNav";
-
 export default function TestResults() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   
   const sessionId = searchParams.get("sessionId") as Id<"testSessions"> | null;
 
@@ -149,7 +146,6 @@ export default function TestResults() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
-      <StudentNav />
       
       {/* Header with User Info */}
       <div className={`bg-gradient-to-r ${testTypeInfo.color} text-white px-6 py-6 shadow-lg`}>
