@@ -201,7 +201,7 @@ export default function StudyMaterialsManagement() {
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
-                className="lg:hidden glass-card border-white/20 backdrop-blur-xl bg-white/10 rounded-lg overflow-hidden"
+                className="glass-card border-white/20 backdrop-blur-xl bg-white/10 rounded-lg overflow-hidden"
               >
                 <div className="flex flex-col p-4 space-y-2">
                   <button onClick={() => { navigate("/admin"); setIsMenuOpen(false); }} className="text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Dashboard</button>
