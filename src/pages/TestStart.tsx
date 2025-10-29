@@ -189,7 +189,9 @@ export default function TestStart() {
   };
 
   const handleAnswerChange = (answer: string) => {
+    if (!questions || currentQuestionIndex >= questions.length) return;
     const question = questions[currentQuestionIndex];
+    if (!question) return;
     const newAnswer: Answer = {
       questionId: question._id,
       answer,
@@ -206,7 +208,9 @@ export default function TestStart() {
   };
 
   const handleMarkForReview = () => {
+    if (!questions || currentQuestionIndex >= questions.length) return;
     const question = questions[currentQuestionIndex];
+    if (!question) return;
     const currentAnswer = answers.get(question._id);
     const newAnswer: Answer = {
       questionId: question._id,
@@ -218,7 +222,9 @@ export default function TestStart() {
   };
 
   const handleClearResponse = () => {
+    if (!questions || currentQuestionIndex >= questions.length) return;
     const question = questions[currentQuestionIndex];
+    if (!question) return;
     answers.delete(question._id);
     setAnswers(new Map(answers));
   };
@@ -502,11 +508,11 @@ export default function TestStart() {
     );
   }
 
-  const currentQuestion = questions && questions.length > 0 ? questions[currentQuestionIndex] : null;
+  const currentQuestion = questions && questions.length > 0 && currentQuestionIndex < questions.length ? questions[currentQuestionIndex] : null;
   const currentAnswer = currentQuestion ? answers.get(currentQuestion._id) : null;
   const answeredCount = Array.from(answers.values()).filter(a => a.answer).length;
   
-  if (!currentQuestion) {
+  if (!currentQuestion || !questions || questions.length === 0) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-blue-50">
         <div className="text-center space-y-4">
