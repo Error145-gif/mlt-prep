@@ -1,8 +1,9 @@
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { Navigate } from "react-router";
-import { Loader2, Users, Mail, Trash2, AlertCircle } from "lucide-react";
+import { Navigate, useNavigate } from "react-router";
+import { Loader2, Users, Mail, Trash2, AlertCircle, Menu, X } from "lucide-react";
+import { AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,6 +24,7 @@ import { Id } from "@/convex/_generated/dataModel";
 
 export default function UserAnalytics() {
   const { isLoading, isAuthenticated, user } = useAuth();
+  const navigate = useNavigate();
   const users = useQuery(api.analytics.getAllRegisteredUsers);
   const deleteUser = useMutation(api.userManagement.deleteUser);
   const resetAllUserData = useMutation(api.userDataReset.resetAllUserData);
@@ -30,6 +32,7 @@ export default function UserAnalytics() {
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -144,9 +147,17 @@ export default function UserAnalytics() {
         className="relative z-10 max-w-7xl mx-auto space-y-6"
       >
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-white">User Management</h1>
-            <p className="text-white/70 mt-1">Manage registered users and their accounts</p>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="lg:hidden p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white"
+            >
+              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
+            <div>
+              <h1 className="text-3xl font-bold text-white">User Management</h1>
+              <p className="text-white/70 mt-1">Manage registered users and their accounts</p>
+            </div>
           </div>
           
           <AlertDialog>
@@ -196,6 +207,30 @@ export default function UserAnalytics() {
             </AlertDialogContent>
           </AlertDialog>
         </div>
+
+        {/* Mobile Navigation Menu */}
+        <AnimatePresence>
+          {isMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="lg:hidden glass-card border-white/20 backdrop-blur-xl bg-white/10 rounded-lg overflow-hidden"
+            >
+              <div className="flex flex-col p-4 space-y-2">
+                <button onClick={() => { navigate("/admin"); setIsMenuOpen(false); }} className="text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Dashboard</button>
+                <button onClick={() => { navigate("/admin/questions"); setIsMenuOpen(false); }} className="text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Questions</button>
+                <button onClick={() => { navigate("/admin/content"); setIsMenuOpen(false); }} className="text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Content</button>
+                <button onClick={() => { navigate("/admin/study-materials"); setIsMenuOpen(false); }} className="text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Study Materials</button>
+                <button onClick={() => { navigate("/admin/analytics"); setIsMenuOpen(false); }} className="text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Analytics</button>
+                <button onClick={() => { navigate("/admin/subscriptions"); setIsMenuOpen(false); }} className="text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Subscriptions</button>
+                <button onClick={() => { navigate("/admin/coupons"); setIsMenuOpen(false); }} className="text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Coupons</button>
+                <button onClick={() => { navigate("/admin/notifications"); setIsMenuOpen(false); }} className="text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Notifications</button>
+                <button onClick={() => { navigate("/admin/feedback"); setIsMenuOpen(false); }} className="text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Feedback</button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
