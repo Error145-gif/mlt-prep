@@ -3,14 +3,11 @@ import { Mail, MapPin, Phone, Home, Send } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router";
-import StudentNav from "@/components/StudentNav";
-
 export default function ContactUs() {
   const navigate = useNavigate();
 
   return (
     <div className="min-h-screen p-6 lg:p-8 relative">
-      <StudentNav />
       {/* Animated gradient background matching Landing page */}
       <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
         <motion.div
