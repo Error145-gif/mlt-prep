@@ -143,18 +143,16 @@ export default function Landing() {
           </div>
           
           {/* Hamburger Menu Button - Only on mobile */}
-          {typeof window !== 'undefined' && (
-            <div className="md:hidden">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-white hover:bg-white/20"
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-              >
-                {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-              </Button>
-            </div>
-          )}
+          <div className="md:hidden">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-white hover:bg-white/20"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+            >
+              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </Button>
+          </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-4">
