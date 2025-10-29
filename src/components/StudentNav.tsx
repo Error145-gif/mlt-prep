@@ -36,6 +36,13 @@ export default function StudentNav() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Close menu when location changes
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      setIsOpen(false);
+    }
+  }, [location.pathname]);
+
   const navItems = [
     { path: "/dashboard", icon: Home, label: "Dashboard" },
     { path: "/tests/mock", icon: FileText, label: "Mock Tests" },
