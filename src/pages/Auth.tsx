@@ -190,7 +190,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
             className="flex justify-center mb-4"
           >
             <img
-              src="/logo.png"
+              src="/public/assets/file_00000000800c62309fd3c06c851a06c.png"
               alt="MLT Logo"
               className="w-32 h-32 object-contain drop-shadow-2xl"
               onError={(e) => { e.currentTarget.src = "/logo_bg.png"; }}
