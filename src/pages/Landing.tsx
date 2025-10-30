@@ -2,13 +2,10 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router";
 import { useAuth } from "@/hooks/use-auth";
-import { BookOpen, Brain, Award, TrendingUp, Sparkles, ArrowRight, Shield, Menu, X } from "lucide-react";
+import { BookOpen, Brain, Award, TrendingUp, Sparkles, ArrowRight, Shield } from "lucide-react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
-import { useState } from "react";
-import { AnimatePresence } from "framer-motion";
-
 import { useEffect } from "react";
 
 export default function Landing() {
@@ -29,7 +26,6 @@ export default function Landing() {
   const navigate = useNavigate();
   const { isAuthenticated, user, isLoading } = useAuth();
   const makeAdmin = useMutation(api.users.makeCurrentUserAdmin);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Show loading state while auth is initializing
   if (isLoading) {
@@ -167,17 +163,7 @@ export default function Landing() {
             <span className="text-xl font-bold text-white drop-shadow-lg">MLT Prep</span>
           </div>
           
-          {/* Hamburger Menu Button - Only on mobile */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden text-white hover:bg-white/20"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </Button>
-
-          {/* Desktop Navigation */}
+          {/* Navigation */}
           <div className="hidden md:flex items-center gap-4">
             {isAuthenticated ? (
               <>
@@ -214,70 +200,6 @@ export default function Landing() {
             )}
           </div>
         </div>
-
-        {/* Mobile Menu */}
-        <AnimatePresence>
-          {isMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="md:hidden border-t border-white/20 bg-white/5 backdrop-blur-xl"
-            >
-              <div className="px-6 py-4 space-y-3">
-                {isAuthenticated ? (
-                  <>
-                    {user?.role === "admin" ? (
-                      <>
-                        <button onClick={() => { navigate("/admin"); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Dashboard</button>
-                        <button onClick={() => { navigate("/admin/questions"); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Questions</button>
-                        <button onClick={() => { navigate("/admin/content"); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Content</button>
-                        <button onClick={() => { navigate("/admin/study-materials"); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Study Materials</button>
-                        <button onClick={() => { navigate("/admin/analytics"); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Analytics</button>
-                        <button onClick={() => { navigate("/admin/subscriptions"); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Subscriptions</button>
-                        <button onClick={() => { navigate("/admin/coupons"); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Coupons</button>
-                        <button onClick={() => { navigate("/admin/notifications"); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Notifications</button>
-                        <button onClick={() => { navigate("/admin/feedback"); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Feedback</button>
-                      </>
-                    ) : (
-                      <>
-                        {user?.email === "ak6722909@gmail.com" && (
-                          <Button
-                            onClick={() => {
-                              handleMakeAdmin();
-                              setIsMenuOpen(false);
-                            }}
-                            className="w-full bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700"
-                          >
-                            Activate Admin Access
-                          </Button>
-                        )}
-                        <button onClick={() => { navigate("/student"); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Dashboard</button>
-                        <button onClick={() => { navigate("/student/mock-tests"); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Mock Tests</button>
-                        <button onClick={() => { navigate("/student/pyq-sets"); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">PYQ Sets</button>
-                        <button onClick={() => { navigate("/student/ai-questions"); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">AI Questions</button>
-                        <button onClick={() => { navigate("/student/free-library"); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Free Library</button>
-                        <button onClick={() => { navigate("/student/profile"); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Profile</button>
-                        <button onClick={() => { navigate("/student/subscription"); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Subscription</button>
-                        <button onClick={() => { navigate("/student/feedback"); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10">Feedback</button>
-                      </>
-                    )}
-                  </>
-                ) : (
-                  <Button
-                    onClick={() => {
-                      navigate("/auth");
-                      setIsMenuOpen(false);
-                    }}
-                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
-                  >
-                    Get Started
-                  </Button>
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </nav>
 
       {/* Hero Section */}
