@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router";
 import { useAuth } from "@/hooks/use-auth";
-import { BookOpen, Brain, Award, TrendingUp, Sparkles, ArrowRight, Shield } from "lucide-react";
+import { BookOpen, Brain, Award, TrendingUp, Sparkles, ArrowRight } from "lucide-react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
@@ -164,7 +164,7 @@ export default function Landing() {
           </div>
           
           {/* Navigation */}
-          <div className="hidden md:flex items-center gap-4">
+          <div className="flex items-center gap-4">
             {isAuthenticated ? (
               <>
                 {user?.role === "admin" && (
