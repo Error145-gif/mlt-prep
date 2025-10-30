@@ -193,6 +193,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
               src="/logo.png"
               alt="MLT Logo"
               className="w-32 h-32 object-contain drop-shadow-2xl"
+              onError={(e) => { e.currentTarget.src = "/logo_bg.png"; }}
             />
           </motion.div>
           
