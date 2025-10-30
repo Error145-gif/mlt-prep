@@ -37,23 +37,31 @@ export default function StudentDashboard() {
     );
   }
 
-  // Create safe stats with proper null handling
+  // Create safe stats with proper null handling - wait for stats to load
+  if (!stats) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
+        <div className="text-white text-xl">Loading dashboard...</div>
+      </div>
+    );
+  }
+
   const displayStats = {
-    totalTests: stats?.totalTests ?? 0,
-    totalQuestionsAttempted: stats?.totalQuestionsAttempted ?? 0,
-    avgTimePerQuestion: stats?.avgTimePerQuestion ?? 0,
-    overallAccuracy: stats?.overallAccuracy ?? 0,
-    performanceScore: stats?.performanceScore ?? 0,
-    consistencyStreak: stats?.consistencyStreak ?? 0,
-    mockTests: { avgScore: stats?.mockTests?.avgScore ?? 0 },
-    pyqTests: { avgScore: stats?.pyqTests?.avgScore ?? 0 },
-    aiTests: { avgScore: stats?.aiTests?.avgScore ?? 0 },
-    strongestSubject: stats?.strongestSubject ?? "N/A",
-    weakestSubject: stats?.weakestSubject ?? "N/A",
-    improvementRate: stats?.improvementRate ?? 0,
-    totalStudyTime: stats?.totalStudyTime ?? 0,
-    avgQuestionsPerTest: stats?.avgQuestionsPerTest ?? 0,
-    aiInsights: stats?.aiInsights ?? []
+    totalTests: stats.totalTests ?? 0,
+    totalQuestionsAttempted: stats.totalQuestionsAttempted ?? 0,
+    avgTimePerQuestion: stats.avgTimePerQuestion ?? 0,
+    overallAccuracy: stats.overallAccuracy ?? 0,
+    performanceScore: stats.performanceScore ?? 0,
+    consistencyStreak: stats.consistencyStreak ?? 0,
+    mockTests: { avgScore: stats.mockTests?.avgScore ?? 0 },
+    pyqTests: { avgScore: stats.pyqTests?.avgScore ?? 0 },
+    aiTests: { avgScore: stats.aiTests?.avgScore ?? 0 },
+    strongestSubject: stats.strongestSubject ?? "N/A",
+    weakestSubject: stats.weakestSubject ?? "N/A",
+    improvementRate: stats.improvementRate ?? 0,
+    totalStudyTime: stats.totalStudyTime ?? 0,
+    avgQuestionsPerTest: stats.avgQuestionsPerTest ?? 0,
+    aiInsights: stats.aiInsights ?? []
   };
 
   const profileCompletion = userProfile ? 
