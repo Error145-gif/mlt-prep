@@ -37,23 +37,23 @@ export default function StudentDashboard() {
     );
   }
 
-  // Don't block rendering if stats is loading
-  const safeStats = stats || {
-    totalTests: 0,
-    totalQuestionsAttempted: 0,
-    avgTimePerQuestion: 0,
-    overallAccuracy: 0,
-    performanceScore: 0,
-    consistencyStreak: 0,
-    mockTests: { avgScore: 0 },
-    pyqTests: { avgScore: 0 },
-    aiTests: { avgScore: 0 },
-    strongestSubject: "N/A",
-    weakestSubject: "N/A",
-    improvementRate: 0,
-    totalStudyTime: 0,
-    avgQuestionsPerTest: 0,
-    aiInsights: []
+  // Create safe stats with proper null handling
+  const displayStats = {
+    totalTests: stats?.totalTests ?? 0,
+    totalQuestionsAttempted: stats?.totalQuestionsAttempted ?? 0,
+    avgTimePerQuestion: stats?.avgTimePerQuestion ?? 0,
+    overallAccuracy: stats?.overallAccuracy ?? 0,
+    performanceScore: stats?.performanceScore ?? 0,
+    consistencyStreak: stats?.consistencyStreak ?? 0,
+    mockTests: { avgScore: stats?.mockTests?.avgScore ?? 0 },
+    pyqTests: { avgScore: stats?.pyqTests?.avgScore ?? 0 },
+    aiTests: { avgScore: stats?.aiTests?.avgScore ?? 0 },
+    strongestSubject: stats?.strongestSubject ?? "N/A",
+    weakestSubject: stats?.weakestSubject ?? "N/A",
+    improvementRate: stats?.improvementRate ?? 0,
+    totalStudyTime: stats?.totalStudyTime ?? 0,
+    avgQuestionsPerTest: stats?.avgQuestionsPerTest ?? 0,
+    aiInsights: stats?.aiInsights ?? []
   };
 
   const profileCompletion = userProfile ? 
@@ -61,9 +61,6 @@ export default function StudentDashboard() {
     (userProfile.avatarUrl ? 25 : 0) + 
     (userProfile.examPreparation ? 25 : 0) + 
     (userProfile.state ? 25 : 0) : 0;
-  
-  // Use safe stats throughout the component
-  const displayStats = stats || safeStats;
 
   const isProfileIncomplete = profileCompletion < 100;
 

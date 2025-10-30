@@ -13,7 +13,7 @@ export default function StudentNav() {
   const location = useLocation();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
-  const { signOut } = useAuth();
+  const { signOut, isAuthenticated } = useAuth();
   const userProfile = useQuery(api.users.getUserProfile);
 
   // Open sidebar by default on desktop
@@ -62,15 +62,17 @@ export default function StudentNav() {
 
   return (
     <>
-      {/* Mobile Menu Button - Now visible on all screens */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className="fixed top-4 left-4 z-50 glass-card border-white/20 backdrop-blur-xl bg-white/10 text-white"
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-      </Button>
+      {/* Mobile Menu Button - Only visible when authenticated */}
+      {isAuthenticated && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="fixed top-4 left-4 z-50 glass-card border-white/20 backdrop-blur-xl bg-white/10 text-white"
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </Button>
+      )}
 
       {/* Sidebar */}
       <AnimatePresence>
