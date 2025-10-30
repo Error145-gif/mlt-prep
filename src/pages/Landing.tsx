@@ -159,7 +159,7 @@ export default function Landing() {
       <nav className="glass-card border-b border-white/20 backdrop-blur-xl bg-white/10 sticky top-0 z-50 shadow-lg">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate("/")}>
-            <img src="/public/assets/file_00000000800c62309fd3c06c851a06c.png" alt="MLT Logo" loading="eager" className="h-10 w-10 object-contain" onError={(e) => { e.currentTarget.src = "/logo_bg.png"; }} />
+            <img src="https://harmless-tapir-303.convex.cloud/api/storage/6068c740-5624-49d7-8c20-c6c805df135b" alt="MLT Logo" loading="eager" className="h-10 w-10 object-contain" onError={(e) => { e.currentTarget.src = "/logo_bg.png"; }} />
             <span className="text-xl font-bold text-white drop-shadow-lg">MLT Prep</span>
           </div>
           

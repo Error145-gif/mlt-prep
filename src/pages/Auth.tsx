@@ -190,7 +190,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
             className="flex justify-center mb-4"
           >
             <img
-              src="/public/assets/file_00000000800c62309fd3c06c851a06c.png"
+              src="https://harmless-tapir-303.convex.cloud/api/storage/6068c740-5624-49d7-8c20-c6c805df135b"
               alt="MLT Logo"
               className="w-32 h-32 object-contain drop-shadow-2xl"
               onError={(e) => { e.currentTarget.src = "/logo_bg.png"; }}
