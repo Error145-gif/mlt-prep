@@ -40,7 +40,7 @@ export default function StudentDashboard() {
   if (!stats) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
-        <div className="text-white text-xl">Unable to load dashboard. Please refresh the page.</div>
+        <div className="text-white text-xl">Loading dashboard data...</div>
       </div>
     );
   }
@@ -229,7 +229,7 @@ export default function StudentDashboard() {
         <DashboardHeader userProfile={userProfile} subscriptionAccess={subscriptionAccess} />
 
         {/* Performance Score - PROMINENT DISPLAY */}
-        {stats && <PerformanceScore performanceScore={stats.performanceScore || 0} consistencyStreak={stats.consistencyStreak || 0} />}
+        {stats && stats.performanceScore !== undefined && <PerformanceScore performanceScore={stats.performanceScore || 0} consistencyStreak={stats.consistencyStreak || 0} />}
 
         {/* AI Insights Card */}
         {stats && stats.aiInsights && stats.aiInsights.length > 0 && (
@@ -358,7 +358,7 @@ export default function StudentDashboard() {
                     <div className="relative h-2 bg-white/10 rounded-full overflow-hidden">
                       <motion.div
                         initial={{ width: 0 }}
-                        animate={{ width: `${stats?.mockTests?.avgScore || 0}%` }}
+                        animate={{ width: `${Math.min(stats?.mockTests?.avgScore || 0, 100)}%` }}
                         transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
                         className="absolute h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full shadow-lg shadow-blue-500/50"
                       />
@@ -386,7 +386,7 @@ export default function StudentDashboard() {
                     <div className="relative h-2 bg-white/10 rounded-full overflow-hidden">
                       <motion.div
                         initial={{ width: 0 }}
-                        animate={{ width: `${stats?.pyqTests?.avgScore || 0}%` }}
+                        animate={{ width: `${Math.min(stats?.pyqTests?.avgScore || 0, 100)}%` }}
                         transition={{ duration: 1, delay: 0.6, ease: "easeOut" }}
                         className="absolute h-full bg-gradient-to-r from-green-500 to-green-400 rounded-full shadow-lg shadow-green-500/50"
                       />
@@ -414,7 +414,7 @@ export default function StudentDashboard() {
                     <div className="relative h-2 bg-white/10 rounded-full overflow-hidden">
                       <motion.div
                         initial={{ width: 0 }}
-                        animate={{ width: `${stats?.aiTests?.avgScore || 0}%` }}
+                        animate={{ width: `${Math.min(stats?.aiTests?.avgScore || 0, 100)}%` }}
                         transition={{ duration: 1, delay: 0.7, ease: "easeOut" }}
                         className="absolute h-full bg-gradient-to-r from-purple-500 to-purple-400 rounded-full shadow-lg shadow-purple-500/50"
                       />
