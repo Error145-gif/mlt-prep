@@ -29,10 +29,18 @@ export default function StudentDashboard() {
     }
   }, [isAuthenticated, isLoading, navigate]);
 
-  if (isLoading || !stats) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-white text-xl">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!stats) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
+        <div className="text-white text-xl">Unable to load dashboard. Please refresh the page.</div>
       </div>
     );
   }
@@ -221,10 +229,10 @@ export default function StudentDashboard() {
         <DashboardHeader userProfile={userProfile} subscriptionAccess={subscriptionAccess} />
 
         {/* Performance Score - PROMINENT DISPLAY */}
-        <PerformanceScore performanceScore={stats.performanceScore} consistencyStreak={stats.consistencyStreak} />
+        {stats && <PerformanceScore performanceScore={stats.performanceScore || 0} consistencyStreak={stats.consistencyStreak || 0} />}
 
         {/* AI Insights Card */}
-        {stats.aiInsights && stats.aiInsights.length > 0 && (
+        {stats && stats.aiInsights && stats.aiInsights.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -257,6 +265,7 @@ export default function StudentDashboard() {
         )}
 
         {/* User Overview Grid */}
+        {stats && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
             <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
@@ -265,7 +274,7 @@ export default function StudentDashboard() {
                 <FileText className="h-4 w-4 text-blue-400" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-white">{stats.totalTests}</div>
+                <div className="text-2xl font-bold text-white">{stats.totalTests || 0}</div>
                 <p className="text-xs text-white/80 mt-1">Tests completed</p>
               </CardContent>
             </Card>
@@ -278,7 +287,7 @@ export default function StudentDashboard() {
                 <Target className="h-4 w-4 text-purple-400" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-white">{stats.totalQuestionsAttempted}</div>
+                <div className="text-2xl font-bold text-white">{stats.totalQuestionsAttempted || 0}</div>
                 <p className="text-xs text-white/80 mt-1">Total questions</p>
               </CardContent>
             </Card>
@@ -291,7 +300,7 @@ export default function StudentDashboard() {
                 <Clock className="h-4 w-4 text-orange-400" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-white">{stats.avgTimePerQuestion}s</div>
+                <div className="text-2xl font-bold text-white">{stats.avgTimePerQuestion || 0}s</div>
                 <p className="text-xs text-white/80 mt-1">Per question</p>
               </CardContent>
             </Card>
@@ -304,12 +313,13 @@ export default function StudentDashboard() {
                 <Award className="h-4 w-4 text-green-400" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-white">{stats.overallAccuracy}%</div>
+                <div className="text-2xl font-bold text-white">{stats.overallAccuracy || 0}%</div>
                 <p className="text-xs text-white/80 mt-1">Correct answers</p>
               </CardContent>
             </Card>
           </motion.div>
         </div>
+        )}
 
         {/* Performance Breakdown */}
         <motion.div
@@ -343,12 +353,12 @@ export default function StudentDashboard() {
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
                       <span className="text-white/90 text-sm">Accuracy</span>
-                      <span className="text-white font-bold text-lg">{stats.mockTests.avgScore}%</span>
+                      <span className="text-white font-bold text-lg">{stats?.mockTests?.avgScore || 0}%</span>
                     </div>
                     <div className="relative h-2 bg-white/10 rounded-full overflow-hidden">
                       <motion.div
                         initial={{ width: 0 }}
-                        animate={{ width: `${stats.mockTests.avgScore}%` }}
+                        animate={{ width: `${stats?.mockTests?.avgScore || 0}%` }}
                         transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
                         className="absolute h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full shadow-lg shadow-blue-500/50"
                       />
@@ -371,12 +381,12 @@ export default function StudentDashboard() {
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
                       <span className="text-white/90 text-sm">Accuracy</span>
-                      <span className="text-white font-bold text-lg">{stats.pyqTests.avgScore}%</span>
+                      <span className="text-white font-bold text-lg">{stats?.pyqTests?.avgScore || 0}%</span>
                     </div>
                     <div className="relative h-2 bg-white/10 rounded-full overflow-hidden">
                       <motion.div
                         initial={{ width: 0 }}
-                        animate={{ width: `${stats.pyqTests.avgScore}%` }}
+                        animate={{ width: `${stats?.pyqTests?.avgScore || 0}%` }}
                         transition={{ duration: 1, delay: 0.6, ease: "easeOut" }}
                         className="absolute h-full bg-gradient-to-r from-green-500 to-green-400 rounded-full shadow-lg shadow-green-500/50"
                       />
@@ -399,12 +409,12 @@ export default function StudentDashboard() {
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
                       <span className="text-white/90 text-sm">Accuracy</span>
-                      <span className="text-white font-bold text-lg">{stats.aiTests.avgScore}%</span>
+                      <span className="text-white font-bold text-lg">{stats?.aiTests?.avgScore || 0}%</span>
                     </div>
                     <div className="relative h-2 bg-white/10 rounded-full overflow-hidden">
                       <motion.div
                         initial={{ width: 0 }}
-                        animate={{ width: `${stats.aiTests.avgScore}%` }}
+                        animate={{ width: `${stats?.aiTests?.avgScore || 0}%` }}
                         transition={{ duration: 1, delay: 0.7, ease: "easeOut" }}
                         className="absolute h-full bg-gradient-to-r from-purple-500 to-purple-400 rounded-full shadow-lg shadow-purple-500/50"
                       />
@@ -424,7 +434,7 @@ export default function StudentDashboard() {
                     </div>
                     <h3 className="text-white font-semibold">Strongest Subject</h3>
                   </div>
-                  <div className="text-white/90 text-xl font-bold">{stats.strongestSubject}</div>
+                  <div className="text-white/90 text-xl font-bold">{stats?.strongestSubject || "N/A"}</div>
                 </motion.div>
 
                 {/* Weakest Subject */}
@@ -439,7 +449,7 @@ export default function StudentDashboard() {
                     </div>
                     <h3 className="text-white font-semibold">Needs Improvement</h3>
                   </div>
-                  <div className="text-white/90 text-xl font-bold">{stats.weakestSubject}</div>
+                  <div className="text-white/90 text-xl font-bold">{stats?.weakestSubject || "N/A"}</div>
                 </motion.div>
 
                 {/* Improvement Rate */}
@@ -466,8 +476,8 @@ export default function StudentDashboard() {
                     </div>
                     <h3 className="text-white font-semibold">Last Test Change</h3>
                   </div>
-                  <div className={`text-2xl font-bold ${stats.improvementRate >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                    {stats.improvementRate >= 0 ? '+' : ''}{stats.improvementRate}%
+                  <div className={`text-2xl font-bold ${(stats?.improvementRate || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    {(stats?.improvementRate || 0) >= 0 ? '+' : ''}{stats?.improvementRate || 0}%
                   </div>
                 </motion.div>
               </div>
@@ -490,21 +500,21 @@ export default function StudentDashboard() {
                   <Clock className="h-5 w-5 text-blue-400" />
                   <span className="text-white/90">Total Study Time</span>
                 </div>
-                <div className="text-2xl font-bold text-white">{formatTime(stats.totalStudyTime)}</div>
+                <div className="text-2xl font-bold text-white">{formatTime(stats?.totalStudyTime || 0)}</div>
               </div>
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <Target className="h-5 w-5 text-purple-400" />
                   <span className="text-white/90">Avg Questions/Test</span>
                 </div>
-                <div className="text-2xl font-bold text-white">{stats.avgQuestionsPerTest}</div>
+                <div className="text-2xl font-bold text-white">{stats?.avgQuestionsPerTest || 0}</div>
               </div>
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <Flame className="h-5 w-5 text-orange-400" />
                   <span className="text-white/90">Consistency Streak</span>
                 </div>
-                <div className="text-2xl font-bold text-white">{stats.consistencyStreak} days</div>
+                <div className="text-2xl font-bold text-white">{stats?.consistencyStreak || 0} days</div>
               </div>
             </div>
           </CardContent>
