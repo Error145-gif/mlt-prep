@@ -18,10 +18,9 @@ export default function StudentNav() {
 
   // Open sidebar by default on desktop
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    
     const handleResize = () => {
-      if (window.innerWidth >= 1024) {
+      const width = window.innerWidth;
+      if (width >= 1024) {
         setIsOpen(true);
       } else {
         setIsOpen(false);
@@ -36,9 +35,10 @@ export default function StudentNav() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Close menu when location changes
+  // Close menu when location changes on mobile
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+    const width = window.innerWidth;
+    if (width < 1024) {
       setIsOpen(false);
     }
   }, [location.pathname]);
@@ -115,7 +115,8 @@ export default function StudentNav() {
                       to={item.path}
                       onClick={() => {
                         // Only close on mobile
-                        if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+                        const width = window.innerWidth;
+                        if (width < 1024) {
                           setIsOpen(false);
                         }
                       }}
@@ -145,9 +146,9 @@ export default function StudentNav() {
       </AnimatePresence>
 
       {/* Overlay for mobile */}
-      {isOpen && typeof window !== 'undefined' && window.innerWidth < 1024 && (
+      {isOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-30"
+          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
           onClick={() => setIsOpen(false)}
         />
       )}

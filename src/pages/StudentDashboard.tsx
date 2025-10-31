@@ -29,16 +29,28 @@ export default function StudentDashboard() {
     }
   }, [isAuthenticated, isLoading, navigate]);
 
-  // Optimized loading - don't block on auth, only redirect if confirmed not authenticated
-  if (!isLoading && !isAuthenticated) {
-    navigate("/auth");
+  // Redirect only if confirmed not authenticated
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      navigate("/auth");
+    }
+  }, [isAuthenticated, isLoading, navigate]);
+
+  // Show loading only during initial auth check
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
+        <div className="text-white text-xl">Loading...</div>
+      </div>
+    );
+  }
+
+  // If not authenticated after loading, don't render
+  if (!isAuthenticated) {
     return null;
   }
 
-  // Show dashboard immediately with loading states for data
-  // This prevents long blocking loading screens
-
-  // Safe stats with loading fallback - works even if stats is null
+  // Safe stats with proper null checks
   const displayStats = stats ? {
     totalTests: stats.totalTests ?? 0,
     totalQuestionsAttempted: stats.totalQuestionsAttempted ?? 0,
