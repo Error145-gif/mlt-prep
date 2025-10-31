@@ -27,14 +27,8 @@ export default function Landing() {
   const { isAuthenticated, user, isLoading } = useAuth();
   const makeAdmin = useMutation(api.users.makeCurrentUserAdmin);
 
-  // Show loading state while auth is initializing
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
-        <div className="text-white text-xl">Loading...</div>
-      </div>
-    );
-  }
+  // Remove blocking loading state - show page immediately
+  // Auth will load in background
 
   const handleMakeAdmin = async () => {
     try {

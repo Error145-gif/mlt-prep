@@ -29,24 +29,17 @@ export default function StudentDashboard() {
     }
   }, [isAuthenticated, isLoading, navigate]);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-white text-xl">Loading...</div>
-      </div>
-    );
+  // Optimized loading - don't block on auth, only redirect if confirmed not authenticated
+  if (!isLoading && !isAuthenticated) {
+    navigate("/auth");
+    return null;
   }
 
-  // Create safe stats with proper null handling - wait for stats to load
-  if (!stats) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
-        <div className="text-white text-xl">Loading dashboard...</div>
-      </div>
-    );
-  }
+  // Show dashboard immediately with loading states for data
+  // This prevents long blocking loading screens
 
-  const displayStats = {
+  // Safe stats with loading fallback - works even if stats is null
+  const displayStats = stats ? {
     totalTests: stats.totalTests ?? 0,
     totalQuestionsAttempted: stats.totalQuestionsAttempted ?? 0,
     avgTimePerQuestion: stats.avgTimePerQuestion ?? 0,
@@ -62,7 +55,25 @@ export default function StudentDashboard() {
     totalStudyTime: stats.totalStudyTime ?? 0,
     avgQuestionsPerTest: stats.avgQuestionsPerTest ?? 0,
     aiInsights: stats.aiInsights ?? []
+  } : {
+    totalTests: 0,
+    totalQuestionsAttempted: 0,
+    avgTimePerQuestion: 0,
+    overallAccuracy: 0,
+    performanceScore: 0,
+    consistencyStreak: 0,
+    mockTests: { avgScore: 0 },
+    pyqTests: { avgScore: 0 },
+    aiTests: { avgScore: 0 },
+    strongestSubject: "N/A",
+    weakestSubject: "N/A",
+    improvementRate: 0,
+    totalStudyTime: 0,
+    avgQuestionsPerTest: 0,
+    aiInsights: []
   };
+
+  const isLoadingData = !stats || !subscriptionAccess || !userProfile;
 
   const profileCompletion = userProfile ? 
     (userProfile.name ? 25 : 0) + 
@@ -242,8 +253,13 @@ export default function StudentDashboard() {
         </motion.div>
       )}
 
-      {/* Main Dashboard Content - Blurred when profile incomplete */}
+      {/* Main Dashboard Content - Blurred when profile incomplete, show loading skeleton if data not ready */}
       <div className={`relative z-10 max-w-7xl mx-auto space-y-6 transition-all duration-500 ${isProfileIncomplete ? 'blur-sm pointer-events-none' : ''}`}>
+        {isLoadingData && (
+          <div className="glass-card border-white/30 backdrop-blur-xl bg-white/20 p-6 rounded-xl">
+            <div className="text-white text-center">Loading your dashboard data...</div>
+          </div>
+        )}
         {/* Header */}
         <DashboardHeader userProfile={userProfile} subscriptionAccess={subscriptionAccess} />
 
