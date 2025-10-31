@@ -17,6 +17,7 @@ export default function PaymentSummary() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [selectedGateway, setSelectedGateway] = useState<"razorpay" | "cashfree">("razorpay");
   const userProfile = useQuery(api.users.getUserProfile);
   
   const [couponCode, setCouponCode] = useState("");
@@ -30,8 +31,13 @@ export default function PaymentSummary() {
   const basePrice = parseFloat(searchParams.get("price") || "0");
   const duration = parseInt(searchParams.get("duration") || "0");
   
-  const createOrder = useAction(api.razorpay.createOrder);
-  const verifyPayment = useAction(api.razorpay.verifyPayment);
+  // Razorpay actions
+  const createRazorpayOrder = useAction(api.razorpay.createOrder);
+  const verifyRazorpayPayment = useAction(api.razorpay.verifyPayment);
+  
+  // Cashfree actions
+  const createCashfreeOrder = useAction(api.cashfree.createOrder);
+  const verifyCashfreePayment = useAction(api.cashfree.verifyPayment);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -147,16 +153,16 @@ export default function PaymentSummary() {
     }
   };
 
-  const handlePayment = async () => {
+  const handleRazorpayPayment = async () => {
     if (!user?._id) {
       toast.error("User not found");
       return;
     }
 
     try {
-      toast.loading("Initializing payment...");
+      toast.loading("Initializing Razorpay payment...");
       
-      const order = await createOrder({
+      const order = await createRazorpayOrder({
         amount: finalAmount,
         currency: "INR",
         receipt: `receipt_${Date.now()}`,
@@ -180,7 +186,7 @@ export default function PaymentSummary() {
         },
         handler: async (response: any) => {
           try {
-            await verifyPayment({
+            await verifyRazorpayPayment({
               orderId: order.id,
               paymentId: response.razorpay_payment_id,
               signature: response.razorpay_signature,
@@ -206,6 +212,49 @@ export default function PaymentSummary() {
       razorpay.open();
     } catch (error: any) {
       toast.error(error.message || "Failed to initiate payment");
+    }
+  };
+
+  const handleCashfreePayment = async () => {
+    if (!user?._id) {
+      toast.error("User not found");
+      return;
+    }
+
+    try {
+      toast.loading("Initializing Cashfree payment...");
+      
+      const order = await createCashfreeOrder({
+        amount: finalAmount,
+        currency: "INR",
+        userId: user._id,
+        planName: planName || "",
+        duration: duration,
+      });
+
+      // Load Cashfree SDK
+      const cashfree = (window as any).Cashfree({
+        mode: import.meta.env.VITE_CASHFREE_ENVIRONMENT || "sandbox",
+      });
+
+      const checkoutOptions = {
+        paymentSessionId: order.paymentSessionId,
+        returnUrl: `${window.location.origin}/payment-status?gateway=cashfree&order_id=${order.orderId}`,
+      };
+
+      cashfree.checkout(checkoutOptions).then(() => {
+        console.log("Payment initiated");
+      });
+    } catch (error: any) {
+      toast.error(error.message || "Failed to initiate payment");
+    }
+  };
+
+  const handlePayment = () => {
+    if (selectedGateway === "razorpay") {
+      handleRazorpayPayment();
+    } else {
+      handleCashfreePayment();
     }
   };
 
@@ -307,96 +356,129 @@ export default function PaymentSummary() {
               <CardTitle className="text-white text-2xl">Payment Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="space-y-4 bg-white/5 p-6 rounded-lg">
-                <div className="flex justify-between items-center">
-                  <span className="text-white/70">Selected Plan</span>
-                  <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30">
-                    {planName}
-                  </Badge>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-white/70">Duration</span>
-                  <span className="text-white font-medium">{duration} days</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-white/70">Base Amount</span>
-                  <span className="text-white font-medium">₹{basePrice}</span>
-                </div>
-                {appliedCoupon && (
-                  <div className="flex justify-between items-center text-green-400">
-                    <span>Discount Applied</span>
-                    <span>- ₹{discount.toFixed(2)}</span>
-                  </div>
-                )}
-                <div className="border-t border-white/20 pt-4 flex justify-between items-center">
-                  <span className="text-white font-semibold text-lg">Total Amount</span>
-                  <span className="text-white font-bold text-2xl">₹{finalAmount.toFixed(2)}</span>
-                </div>
-              </div>
-
+              {/* Payment Gateway Selection */}
               <div className="space-y-3 bg-white/5 p-6 rounded-lg">
                 <h3 className="text-white font-medium flex items-center gap-2">
-                  <Tag className="h-4 w-4" />
-                  Have a Coupon Code?
+                  Select Payment Gateway
                 </h3>
-                <div className="flex gap-2">
-                  <Input
-                    value={couponCode}
-                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                    placeholder="Enter coupon code"
-                    className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
-                    disabled={!!appliedCoupon}
-                  />
-                  <Button
-                    onClick={handleApplyCoupon}
-                    disabled={!couponCode || !!appliedCoupon}
-                    variant="outline"
-                    className="border-white/20 text-white hover:bg-white/10"
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => setSelectedGateway("razorpay")}
+                    className={`p-4 rounded-lg border-2 transition-all ${
+                      selectedGateway === "razorpay"
+                        ? "border-blue-500 bg-blue-500/20"
+                        : "border-white/20 bg-white/5 hover:bg-white/10"
+                    }`}
                   >
-                    Apply
-                  </Button>
+                    <div className="text-white font-semibold">Razorpay</div>
+                    <div className="text-white/70 text-xs mt-1">Cards, UPI, Wallets</div>
+                  </button>
+                  <button
+                    onClick={() => setSelectedGateway("cashfree")}
+                    className={`p-4 rounded-lg border-2 transition-all ${
+                      selectedGateway === "cashfree"
+                        ? "border-green-500 bg-green-500/20"
+                        : "border-white/20 bg-white/5 hover:bg-white/10"
+                    }`}
+                  >
+                    <div className="text-white font-semibold">Cashfree</div>
+                    <div className="text-white/70 text-xs mt-1">All Payment Methods</div>
+                  </button>
                 </div>
               </div>
 
               <div className="space-y-4 bg-white/5 p-6 rounded-lg">
-                <h3 className="text-white font-medium flex items-center gap-2">
-                  <User className="h-4 w-4" />
-                  Your Information
-                </h3>
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-center gap-2 text-white/70">
-                    <User className="h-4 w-4" />
-                    <span>{userProfile.name}</span>
+                <div className="space-y-4 bg-white/5 p-6 rounded-lg">
+                  <div className="flex justify-between items-center">
+                    <span className="text-white/70">Selected Plan</span>
+                    <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30">
+                      {planName}
+                    </Badge>
                   </div>
-                  <div className="flex items-center gap-2 text-white/70">
-                    <Mail className="h-4 w-4" />
-                    <span>{userProfile.email}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-white/70">Duration</span>
+                    <span className="text-white font-medium">{duration} days</span>
                   </div>
-                  <div className="flex items-center gap-2 text-white/70">
-                    <MapPin className="h-4 w-4" />
-                    <span>{userProfile.state}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-white/70">Base Amount</span>
+                    <span className="text-white font-medium">₹{basePrice}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-white/70">
-                    <BookOpen className="h-4 w-4" />
-                    <span>{userProfile.examPreparation}</span>
+                  {appliedCoupon && (
+                    <div className="flex justify-between items-center text-green-400">
+                      <span>Discount Applied</span>
+                      <span>- ₹{discount.toFixed(2)}</span>
+                    </div>
+                  )}
+                  <div className="border-t border-white/20 pt-4 flex justify-between items-center">
+                    <span className="text-white font-semibold text-lg">Total Amount</span>
+                    <span className="text-white font-bold text-2xl">₹{finalAmount.toFixed(2)}</span>
                   </div>
                 </div>
-              </div>
 
-              <div className="flex flex-col gap-3">
-                <Button
-                  onClick={handlePayment}
-                  className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
-                >
-                  Proceed to Payment
-                </Button>
-                <Button
-                  onClick={() => navigate("/subscription")}
-                  variant="outline"
-                  className="w-full border-white/20 text-white hover:bg-white/10"
-                >
-                  Back to Plans
-                </Button>
+                <div className="space-y-3 bg-white/5 p-6 rounded-lg">
+                  <h3 className="text-white font-medium flex items-center gap-2">
+                    <Tag className="h-4 w-4" />
+                    Have a Coupon Code?
+                  </h3>
+                  <div className="flex gap-2">
+                    <Input
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                      placeholder="Enter coupon code"
+                      className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                      disabled={!!appliedCoupon}
+                    />
+                    <Button
+                      onClick={handleApplyCoupon}
+                      disabled={!couponCode || !!appliedCoupon}
+                      variant="outline"
+                      className="border-white/20 text-white hover:bg-white/10"
+                    >
+                      Apply
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-4 bg-white/5 p-6 rounded-lg">
+                  <h3 className="text-white font-medium flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    Your Information
+                  </h3>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center gap-2 text-white/70">
+                      <User className="h-4 w-4" />
+                      <span>{userProfile.name}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-white/70">
+                      <Mail className="h-4 w-4" />
+                      <span>{userProfile.email}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-white/70">
+                      <MapPin className="h-4 w-4" />
+                      <span>{userProfile.state}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-white/70">
+                      <BookOpen className="h-4 w-4" />
+                      <span>{userProfile.examPreparation}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-3">
+                  <Button
+                    onClick={handlePayment}
+                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                  >
+                    Pay with {selectedGateway === "razorpay" ? "Razorpay" : "Cashfree"}
+                  </Button>
+                  <Button
+                    onClick={() => navigate("/subscription")}
+                    variant="outline"
+                    className="w-full border-white/20 text-white hover:bg-white/10"
+                  >
+                    Back to Plans
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
