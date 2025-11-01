@@ -153,9 +153,56 @@ export default function PaymentSummary() {
     }
   };
 
+  const handleCashfreePayment = async () => {
+    if (!user?._id) {
+      toast.error("User not found");
+      return;
+    }
+
+    // Check if Cashfree SDK is loaded
+    if (typeof window === 'undefined' || !(window as any).Cashfree) {
+      toast.error("Payment gateway not loaded. Please refresh the page.");
+      return;
+    }
+
+    try {
+      toast.loading("Initializing Cashfree payment...");
+      
+      const order = await createCashfreeOrder({
+        amount: finalAmount,
+        currency: "INR",
+        userId: user._id,
+        planName: planName || "",
+        duration: duration,
+      });
+
+      // Load Cashfree SDK
+      const cashfree = (window as any).Cashfree({
+        mode: import.meta.env.VITE_CASHFREE_ENVIRONMENT || "sandbox",
+      });
+
+      const checkoutOptions = {
+        paymentSessionId: order.paymentSessionId,
+        returnUrl: `${window.location.origin}/payment-status?gateway=cashfree&order_id=${order.orderId}`,
+      };
+
+      cashfree.checkout(checkoutOptions).then(() => {
+        console.log("Payment initiated");
+      });
+    } catch (error: any) {
+      toast.error(error.message || "Failed to initiate payment");
+    }
+  };
+
   const handleRazorpayPayment = async () => {
     if (!user?._id) {
       toast.error("User not found");
+      return;
+    }
+
+    // Check if Razorpay SDK is loaded
+    if (typeof window === 'undefined' || !(window as any).Razorpay) {
+      toast.error("Payment gateway not loaded. Please refresh the page.");
       return;
     }
 
@@ -210,41 +257,6 @@ export default function PaymentSummary() {
 
       const razorpay = new (window as any).Razorpay(options);
       razorpay.open();
-    } catch (error: any) {
-      toast.error(error.message || "Failed to initiate payment");
-    }
-  };
-
-  const handleCashfreePayment = async () => {
-    if (!user?._id) {
-      toast.error("User not found");
-      return;
-    }
-
-    try {
-      toast.loading("Initializing Cashfree payment...");
-      
-      const order = await createCashfreeOrder({
-        amount: finalAmount,
-        currency: "INR",
-        userId: user._id,
-        planName: planName || "",
-        duration: duration,
-      });
-
-      // Load Cashfree SDK
-      const cashfree = (window as any).Cashfree({
-        mode: import.meta.env.VITE_CASHFREE_ENVIRONMENT || "sandbox",
-      });
-
-      const checkoutOptions = {
-        paymentSessionId: order.paymentSessionId,
-        returnUrl: `${window.location.origin}/payment-status?gateway=cashfree&order_id=${order.orderId}`,
-      };
-
-      cashfree.checkout(checkoutOptions).then(() => {
-        console.log("Payment initiated");
-      });
     } catch (error: any) {
       toast.error(error.message || "Failed to initiate payment");
     }
