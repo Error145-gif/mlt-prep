@@ -159,25 +159,27 @@ export default function PaymentSummary() {
       return;
     }
 
-    // Check if Cashfree SDK is loaded with retry mechanism
-    if (typeof window === 'undefined' || !(window as any).Cashfree) {
-      toast.loading("Loading payment gateway...");
+    // Enhanced SDK loading check with retry mechanism for mobile
+    const waitForCashfree = async (): Promise<boolean> => {
+      if (typeof window === 'undefined') return false;
+      
+      // Check if already loaded
+      if ((window as any).Cashfree) return true;
       
       // Wait up to 5 seconds for SDK to load
-      let attempts = 0;
-      const maxAttempts = 10;
-      
-      while (attempts < maxAttempts && !(window as any).Cashfree) {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        attempts++;
+      for (let i = 0; i < 50; i++) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        if ((window as any).Cashfree) return true;
       }
       
-      if (!(window as any).Cashfree) {
-        toast.error("Payment gateway failed to load. Please refresh the page.");
-        return;
-      }
-      
-      toast.dismiss();
+      return false;
+    };
+
+    const isLoaded = await waitForCashfree();
+    
+    if (!isLoaded) {
+      toast.error("Payment gateway not loaded. Please check your connection and refresh the page.");
+      return;
     }
 
     try {
@@ -215,25 +217,27 @@ export default function PaymentSummary() {
       return;
     }
 
-    // Check if Razorpay SDK is loaded with retry mechanism
-    if (typeof window === 'undefined' || !(window as any).Razorpay) {
-      toast.loading("Loading payment gateway...");
+    // Enhanced SDK loading check with retry mechanism for mobile
+    const waitForRazorpay = async (): Promise<boolean> => {
+      if (typeof window === 'undefined') return false;
+      
+      // Check if already loaded
+      if ((window as any).Razorpay) return true;
       
       // Wait up to 5 seconds for SDK to load
-      let attempts = 0;
-      const maxAttempts = 10;
-      
-      while (attempts < maxAttempts && !(window as any).Razorpay) {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        attempts++;
+      for (let i = 0; i < 50; i++) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        if ((window as any).Razorpay) return true;
       }
       
-      if (!(window as any).Razorpay) {
-        toast.error("Payment gateway failed to load. Please refresh the page.");
-        return;
-      }
-      
-      toast.dismiss();
+      return false;
+    };
+
+    const isLoaded = await waitForRazorpay();
+    
+    if (!isLoaded) {
+      toast.error("Payment gateway not loaded. Please check your connection and refresh the page.");
+      return;
     }
 
     try {
