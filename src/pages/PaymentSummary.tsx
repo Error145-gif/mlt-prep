@@ -159,10 +159,25 @@ export default function PaymentSummary() {
       return;
     }
 
-    // Check if Cashfree SDK is loaded
+    // Check if Cashfree SDK is loaded with retry mechanism
     if (typeof window === 'undefined' || !(window as any).Cashfree) {
-      toast.error("Payment gateway not loaded. Please refresh the page.");
-      return;
+      toast.loading("Loading payment gateway...");
+      
+      // Wait up to 5 seconds for SDK to load
+      let attempts = 0;
+      const maxAttempts = 10;
+      
+      while (attempts < maxAttempts && !(window as any).Cashfree) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        attempts++;
+      }
+      
+      if (!(window as any).Cashfree) {
+        toast.error("Payment gateway failed to load. Please refresh the page.");
+        return;
+      }
+      
+      toast.dismiss();
     }
 
     try {
@@ -200,10 +215,25 @@ export default function PaymentSummary() {
       return;
     }
 
-    // Check if Razorpay SDK is loaded
+    // Check if Razorpay SDK is loaded with retry mechanism
     if (typeof window === 'undefined' || !(window as any).Razorpay) {
-      toast.error("Payment gateway not loaded. Please refresh the page.");
-      return;
+      toast.loading("Loading payment gateway...");
+      
+      // Wait up to 5 seconds for SDK to load
+      let attempts = 0;
+      const maxAttempts = 10;
+      
+      while (attempts < maxAttempts && !(window as any).Razorpay) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        attempts++;
+      }
+      
+      if (!(window as any).Razorpay) {
+        toast.error("Payment gateway failed to load. Please refresh the page.");
+        return;
+      }
+      
+      toast.dismiss();
     }
 
     try {
