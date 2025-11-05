@@ -267,7 +267,13 @@ export default function CouponManagement() {
                         <div className="flex items-center justify-between">
                           <span>Used:</span>
                           <span className="text-white font-medium">
-                            {coupon.usageCount} {coupon.usageLimit ? `/ ${coupon.usageLimit}` : ""}
+                            {coupon.usageCount || 0} {coupon.usageLimit ? `/ ${coupon.usageLimit}` : "times"}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span>Type:</span>
+                          <span className="text-white font-medium">
+                            {coupon.discountType === "percentage" ? "Percentage" : "Fixed Amount"}
                           </span>
                         </div>
                         {coupon.expiryDate && (

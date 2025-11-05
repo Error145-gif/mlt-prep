@@ -134,9 +134,20 @@ export default function PaymentSummary() {
 
   const calculateDiscount = () => {
     if (!appliedCoupon) return 0;
+    
+    console.log("Calculating discount:", { 
+      type: appliedCoupon.type, 
+      discount: appliedCoupon.discount, 
+      basePrice 
+    });
+    
     if (appliedCoupon.type === "percentage") {
-      return (basePrice * appliedCoupon.discount) / 100;
+      const discountAmount = (basePrice * appliedCoupon.discount) / 100;
+      console.log("Percentage discount calculated:", discountAmount);
+      return discountAmount;
     }
+    
+    console.log("Fixed discount:", appliedCoupon.discount);
     return appliedCoupon.discount;
   };
 
@@ -151,6 +162,11 @@ export default function PaymentSummary() {
         couponId: validateCoupon.couponId,
       });
       toast.success(validateCoupon.message);
+      console.log("Applied coupon:", { 
+        discount: validateCoupon.discount, 
+        type: validateCoupon.type,
+        couponId: validateCoupon.couponId 
+      });
     } else if (validateCoupon) {
       toast.error(validateCoupon.message);
     }
@@ -196,20 +212,40 @@ export default function PaymentSummary() {
         duration: duration,
       });
 
-      // Track coupon usage if applied
-      if (appliedCoupon && appliedCoupon.couponId) {
-        await trackCouponUsage({
-          couponId: appliedCoupon.couponId,
-          userId: user._id,
-          orderId: order.orderId,
-          discountAmount: discount,
-        });
-      }
-
       // Load Cashfree SDK
       const cashfree = (window as any).Cashfree({
         mode: import.meta.env.VITE_CASHFREE_ENVIRONMENT || "sandbox",
       });
+
+      // Track coupon usage immediately after order creation for Cashfree
+      if (appliedCoupon && appliedCoupon.couponId) {
+        try {
+          await trackCouponUsage({
+            couponId: appliedCoupon.couponId,
+            userId: user._id,
+            orderId: order.orderId,
+            discountAmount: discount,
+          });
+        } catch (error) {
+          console.error("Failed to track coupon usage:", error);
+        }
+      }
+
+      // Track coupon usage immediately after order creation for Cashfree
+      if (appliedCoupon && appliedCoupon.couponId) {
+        try {
+          await trackCouponUsage({
+            couponId: appliedCoupon.couponId,
+            userId: user._id,
+            orderId: order.orderId,
+            discountAmount: discount,
+          });
+          console.log("Coupon usage tracked for Cashfree order");
+        } catch (error) {
+          console.error("Failed to track coupon usage:", error);
+          // Don't block payment flow if tracking fails
+        }
+      }
 
       const checkoutOptions = {
         paymentSessionId: order.paymentSessionId,
@@ -290,14 +326,18 @@ export default function PaymentSummary() {
               duration: duration,
             });
             
-            // Track coupon usage if applied
+            // Track coupon usage after successful payment
             if (appliedCoupon && appliedCoupon.couponId) {
-              await trackCouponUsage({
-                couponId: appliedCoupon.couponId,
-                userId: user._id,
-                orderId: order.id,
-                discountAmount: discount,
-              });
+              try {
+                await trackCouponUsage({
+                  couponId: appliedCoupon.couponId,
+                  userId: user._id,
+                  orderId: order.id,
+                  discountAmount: discount,
+                });
+              } catch (error) {
+                console.error("Failed to track coupon usage:", error);
+              }
             }
             
             navigate("/payment-status?status=success");
