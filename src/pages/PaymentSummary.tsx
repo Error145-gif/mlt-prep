@@ -38,6 +38,9 @@ export default function PaymentSummary() {
   // Cashfree actions
   const createCashfreeOrder = useAction(api.cashfree.createOrder);
   const verifyCashfreePayment = useAction(api.cashfree.verifyPayment);
+  
+  // Coupon tracking
+  const trackCouponUsage = useMutation(api.coupons.trackCouponUsage);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -193,6 +196,16 @@ export default function PaymentSummary() {
         duration: duration,
       });
 
+      // Track coupon usage if applied
+      if (appliedCoupon && appliedCoupon.couponId) {
+        await trackCouponUsage({
+          couponId: appliedCoupon.couponId,
+          userId: user._id,
+          orderId: order.orderId,
+          discountAmount: discount,
+        });
+      }
+
       // Load Cashfree SDK
       const cashfree = (window as any).Cashfree({
         mode: import.meta.env.VITE_CASHFREE_ENVIRONMENT || "sandbox",
@@ -276,6 +289,17 @@ export default function PaymentSummary() {
               amount: finalAmount,
               duration: duration,
             });
+            
+            // Track coupon usage if applied
+            if (appliedCoupon && appliedCoupon.couponId) {
+              await trackCouponUsage({
+                couponId: appliedCoupon.couponId,
+                userId: user._id,
+                orderId: order.id,
+                discountAmount: discount,
+              });
+            }
+            
             navigate("/payment-status?status=success");
           } catch (error) {
             toast.error("Payment verification failed");
