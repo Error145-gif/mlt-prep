@@ -1,3 +1,5 @@
+{
+  "compilerOptions": {
     /* Linting */
     "strict": true,
     "noUnusedLocals": false,
@@ -6,4 +8,6 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
     "skipLibCheck": true,
-    "skipDefaultLibCheck": true,
+    "skipDefaultLibCheck": true
+  }
+}
