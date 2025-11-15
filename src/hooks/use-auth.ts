@@ -11,8 +11,6 @@ export function useAuth() {
 
   const [isLoading, setIsLoading] = useState(true);
 
-  // This effect updates the loading state once auth is loaded and user data is available
-  // It ensures we only show content when both authentication state and user data are ready
   useEffect(() => {
     if (!isAuthLoading && user !== undefined) {
       setIsLoading(false);

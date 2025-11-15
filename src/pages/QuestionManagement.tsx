@@ -24,12 +24,12 @@ export default function QuestionManagement() {
 
   const [activeTab, setActiveTab] = useState("all");
   const [showManualForm, setShowManualForm] = useState(false);
-  const [showBulkManualForm, setShowBulkManualForm] = useState(false);
-  const [showPYQManualForm, setShowPYQManualForm] = useState(false);
-  const [showAIBulkForm, setShowAIBulkForm] = useState(false);
-  const [showMockTestCreator, setShowMockTestCreator] = useState(false);
-  const [showAITestCreator, setShowAITestCreator] = useState(false);
-  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
+  // const [showBulkManualForm, setShowBulkManualForm] = useState(false);
+  // const [showPYQManualForm, setShowPYQManualForm] = useState(false);
+  // const [showAIBulkForm, setShowAIBulkForm] = useState(false);
+  // const [showMockTestCreator, setShowMockTestCreator] = useState(false);
+  // const [showAITestCreator, setShowAITestCreator] = useState(false);
+  // const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
   const [deleteSourceType, setDeleteSourceType] = useState<"manual" | "ai" | "pyq">("manual");
   const [isDeletingBulk, setIsDeletingBulk] = useState(false);
   const [pyqYear, setPyqYear] = useState<number>(new Date().getFullYear());
@@ -48,7 +48,7 @@ export default function QuestionManagement() {
   const [pyqBulkQuestions, setPyqBulkQuestions] = useState<string[]>(Array(100).fill(""));
   
   // State for Bulk Add & Create PYQ Test
-  const [showBulkPYQDialog, setShowBulkPYQDialog] = useState(false);
+  // const [showBulkPYQDialog, setShowBulkPYQDialog] = useState(false);
   const [bulkPYQText, setBulkPYQText] = useState("");
   const [bulkPYQExamName, setBulkPYQExamName] = useState("");
   const [bulkPYQYear, setBulkPYQYear] = useState("");
