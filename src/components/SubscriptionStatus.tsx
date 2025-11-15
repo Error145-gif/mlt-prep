@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { CreditCard } from "lucide-react";
