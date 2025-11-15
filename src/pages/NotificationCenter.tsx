@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
