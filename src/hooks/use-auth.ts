@@ -9,7 +9,7 @@ export function useAuth() {
   const user = useQuery(api.users.currentUser);
   const { signIn, signOut } = useAuthActions();
 
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // This effect updates the loading state once auth is loaded and user data is available
   // It ensures we only show content when both authentication state and user data are ready
