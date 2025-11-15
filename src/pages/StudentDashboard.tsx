@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { BookOpen, FileText, Clock, User, Target, Brain, BookMarked, BarChart, Zap, Sparkles, Award, Trophy, TrendingUp, TrendingDown, Flame, X } from "lucide-react";
 import { motion } from "framer-motion";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+ 
 import DashboardHeader from "@/components/DashboardHeader";
 import PerformanceScore from "@/components/PerformanceScore";
 import SubscriptionStatus from "@/components/SubscriptionStatus";
