@@ -42,6 +42,7 @@ import StudyMaterialsManagement from "./pages/StudyMaterialsManagement.tsx";
 import FreeLibrary from "./pages/FreeLibrary.tsx";
 import { useAuth } from "@/hooks/use-auth";
 import SectionsManagement from "./pages/SectionsManagement.tsx";
+import ImageQuestionManagement from "./pages/ImageQuestionManagement.tsx";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
@@ -253,6 +254,14 @@ createRoot(document.getElementById("root")!).render(
               element={
                 <AdminRoute>
                   <QuestionManagement />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/image-questions"
+              element={
+                <AdminRoute>
+                  <ImageQuestionManagement />
                 </AdminRoute>
               }
             />

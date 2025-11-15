@@ -116,14 +116,10 @@ export const deleteContent = mutation({
   },
 });
 
-// Generate file upload URL
+// Add mutation for generating upload URL
 export const generateUploadUrl = mutation({
   args: {},
   handler: async (ctx) => {
-    const user = await getCurrentUser(ctx);
-    if (!user || user.role !== "admin") {
-      throw new Error("Unauthorized");
-    }
     return await ctx.storage.generateUploadUrl();
   },
 });

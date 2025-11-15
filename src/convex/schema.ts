@@ -136,6 +136,8 @@ const schema = defineSchema(
       examYear: v.optional(v.string()),
       sectionId: v.optional(v.id("sections")),
       explanation: v.optional(v.string()),
+      imageUrl: v.optional(v.string()), // Add support for image-based questions
+      imageStorageId: v.optional(v.id("_storage")), // Store image in Convex storage
     })
       .index("by_source", ["source"])
       .index("by_status", ["status"])

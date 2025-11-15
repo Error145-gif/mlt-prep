@@ -216,6 +216,12 @@ export const generateUploadUrl = mutation({
     if (!userId) {
       throw new Error("Not authenticated");
     }
+
+    const user = await ctx.db.get(userId);
+    if (!user || user.role !== "admin") {
+      throw new Error("Unauthorized: Admin access required");
+    }
+
     return await ctx.storage.generateUploadUrl();
   },
 });

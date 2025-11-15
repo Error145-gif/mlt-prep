@@ -213,6 +213,52 @@ export const createQuestion = mutation({
   },
 });
 
+// Create image-based question
+export const createImageQuestion = mutation({
+  args: {
+    type: v.string(),
+    question: v.string(),
+    options: v.optional(v.array(v.string())),
+    correctAnswer: v.string(),
+    explanation: v.optional(v.string()),
+    difficulty: v.optional(v.string()),
+    source: v.string(), // "ai" or "manual"
+    subject: v.optional(v.string()),
+    topic: v.string(),
+    imageStorageId: v.id("_storage"),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user || user.role !== "admin") {
+      throw new Error("Unauthorized");
+    }
+
+    // Get image URL from storage
+    const imageUrl = await ctx.storage.getUrl(args.imageStorageId);
+    if (!imageUrl) {
+      throw new Error("Failed to get image URL");
+    }
+
+    return await ctx.db.insert("questions", {
+      question: args.question,
+      options: args.options || [],
+      correctAnswer: args.correctAnswer,
+      subject: args.subject || "General",
+      topic: args.topic,
+      difficulty: (args.difficulty || "medium") as "easy" | "medium" | "hard",
+      type: args.type as any,
+      status: "approved",
+      reviewedBy: user._id,
+      reviewedAt: Date.now(),
+      createdBy: user._id,
+      source: args.source as "manual" | "ai" | "pyq",
+      explanation: args.explanation,
+      imageUrl: imageUrl,
+      imageStorageId: args.imageStorageId,
+    });
+  },
+});
+
 // Batch create questions (for bulk manual entry)
 export const batchCreateQuestions = mutation({
   args: {
@@ -275,6 +321,71 @@ export const batchCreateQuestions = mutation({
     }
 
     console.log(`Backend: Successfully inserted all ${ids.length} questions`);
+    return ids;
+  },
+});
+
+// Batch create image-based questions
+export const batchCreateImageQuestions = mutation({
+  args: {
+    questions: v.array(
+      v.object({
+        type: v.string(),
+        question: v.string(),
+        options: v.optional(v.array(v.string())),
+        correctAnswer: v.string(),
+        explanation: v.optional(v.string()),
+        difficulty: v.optional(v.string()),
+        source: v.string(),
+        subject: v.optional(v.string()),
+        topic: v.string(),
+        imageStorageId: v.id("_storage"),
+      })
+    ),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user || user.role !== "admin") {
+      throw new Error("Unauthorized");
+    }
+
+    if (args.questions.length > 50) {
+      throw new Error("Cannot add more than 50 questions at once");
+    }
+
+    const ids = [];
+    for (let i = 0; i < args.questions.length; i++) {
+      const question = args.questions[i];
+      try {
+        const imageUrl = await ctx.storage.getUrl(question.imageStorageId);
+        if (!imageUrl) {
+          throw new Error(`Failed to get image URL for question ${i + 1}`);
+        }
+
+        const id = await ctx.db.insert("questions", {
+          question: question.question,
+          options: question.options || [],
+          correctAnswer: question.correctAnswer,
+          subject: question.subject || "General",
+          topic: question.topic,
+          difficulty: (question.difficulty || "medium") as "easy" | "medium" | "hard",
+          type: question.type as any,
+          status: "approved",
+          reviewedBy: user._id,
+          reviewedAt: Date.now(),
+          createdBy: user._id,
+          source: question.source as "manual" | "ai" | "pyq",
+          explanation: question.explanation,
+          imageUrl: imageUrl,
+          imageStorageId: question.imageStorageId,
+        });
+        ids.push(id);
+      } catch (error) {
+        console.error(`Failed to insert image question ${i + 1}:`, error);
+        throw new Error(`Failed to insert image question ${i + 1}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+    }
+
     return ids;
   },
 });
@@ -947,5 +1058,17 @@ export const autoCreateTestSets = mutation({
       setsCreated: numberOfSets,
       questionsProcessed,
     };
+  },
+});
+
+// Generate upload URL for question images
+export const generateUploadUrl = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const user = await getCurrentUser(ctx);
+    if (!user || user.role !== "admin") {
+      throw new Error("Unauthorized");
+    }
+    return await ctx.storage.generateUploadUrl();
   },
 });

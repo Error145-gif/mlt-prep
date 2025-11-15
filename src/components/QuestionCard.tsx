@@ -29,29 +29,36 @@ export function QuestionCard({
 }: QuestionCardProps) {
   return (
     <motion.div
-      key={questionNumber}
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      transition={{ duration: 0.4, ease: "easeInOut" }}
-      className="h-full"
-      style={{ userSelect: 'none', WebkitUserSelect: 'none', MozUserSelect: 'none', msUserSelect: 'none' }}
-      onContextMenu={(e) => e.preventDefault()}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="glass-card p-6 rounded-xl border border-white/20 backdrop-blur-xl bg-white/10"
+      style={{ userSelect: "none" }}
+      onCopy={handleCopy}
+      onCut={handleCut}
+      onContextMenu={handleContextMenu}
     >
-      <Card className="p-8 shadow-lg border-0 bg-white/80 backdrop-blur-sm h-full flex flex-col">
-        <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
-          <div className="flex items-center gap-4">
-            <span className="text-2xl font-bold text-gray-900">
-              Question {questionNumber}
-            </span>
-            <div className="flex items-center gap-3 text-sm">
-              <span className="px-3 py-1 bg-green-50 text-green-700 rounded-full font-medium shadow-sm">
-                +1 Mark
-              </span>
-              <span className="px-3 py-1 bg-red-50 text-red-700 rounded-full font-medium shadow-sm">
-                -0.33 Negative
-              </span>
-            </div>
+      <div className="space-y-4">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <p className="text-sm text-white/70 mb-2">
+              Question {currentIndex + 1} of {totalQuestions}
+            </p>
+            <p className="text-lg text-white font-medium select-none" style={{ userSelect: "none" }}>
+              {question.question}
+            </p>
+            
+            {/* Display question image if it exists */}
+            {question.imageUrl && (
+              <div className="mt-4">
+                <img
+                  src={question.imageUrl}
+                  alt="Question"
+                  className="max-w-full h-auto rounded-lg border-2 border-white/30 select-none"
+                  style={{ userSelect: "none", pointerEvents: "none" }}
+                  onContextMenu={(e) => e.preventDefault()}
+                />
+              </div>
+            )}
           </div>
         </div>
 
@@ -125,7 +132,7 @@ export function QuestionCard({
             </Button>
           </div>
         </div>
-      </Card>
+      </div>
     </motion.div>
   );
 }
