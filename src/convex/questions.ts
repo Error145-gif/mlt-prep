@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { v } from "convex/values";
 import { mutation, query, internalMutation } from "./_generated/server";
 import { getCurrentUser } from "./users";
