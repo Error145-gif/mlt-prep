@@ -37,7 +37,7 @@ export function QuestionPalette({
   };
 
   const content = (
-    <div className="h-full flex flex-col bg-white/95 backdrop-blur-sm">
+    <div className="h-full flex flex-col bg-white/95 backdrop-blur-sm select-none" style={{ userSelect: 'none', WebkitUserSelect: 'none' }}>
       <div className="md:hidden flex justify-between items-center p-4 border-b border-gray-200">
         <h3 className="font-semibold text-gray-900 text-lg">Question Palette</h3>
         <Button variant="ghost" size="sm" onClick={onClose}>

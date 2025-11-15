@@ -119,33 +119,21 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
-    letter-spacing: 0em;
   }
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-sans);
   }
   button:not([disabled]),
   [role="button"]:not([disabled]) {
     cursor: pointer;
   }
-  .font-sans {
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  }
-  .font-serif {
-    font-family: Georgia, Georgia, serif;
-  }
-  .font-mono {
-    font-family: Menlo, "Courier New", monospace;
-  }
-  
-  /* Progress Circle Animation */
-  @keyframes drawCircle {
-    from {
-      stroke-dashoffset: 553;
-    }
-    to {
-      stroke-dashoffset: 0;
-    }
-  }
+}
+
+/* Prevent text selection and copying during tests */
+.no-select {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }

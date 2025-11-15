@@ -128,6 +128,45 @@ export default function TestStart() {
     }
   }, [showInstructions, sessionId]);
 
+  // Prevent copy/paste and right-click during test
+  useEffect(() => {
+    if (!showInstructions && sessionId) {
+      const preventCopy = (e: ClipboardEvent) => {
+        e.preventDefault();
+        toast.error("Copying is disabled during the test");
+      };
+
+      const preventContextMenu = (e: MouseEvent) => {
+        e.preventDefault();
+        toast.warning("Right-click is disabled during the test");
+      };
+
+      const preventKeyboardShortcuts = (e: KeyboardEvent) => {
+        // Prevent Ctrl+C, Ctrl+X, Ctrl+A, Ctrl+P, F12, Ctrl+Shift+I
+        if (
+          (e.ctrlKey && (e.key === 'c' || e.key === 'x' || e.key === 'a' || e.key === 'p')) ||
+          e.key === 'F12' ||
+          (e.ctrlKey && e.shiftKey && e.key === 'I')
+        ) {
+          e.preventDefault();
+          toast.error("This action is disabled during the test");
+        }
+      };
+
+      document.addEventListener('copy', preventCopy);
+      document.addEventListener('cut', preventCopy);
+      document.addEventListener('contextmenu', preventContextMenu);
+      document.addEventListener('keydown', preventKeyboardShortcuts);
+
+      return () => {
+        document.removeEventListener('copy', preventCopy);
+        document.removeEventListener('cut', preventCopy);
+        document.removeEventListener('contextmenu', preventContextMenu);
+        document.removeEventListener('keydown', preventKeyboardShortcuts);
+      };
+    }
+  }, [showInstructions, sessionId]);
+
   // Handle tab visibility changes (pause timer when tab is hidden)
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -526,7 +565,7 @@ export default function TestStart() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col relative overflow-hidden">
+    <div className="min-h-screen flex flex-col relative overflow-hidden" style={{ userSelect: showInstructions ? 'auto' : 'none' }}>
       {/* Hide StudentNav during test */}
       {showInstructions && <StudentNav />}
       {/* Hamburger Menu Button - Mobile Only (hidden during test) */}
