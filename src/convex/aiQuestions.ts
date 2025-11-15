@@ -130,7 +130,7 @@ Make sure:
         for (const question of chunk) {
           try {
             // Call the internal mutation without createdBy - it will be set by the mutation itself
-            const id: Id<"questions"> | null = await ctx.runMutation(internal.questions.createQuestionInternalFromAction, {
+            const id = await ctx.runMutation(internal.questions.createQuestionInternalFromAction, {
               type: question.type,
               question: question.question,
               options: question.options,
