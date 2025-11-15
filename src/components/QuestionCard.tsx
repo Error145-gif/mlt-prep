@@ -3,8 +3,6 @@ import { Card } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { useEffect } from "react";
-import { toast } from "sonner";
 
 interface QuestionCardProps {
   questionNumber: number;
@@ -29,43 +27,6 @@ export function QuestionCard({
   onClearResponse,
   isLastQuestion,
 }: QuestionCardProps) {
-  // Prevent copy/paste and right-click
-  useEffect(() => {
-    const preventCopy = (e: ClipboardEvent) => {
-      e.preventDefault();
-      toast.error("Copying is disabled during tests");
-    };
-
-    const preventContextMenu = (e: MouseEvent) => {
-      e.preventDefault();
-      toast.error("Right-click is disabled during tests");
-    };
-
-    const preventKeyboardShortcuts = (e: KeyboardEvent) => {
-      // Prevent Ctrl+C, Ctrl+A, Ctrl+X, Ctrl+U, F12, Ctrl+Shift+I
-      if (
-        (e.ctrlKey && (e.key === 'c' || e.key === 'C' || e.key === 'a' || e.key === 'A' || e.key === 'x' || e.key === 'X' || e.key === 'u' || e.key === 'U')) ||
-        e.key === 'F12' ||
-        (e.ctrlKey && e.shiftKey && (e.key === 'i' || e.key === 'I' || e.key === 'j' || e.key === 'J'))
-      ) {
-        e.preventDefault();
-        toast.error("This action is disabled during tests");
-      }
-    };
-
-    document.addEventListener('copy', preventCopy);
-    document.addEventListener('cut', preventCopy);
-    document.addEventListener('contextmenu', preventContextMenu);
-    document.addEventListener('keydown', preventKeyboardShortcuts);
-
-    return () => {
-      document.removeEventListener('copy', preventCopy);
-      document.removeEventListener('cut', preventCopy);
-      document.removeEventListener('contextmenu', preventContextMenu);
-      document.removeEventListener('keydown', preventKeyboardShortcuts);
-    };
-  }, []);
-
   return (
     <motion.div
       key={questionNumber}
@@ -75,8 +36,9 @@ export function QuestionCard({
       transition={{ duration: 0.4, ease: "easeInOut" }}
       className="h-full"
       style={{ userSelect: 'none', WebkitUserSelect: 'none', MozUserSelect: 'none', msUserSelect: 'none' }}
+      onContextMenu={(e) => e.preventDefault()}
     >
-      <Card className="p-8 shadow-lg border-0 bg-white/80 backdrop-blur-sm h-full flex flex-col select-none">
+      <Card className="p-8 shadow-lg border-0 bg-white/80 backdrop-blur-sm h-full flex flex-col">
         <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
           <div className="flex items-center gap-4">
             <span className="text-2xl font-bold text-gray-900">
@@ -94,7 +56,7 @@ export function QuestionCard({
         </div>
 
         <div className="flex-1 mb-6">
-          <p className="text-lg leading-relaxed text-gray-800 mb-8 font-normal select-none">
+          <p className="text-lg leading-relaxed text-gray-800 mb-8 font-normal" style={{ userSelect: 'none' }}>
             {questionText}
           </p>
 
@@ -112,11 +74,12 @@ export function QuestionCard({
                     whileTap={{ scale: 0.98 }}
                   >
                     <div
-                      className={`flex items-center space-x-4 p-5 rounded-xl border-2 transition-all duration-200 cursor-pointer select-none ${
+                      className={`flex items-center space-x-4 p-5 rounded-xl border-2 transition-all duration-200 cursor-pointer ${
                         isSelected
                           ? "border-blue-500 bg-blue-50 shadow-md"
                           : "border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50/50 shadow-sm hover:shadow-md"
                       }`}
+                      style={{ userSelect: 'none' }}
                     >
                       <RadioGroupItem
                         value={option}
@@ -125,7 +88,8 @@ export function QuestionCard({
                       />
                       <Label
                         htmlFor={`option-${idx}`}
-                        className="cursor-pointer text-base text-gray-800 font-medium flex-1 leading-relaxed select-none"
+                        className="cursor-pointer text-base text-gray-800 font-medium flex-1 leading-relaxed"
+                        style={{ userSelect: 'none' }}
                       >
                         {option}
                       </Label>

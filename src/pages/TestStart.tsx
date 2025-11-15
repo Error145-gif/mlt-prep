@@ -61,6 +61,47 @@ export default function TestStart() {
   const startTest = useMutation(api.student.startTest);
   const submitTest = useMutation(api.student.submitTest);
 
+  // Prevent copying during test
+  useEffect(() => {
+    if (!showInstructions && sessionId) {
+      const preventCopy = (e: ClipboardEvent) => {
+        e.preventDefault();
+        toast.error("Copying is disabled during the test");
+        return false;
+      };
+
+      const preventContextMenu = (e: MouseEvent) => {
+        e.preventDefault();
+        return false;
+      };
+
+      const preventKeyboardShortcuts = (e: KeyboardEvent) => {
+        // Prevent Ctrl+C, Ctrl+A, Ctrl+X, Ctrl+U, F12, Ctrl+Shift+I
+        if (
+          (e.ctrlKey && (e.key === 'c' || e.key === 'C' || e.key === 'a' || e.key === 'A' || e.key === 'x' || e.key === 'X' || e.key === 'u' || e.key === 'U')) ||
+          e.key === 'F12' ||
+          (e.ctrlKey && e.shiftKey && (e.key === 'i' || e.key === 'I' || e.key === 'j' || e.key === 'J'))
+        ) {
+          e.preventDefault();
+          toast.error("This action is disabled during the test");
+          return false;
+        }
+      };
+
+      document.addEventListener('copy', preventCopy);
+      document.addEventListener('cut', preventCopy);
+      document.addEventListener('contextmenu', preventContextMenu);
+      document.addEventListener('keydown', preventKeyboardShortcuts);
+
+      return () => {
+        document.removeEventListener('copy', preventCopy);
+        document.removeEventListener('cut', preventCopy);
+        document.removeEventListener('contextmenu', preventContextMenu);
+        document.removeEventListener('keydown', preventKeyboardShortcuts);
+      };
+    }
+  }, [showInstructions, sessionId]);
+
   // Fetch questions for the test - with loading optimization
   const testQuestions = useQuery(api.student.getTestQuestions, {
     testType,
@@ -125,45 +166,6 @@ export default function TestStart() {
 
       window.addEventListener("beforeunload", handleBeforeUnload);
       return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-    }
-  }, [showInstructions, sessionId]);
-
-  // Prevent copy/paste and right-click during test
-  useEffect(() => {
-    if (!showInstructions && sessionId) {
-      const preventCopy = (e: ClipboardEvent) => {
-        e.preventDefault();
-        toast.error("Copying is disabled during the test");
-      };
-
-      const preventContextMenu = (e: MouseEvent) => {
-        e.preventDefault();
-        toast.warning("Right-click is disabled during the test");
-      };
-
-      const preventKeyboardShortcuts = (e: KeyboardEvent) => {
-        // Prevent Ctrl+C, Ctrl+X, Ctrl+A, Ctrl+P, F12, Ctrl+Shift+I
-        if (
-          (e.ctrlKey && (e.key === 'c' || e.key === 'x' || e.key === 'a' || e.key === 'p')) ||
-          e.key === 'F12' ||
-          (e.ctrlKey && e.shiftKey && e.key === 'I')
-        ) {
-          e.preventDefault();
-          toast.error("This action is disabled during the test");
-        }
-      };
-
-      document.addEventListener('copy', preventCopy);
-      document.addEventListener('cut', preventCopy);
-      document.addEventListener('contextmenu', preventContextMenu);
-      document.addEventListener('keydown', preventKeyboardShortcuts);
-
-      return () => {
-        document.removeEventListener('copy', preventCopy);
-        document.removeEventListener('cut', preventCopy);
-        document.removeEventListener('contextmenu', preventContextMenu);
-        document.removeEventListener('keydown', preventKeyboardShortcuts);
-      };
     }
   }, [showInstructions, sessionId]);
 
