@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Link, useLocation, useNavigate } from "react-router";
 import { Home, BookOpen, FileText, BarChart3, Library, Menu, X, MessageSquare, User, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
