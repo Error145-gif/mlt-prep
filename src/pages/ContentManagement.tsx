@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Navigate, useNavigate } from "react-router";
 import { useState } from "react";
-import { Loader2, Plus, Upload, FileText, Video, FileQuestion, Trash2, Edit, Menu, X } from "lucide-react";
+import { Loader2, Plus, Upload, FileText, Video, FileQuestion, Trash2, Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

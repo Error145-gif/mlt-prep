@@ -1,14 +1,12 @@
+import { useEffect } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
 import { useNavigate } from "react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { BookOpen, FileText, TrendingUp, Award, Clock, AlertCircle, CreditCard, User, Target, Brain, BookMarked, BarChart, Zap, Trophy, Flame, Sparkles, TrendingDown, X, Menu } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
+import { BookOpen, FileText, Award, Clock, User, Target, Brain, BookMarked, BarChart, Zap, Trophy, Flame, Sparkles, TrendingDown, TrendingUp, X } from "lucide-react";
+import { motion } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import DashboardHeader from "@/components/DashboardHeader";
 import PerformanceScore from "@/components/PerformanceScore";
@@ -17,7 +15,7 @@ import StudentNav from "@/components/StudentNav";
 import TestResultsHistory from "@/components/TestResultsHistory";
 
 export default function StudentDashboard() {
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
   const stats = useQuery(api.student.getStudentDashboardStats);
   const subscriptionAccess = useQuery(api.student.checkSubscriptionAccess);
@@ -95,23 +93,6 @@ export default function StudentDashboard() {
 
   const isProfileIncomplete = profileCompletion < 100;
 
-  // Format subscription expiry date
-  const formatExpiryDate = (timestamp: number) => {
-    return new Date(timestamp).toLocaleDateString("en-IN", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
-
-  // Calculate days remaining
-  const getDaysRemaining = (endDate: number) => {
-    const now = Date.now();
-    const diff = endDate - now;
-    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-    return days > 0 ? days : 0;
-  };
-
   // Format time
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -120,25 +101,6 @@ export default function StudentDashboard() {
       return `${hours}h ${minutes}m`;
     }
     return `${minutes}m`;
-  };
-
-  // Get performance score color
-  const getPerformanceColor = (score: number) => {
-    if (score >= 80) return "from-green-500 to-emerald-600";
-    if (score >= 50) return "from-yellow-500 to-orange-600";
-    return "from-red-500 to-pink-600";
-  };
-
-  const getPerformanceBadgeColor = (score: number) => {
-    if (score >= 80) return "bg-green-500/20 text-green-300 border-green-500/30";
-    if (score >= 50) return "bg-yellow-500/20 text-yellow-300 border-yellow-500/30";
-    return "bg-red-500/20 text-red-300 border-red-500/30";
-  };
-
-  const getPerformanceLabel = (score: number) => {
-    if (score >= 80) return "Excellent";
-    if (score >= 50) return "Moderate";
-    return "Needs Work";
   };
 
   return (

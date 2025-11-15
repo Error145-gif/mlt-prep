@@ -2,7 +2,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Navigate, useNavigate } from "react-router";
-import { Loader2, Users, Mail, Trash2, AlertCircle, Menu, X } from "lucide-react";
+import { Loader2, Users, Mail, Trash2, Menu, X } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,17 +20,13 @@ import {
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { useState } from "react";
-import { Id } from "@/convex/_generated/dataModel";
 
 export default function UserAnalytics() {
   const { isLoading, isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
   const users = useQuery(api.analytics.getAllRegisteredUsers);
-  const deleteUser = useMutation(api.userManagement.deleteUser);
   const resetAllUserData = useMutation(api.userDataReset.resetAllUserData);
   
-  const [selectedUser, setSelectedUser] = useState<any>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -45,19 +41,6 @@ export default function UserAnalytics() {
   if (!isAuthenticated || user?.role !== "admin") {
     return <Navigate to="/auth" />;
   }
-
-  const handleDeleteUser = async (userId: Id<"users">) => {
-    setIsDeleting(true);
-    try {
-      const result = await deleteUser({ userId });
-      toast.success(`User ${result.deletedEmail} has been deleted successfully`);
-      setSelectedUser(null);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to delete user");
-    } finally {
-      setIsDeleting(false);
-    }
-  };
 
   const handleResetAllUsers = async () => {
     setIsResetting(true);
@@ -313,7 +296,6 @@ export default function UserAnalytics() {
                         <Button
                           variant="destructive"
                           size="sm"
-                          onClick={() => setSelectedUser({ id: userData._id, email: userData.email })}
                           className="bg-red-500/80 hover:bg-red-600 text-white"
                         >
                           <Trash2 className="h-4 w-4" />

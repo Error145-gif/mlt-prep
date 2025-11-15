@@ -185,7 +185,7 @@ export const generateQuestionsFromAI = action({
     difficulty: v.optional(v.string()),
     topicId: v.optional(v.id("topics")),
   },
-  handler: async (ctx, args) => {
+  handler: async () => {
     throw new Error("AI question generation has been disabled. Please use manual question entry instead.");
   },
 });
@@ -194,7 +194,7 @@ export const generateQuestionsFromPDF = action({
   args: {
     fileId: v.id("_storage"),
   },
-  handler: async (ctx, args) => {
+  handler: async () => {
     throw new Error("AI question generation from PDF has been disabled. Please use manual question entry instead.");
   },
 });
@@ -203,7 +203,7 @@ export const extractPYQFromPDF = action({
   args: {
     fileId: v.id("_storage"),
   },
-  handler: async (ctx, args) => {
+  handler: async () => {
     throw new Error("PYQ extraction from PDF has been disabled. Please use manual PYQ entry instead.");
   },
 });

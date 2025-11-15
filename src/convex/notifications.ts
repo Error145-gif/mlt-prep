@@ -193,7 +193,7 @@ export const sendNotificationEmail = internalAction({
     title: v.string(),
     message: v.string(),
   },
-  handler: async (ctx, args) => {
+  handler: async (_ctx, args) => {
     // This would integrate with Resend API
     // For now, just log it
     console.log(`Sending notification email to ${args.email}:`, {

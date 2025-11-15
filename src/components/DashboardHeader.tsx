@@ -1,6 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { CreditCard, User } from "lucide-react";
+import { CreditCard } from "lucide-react";
 import { useNavigate } from "react-router";
 
 interface DashboardHeaderProps {

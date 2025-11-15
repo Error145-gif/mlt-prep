@@ -9,14 +9,12 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { MessageSquare, Star, TrendingUp, AlertCircle, CheckCircle, Loader2 } from "lucide-react";
+import { MessageSquare, Star, AlertCircle, CheckCircle, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Id } from "@/convex/_generated/dataModel";
 
 export default function AdminFeedback() {
   const { isLoading, isAuthenticated, user } = useAuth();

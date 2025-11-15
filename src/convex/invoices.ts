@@ -2,7 +2,6 @@
 
 import { v } from "convex/values";
 import { action } from "./_generated/server";
-import { internal } from "./_generated/api";
 import { Resend } from "resend";
 
 // Action to send invoice email
@@ -18,7 +17,7 @@ export const sendInvoiceEmail = action({
     transactionId: v.string(),
     issuedDate: v.number(),
   },
-  handler: async (ctx, args) => {
+  handler: async (_ctx, args) => {
     const resend = new Resend(process.env.RESEND_API_KEY);
 
     // Format date

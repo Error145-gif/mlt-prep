@@ -27,7 +27,7 @@ export default function Landing() {
     }
   }, []);
   const navigate = useNavigate();
-  const { isAuthenticated, user, isLoading } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const makeAdmin = useMutation(api.users.makeCurrentUserAdmin);
 
   const handleMakeAdmin = async () => {

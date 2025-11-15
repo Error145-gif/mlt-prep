@@ -8,20 +8,15 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { User, Lock, Menu, X, ExternalLink } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { AnimatePresence } from "framer-motion";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Lock } from "lucide-react";
 import StudentNav from "@/components/StudentNav";
 
 export default function PYQSets() {
-  const { isAuthenticated, isLoading, user } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
   const pyqSets = useQuery(api.student.getPYQSets);
-  const userProfile = useQuery(api.users.getUserProfile);
   const canAccessPYQ = useQuery(api.student.canAccessTestType, { testType: "pyq" });
   const [selectedSet, setSelectedSet] = useState<any>(null);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {

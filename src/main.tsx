@@ -17,8 +17,6 @@ import QuestionManagement from "./pages/QuestionManagement.tsx";
 import UserAnalytics from "./pages/UserAnalytics.tsx";
 import SubscriptionManagement from "./pages/SubscriptionManagement.tsx";
 import NotificationCenter from "./pages/NotificationCenter.tsx";
-import AdminSidebar from "./components/AdminSidebar.tsx";
-import StudentNav from "./components/StudentNav.tsx";
 import StudentDashboard from "./pages/StudentDashboard.tsx";
 import MockTests from "./pages/MockTests.tsx";
 import PYQSets from "./pages/PYQSets.tsx";

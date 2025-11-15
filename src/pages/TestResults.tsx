@@ -7,11 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Id } from "@/convex/_generated/dataModel";
-import { Clock, CheckCircle, XCircle, MinusCircle, Trophy, TrendingUp, Target } from "lucide-react";
+import { CheckCircle, XCircle, MinusCircle, Trophy, Target } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Menu, X } from "lucide-react";
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+
 export default function TestResults() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();

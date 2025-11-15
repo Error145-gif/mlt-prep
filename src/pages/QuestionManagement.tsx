@@ -16,7 +16,6 @@ import { Loader2, Plus, Pencil, Trash2, Search, Filter, Menu, X, Sparkles, Uploa
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { Id } from "@/convex/_generated/dataModel";
-import { AutoGenerateQuestionsDialog } from "@/components/AutoGenerateQuestionsDialog";
 
 export default function QuestionManagement() {
   const { isLoading, isAuthenticated, user } = useAuth();
@@ -38,13 +37,6 @@ export default function QuestionManagement() {
   const [showErrorQuestions, setShowErrorQuestions] = useState(false);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   
-  // Mock test creator state
-  const [mockTestName, setMockTestName] = useState("");
-  const [mockTestTopicId, setMockTestTopicId] = useState("");
-  const [mockTestNewTopicName, setMockTestNewTopicName] = useState("");
-  const [mockTestQuestions, setMockTestQuestions] = useState("");
-  const [creatingMockTest, setCreatingMockTest] = useState(false);
-  
   // AI test creator state
   const [aiTestQuestions, setAiTestQuestions] = useState("");
   const [creatingAITest, setCreatingAITest] = useState(false);
@@ -65,7 +57,7 @@ export default function QuestionManagement() {
   const [isDeletingQuestion, setIsDeletingQuestion] = useState<Id<"questions"> | null>(null);
 
   const questions = useQuery(api.questions.getQuestions, {});
-  const unassignedQuestions = useQuery(api.questions.getUnassignedQuestions);
+  const unassignedQuestions = questions?.filter((q) => !q.testSetId) || [];
   const topics = useQuery(api.topics.getAllTopics);
   const reviewQuestion = useMutation(api.questions.reviewQuestion);
   const createQuestion = useMutation(api.questions.createQuestion);
@@ -98,8 +90,6 @@ export default function QuestionManagement() {
 
   // Bulk manual entry state - 100 separate sections
   const [bulkQuestions, setBulkQuestions] = useState<string[]>(Array(100).fill(""));
-
-  const [savingQuestions, setSavingQuestions] = useState(false);
 
   if (isLoading) {
     return (

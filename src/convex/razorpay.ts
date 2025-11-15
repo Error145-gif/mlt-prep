@@ -16,7 +16,7 @@ export const createOrder = action({
       duration: v.number(),
     })),
   },
-  handler: async (ctx, args) => {
+  handler: async (_ctx, args) => {
     const keyId = process.env.RAZORPAY_KEY_ID;
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
 

@@ -1,21 +1,15 @@
 import { useAuth } from "@/hooks/use-auth";
 import { useNavigate } from "react-router";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Download, Eye, FileText, Lock, Menu, X } from "lucide-react";
+import { BookOpen, Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
-import { useQuery, useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { toast } from "sonner";
 import StudentNav from "@/components/StudentNav";
 
 export default function FreeLibrary() {
   const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
-  const studyMaterials = useQuery(api.studyMaterials.getAllStudyMaterials);
-  const incrementViews = useMutation(api.studyMaterials.incrementViews);
-  const subscriptionAccess = useQuery(api.student.checkSubscriptionAccess);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -23,37 +17,6 @@ export default function FreeLibrary() {
       navigate("/auth");
     }
   }, [isAuthenticated, isLoading, navigate]);
-
-  // Check if user has 4-month or yearly subscription
-  const hasLibraryAccess = subscriptionAccess?.subscription && 
-    subscriptionAccess.isPaid && 
-    (subscriptionAccess.subscription.planName === "4 Months Plan" || 
-     subscriptionAccess.subscription.planName === "Yearly Plan");
-
-  const handleDownload = async (materialId: any, fileUrl: string | null, title: string) => {
-    if (!hasLibraryAccess) {
-      toast.error("Library access is only available with 4-month or yearly subscription!");
-      setTimeout(() => navigate("/subscription"), 1500);
-      return;
-    }
-
-    if (!fileUrl) {
-      toast.error("File not available");
-      return;
-    }
-
-    try {
-      // Increment view count
-      await incrementViews({ materialId });
-
-      // Open file in new tab for download
-      window.open(fileUrl, "_blank");
-      toast.success("Opening file...");
-    } catch (error) {
-      console.error("Error downloading file:", error);
-      toast.error("Failed to open file");
-    }
-  };
 
   if (isLoading) {
     return (

@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Loader2, Plus, Trash2, Edit, Tag, TrendingUp } from "lucide-react";
+import { Loader2, Plus, Trash2, Tag } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { useState } from "react";

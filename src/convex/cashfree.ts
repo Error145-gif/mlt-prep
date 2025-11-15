@@ -2,7 +2,6 @@
 
 import { v } from "convex/values";
 import { action } from "./_generated/server";
-import { internal } from "./_generated/api";
 
 export const createOrder = action({
   args: {
@@ -12,7 +11,7 @@ export const createOrder = action({
     planName: v.string(),
     duration: v.number(),
   },
-  handler: async (ctx, args) => {
+  handler: async (_ctx, args) => {
     const clientId = process.env.CASHFREE_CLIENT_ID;
     const clientSecret = process.env.CASHFREE_CLIENT_SECRET;
     const environment = process.env.CASHFREE_ENVIRONMENT || "sandbox";
@@ -83,7 +82,7 @@ export const verifyPayment = action({
     amount: v.number(),
     duration: v.number(),
   },
-  handler: async (ctx, args) => {
+  handler: async (_ctx, args) => {
     const clientId = process.env.CASHFREE_CLIENT_ID;
     const clientSecret = process.env.CASHFREE_CLIENT_SECRET;
     const environment = process.env.CASHFREE_ENVIRONMENT || "sandbox";

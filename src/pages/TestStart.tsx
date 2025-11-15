@@ -200,14 +200,6 @@ export default function TestStart() {
     }
   }, [showInstructions, timeRemaining, isTabVisible, isPaused]);
 
-  // Format time as HH:MM:SS
-  const formatTime = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
-  };
-
   const handleStartTest = async () => {
     if (!acceptedInstructions) return;
     
@@ -304,21 +296,6 @@ export default function TestStart() {
     if (!visitedQuestions.has(index)) return "not-visited";
     if (!answer) return "not-answered";
     return answer.status;
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "answered":
-        return "bg-green-500 text-white";
-      case "marked":
-        return "bg-purple-500 text-white";
-      case "marked-answered":
-        return "bg-orange-500 text-white";
-      case "not-answered":
-        return "bg-red-500 text-white";
-      default:
-        return "bg-gray-200 text-gray-700";
-    }
   };
 
   const handleExitTest = () => {
