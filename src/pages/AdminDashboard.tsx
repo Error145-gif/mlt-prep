@@ -18,7 +18,7 @@ export default function AdminDashboard() {
 
   const stats = useQuery(
     api.analytics.getDashboardStats,
-    user?.role === "admin" ? {} : "skip"
+    user?.role === "admin" ? {} : undefined
   );
 
   if (isLoading) {
