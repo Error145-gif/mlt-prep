@@ -51,6 +51,7 @@
     }
   }
 }
+>>>>>>> REPLACE
 =======
 {
   "buildCommand": "npm run build",
@@ -69,7 +70,6 @@
     }
   }
 }
->>>>>>> REPLACE
 =======
 {
   "buildCommand": "npm run build",
