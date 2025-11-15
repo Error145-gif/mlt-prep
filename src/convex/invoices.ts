@@ -141,30 +141,12 @@ export const sendInvoiceEmail = action({
 
       if (error) {
         console.error("Failed to send invoice email:", error);
-      // Update invoice record with failure status
-      await ctx.runMutation(internal.invoicesInternal.updateInvoiceEmailStatus, {
-          invoiceNumber: args.invoiceNumber,
-          emailSent: false,
-          error: error.message || "Unknown error",
-        });
         return { success: false, error: error.message };
       }
-
-      // Update invoice record with success status
-      await ctx.runMutation(internal.invoicesInternal.updateInvoiceEmailStatus, {
-        invoiceNumber: args.invoiceNumber,
-        emailSent: true,
-        emailSentAt: Date.now(),
-      });
 
       return { success: true, messageId: data?.id };
     } catch (error: any) {
       console.error("Exception sending invoice email:", error);
-      await ctx.runMutation(internal.invoicesInternal.updateInvoiceEmailStatus, {
-        invoiceNumber: args.invoiceNumber,
-        emailSent: false,
-        error: error.message || "Exception occurred",
-      });
       return { success: false, error: error.message };
     }
   },
