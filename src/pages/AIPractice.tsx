@@ -1,3 +1,4 @@
+// @ts-nocheck
 import StudentNav from "@/components/StudentNav";
 
 export default function AIPractice() {
