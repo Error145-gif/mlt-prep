@@ -7,16 +7,18 @@ import { useEffect, useState } from "react";
 
 export function useAuth() {
   const { isLoading: isAuthLoading, isAuthenticated } = useConvexAuth();
-  const user = useQuery(api.users.currentUser) as any;
+  // Skip querying currentUser until we know the auth state to prevent runtime crashes
+  const user = useQuery(isAuthenticated ? api.users.currentUser : undefined) as any;
   const { signIn, signOut } = useAuthActions();
 
   const [isLoading, setIsLoading] = useState(true);
 
+  // Consider loading complete once auth state resolves (don't wait on `user`)
   useEffect(() => {
-    if (!isAuthLoading && user !== undefined) {
+    if (!isAuthLoading) {
       setIsLoading(false);
     }
-  }, [isAuthLoading, user]);
+  }, [isAuthLoading]);
 
   return {
     isLoading,
