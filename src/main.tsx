@@ -41,6 +41,7 @@ import FreeLibrary from "./pages/FreeLibrary.tsx";
 import { useAuth } from "@/hooks/use-auth";
 import SectionsManagement from "./pages/SectionsManagement.tsx";
 import ImageQuestionManagement from "./pages/ImageQuestionManagement.tsx";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 // Safe fallback Convex URL to avoid runtime crash when env missing
 const convexUrl = (import.meta as any).env?.VITE_CONVEX_URL ?? "https://harmless-tapir-303.convex.cloud";
@@ -86,247 +87,249 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <InstrumentationProvider>
       <ConvexAuthProvider client={convex}>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route path="/auth" element={<AuthPage />} />
-            <Route
-              path="/student"
-              element={
-                <ProtectedRoute>
-                  <StudentDashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <Navigate to="/student" replace />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin"
-              element={
-                <AdminRoute>
-                  <AdminDashboard />
-                </AdminRoute>
-              }
-            />
-            {/* Student Routes */}
-            <Route
-              path="/tests/mock"
-              element={
-                <ProtectedRoute>
-                  <MockTests />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/tests/pyq"
-              element={
-                <ProtectedRoute>
-                  <PYQSets />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/tests/ai"
-              element={
-                <ProtectedRoute>
-                  <AIQuestions />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/practice"
-              element={
-                <ProtectedRoute>
-                  <Practice />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/subscription"
-              element={
-                <ProtectedRoute>
-                  <SubscriptionPlans />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                <ProtectedRoute>
-                  <Profile />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/feedback"
-              element={
-                <ProtectedRoute>
-                  <Feedback />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/free-library"
-              element={
-                <ProtectedRoute>
-                  <FreeLibrary />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/contact-us"
-              element={<ContactUs />}
-            />
-            <Route
-              path="/shipping-policy"
-              element={<ShippingPolicy />}
-            />
-            <Route
-              path="/terms"
-              element={<TermsAndConditions />}
-            />
-            <Route
-              path="/privacy"
-              element={<PrivacyPolicy />}
-            />
-            <Route
-              path="/refund-policy"
-              element={<RefundPolicy />}
-            />
-            <Route
-              path="/payment-status"
-              element={
-                <ProtectedRoute>
-                  <PaymentStatus />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/payment-summary"
-              element={
-                <ProtectedRoute>
-                  <PaymentSummary />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/notifications"
-              element={
-                <ProtectedRoute>
-                  <NotificationCenter />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/test-start"
-              element={
-                <ProtectedRoute>
-                  <TestStart />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/test-results"
-              element={
-                <ProtectedRoute>
-                  <TestResults />
-                </ProtectedRoute>
-              }
-            />
+        <ErrorBoundary>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Landing />} />
+              <Route path="/auth" element={<AuthPage />} />
+              <Route
+                path="/student"
+                element={
+                  <ProtectedRoute>
+                    <StudentDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <Navigate to="/student" replace />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin"
+                element={
+                  <AdminRoute>
+                    <AdminDashboard />
+                  </AdminRoute>
+                }
+              />
+              {/* Student Routes */}
+              <Route
+                path="/tests/mock"
+                element={
+                  <ProtectedRoute>
+                    <MockTests />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/tests/pyq"
+                element={
+                  <ProtectedRoute>
+                    <PYQSets />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/tests/ai"
+                element={
+                  <ProtectedRoute>
+                    <AIQuestions />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/practice"
+                element={
+                  <ProtectedRoute>
+                    <Practice />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/subscription"
+                element={
+                  <ProtectedRoute>
+                    <SubscriptionPlans />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <Profile />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/feedback"
+                element={
+                  <ProtectedRoute>
+                    <Feedback />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/free-library"
+                element={
+                  <ProtectedRoute>
+                    <FreeLibrary />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/contact-us"
+                element={<ContactUs />}
+              />
+              <Route
+                path="/shipping-policy"
+                element={<ShippingPolicy />}
+              />
+              <Route
+                path="/terms"
+                element={<TermsAndConditions />}
+              />
+              <Route
+                path="/privacy"
+                element={<PrivacyPolicy />}
+              />
+              <Route
+                path="/refund-policy"
+                element={<RefundPolicy />}
+              />
+              <Route
+                path="/payment-status"
+                element={
+                  <ProtectedRoute>
+                    <PaymentStatus />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/payment-summary"
+                element={
+                  <ProtectedRoute>
+                    <PaymentSummary />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/notifications"
+                element={
+                  <ProtectedRoute>
+                    <NotificationCenter />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/test-start"
+                element={
+                  <ProtectedRoute>
+                    <TestStart />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/test-results"
+                element={
+                  <ProtectedRoute>
+                    <TestResults />
+                  </ProtectedRoute>
+                }
+              />
 
-            {/* Admin Routes */}
-            <Route
-              path="/admin/content"
-              element={
-                <AdminRoute>
-                  <ContentManagement />
-                </AdminRoute>
-              }
-            />
-            <Route
-              path="/admin/questions"
-              element={
-                <AdminRoute>
-                  <QuestionManagement />
-                </AdminRoute>
-              }
-            />
-            <Route
-              path="/admin/analytics"
-              element={
-                <AdminRoute>
-                  <UserAnalytics />
-                </AdminRoute>
-              }
-            />
-            <Route
-              path="/admin/subscriptions"
-              element={
-                <AdminRoute>
-                  <SubscriptionManagement />
-                </AdminRoute>
-              }
-            />
-            <Route
-              path="/admin/feedback"
-              element={
-                <AdminRoute>
-                  <AdminFeedback />
-                </AdminRoute>
-              }
-            />
-            <Route
-              path="/admin/notifications"
-              element={
-                <AdminRoute>
-                  <NotificationCenter />
-                </AdminRoute>
-              }
-            />
-            <Route
-              path="/admin/coupons"
-              element={
-                <AdminRoute>
-                  <CouponManagement />
-                </AdminRoute>
-              }
-            />
-            <Route
-              path="/admin/study-materials"
-              element={
-                <AdminRoute>
-                  <StudyMaterialsManagement />
-                </AdminRoute>
-              }
-            />
-            <Route
-              path="/admin/sections"
-              element={
-                <AdminRoute>
-                  <SectionsManagement />
-                </AdminRoute>
-              }
-            />
-            <Route
-              path="/admin/image-questions"
-              element={
-                <AdminRoute>
-                  <ImageQuestionManagement />
-                </AdminRoute>
-              }
-            />
+              {/* Admin Routes */}
+              <Route
+                path="/admin/content"
+                element={
+                  <AdminRoute>
+                    <ContentManagement />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/questions"
+                element={
+                  <AdminRoute>
+                    <QuestionManagement />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/analytics"
+                element={
+                  <AdminRoute>
+                    <UserAnalytics />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/subscriptions"
+                element={
+                  <AdminRoute>
+                    <SubscriptionManagement />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/feedback"
+                element={
+                  <AdminRoute>
+                    <AdminFeedback />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/notifications"
+                element={
+                  <AdminRoute>
+                    <NotificationCenter />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/coupons"
+                element={
+                  <AdminRoute>
+                    <CouponManagement />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/study-materials"
+                element={
+                  <AdminRoute>
+                    <StudyMaterialsManagement />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/sections"
+                element={
+                  <AdminRoute>
+                    <SectionsManagement />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/image-questions"
+                element={
+                  <AdminRoute>
+                    <ImageQuestionManagement />
+                  </AdminRoute>
+                }
+              />
 
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          <Toaster />
-          <VlyToolbar />
-        </BrowserRouter>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <Toaster />
+            <VlyToolbar />
+          </BrowserRouter>
+        </ErrorBoundary>
       </ConvexAuthProvider>
     </InstrumentationProvider>
   </StrictMode>
