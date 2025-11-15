@@ -1,22 +1,3 @@
-<<<<<<< SEARCH
-{
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "installCommand": "npm ci",
-  "framework": "vite",
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ],
-  "build": {
-    "env": {
-      "NODE_OPTIONS": "--max-old-space-size=4096"
-    }
-  }
-}
-=======
 {
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
@@ -36,6 +17,24 @@
 }
 =======
 >>>>>>> REPLACE
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "installCommand": "npm ci",
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
+  "build": {
+    "env": {
+      "NODE_OPTIONS": "--max-old-space-size=4096"
+    }
+  }
+}
+=======
 {
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
