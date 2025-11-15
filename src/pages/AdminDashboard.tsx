@@ -35,7 +35,7 @@ export default function AdminDashboard() {
 
   // If user is authenticated but not admin, redirect to dashboard
   if (user?.role !== "admin") {
-    return <Navigate to="/dashboard" />;
+    return <Navigate to="/student" />;
   }
 
   const statCards = [
