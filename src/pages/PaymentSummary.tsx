@@ -37,7 +37,6 @@ export default function PaymentSummary() {
   
   // Cashfree actions
   const createCashfreeOrder = useAction(api.cashfree.createOrder);
-  const verifyCashfreePayment = useAction(api.cashfree.verifyPayment);
   
   // Coupon tracking
   const trackCouponUsage = useMutation(api.coupons.trackCouponUsage);

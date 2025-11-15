@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useNavigate } from "react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BookOpen, FileText, Award, Clock, User, Target, Brain, BookMarked, BarChart, Zap, Trophy, Flame, Sparkles, TrendingDown, TrendingUp, X } from "lucide-react";
+import { BookOpen, FileText, Clock, User, Target, Brain, BookMarked, BarChart, Zap, Sparkles, Award, Trophy, TrendingUp, TrendingDown, Flame, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import DashboardHeader from "@/components/DashboardHeader";

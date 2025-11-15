@@ -35,7 +35,7 @@ export default function SubscriptionPlans() {
   const hasPaidSubscription = subscriptionAccess?.hasAccess && subscriptionAccess?.isPaid;
   const hasFreeTrial = subscriptionAccess?.reason === "free_trial" && hasAnySubscription;
 
-  const handleSubscribe = (planId: string, amount: number, planName: string, duration: number) => {
+  const handleSubscribe = (_planId: string, amount: number, planName: string, duration: number) => {
     if (hasPaidSubscription) {
       toast.error("You already have an active paid subscription! Check your dashboard for expiry date.");
       return;

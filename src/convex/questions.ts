@@ -932,7 +932,7 @@ export const autoCreateTestSets = mutation({
     examName: v.optional(v.string()),
     year: v.optional(v.number()),
   },
-  handler: async (ctx, _args) => {
+  handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
     if (!user || user.role !== "admin") {
       throw new Error("Unauthorized");
@@ -941,7 +941,7 @@ export const autoCreateTestSets = mutation({
     // Fetch all questions of the specified source that aren't assigned to a set
     const allQuestions = await ctx.db
       .query("questions")
-      .filter((q) => q.eq(q.field("source"), _args.source))
+      .filter((q) => q.eq(q.field("source"), args.source))
       .collect();
 
     // Filter questions without setNumber
@@ -953,9 +953,9 @@ export const autoCreateTestSets = mutation({
 
     // Determine set size based on source
     let setSize: number;
-    if (_args.source === "manual") {
+    if (args.source === "manual") {
       setSize = 100; // Mock tests
-    } else if (_args.source === "pyq") {
+    } else if (args.source === "pyq") {
       setSize = 20;
     } else {
       setSize = 25; // AI-based
