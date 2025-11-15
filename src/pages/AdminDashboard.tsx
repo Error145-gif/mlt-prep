@@ -4,12 +4,14 @@ import { api } from "@/convex/_generated/api";
 import { Navigate, useNavigate } from "react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, FileText, BookOpen, TrendingUp, Menu, X, Loader2, CreditCard, AlertCircle, Image as ImageIcon } from "lucide-react";
+import { Users, FileText, BookOpen, TrendingUp, Menu, X, Loader2, CreditCard, AlertCircle, Image as ImageIcon, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
+import { useAuthActions } from "@convex-dev/auth/react";
 
 export default function AdminDashboard() {
   const { isLoading, isAuthenticated, user } = useAuth();
+  const { signOut } = useAuthActions();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -191,6 +193,14 @@ export default function AdminDashboard() {
               <p className="text-white/70 mt-1">Manage your MLT Prep platform</p>
             </div>
           </div>
+          <Button
+            onClick={() => signOut()}
+            variant="outline"
+            className="bg-white/10 hover:bg-white/20 text-white border-white/30"
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            Sign Out
+          </Button>
         </div>
 
         {/* Mobile Navigation Menu */}

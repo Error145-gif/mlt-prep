@@ -2,13 +2,16 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router";
 import { useAuth } from "@/hooks/use-auth";
-import { BookOpen, Brain, Award, TrendingUp, Sparkles, ArrowRight } from "lucide-react";
+import { BookOpen, Brain, Award, TrendingUp, Sparkles, ArrowRight, LogOut } from "lucide-react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
 import { useEffect } from "react";
+import { useAuthActions } from "@convex-dev/auth/react";
 
 export default function Landing() {
+  const { signOut } = useAuthActions();
+  
   useEffect(() => {
     // Set meta tags for SEO
     document.title = "MLT Prep - AI-Powered Medical Lab Technology Learning";
@@ -179,6 +182,14 @@ export default function Landing() {
                   className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
                 >
                   Dashboard
+                </Button>
+                <Button
+                  onClick={() => signOut()}
+                  variant="outline"
+                  className="bg-white/10 hover:bg-white/20 text-white border-white/30"
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sign Out
                 </Button>
               </>
             ) : (
