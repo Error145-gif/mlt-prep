@@ -42,7 +42,9 @@ import { useAuth } from "@/hooks/use-auth";
 import SectionsManagement from "./pages/SectionsManagement.tsx";
 import ImageQuestionManagement from "./pages/ImageQuestionManagement.tsx";
 
-const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
+// Safe fallback Convex URL to avoid runtime crash when env missing
+const convexUrl = (import.meta as any).env?.VITE_CONVEX_URL ?? "https://harmless-tapir-303.convex.cloud";
+const convex = new ConvexReactClient(convexUrl);
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
