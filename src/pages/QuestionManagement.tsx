@@ -958,7 +958,8 @@ export default function QuestionManagement() {
     }
   };
 
-  const handleAutoGenerateAI = async () => {
+  // Removed unused function
+  const _handleAutoGenerateAI = async () => {
     if (isGeneratingAI) return;
     
     setIsGeneratingAI(true);

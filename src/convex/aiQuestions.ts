@@ -62,12 +62,12 @@ Make sure:
             role: 'user',
             content: prompt
           }
-        ] as const,
+        ],
         temperature: 0.2,
         max_tokens: 16000,
-      });
+      } as any);
 
-      const responseText = completion.choices[0]?.message?.content;
+      const responseText = (completion.choices[0] as any)?.message?.content;
       if (!responseText) {
         throw new Error("No response from Mistral API");
       }
