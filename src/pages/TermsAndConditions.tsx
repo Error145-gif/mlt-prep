@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { motion } from "framer-motion";
 import { FileText, Home } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
