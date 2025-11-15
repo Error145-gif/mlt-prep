@@ -258,14 +258,6 @@ createRoot(document.getElementById("root")!).render(
               }
             />
             <Route
-              path="/admin/image-questions"
-              element={
-                <AdminRoute>
-                  <ImageQuestionManagement />
-                </AdminRoute>
-              }
-            />
-            <Route
               path="/admin/analytics"
               element={
                 <AdminRoute>
@@ -318,6 +310,14 @@ createRoot(document.getElementById("root")!).render(
               element={
                 <AdminRoute>
                   <SectionsManagement />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/image-questions"
+              element={
+                <AdminRoute>
+                  <ImageQuestionManagement />
                 </AdminRoute>
               }
             />

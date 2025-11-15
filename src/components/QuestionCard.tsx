@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 interface QuestionCardProps {
   questionNumber: number;
@@ -14,6 +15,7 @@ interface QuestionCardProps {
   onMarkForReview: () => void;
   onClearResponse: () => void;
   isLastQuestion: boolean;
+  imageUrl?: string;
 }
 
 export function QuestionCard({
@@ -26,39 +28,50 @@ export function QuestionCard({
   onMarkForReview,
   onClearResponse,
   isLastQuestion,
+  imageUrl,
 }: QuestionCardProps) {
+  const handleCopy = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    toast.error("Copying is disabled during tests");
+  };
+
+  const handleCut = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    toast.error("Cutting is disabled during tests");
+  };
+
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    toast.error("Right-click is disabled during tests");
+  };
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="glass-card p-6 rounded-xl border border-white/20 backdrop-blur-xl bg-white/10"
-      style={{ userSelect: "none" }}
+      key={questionNumber}
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+      transition={{ duration: 0.4, ease: "easeInOut" }}
+      className="h-full"
+      style={{ userSelect: 'none', WebkitUserSelect: 'none', MozUserSelect: 'none', msUserSelect: 'none' }}
       onCopy={handleCopy}
       onCut={handleCut}
       onContextMenu={handleContextMenu}
     >
-      <div className="space-y-4">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <p className="text-sm text-white/70 mb-2">
-              Question {currentIndex + 1} of {totalQuestions}
-            </p>
-            <p className="text-lg text-white font-medium select-none" style={{ userSelect: "none" }}>
-              {question.question}
-            </p>
-            
-            {/* Display question image if it exists */}
-            {question.imageUrl && (
-              <div className="mt-4">
-                <img
-                  src={question.imageUrl}
-                  alt="Question"
-                  className="max-w-full h-auto rounded-lg border-2 border-white/30 select-none"
-                  style={{ userSelect: "none", pointerEvents: "none" }}
-                  onContextMenu={(e) => e.preventDefault()}
-                />
-              </div>
-            )}
+      <Card className="p-8 shadow-lg border-0 bg-white/80 backdrop-blur-sm h-full flex flex-col">
+        <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
+          <div className="flex items-center gap-4">
+            <span className="text-2xl font-bold text-gray-900">
+              Question {questionNumber}
+            </span>
+            <div className="flex items-center gap-3 text-sm">
+              <span className="px-3 py-1 bg-green-50 text-green-700 rounded-full font-medium shadow-sm">
+                +1 Mark
+              </span>
+              <span className="px-3 py-1 bg-red-50 text-red-700 rounded-full font-medium shadow-sm">
+                -0.33 Negative
+              </span>
+            </div>
           </div>
         </div>
 
@@ -66,6 +79,20 @@ export function QuestionCard({
           <p className="text-lg leading-relaxed text-gray-800 mb-8 font-normal" style={{ userSelect: 'none' }}>
             {questionText}
           </p>
+
+          {/* Display question image if it exists */}
+          {imageUrl && (
+            <div className="mb-6">
+              <img
+                src={imageUrl}
+                alt="Question"
+                className="max-w-full h-auto rounded-lg border-2 border-gray-200 shadow-sm"
+                style={{ userSelect: 'none', pointerEvents: 'none' }}
+                onContextMenu={(e) => e.preventDefault()}
+                draggable={false}
+              />
+            </div>
+          )}
 
           <RadioGroup value={selectedAnswer || ""} onValueChange={onAnswerChange}>
             <div className="space-y-4">
@@ -132,7 +159,7 @@ export function QuestionCard({
             </Button>
           </div>
         </div>
-      </div>
+      </Card>
     </motion.div>
   );
 }
