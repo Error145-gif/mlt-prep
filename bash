@@ -1,1 +1,1 @@
-git push origin main
+npx convex deploy --prod
