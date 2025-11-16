@@ -43,8 +43,11 @@ import SectionsManagement from "./pages/SectionsManagement.tsx";
 import ImageQuestionManagement from "./pages/ImageQuestionManagement.tsx";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
-// Safe fallback Convex URL to avoid runtime crash when env missing
-const convexUrl = (import.meta as any).env?.VITE_CONVEX_URL ?? "https://harmless-tapir-303.convex.cloud";
+// Get Convex URL from environment variable
+const convexUrl = (import.meta as any).env?.VITE_CONVEX_URL;
+if (!convexUrl) {
+  throw new Error("VITE_CONVEX_URL environment variable is not set. Please configure it in your deployment settings.");
+}
 const convex = new ConvexReactClient(convexUrl);
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
