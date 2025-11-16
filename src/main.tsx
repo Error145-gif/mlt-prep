@@ -43,11 +43,8 @@ import SectionsManagement from "./pages/SectionsManagement.tsx";
 import ImageQuestionManagement from "./pages/ImageQuestionManagement.tsx";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
-// Get Convex URL from environment variable
-const convexUrl = (import.meta as any).env?.VITE_CONVEX_URL;
-if (!convexUrl) {
-  throw new Error("VITE_CONVEX_URL environment variable is not set. Please configure it in your deployment settings.");
-}
+// Get Convex URL from environment variable with fallback
+const convexUrl = (import.meta as any).env?.VITE_CONVEX_URL ?? "https://successful-bandicoot-650.convex.cloud";
 const convex = new ConvexReactClient(convexUrl);
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
