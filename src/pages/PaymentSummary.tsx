@@ -237,10 +237,10 @@ export default function PaymentSummary() {
       }
       
       const cashfree = CashfreeSDK({
-        mode: order.environment || "sandbox",
+        mode: order.environment || "SANDBOX",
       });
       
-      console.log("Cashfree SDK initialized with mode:", order.environment || "sandbox");
+      console.log("Cashfree SDK initialized with mode:", order.environment || "SANDBOX");
       console.log("Cashfree SDK object:", cashfree);
 
       if (!cashfree || typeof cashfree.checkout !== 'function') {
