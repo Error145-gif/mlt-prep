@@ -1,2 +1,3 @@
-// This will make you admin
-window.location.href = '/admin';
+const cashfree = (window as any).Cashfree({
+  mode: order.environment || "PRODUCTION",
+});
