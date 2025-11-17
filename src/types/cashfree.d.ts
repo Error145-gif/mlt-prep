@@ -1,1 +1,7 @@
-// Cashfree type definitions removed - file deprecated
+declare global {
+  interface Window {
+    Cashfree: any;
+  }
+}
+
+export {};
