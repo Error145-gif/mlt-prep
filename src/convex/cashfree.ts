@@ -109,6 +109,7 @@ export const createOrder = action({
         orderId: orderData.order_id,
         paymentSessionId: orderData.payment_session_id,
         orderStatus: orderData.order_status,
+        environment: actualEnvironment,
       };
     } catch (error: any) {
       console.error("Cashfree order creation error:", error);
