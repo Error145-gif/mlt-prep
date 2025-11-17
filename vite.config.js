@@ -1,15 +1,13 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var vite_1 = require("@tailwindcss/vite");
-var plugin_react_1 = require("@vitejs/plugin-react");
-var path_1 = require("path");
-var vite_2 = require("vite");
+import tailwindcss from "@tailwindcss/vite";
+import react from "@vitejs/plugin-react";
+import path from "path";
+import { defineConfig } from "vite";
 // https://vite.dev/config/
-exports.default = (0, vite_2.defineConfig)({
-    plugins: [(0, plugin_react_1.default)(), (0, vite_1.default)()],
+export default defineConfig({
+    plugins: [react(), tailwindcss()],
     resolve: {
         alias: {
-            "@": path_1.default.resolve(__dirname, "./src"),
+            "@": path.resolve(__dirname, "./src"),
         },
     },
     server: {
