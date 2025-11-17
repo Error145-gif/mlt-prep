@@ -65,7 +65,7 @@ export default function Landing() {
   ];
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
+    <div className="min-h-screen relative overflow-x-hidden">
       {/* Lab Background Image - Lighter */}
       <div 
         className="fixed inset-0 z-0 opacity-20"
@@ -80,14 +80,14 @@ export default function Landing() {
 
       {/* Animated Background Gradients - Vibrant Purple/Blue Theme */}
       <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
-        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-400/30 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-500/30 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 w-[600px] h-[600px] bg-pink-400/25 rounded-full blur-3xl" />
-        <div className="absolute top-1/4 right-1/3 w-[400px] h-[400px] bg-cyan-400/25 rounded-full blur-3xl" />
+        <div className="absolute top-0 left-1/4 w-[300px] h-[300px] md:w-[500px] md:h-[500px] bg-blue-400/30 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 w-[300px] h-[300px] md:w-[500px] md:h-[500px] bg-purple-500/30 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 w-[400px] h-[400px] md:w-[600px] md:h-[600px] bg-pink-400/25 rounded-full blur-3xl" />
+        <div className="absolute top-1/4 right-1/3 w-[250px] h-[250px] md:w-[400px] md:h-[400px] bg-cyan-400/25 rounded-full blur-3xl" />
         
-        {/* Floating Medical Icons */}
+        {/* Floating Medical Icons - Hidden on mobile for performance */}
         <motion.div
-          className="absolute top-20 left-10 text-6xl opacity-20"
+          className="hidden md:block absolute top-20 left-10 text-6xl opacity-20"
           animate={{
             y: [0, -30, 0],
             rotate: [0, 10, -10, 0],
@@ -102,7 +102,7 @@ export default function Landing() {
         </motion.div>
         
         <motion.div
-          className="absolute top-40 right-20 text-5xl opacity-20"
+          className="hidden md:block absolute top-40 right-20 text-5xl opacity-20"
           animate={{
             y: [0, 25, 0],
             rotate: [0, -15, 15, 0],
@@ -118,7 +118,7 @@ export default function Landing() {
         </motion.div>
         
         <motion.div
-          className="absolute bottom-32 left-1/4 text-5xl opacity-20"
+          className="hidden md:block absolute bottom-32 left-1/4 text-5xl opacity-20"
           animate={{
             y: [0, -20, 0],
             x: [0, 15, 0],
@@ -134,7 +134,7 @@ export default function Landing() {
         </motion.div>
         
         <motion.div
-          className="absolute bottom-20 right-1/3 text-4xl opacity-20"
+          className="hidden md:block absolute bottom-20 right-1/3 text-4xl opacity-20"
           animate={{
             y: [0, 30, 0],
             rotate: [0, 20, -20, 0],
@@ -152,51 +152,51 @@ export default function Landing() {
 
       {/* Navigation */}
       <nav className="glass-card border-b border-white/20 backdrop-blur-xl bg-white/10 sticky top-0 z-50 shadow-lg">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate("/")}>
-            <img src="https://harmless-tapir-303.convex.cloud/api/storage/6068c740-5624-49d7-8c20-c6c805df135b" alt="MLT Logo" loading="eager" className="h-16 w-16 object-contain" onError={(e) => { e.currentTarget.src = "/logo_bg.png"; }} />
-            <span className="text-2xl font-bold text-white drop-shadow-lg">MLT Prep</span>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2 sm:gap-3 cursor-pointer" onClick={() => navigate("/")}>
+            <img src="https://harmless-tapir-303.convex.cloud/api/storage/6068c740-5624-49d7-8c20-c6c805df135b" alt="MLT Logo" loading="eager" className="h-12 w-12 sm:h-16 sm:w-16 object-contain" onError={(e) => { e.currentTarget.src = "/logo_bg.png"; }} />
+            <span className="text-lg sm:text-2xl font-bold text-white drop-shadow-lg">MLT Prep</span>
           </div>
           
           {/* Navigation */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             {isAuthenticated ? (
               <>
                 {user?.role === "admin" && (
                   <Button
                     onClick={() => navigate("/admin")}
-                    className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700"
+                    className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-xs sm:text-sm px-2 sm:px-4 py-1 sm:py-2"
                   >
-                    Admin Panel
+                    Admin
                   </Button>
                 )}
                 {user?.role !== "admin" && user?.email === "ak6722909@gmail.com" && (
                   <Button
                     onClick={handleMakeAdmin}
-                    className="bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700"
+                    className="bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-xs sm:text-sm px-2 sm:px-4 py-1 sm:py-2"
                   >
-                    Activate Admin Access
+                    Activate Admin
                   </Button>
                 )}
                 <Button
                   onClick={() => navigate("/student")}
-                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-xs sm:text-sm px-2 sm:px-4 py-1 sm:py-2"
                 >
                   Dashboard
                 </Button>
                 <Button
                   onClick={() => signOut()}
                   variant="outline"
-                  className="bg-white/10 hover:bg-white/20 text-white border-white/30"
+                  className="bg-white/10 hover:bg-white/20 text-white border-white/30 text-xs sm:text-sm px-2 sm:px-4 py-1 sm:py-2"
                 >
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Sign Out
+                  <LogOut className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Sign Out</span>
                 </Button>
               </>
             ) : (
               <Button
                 onClick={() => navigate("/auth")}
-                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-xs sm:text-sm px-3 sm:px-4 py-1 sm:py-2"
               >
                 Get Started
               </Button>
@@ -206,17 +206,17 @@ export default function Landing() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative z-10 max-w-7xl mx-auto px-6 py-20">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+      <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-20">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-center">
           {/* Left side - Text content */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
-            className="space-y-6 text-center lg:text-left"
+            className="space-y-4 sm:space-y-6 text-center lg:text-left"
           >
           <motion.div 
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card border border-white/30 backdrop-blur-xl bg-white/20 text-white mb-4 shadow-md"
+            className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full glass-card border border-white/30 backdrop-blur-xl bg-white/20 text-white mb-4 shadow-md text-xs sm:text-sm"
             animate={{
               boxShadow: [
                 "0 0 20px rgba(255, 255, 255, 0.3)",
@@ -234,12 +234,12 @@ export default function Landing() {
               animate={{ rotate: [0, 360] }}
               transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
             >
-              <Sparkles className="h-4 w-4" />
+              <Sparkles className="h-3 w-3 sm:h-4 sm:w-4" />
             </motion.div>
-            <span className="text-sm">AI-Powered Medical Lab Technology Learning</span>
+            <span>AI-Powered MLT Learning</span>
           </motion.div>
           
-          <h1 className="text-5xl md:text-7xl font-bold text-white tracking-tight drop-shadow-2xl">
+          <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold text-white tracking-tight drop-shadow-2xl">
             Master MLT with
             <br />
             <span className="bg-gradient-to-r from-yellow-300 via-pink-300 to-purple-300 bg-clip-text text-transparent">
@@ -247,11 +247,11 @@ export default function Landing() {
             </span>
           </h1>
           
-          <p className="text-xl text-white/90 max-w-2xl mx-auto drop-shadow-lg">
+          <p className="text-base sm:text-xl text-white/90 max-w-2xl mx-auto lg:mx-0 drop-shadow-lg">
             Comprehensive study materials, AI-generated practice questions, and personalized analytics to help you excel in Medical Lab Technology
           </p>
           
-            <div className="flex items-center justify-center lg:justify-start gap-4 pt-4">
+            <div className="flex items-center justify-center lg:justify-start gap-3 sm:gap-4 pt-4">
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -259,7 +259,7 @@ export default function Landing() {
                 <Button
                   onClick={() => navigate(isAuthenticated ? (user?.role === "admin" ? "/admin" : "/student") : "/auth")}
                   size="lg"
-                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-lg px-8 shadow-lg hover:shadow-2xl transition-shadow"
+                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-sm sm:text-lg px-6 sm:px-8 py-2 sm:py-3 shadow-lg hover:shadow-2xl transition-shadow"
                 >
                   {isAuthenticated ? (user?.role === "admin" ? "Admin Panel" : "Go to Dashboard") : "Start Learning"}
                   <motion.div
@@ -267,7 +267,7 @@ export default function Landing() {
                     transition={{ duration: 1.5, repeat: Infinity }}
                     className="inline-block ml-2"
                   >
-                    <ArrowRight className="h-5 w-5" />
+                    <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
                   </motion.div>
                 </Button>
               </motion.div>
@@ -297,7 +297,7 @@ export default function Landing() {
                 src="https://harmless-tapir-303.convex.cloud/api/storage/95eceda1-7789-4d29-bf58-640afb9f4499"
                 alt="MLT Mascot"
                 loading="lazy"
-                className="w-64 h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 drop-shadow-2xl"
+                className="w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 drop-shadow-2xl"
                 animate={{
                   scale: [1, 1.05, 1],
                 }}
@@ -313,19 +313,19 @@ export default function Landing() {
       </section>
 
       {/* Features Section */}
-      <section className="relative z-10 max-w-7xl mx-auto px-6 py-20">
+      <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-20">
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-          className="text-center mb-12"
+          className="text-center mb-8 sm:mb-12"
         >
-          <h2 className="text-4xl font-bold text-white drop-shadow-lg mb-4">Everything You Need to Succeed</h2>
-          <p className="text-white/90 text-lg drop-shadow-md">Powerful features designed for effective learning</p>
+          <h2 className="text-2xl sm:text-4xl font-bold text-white drop-shadow-lg mb-2 sm:mb-4">Everything You Need to Succeed</h2>
+          <p className="text-white/90 text-base sm:text-lg drop-shadow-md">Powerful features designed for effective learning</p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {features.map((feature, index) => (
             <motion.div
               key={feature.title}
@@ -338,10 +338,10 @@ export default function Landing() {
                 boxShadow: "0 20px 60px rgba(139, 92, 246, 0.4)",
                 transition: { duration: 0.3 }
               }}
-              className="glass-card border border-white/30 backdrop-blur-xl bg-white/20 p-6 rounded-2xl hover:bg-white/30 transition-all duration-300 shadow-xl"
+              className="glass-card border border-white/30 backdrop-blur-xl bg-white/20 p-4 sm:p-6 rounded-2xl hover:bg-white/30 transition-all duration-300 shadow-xl"
             >
               <motion.div 
-                className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 w-fit mb-4"
+                className="p-2 sm:p-3 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 w-fit mb-3 sm:mb-4"
                 animate={{
                   boxShadow: [
                     "0 0 20px rgba(139, 92, 246, 0.5)",
@@ -355,43 +355,43 @@ export default function Landing() {
                   ease: "easeInOut",
                 }}
               >
-                <feature.icon className="h-6 w-6 text-white" />
+                <feature.icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
               </motion.div>
-              <h3 className="text-xl font-semibold text-white mb-2">{feature.title}</h3>
-              <p className="text-white/70">{feature.description}</p>
+              <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">{feature.title}</h3>
+              <p className="text-white/70 text-sm sm:text-base">{feature.description}</p>
             </motion.div>
           ))}
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="relative z-10 max-w-7xl mx-auto px-6 py-20">
+      <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-20">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-          className="glass-card border border-white/20 backdrop-blur-xl bg-gradient-to-br from-blue-500/20 to-purple-600/20 p-12 rounded-3xl text-center"
+          className="glass-card border border-white/20 backdrop-blur-xl bg-gradient-to-br from-blue-500/20 to-purple-600/20 p-8 sm:p-12 rounded-3xl text-center"
         >
-          <h2 className="text-4xl font-bold text-white mb-4">Ready to Start Your Journey?</h2>
-          <p className="text-white/70 text-lg mb-8 max-w-2xl mx-auto">
+          <h2 className="text-2xl sm:text-4xl font-bold text-white mb-3 sm:mb-4">Ready to Start Your Journey?</h2>
+          <p className="text-white/70 text-base sm:text-lg mb-6 sm:mb-8 max-w-2xl mx-auto">
             Join thousands of students mastering Medical Lab Technology with our comprehensive platform
           </p>
           <Button
             onClick={() => navigate("/auth")}
             size="lg"
-            className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-lg px-8"
+            className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-base sm:text-lg px-6 sm:px-8 py-2 sm:py-3"
           >
             Get Started Free
-            <ArrowRight className="ml-2 h-5 w-5" />
+            <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
         </motion.div>
       </section>
 
       {/* Footer */}
-      <footer className="relative z-10 border-t border-white/20 backdrop-blur-xl bg-transparent py-8">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-6">
+      <footer className="relative z-10 border-t border-white/20 backdrop-blur-xl bg-transparent py-6 sm:py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 mb-6">
             <div>
               <h3 className="text-white font-semibold mb-3">MLT Prep</h3>
               <p className="text-white/60 text-sm">
@@ -415,7 +415,7 @@ export default function Landing() {
             </div>
           </div>
           <div className="text-center text-white/60 pt-6 border-t border-white/20">
-            <p>© 2024 MLT Prep. All rights reserved.</p>
+            <p className="text-sm">© 2024 MLT Prep. All rights reserved.</p>
           </div>
         </div>
       </footer>
