@@ -13,11 +13,7 @@ export const createOrder = action({
     planName: v.string(),
     duration: v.number(),
   },
-  handler: async (_ctx, args): Promise<{
-    orderId: string;
-    paymentSessionId: string;
-    orderStatus: string;
-  }> => {
+  handler: async (_ctx, args) => {
     const clientId = process.env.CASHFREE_CLIENT_ID;
     const clientSecret = process.env.CASHFREE_CLIENT_SECRET;
     const environment = process.env.CASHFREE_ENVIRONMENT || "sandbox";
