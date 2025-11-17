@@ -294,7 +294,9 @@ export default function PaymentSummary() {
 
       console.log("Cashfree order created:", order);
 
-      const cashfree = await (window as any).Cashfree({
+      const cashfree = (window as any).Cashfree;
+      
+      cashfree.init({
         mode: order.environment || "PRODUCTION",
       });
 
