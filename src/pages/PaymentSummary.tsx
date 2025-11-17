@@ -299,7 +299,8 @@ export default function PaymentSummary() {
         returnUrl: `${window.location.origin}/payment-status?gateway=cashfree&order_id=${order.orderId}`,
       };
 
-      const cashfreeMode = order.environment || "PRODUCTION";
+      // Cashfree SDK v3 expects lowercase mode: "production" or "sandbox"
+      const cashfreeMode = (order.environment || "PRODUCTION").toLowerCase();
       console.log("Opening Cashfree checkout with options:", checkoutOptions);
       console.log("Using Cashfree mode:", cashfreeMode);
 
