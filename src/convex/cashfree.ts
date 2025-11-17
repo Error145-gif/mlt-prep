@@ -12,7 +12,11 @@ export const createOrder = action({
     planName: v.string(),
     duration: v.number(),
   },
-  handler: async (_ctx, args) => {
+  handler: async (_ctx, args): Promise<{
+    orderId: string;
+    paymentSessionId: string;
+    orderStatus: string;
+  }> => {
     const clientId = process.env.CASHFREE_CLIENT_ID;
     const clientSecret = process.env.CASHFREE_CLIENT_SECRET;
     const environment = process.env.CASHFREE_ENVIRONMENT || "sandbox";
@@ -111,7 +115,7 @@ export const verifyPayment = action({
     amount: v.number(),
     duration: v.number(),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<{ success: boolean; status: string }> => {
     const clientId = process.env.CASHFREE_CLIENT_ID;
     const clientSecret = process.env.CASHFREE_CLIENT_SECRET;
     const environment = process.env.CASHFREE_ENVIRONMENT || "sandbox";
