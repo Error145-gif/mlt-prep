@@ -115,7 +115,7 @@ export const verifyPayment = action({
     amount: v.number(),
     duration: v.number(),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<any> => {
     const clientId = process.env.CASHFREE_CLIENT_ID;
     const clientSecret = process.env.CASHFREE_CLIENT_SECRET;
     const environment = process.env.CASHFREE_ENVIRONMENT || "sandbox";
@@ -163,9 +163,9 @@ export const verifyPayment = action({
         });
 
         console.log("Payment verified and subscription activated:", args.orderId);
-        return { success: true as boolean, status: "PAID" as string };
+        return { success: true, status: "PAID" };
       } else {
-        return { success: false as boolean, status: orderData.order_status as string };
+        return { success: false, status: orderData.order_status };
       }
     } catch (error: any) {
       console.error("Payment verification error:", error);
