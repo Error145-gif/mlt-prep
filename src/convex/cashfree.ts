@@ -97,6 +97,10 @@ export const createOrder = action({
         orderId: orderData.order_id,
         status: orderData.order_status,
         hasSessionId: !!orderData.payment_session_id,
+        sessionIdLength: orderData.payment_session_id?.length,
+        sessionIdType: typeof orderData.payment_session_id,
+        environment: actualEnvironment,
+        apiUrl,
         fullResponse: orderData
       });
       

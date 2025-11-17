@@ -224,6 +224,9 @@ export default function PaymentSummary() {
       console.log("Cashfree order created:", {
         orderId: order.orderId,
         hasSessionId: !!order.paymentSessionId,
+        sessionIdLength: order.paymentSessionId?.length,
+        sessionIdPreview: order.paymentSessionId?.substring(0, 20) + "...",
+        environment: order.environment,
       });
 
       // Load Cashfree SDK - use environment from backend
@@ -232,6 +235,7 @@ export default function PaymentSummary() {
       });
       
       console.log("Cashfree SDK initialized with mode:", order.environment || "sandbox");
+      console.log("Cashfree SDK object:", cashfree);
 
       if (!cashfree) {
         throw new Error("Cashfree SDK initialization failed");
