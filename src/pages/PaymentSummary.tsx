@@ -294,16 +294,18 @@ export default function PaymentSummary() {
 
       console.log("Cashfree order created:", order);
 
-      const cashfree = (window as any).Cashfree({
-        mode: order.environment || "PRODUCTION",
-      });
-
       const checkoutOptions = {
         paymentSessionId: order.paymentSessionId,
         returnUrl: `${window.location.origin}/payment-status?gateway=cashfree&order_id=${order.orderId}`,
       };
 
+      const cashfreeMode = order.environment || "PRODUCTION";
       console.log("Opening Cashfree checkout with options:", checkoutOptions);
+      console.log("Using Cashfree mode:", cashfreeMode);
+
+      const cashfree = (window as any).Cashfree({
+        mode: cashfreeMode,
+      });
 
       cashfree.checkout(checkoutOptions).then(async (result: any) => {
         console.log("Cashfree checkout result:", result);
