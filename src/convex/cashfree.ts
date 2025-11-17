@@ -16,7 +16,10 @@ export const createOrder = action({
     const clientId = process.env.CASHFREE_CLIENT_ID;
     const clientSecret = process.env.CASHFREE_CLIENT_SECRET;
     const environment = process.env.CASHFREE_ENVIRONMENT || "sandbox";
-
+    
+    // Force sandbox for test credentials
+    const actualEnvironment = clientId?.startsWith("TEST") ? "sandbox" : environment;
+    
     if (!clientId || !clientSecret) {
       console.error("Cashfree credentials missing:", { 
         hasClientId: !!clientId, 
@@ -42,7 +45,7 @@ export const createOrder = action({
         order_note: `${args.planName} - ${args.duration} days`,
       };
 
-      const apiUrl = environment === "production" 
+      const apiUrl = actualEnvironment === "production" 
         ? "https://api.cashfree.com/pg/orders"
         : "https://sandbox.cashfree.com/pg/orders";
 
@@ -112,14 +115,17 @@ export const verifyPayment = action({
     const clientId = process.env.CASHFREE_CLIENT_ID;
     const clientSecret = process.env.CASHFREE_CLIENT_SECRET;
     const environment = process.env.CASHFREE_ENVIRONMENT || "sandbox";
-
+    
+    // Force sandbox for test credentials
+    const actualEnvironment = clientId?.startsWith("TEST") ? "sandbox" : environment;
+    
     if (!clientId || !clientSecret) {
       console.error("Cashfree credentials missing");
       throw new Error("Payment verification configuration error");
     }
 
     try {
-      const apiUrl = environment === "production"
+      const apiUrl = actualEnvironment === "production"
         ? `https://api.cashfree.com/pg/orders/${args.orderId}`
         : `https://sandbox.cashfree.com/pg/orders/${args.orderId}`;
 

@@ -219,9 +219,9 @@ export default function PaymentSummary() {
         throw new Error("Failed to create Cashfree order. Please try again.");
       }
 
-      // Load Cashfree SDK - use production mode
+      // Load Cashfree SDK - use sandbox mode for test credentials
       const cashfree = (window as any).Cashfree({
-        mode: "production",
+        mode: "sandbox",
       });
 
       if (!cashfree) {
