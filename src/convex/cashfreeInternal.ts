@@ -2,14 +2,8 @@ import { v } from "convex/values";
 import { internalMutation } from "./_generated/server";
 
 export const createSubscription = internalMutation({
-  args: {
-    userId: v.string(),
-    planName: v.string(),
-    amount: v.number(),
-    duration: v.number(),
-    paymentId: v.string(),
-    orderId: v.string(),
-  },
+  // Fix: avoid deep type instantiation error during Vercel build
+  args: v.any(),
   handler: async (ctx, args) => {
     const userId = args.userId as any;
     
