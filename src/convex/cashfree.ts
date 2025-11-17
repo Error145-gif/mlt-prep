@@ -18,7 +18,7 @@ export const createOrder = action({
   handler: async (_ctx, args) => {
     const clientId = process.env.CASHFREE_CLIENT_ID;
     const clientSecret = process.env.CASHFREE_CLIENT_SECRET;
-    const environment = process.env.CASHFREE_ENVIRONMENT || "sandbox";
+    const environment = (process.env.CASHFREE_ENVIRONMENT || "sandbox").toLowerCase();
     
     // Force sandbox for test credentials
     const actualEnvironment = clientId?.startsWith("TEST") ? "sandbox" : environment;
@@ -109,11 +109,20 @@ export const createOrder = action({
         throw new Error("Cashfree did not return a payment session ID. Please check your API credentials and environment settings.");
       }
 
+      // Always return uppercase for SDK compatibility
+      const sdkEnvironment = actualEnvironment === "production" ? "PRODUCTION" : "SANDBOX";
+      
+      console.log("Returning order with environment:", {
+        actualEnvironment,
+        sdkEnvironment,
+        paymentSessionIdLength: orderData.payment_session_id?.length
+      });
+      
       return {
         orderId: orderData.order_id,
         paymentSessionId: orderData.payment_session_id,
         orderStatus: orderData.order_status,
-        environment: actualEnvironment === "production" ? "PRODUCTION" : "SANDBOX",
+        environment: sdkEnvironment,
       };
     } catch (error: any) {
       console.error("Cashfree order creation error:", error);
@@ -133,7 +142,7 @@ export const verifyPayment = action({
   handler: async (ctx, args) => {
     const clientId = process.env.CASHFREE_CLIENT_ID;
     const clientSecret = process.env.CASHFREE_CLIENT_SECRET;
-    const environment = process.env.CASHFREE_ENVIRONMENT || "sandbox";
+    const environment = (process.env.CASHFREE_ENVIRONMENT || "sandbox").toLowerCase();
     
     // Force sandbox for test credentials
     const actualEnvironment = clientId?.startsWith("TEST") ? "sandbox" : environment;
