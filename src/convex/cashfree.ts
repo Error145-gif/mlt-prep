@@ -160,8 +160,7 @@ export const verifyPayment = action({
           duration: args.duration,
           paymentId: orderData.cf_payment_id || args.orderId,
           orderId: args.orderId,
-        });
-
+        }as any);
         console.log("Payment verified and subscription activated:", args.orderId);
         return { success: true, status: "PAID" };
       } else {
