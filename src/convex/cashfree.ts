@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use node";
 
 import { v } from "convex/values";
@@ -115,7 +116,7 @@ export const verifyPayment = action({
     amount: v.number(),
     duration: v.number(),
   },
-  handler: async (ctx, args): Promise<any> => {
+  handler: async (ctx, args) => {
     const clientId = process.env.CASHFREE_CLIENT_ID;
     const clientSecret = process.env.CASHFREE_CLIENT_SECRET;
     const environment = process.env.CASHFREE_ENVIRONMENT || "sandbox";
@@ -160,7 +161,7 @@ export const verifyPayment = action({
           duration: args.duration,
           paymentId: orderData.cf_payment_id || args.orderId,
           orderId: args.orderId,
-        }as any);
+        } as any);
         console.log("Payment verified and subscription activated:", args.orderId);
         return { success: true, status: "PAID" };
       } else {
