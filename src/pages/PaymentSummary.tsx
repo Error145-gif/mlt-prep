@@ -226,10 +226,12 @@ export default function PaymentSummary() {
         hasSessionId: !!order.paymentSessionId,
       });
 
-      // Load Cashfree SDK - automatically detect environment
+      // Load Cashfree SDK - use environment from backend
       const cashfree = (window as any).Cashfree({
-        mode: "sandbox", // Change to "production" when using live credentials
+        mode: order.environment || "sandbox",
       });
+      
+      console.log("Cashfree SDK initialized with mode:", order.environment || "sandbox");
 
       if (!cashfree) {
         throw new Error("Cashfree SDK initialization failed");
