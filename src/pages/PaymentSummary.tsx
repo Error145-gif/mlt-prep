@@ -303,9 +303,7 @@ export default function PaymentSummary() {
       console.log("Opening Cashfree checkout with options:", checkoutOptions);
       console.log("Using Cashfree mode:", cashfreeMode);
 
-      const cashfree = (window as any).Cashfree({
-        mode: cashfreeMode,
-      });
+      const cashfree = (window as any).Cashfree({ mode: cashfreeMode });
 
       cashfree.checkout(checkoutOptions).then(async (result: any) => {
         console.log("Cashfree checkout result:", result);
