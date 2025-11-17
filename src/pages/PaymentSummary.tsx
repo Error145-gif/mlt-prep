@@ -18,7 +18,6 @@ export default function PaymentSummary() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [selectedGateway, setSelectedGateway] = useState<"razorpay" | "cashfree">("razorpay");
   const userProfile = useQuery(api.users.getUserProfile);
   
   const [couponCode, setCouponCode] = useState("");
@@ -32,12 +31,9 @@ export default function PaymentSummary() {
   const basePrice = parseFloat(searchParams.get("price") || "0");
   const duration = parseInt(searchParams.get("duration") || "0");
   
-  // Razorpay actions
+  // Razorpay actions only
   const createRazorpayOrder = useAction(api.razorpay.createOrder);
   const verifyRazorpayPayment = useAction(api.razorpay.verifyPayment);
-  
-  // Cashfree actions
-  const createCashfreeOrder = useAction(api.cashfree.createOrder);
   
   // Coupon tracking
   const trackCouponUsage = useMutation(api.coupons.trackCouponUsage);
@@ -135,19 +131,11 @@ export default function PaymentSummary() {
   const calculateDiscount = () => {
     if (!appliedCoupon) return 0;
     
-    console.log("Calculating discount:", { 
-      type: appliedCoupon.type, 
-      discount: appliedCoupon.discount, 
-      basePrice 
-    });
-    
     if (appliedCoupon.type === "percentage") {
       const discountAmount = (basePrice * appliedCoupon.discount) / 100;
-      console.log("Percentage discount calculated:", discountAmount);
       return discountAmount;
     }
     
-    console.log("Fixed discount:", appliedCoupon.discount);
     return appliedCoupon.discount;
   };
 
@@ -162,132 +150,8 @@ export default function PaymentSummary() {
         couponId: validateCoupon.couponId,
       });
       toast.success(validateCoupon.message);
-      console.log("Applied coupon:", { 
-        discount: validateCoupon.discount, 
-        type: validateCoupon.type,
-        couponId: validateCoupon.couponId 
-      });
     } else if (validateCoupon) {
       toast.error(validateCoupon.message);
-    }
-  };
-
-  const handleCashfreePayment = async () => {
-    if (!user?._id) {
-      toast.error("User not found");
-      return;
-    }
-
-    // Enhanced SDK loading check with retry mechanism for mobile
-    const waitForCashfree = async (): Promise<boolean> => {
-      if (typeof window === 'undefined') return false;
-      
-      // Check if already loaded
-      if ((window as any).Cashfree) return true;
-      
-      // Wait up to 10 seconds for SDK to load
-      for (let i = 0; i < 100; i++) {
-        await new Promise(resolve => setTimeout(resolve, 100));
-        if ((window as any).Cashfree) return true;
-      }
-      
-      return false;
-    };
-
-    const isLoaded = await waitForCashfree();
-    
-    if (!isLoaded) {
-      toast.error("Cashfree payment gateway failed to load. Please refresh the page and try again.");
-      console.error("Cashfree SDK not loaded");
-      return;
-    }
-
-    try {
-      const loadingToast = toast.loading("Initializing Cashfree payment...");
-      
-      const order = await createCashfreeOrder({
-        amount: finalAmount,
-        currency: "INR",
-        userId: user._id,
-        planName: planName || "",
-        duration: duration,
-        customerEmail: userProfile?.email || user?.email || "",
-        customerPhone: userProfile?.phone || "9999999999",
-      });
-
-      toast.dismiss(loadingToast);
-      
-      if (!order || !order.paymentSessionId) {
-        throw new Error("Failed to create Cashfree order. Please try again.");
-      }
-
-      console.log("Cashfree order created:", {
-        orderId: order.orderId,
-        hasSessionId: !!order.paymentSessionId,
-        sessionIdLength: order.paymentSessionId?.length,
-        sessionIdPreview: order.paymentSessionId?.substring(0, 20) + "...",
-        environment: order.environment,
-      });
-
-      // Load Cashfree SDK - use environment from backend
-      const CashfreeSDK = (window as any).Cashfree;
-      
-      if (!CashfreeSDK) {
-        throw new Error("Cashfree SDK not loaded. Please refresh the page and try again.");
-      }
-      
-      const cashfree = CashfreeSDK({
-        mode: order.environment || "SANDBOX",
-      });
-      
-      console.log("Cashfree SDK initialized with mode:", order.environment || "SANDBOX");
-      console.log("Cashfree SDK object:", cashfree);
-
-      if (!cashfree || typeof cashfree.checkout !== 'function') {
-        throw new Error("Cashfree SDK initialization failed - checkout method not available");
-      }
-
-      // Track coupon usage immediately after order creation for Cashfree
-      if (appliedCoupon && appliedCoupon.couponId) {
-        try {
-          await trackCouponUsage({
-            couponId: appliedCoupon.couponId,
-            userId: user._id,
-            orderId: order.orderId,
-            discountAmount: discount,
-          });
-          console.log("Coupon usage tracked for Cashfree order");
-        } catch (error) {
-          console.error("Failed to track coupon usage:", error);
-          // Don't block payment flow if tracking fails
-        }
-      }
-
-      const checkoutOptions = {
-        paymentSessionId: order.paymentSessionId,
-        returnUrl: `${window.location.origin}/payment-status?gateway=cashfree&order_id=${order.orderId}`,
-      };
-
-      console.log("Opening Cashfree checkout with options:", checkoutOptions);
-
-      cashfree.checkout(checkoutOptions).then(() => {
-        console.log("Cashfree payment initiated successfully");
-        toast.success("Redirecting to payment gateway...");
-      }).catch((err: any) => {
-        console.error("Cashfree checkout error:", err);
-        toast.error("Failed to open payment gateway. Please try again.");
-      });
-    } catch (error: any) {
-      console.error("Cashfree payment error:", error);
-      toast.dismiss();
-      
-      if (error.message?.includes("configuration") || error.message?.includes("credentials")) {
-        toast.error("Payment gateway not configured. Please contact support.");
-      } else if (error.message?.includes("network")) {
-        toast.error("Network error. Please check your connection and try again.");
-      } else {
-        toast.error(error.message || "Failed to initiate Cashfree payment. Please try again.");
-      }
     }
   };
 
@@ -391,14 +255,6 @@ export default function PaymentSummary() {
     }
   };
 
-  const handlePayment = () => {
-    if (selectedGateway === "razorpay") {
-      handleRazorpayPayment();
-    } else {
-      handleCashfreePayment();
-    }
-  };
-
   return (
     <div className="min-h-screen p-6 lg:p-8 relative overflow-hidden">
       {/* Hamburger Menu Button - Mobile Only */}
@@ -497,37 +353,6 @@ export default function PaymentSummary() {
               <CardTitle className="text-white text-2xl">Payment Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Payment Gateway Selection */}
-              <div className="space-y-3 bg-white/5 p-6 rounded-lg">
-                <h3 className="text-white font-medium flex items-center gap-2">
-                  Select Payment Gateway
-                </h3>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    onClick={() => setSelectedGateway("razorpay")}
-                    className={`p-4 rounded-lg border-2 transition-all ${
-                      selectedGateway === "razorpay"
-                        ? "border-blue-500 bg-blue-500/20"
-                        : "border-white/20 bg-white/5 hover:bg-white/10"
-                    }`}
-                  >
-                    <div className="text-white font-semibold">Razorpay</div>
-                    <div className="text-white/70 text-xs mt-1">Cards, UPI, Wallets</div>
-                  </button>
-                  <button
-                    onClick={() => setSelectedGateway("cashfree")}
-                    className={`p-4 rounded-lg border-2 transition-all ${
-                      selectedGateway === "cashfree"
-                        ? "border-green-500 bg-green-500/20"
-                        : "border-white/20 bg-white/5 hover:bg-white/10"
-                    }`}
-                  >
-                    <div className="text-white font-semibold">Cashfree</div>
-                    <div className="text-white/70 text-xs mt-1">All Payment Methods</div>
-                  </button>
-                </div>
-              </div>
-
               <div className="space-y-4 bg-white/5 p-6 rounded-lg">
                 <div className="space-y-4 bg-white/5 p-6 rounded-lg">
                   <div className="flex justify-between items-center">
@@ -607,10 +432,10 @@ export default function PaymentSummary() {
 
                 <div className="flex flex-col gap-3">
                   <Button
-                    onClick={handlePayment}
+                    onClick={handleRazorpayPayment}
                     className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
                   >
-                    Pay with {selectedGateway === "razorpay" ? "Razorpay" : "Cashfree"}
+                    Pay with Razorpay
                   </Button>
                   <Button
                     onClick={() => navigate("/subscription")}

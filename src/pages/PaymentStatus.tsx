@@ -1,68 +1,26 @@
 // @ts-nocheck
 import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router";
-import { useAction } from "convex/react";
-import { api } from "@/convex/_generated/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { toast } from "sonner";
 
 export default function PaymentStatus() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isVerifying, setIsVerifying] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<"success" | "failed" | "verifying">("verifying");
   
-  const verifyCashfreePayment = useAction(api.cashfree.verifyPayment);
-  
-  const gateway = searchParams.get("gateway");
-  const orderId = searchParams.get("order_id");
   const status = searchParams.get("status");
 
   useEffect(() => {
-    const verifyPayment = async () => {
-      // Handle Razorpay redirect (simple status check)
-      if (status && !gateway) {
-        setPaymentStatus(status === "success" ? "success" : "failed");
-        return;
-      }
-
-      // Handle Cashfree redirect
-      if (gateway === "cashfree" && orderId) {
-        setIsVerifying(true);
-        try {
-          // Verify payment with Cashfree
-          const result = await verifyCashfreePayment({
-            orderId: orderId,
-            userId: "", // Will be fetched from context in backend
-            planName: "", // Will be fetched from order in backend
-            amount: 0, // Will be fetched from order in backend
-            duration: 0, // Will be fetched from order in backend
-          });
-
-          if (result.success && result.status === "PAID") {
-            setPaymentStatus("success");
-            toast.success("Payment successful! Your subscription is now active.");
-          } else {
-            setPaymentStatus("failed");
-            toast.error("Payment verification failed. Please contact support.");
-          }
-        } catch (error: any) {
-          console.error("Payment verification error:", error);
-          setPaymentStatus("failed");
-          toast.error(error.message || "Payment verification failed");
-        } finally {
-          setIsVerifying(false);
-        }
-      }
-    };
-
-    verifyPayment();
-  }, [gateway, orderId, status, verifyCashfreePayment]);
+    // Handle Razorpay redirect (simple status check)
+    if (status) {
+      setPaymentStatus(status === "success" ? "success" : "failed");
+    }
+  }, [status]);
 
   useEffect(() => {
     if (paymentStatus !== "verifying") {
@@ -164,12 +122,12 @@ export default function PaymentStatus() {
         <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
           <CardHeader>
             <CardTitle className="text-white text-center text-2xl">
-              {isVerifying ? "Verifying Payment..." : isSuccess ? "Payment Successful!" : "Payment Failed"}
+              {paymentStatus === "verifying" ? "Verifying Payment..." : isSuccess ? "Payment Successful!" : "Payment Failed"}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="flex justify-center">
-              {isVerifying ? (
+              {paymentStatus === "verifying" ? (
                 <Loader2 className="h-20 w-20 text-blue-400 animate-spin" />
               ) : isSuccess ? (
                 <CheckCircle className="h-20 w-20 text-green-400" />
@@ -179,7 +137,7 @@ export default function PaymentStatus() {
             </div>
 
             <div className="text-center space-y-2">
-              {isVerifying ? (
+              {paymentStatus === "verifying" ? (
                 <>
                   <p className="text-white/90">Please wait while we verify your payment...</p>
                   <p className="text-white/70 text-sm">This may take a few moments</p>
@@ -197,7 +155,7 @@ export default function PaymentStatus() {
               )}
             </div>
 
-            {!isVerifying && (
+            {paymentStatus !== "verifying" && (
               <div className="flex flex-col gap-3">
                 <Button
                   onClick={() => navigate("/student")}
