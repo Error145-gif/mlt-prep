@@ -230,15 +230,21 @@ export default function PaymentSummary() {
       });
 
       // Load Cashfree SDK - use environment from backend
-      const cashfree = (window as any).Cashfree({
+      const CashfreeSDK = (window as any).Cashfree;
+      
+      if (!CashfreeSDK) {
+        throw new Error("Cashfree SDK not loaded. Please refresh the page and try again.");
+      }
+      
+      const cashfree = CashfreeSDK({
         mode: order.environment || "sandbox",
       });
       
       console.log("Cashfree SDK initialized with mode:", order.environment || "sandbox");
       console.log("Cashfree SDK object:", cashfree);
 
-      if (!cashfree) {
-        throw new Error("Cashfree SDK initialization failed");
+      if (!cashfree || typeof cashfree.checkout !== 'function') {
+        throw new Error("Cashfree SDK initialization failed - checkout method not available");
       }
 
       // Track coupon usage immediately after order creation for Cashfree
