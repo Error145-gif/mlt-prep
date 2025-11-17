@@ -31,9 +31,11 @@ export default function PaymentSummary() {
   const basePrice = parseFloat(searchParams.get("price") || "0");
   const duration = parseInt(searchParams.get("duration") || "0");
   
-  // Razorpay actions only
+  // Payment gateway actions
   const createRazorpayOrder = useAction(api.razorpay.createOrder);
   const verifyRazorpayPayment = useAction(api.razorpay.verifyPayment);
+  const createCashfreeOrder = useAction(api.cashfree.createOrder);
+  const verifyCashfreePayment = useAction(api.cashfree.verifyPayment);
   
   // Coupon tracking
   const trackCouponUsage = useMutation(api.coupons.trackCouponUsage);
@@ -161,14 +163,11 @@ export default function PaymentSummary() {
       return;
     }
 
-    // Enhanced SDK loading check with retry mechanism for mobile
     const waitForRazorpay = async (): Promise<boolean> => {
       if (typeof window === 'undefined') return false;
       
-      // Check if already loaded
       if ((window as any).Razorpay) return true;
       
-      // Wait up to 5 seconds for SDK to load
       for (let i = 0; i < 50; i++) {
         await new Promise(resolve => setTimeout(resolve, 100));
         if ((window as any).Razorpay) return true;
@@ -221,7 +220,6 @@ export default function PaymentSummary() {
               duration: duration,
             });
             
-            // Track coupon usage after successful payment
             if (appliedCoupon && appliedCoupon.couponId) {
               try {
                 await trackCouponUsage({
@@ -235,10 +233,10 @@ export default function PaymentSummary() {
               }
             }
             
-            navigate("/payment-status?status=success");
+            navigate("/payment-status?status=success&gateway=razorpay");
           } catch (error) {
             toast.error("Payment verification failed");
-            navigate("/payment-status?status=failed");
+            navigate("/payment-status?status=failed&gateway=razorpay");
           }
         },
         modal: {
@@ -252,6 +250,103 @@ export default function PaymentSummary() {
       razorpay.open();
     } catch (error: any) {
       toast.error(error.message || "Failed to initiate payment");
+    }
+  };
+
+  const handleCashfreePayment = async () => {
+    if (!user?._id) {
+      toast.error("User not found");
+      return;
+    }
+
+    const waitForCashfree = async (): Promise<boolean> => {
+      if (typeof window === 'undefined') return false;
+      
+      if ((window as any).Cashfree) return true;
+      
+      for (let i = 0; i < 50; i++) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        if ((window as any).Cashfree) return true;
+      }
+      
+      return false;
+    };
+
+    const isLoaded = await waitForCashfree();
+    
+    if (!isLoaded) {
+      toast.error("Cashfree payment gateway not loaded. Please refresh the page.");
+      return;
+    }
+
+    try {
+      toast.loading("Initializing Cashfree payment...");
+      
+      const order = await createCashfreeOrder({
+        amount: finalAmount,
+        currency: "INR",
+        userId: user._id,
+        planName: planName || "",
+        duration: duration,
+        customerEmail: userProfile?.email,
+        customerPhone: userProfile?.phone || "9999999999",
+      });
+
+      console.log("Cashfree order created:", order);
+
+      const cashfree = await (window as any).Cashfree({
+        mode: order.environment || "PRODUCTION",
+      });
+
+      const checkoutOptions = {
+        paymentSessionId: order.paymentSessionId,
+        returnUrl: `${window.location.origin}/payment-status?gateway=cashfree&order_id=${order.orderId}`,
+      };
+
+      console.log("Opening Cashfree checkout with options:", checkoutOptions);
+
+      cashfree.checkout(checkoutOptions).then(async (result: any) => {
+        console.log("Cashfree checkout result:", result);
+        
+        if (result.error) {
+          toast.error(result.error.message || "Payment failed");
+          navigate("/payment-status?status=failed&gateway=cashfree");
+          return;
+        }
+
+        if (result.paymentDetails) {
+          try {
+            await verifyCashfreePayment({
+              orderId: order.orderId,
+              userId: user._id,
+              planName: planName || "",
+              amount: finalAmount,
+              duration: duration,
+            });
+
+            if (appliedCoupon && appliedCoupon.couponId) {
+              try {
+                await trackCouponUsage({
+                  couponId: appliedCoupon.couponId,
+                  userId: user._id,
+                  orderId: order.orderId,
+                  discountAmount: discount,
+                });
+              } catch (error) {
+                console.error("Failed to track coupon usage:", error);
+              }
+            }
+
+            navigate("/payment-status?status=success&gateway=cashfree");
+          } catch (error) {
+            toast.error("Payment verification failed");
+            navigate("/payment-status?status=failed&gateway=cashfree");
+          }
+        }
+      });
+    } catch (error: any) {
+      console.error("Cashfree payment error:", error);
+      toast.error(error.message || "Failed to initiate Cashfree payment");
     }
   };
 
@@ -431,6 +526,12 @@ export default function PaymentSummary() {
                 </div>
 
                 <div className="flex flex-col gap-3">
+                  <Button
+                    onClick={handleCashfreePayment}
+                    className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
+                  >
+                    Pay with Cashfree
+                  </Button>
                   <Button
                     onClick={handleRazorpayPayment}
                     className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"

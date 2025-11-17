@@ -6,21 +6,51 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAction } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function PaymentStatus() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<"success" | "failed" | "verifying">("verifying");
+  const { user } = useAuth();
   
   const status = searchParams.get("status");
+  const gateway = searchParams.get("gateway");
+  const orderId = searchParams.get("order_id");
+  
+  const verifyCashfreePayment = useAction(api.cashfree.verifyPayment);
 
   useEffect(() => {
-    // Handle Razorpay redirect (simple status check)
-    if (status) {
-      setPaymentStatus(status === "success" ? "success" : "failed");
-    }
-  }, [status]);
+    const verifyPayment = async () => {
+      if (gateway === "cashfree" && orderId && user?._id) {
+        try {
+          const result = await verifyCashfreePayment({
+            orderId: orderId,
+            userId: user._id,
+            planName: searchParams.get("planName") || "Subscription",
+            amount: parseFloat(searchParams.get("amount") || "0"),
+            duration: parseInt(searchParams.get("duration") || "30"),
+          });
+          
+          if (result.success) {
+            setPaymentStatus("success");
+          } else {
+            setPaymentStatus("failed");
+          }
+        } catch (error) {
+          console.error("Payment verification error:", error);
+          setPaymentStatus("failed");
+        }
+      } else if (status) {
+        setPaymentStatus(status === "success" ? "success" : "failed");
+      }
+    };
+
+    verifyPayment();
+  }, [status, gateway, orderId, user]);
 
   useEffect(() => {
     if (paymentStatus !== "verifying") {
