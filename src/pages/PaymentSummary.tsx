@@ -219,27 +219,13 @@ export default function PaymentSummary() {
         throw new Error("Failed to create Cashfree order. Please try again.");
       }
 
-      // Load Cashfree SDK
+      // Load Cashfree SDK - always use sandbox for test credentials
       const cashfree = (window as any).Cashfree({
-        mode: import.meta.env.VITE_CASHFREE_ENVIRONMENT || "sandbox",
+        mode: "sandbox",
       });
 
       if (!cashfree) {
         throw new Error("Cashfree SDK initialization failed");
-      }
-
-      // Track coupon usage immediately after order creation for Cashfree
-      if (appliedCoupon && appliedCoupon.couponId) {
-        try {
-          await trackCouponUsage({
-            couponId: appliedCoupon.couponId,
-            userId: user._id,
-            orderId: order.orderId,
-            discountAmount: discount,
-          });
-        } catch (error) {
-          console.error("Failed to track coupon usage:", error);
-        }
       }
 
       // Track coupon usage immediately after order creation for Cashfree

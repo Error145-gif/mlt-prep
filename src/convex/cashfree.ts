@@ -58,12 +58,34 @@ export const createOrder = action({
 
       if (!response.ok) {
         const errorData = await response.text();
-        console.error("Cashfree order creation failed:", errorData);
-        throw new Error(`Failed to create order: ${response.statusText}`);
+        console.error("Cashfree API Error:", {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorData,
+          clientId: clientId?.substring(0, 10) + "...",
+          environment,
+          apiUrl
+        });
+        
+        if (response.status === 401) {
+          throw new Error("Cashfree authentication failed. Please verify your credentials.");
+        } else if (response.status === 400) {
+          throw new Error(`Invalid request to Cashfree: ${errorData}`);
+        }
+        
+        throw new Error(`Cashfree API error (${response.status}): ${response.statusText}`);
       }
 
       const orderData = await response.json();
-      console.log("Cashfree order created successfully:", orderData.order_id);
+      console.log("Cashfree order created successfully:", {
+        orderId: orderData.order_id,
+        status: orderData.order_status,
+        hasSessionId: !!orderData.payment_session_id
+      });
+      
+      if (!orderData.payment_session_id) {
+        throw new Error("Cashfree did not return a payment session ID");
+      }
 
       return {
         orderId: orderData.order_id,
