@@ -12,6 +12,8 @@ export const createOrder = action({
     userId: v.string(),
     planName: v.string(),
     duration: v.number(),
+    customerEmail: v.optional(v.string()),
+    customerPhone: v.optional(v.string()),
   },
   handler: async (_ctx, args) => {
     const clientId = process.env.CASHFREE_CLIENT_ID;
@@ -38,13 +40,22 @@ export const createOrder = action({
         order_currency: args.currency,
         customer_details: {
           customer_id: args.userId,
-          customer_phone: "9999999999", // Will be updated from user profile
+          customer_email: args.customerEmail || "user@example.com",
+          customer_phone: args.customerPhone || "9999999999",
         },
         order_meta: {
-          return_url: `${process.env.CONVEX_SITE_URL}/payment-status?order_id={order_id}`,
+          return_url: `${process.env.CONVEX_SITE_URL}/payment-status?gateway=cashfree&order_id={order_id}`,
         },
         order_note: `${args.planName} - ${args.duration} days`,
       };
+
+      console.log("Creating Cashfree order:", {
+        orderId,
+        amount: args.amount,
+        environment: actualEnvironment,
+        hasEmail: !!args.customerEmail,
+        hasPhone: !!args.customerPhone,
+      });
 
       const apiUrl = actualEnvironment === "production" 
         ? "https://api.cashfree.com/pg/orders"
@@ -68,7 +79,7 @@ export const createOrder = action({
           statusText: response.statusText,
           error: errorData,
           clientId: clientId?.substring(0, 10) + "...",
-          environment,
+          environment: actualEnvironment,
           apiUrl
         });
         
@@ -89,6 +100,7 @@ export const createOrder = action({
       });
       
       if (!orderData.payment_session_id) {
+        console.error("Cashfree response missing payment_session_id:", orderData);
         throw new Error("Cashfree did not return a payment session ID");
       }
 

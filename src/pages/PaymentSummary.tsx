@@ -211,6 +211,8 @@ export default function PaymentSummary() {
         userId: user._id,
         planName: planName || "",
         duration: duration,
+        customerEmail: userProfile?.email || user?.email || "",
+        customerPhone: userProfile?.phone || "9999999999",
       });
 
       toast.dismiss(loadingToast);
@@ -218,6 +220,11 @@ export default function PaymentSummary() {
       if (!order || !order.paymentSessionId) {
         throw new Error("Failed to create Cashfree order. Please try again.");
       }
+
+      console.log("Cashfree order created:", {
+        orderId: order.orderId,
+        hasSessionId: !!order.paymentSessionId,
+      });
 
       // Load Cashfree SDK - use sandbox mode for test credentials
       const cashfree = (window as any).Cashfree({
@@ -248,6 +255,8 @@ export default function PaymentSummary() {
         paymentSessionId: order.paymentSessionId,
         returnUrl: `${window.location.origin}/payment-status?gateway=cashfree&order_id=${order.orderId}`,
       };
+
+      console.log("Opening Cashfree checkout with options:", checkoutOptions);
 
       cashfree.checkout(checkoutOptions).then(() => {
         console.log("Cashfree payment initiated successfully");
