@@ -17,8 +17,11 @@ export const createOrder = action({
     const environment = process.env.CASHFREE_ENVIRONMENT || "sandbox";
 
     if (!clientId || !clientSecret) {
-      console.error("Cashfree credentials missing");
-      throw new Error("Payment gateway configuration error");
+      console.error("Cashfree credentials missing:", { 
+        hasClientId: !!clientId, 
+        hasClientSecret: !!clientSecret 
+      });
+      throw new Error("Cashfree payment gateway is not configured. Please contact support.");
     }
 
     try {

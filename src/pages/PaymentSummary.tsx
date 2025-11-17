@@ -185,8 +185,8 @@ export default function PaymentSummary() {
       // Check if already loaded
       if ((window as any).Cashfree) return true;
       
-      // Wait up to 5 seconds for SDK to load
-      for (let i = 0; i < 50; i++) {
+      // Wait up to 10 seconds for SDK to load
+      for (let i = 0; i < 100; i++) {
         await new Promise(resolve => setTimeout(resolve, 100));
         if ((window as any).Cashfree) return true;
       }
@@ -197,12 +197,13 @@ export default function PaymentSummary() {
     const isLoaded = await waitForCashfree();
     
     if (!isLoaded) {
-      toast.error("Payment gateway not loaded. Please check your connection and refresh the page.");
+      toast.error("Cashfree payment gateway failed to load. Please refresh the page and try again.");
+      console.error("Cashfree SDK not loaded");
       return;
     }
 
     try {
-      toast.loading("Initializing Cashfree payment...");
+      const loadingToast = toast.loading("Initializing Cashfree payment...");
       
       const order = await createCashfreeOrder({
         amount: finalAmount,
@@ -212,10 +213,20 @@ export default function PaymentSummary() {
         duration: duration,
       });
 
+      toast.dismiss(loadingToast);
+      
+      if (!order || !order.paymentSessionId) {
+        throw new Error("Failed to create Cashfree order. Please try again.");
+      }
+
       // Load Cashfree SDK
       const cashfree = (window as any).Cashfree({
         mode: import.meta.env.VITE_CASHFREE_ENVIRONMENT || "sandbox",
       });
+
+      if (!cashfree) {
+        throw new Error("Cashfree SDK initialization failed");
+      }
 
       // Track coupon usage immediately after order creation for Cashfree
       if (appliedCoupon && appliedCoupon.couponId) {
@@ -253,10 +264,23 @@ export default function PaymentSummary() {
       };
 
       cashfree.checkout(checkoutOptions).then(() => {
-        console.log("Payment initiated");
+        console.log("Cashfree payment initiated successfully");
+        toast.success("Redirecting to payment gateway...");
+      }).catch((err: any) => {
+        console.error("Cashfree checkout error:", err);
+        toast.error("Failed to open payment gateway. Please try again.");
       });
     } catch (error: any) {
-      toast.error(error.message || "Failed to initiate payment");
+      console.error("Cashfree payment error:", error);
+      toast.dismiss();
+      
+      if (error.message?.includes("configuration")) {
+        toast.error("Payment gateway not configured. Please contact support.");
+      } else if (error.message?.includes("network")) {
+        toast.error("Network error. Please check your connection and try again.");
+      } else {
+        toast.error(error.message || "Failed to initiate Cashfree payment. Please try again.");
+      }
     }
   };
 
