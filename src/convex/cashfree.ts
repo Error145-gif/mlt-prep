@@ -20,8 +20,8 @@ export const createOrder = action({
     const clientSecret = process.env.CASHFREE_CLIENT_SECRET;
     const environment = (process.env.CASHFREE_ENVIRONMENT || "sandbox").toLowerCase();
     
-    // Force sandbox for test credentials
-    const actualEnvironment = clientId?.startsWith("TEST") ? "sandbox" : environment;
+    // Force sandbox for test credentials, otherwise use production
+    const actualEnvironment = clientId?.startsWith("TEST") ? "sandbox" : "production";
     
     if (!clientId || !clientSecret) {
       console.error("Cashfree credentials missing:", { 
@@ -53,6 +53,7 @@ export const createOrder = action({
         orderId,
         amount: args.amount,
         environment: actualEnvironment,
+        clientIdPrefix: clientId?.substring(0, 10),
         hasEmail: !!args.customerEmail,
         hasPhone: !!args.customerPhone,
       });
@@ -60,6 +61,8 @@ export const createOrder = action({
       const apiUrl = actualEnvironment === "production" 
         ? "https://api.cashfree.com/pg/orders"
         : "https://sandbox.cashfree.com/pg/orders";
+
+      console.log("Using Cashfree API URL:", apiUrl);
 
       const response = await fetch(apiUrl, {
         method: "POST",
@@ -72,27 +75,33 @@ export const createOrder = action({
         body: JSON.stringify(orderRequest),
       });
 
+      const responseText = await response.text();
+      console.log("Cashfree API raw response:", {
+        status: response.status,
+        statusText: response.statusText,
+        responseText: responseText.substring(0, 500),
+      });
+
       if (!response.ok) {
-        const errorData = await response.text();
         console.error("Cashfree API Error:", {
           status: response.status,
           statusText: response.statusText,
-          error: errorData,
+          error: responseText,
           clientId: clientId?.substring(0, 10) + "...",
           environment: actualEnvironment,
           apiUrl
         });
         
         if (response.status === 401) {
-          throw new Error("Cashfree authentication failed. Please verify your credentials in Convex Dashboard.");
+          throw new Error("Cashfree authentication failed. Please verify your credentials are active and approved by Cashfree.");
         } else if (response.status === 400) {
-          throw new Error(`Invalid request to Cashfree: ${errorData}`);
+          throw new Error(`Invalid request to Cashfree: ${responseText}`);
         }
         
         throw new Error(`Cashfree API error (${response.status}): ${response.statusText}`);
       }
 
-      const orderData = await response.json();
+      const orderData = JSON.parse(responseText);
       console.log("Cashfree order created successfully:", {
         orderId: orderData.order_id,
         status: orderData.order_status,
@@ -106,7 +115,7 @@ export const createOrder = action({
       
       if (!orderData.payment_session_id) {
         console.error("Cashfree response missing payment_session_id:", orderData);
-        throw new Error("Cashfree did not return a payment session ID. Please check your API credentials and environment settings.");
+        throw new Error("Cashfree did not return a payment session ID. Your credentials may need to be activated by Cashfree. Please contact Cashfree support or use Razorpay instead.");
       }
 
       // Always return uppercase for SDK compatibility
