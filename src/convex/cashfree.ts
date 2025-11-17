@@ -2,6 +2,7 @@
 
 import { v } from "convex/values";
 import { action } from "./_generated/server";
+import { internal } from "./_generated/api";
 
 export const createOrder = action({
   args: {
@@ -107,7 +108,7 @@ export const verifyPayment = action({
     amount: v.number(),
     duration: v.number(),
   },
-  handler: async (_ctx, args) => {
+  handler: async (ctx, args) => {
     const clientId = process.env.CASHFREE_CLIENT_ID;
     const clientSecret = process.env.CASHFREE_CLIENT_SECRET;
     const environment = process.env.CASHFREE_ENVIRONMENT || "sandbox";
@@ -132,13 +133,26 @@ export const verifyPayment = action({
       });
 
       if (!response.ok) {
+        const errorData = await response.text();
+        console.error("Cashfree verification failed:", errorData);
         throw new Error("Failed to verify payment");
       }
 
       const orderData = await response.json();
+      console.log("Cashfree order status:", orderData.order_status);
 
       if (orderData.order_status === "PAID") {
-        console.log("Payment verified successfully:", args.orderId);
+        // Activate subscription using cashfreeInternal
+        await ctx.runMutation(internal.cashfreeInternal.createSubscription, {
+          userId: args.userId,
+          planName: args.planName,
+          amount: args.amount,
+          duration: args.duration,
+          paymentId: orderData.cf_payment_id || args.orderId,
+          orderId: args.orderId,
+        });
+
+        console.log("Payment verified and subscription activated:", args.orderId);
         return { success: true, status: "PAID" };
       } else {
         return { success: false, status: orderData.order_status };
