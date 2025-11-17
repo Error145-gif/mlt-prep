@@ -84,7 +84,7 @@ export const createOrder = action({
         });
         
         if (response.status === 401) {
-          throw new Error("Cashfree authentication failed. Please verify your credentials.");
+          throw new Error("Cashfree authentication failed. Please verify your credentials in Convex Dashboard.");
         } else if (response.status === 400) {
           throw new Error(`Invalid request to Cashfree: ${errorData}`);
         }
@@ -96,12 +96,13 @@ export const createOrder = action({
       console.log("Cashfree order created successfully:", {
         orderId: orderData.order_id,
         status: orderData.order_status,
-        hasSessionId: !!orderData.payment_session_id
+        hasSessionId: !!orderData.payment_session_id,
+        fullResponse: orderData
       });
       
       if (!orderData.payment_session_id) {
         console.error("Cashfree response missing payment_session_id:", orderData);
-        throw new Error("Cashfree did not return a payment session ID");
+        throw new Error("Cashfree did not return a payment session ID. Please check your API credentials and environment settings.");
       }
 
       return {

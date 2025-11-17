@@ -1,13 +1,1 @@
-    {
-      "buildCommand": "pnpm build",
-      "devCommand": "pnpm dev",
-      "installCommand": "pnpm install",
-      "framework": "vite",
-      "rewrites": [
-        {
-          "source": "/(.*)",
-          "destination": "/index.html"
-        }
-      ]
-    }
-    
+{"message":"payment_session_id is not present or is invalid","code":"payment_session_id_invalid","type":"request_failed"}

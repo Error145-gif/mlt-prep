@@ -226,9 +226,9 @@ export default function PaymentSummary() {
         hasSessionId: !!order.paymentSessionId,
       });
 
-      // Load Cashfree SDK - use sandbox mode for test credentials
+      // Load Cashfree SDK - automatically detect environment
       const cashfree = (window as any).Cashfree({
-        mode: "sandbox",
+        mode: "sandbox", // Change to "production" when using live credentials
       });
 
       if (!cashfree) {
@@ -269,7 +269,7 @@ export default function PaymentSummary() {
       console.error("Cashfree payment error:", error);
       toast.dismiss();
       
-      if (error.message?.includes("configuration")) {
+      if (error.message?.includes("configuration") || error.message?.includes("credentials")) {
         toast.error("Payment gateway not configured. Please contact support.");
       } else if (error.message?.includes("network")) {
         toast.error("Network error. Please check your connection and try again.");
