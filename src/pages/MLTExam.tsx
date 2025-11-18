@@ -134,13 +134,6 @@ export default function MLTExam() {
                     Get Started Free
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
-                  <Button
-                    onClick={() => navigate("/mock-tests")}
-                    variant="outline"
-                    className="border-white/20 text-white hover:bg-white/10"
-                  >
-                    Explore Mock Tests
-                  </Button>
                 </div>
               </div>
             </CardContent>
