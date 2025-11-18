@@ -425,7 +425,7 @@ export default function Landing() {
       {/* Footer */}
       <footer className="relative z-10 border-t border-white/20 backdrop-blur-xl bg-transparent py-6 sm:py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 mb-6">
             <div>
               <h3 className="text-white font-semibold mb-3">MLT Prep</h3>
               <p className="text-white/60 text-sm">
@@ -438,6 +438,14 @@ export default function Landing() {
                 <a href="/contact-us" className="block text-white/60 hover:text-white text-sm transition-colors">Contact Us</a>
                 <a href="/terms" className="block text-white/60 hover:text-white text-sm transition-colors">Terms & Conditions</a>
                 <a href="/privacy" className="block text-white/60 hover:text-white text-sm transition-colors">Privacy Policy</a>
+              </div>
+            </div>
+            <div>
+              <h3 className="text-white font-semibold mb-3">Exam Preparation</h3>
+              <div className="space-y-2">
+                <a href="/mlt-exam" className="block text-white/60 hover:text-white text-sm transition-colors">MLT Exam</a>
+                <a href="/lab-technician-exam" className="block text-white/60 hover:text-white text-sm transition-colors">Lab Technician Exam</a>
+                <a href="/dmlt-exam" className="block text-white/60 hover:text-white text-sm transition-colors">DMLT Exam</a>
               </div>
             </div>
             <div>
