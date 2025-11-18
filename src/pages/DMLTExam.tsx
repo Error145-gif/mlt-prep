@@ -4,9 +4,21 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router";
 import { Home, BookOpen, FileText, ArrowRight, Brain, Award } from "lucide-react";
+import { useEffect } from "react";
 
 export default function DMLTExam() {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Add canonical tag
+    let canonicalLink = document.querySelector('link[rel="canonical"]');
+    if (!canonicalLink) {
+      canonicalLink = document.createElement('link');
+      canonicalLink.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonicalLink);
+    }
+    canonicalLink.setAttribute('href', window.location.href);
+  }, []);
 
   return (
     <div className="min-h-screen p-6 lg:p-8 relative overflow-hidden">

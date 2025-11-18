@@ -26,7 +26,42 @@ export default function Landing() {
     if (metaKeywords) {
       metaKeywords.setAttribute("content", "MLT, Medical Lab Technology, ESIC MLT, mock tests, PYQ, AI questions, exam preparation");
     }
+
+    // Add canonical tag
+    let canonicalLink = document.querySelector('link[rel="canonical"]');
+    if (!canonicalLink) {
+      canonicalLink = document.createElement('link');
+      canonicalLink.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonicalLink);
+    }
+    canonicalLink.setAttribute('href', window.location.href);
+
+    // Add JSON-LD schema for homepage only
+    let schemaScript = document.querySelector('script[type="application/ld+json"][data-page="landing"]');
+    if (!schemaScript) {
+      schemaScript = document.createElement('script');
+      schemaScript.setAttribute('type', 'application/ld+json');
+      schemaScript.setAttribute('data-page', 'landing');
+      schemaScript.textContent = JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "EducationalOrganization",
+        "name": "MLT Prep",
+        "url": "https://www.mltprep.online",
+        "logo": "https://www.mltprep.online/logo.png",
+        "description": "MLT exam preparation with AI-powered mock tests, PYQs, and analytics for DMLT, BMLT and Govt MLT exams."
+      });
+      document.head.appendChild(schemaScript);
+    }
+
+    // Cleanup function
+    return () => {
+      const schema = document.querySelector('script[type="application/ld+json"][data-page="landing"]');
+      if (schema) {
+        schema.remove();
+      }
+    };
   }, []);
+
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
   const makeAdmin = useMutation(api.users.makeCurrentUserAdmin);
