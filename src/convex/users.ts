@@ -42,6 +42,18 @@ export const getCurrentUserInternal = internalQuery({
 });
 
 // Get user profile
+export const getUserByEmail = query({
+  args: { email: v.string() },
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("email"), args.email))
+      .first();
+    
+    return user ? { exists: true, isRegistered: user.isRegistered } : { exists: false };
+  },
+});
+
 export const getUserProfile = query({
   args: {},
   handler: async (ctx) => {

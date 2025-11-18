@@ -61,6 +61,28 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
         return;
       }
 
+      // Check if user exists (for login flow)
+      if (!isCreatingAccount) {
+        // For existing users trying to login
+        const checkUser = await fetch(`${import.meta.env.VITE_CONVEX_URL}/api/query`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            path: "users:getUserByEmail",
+            args: { email },
+          }),
+        });
+        
+        if (checkUser.ok) {
+          const userData = await checkUser.json();
+          if (!userData || !userData.value) {
+            setError("No account found with this email. Please create an account first.");
+            setIsLoading(false);
+            return;
+          }
+        }
+      }
+
       await signIn("email-otp", formData);
       setStep({ email });
       setIsLoading(false);
