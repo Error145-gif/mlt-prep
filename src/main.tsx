@@ -42,6 +42,7 @@ import { useAuth } from "@/hooks/use-auth";
 import SectionsManagement from "./pages/SectionsManagement.tsx";
 import ImageQuestionManagement from "./pages/ImageQuestionManagement.tsx";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import MLTExam from "./pages/MLTExam";
 
 // Get Convex URL from environment variable with fallback
 const convexUrl = (import.meta as any).env?.VITE_CONVEX_URL ?? "https://successful-bandicoot-650.convex.cloud";
@@ -241,6 +242,7 @@ createRoot(document.getElementById("root")!).render(
                   </ProtectedRoute>
                 }
               />
+              <Route path="/mlt-exam" element={<MLTExam />} />
 
               {/* Admin Routes */}
               <Route
