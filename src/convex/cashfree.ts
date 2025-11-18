@@ -44,7 +44,7 @@ export const createOrder = action({
           customer_phone: args.customerPhone || "9999999999",
         },
         order_meta: {
-          return_url: `${process.env.CONVEX_SITE_URL}/payment-status?gateway=cashfree&order_id={order_id}`,
+          return_url: `${process.env.CONVEX_SITE_URL}/payment-status?gateway=cashfree&order_id={order_id}&planName=${encodeURIComponent(args.planName)}&amount=${args.amount}&duration=${args.duration}`,
         },
         order_note: `${args.planName} - ${args.duration} days`,
       };

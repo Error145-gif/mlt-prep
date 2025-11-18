@@ -296,7 +296,7 @@ export default function PaymentSummary() {
 
       const checkoutOptions = {
         paymentSessionId: order.paymentSessionId,
-        returnUrl: `${window.location.origin}/payment-status?gateway=cashfree&order_id=${order.orderId}`,
+        returnUrl: `${window.location.origin}/payment-status?gateway=cashfree&order_id=${order.orderId}&planName=${encodeURIComponent(planName || "")}&amount=${finalAmount}&duration=${duration}`,
       };
 
       // Cashfree SDK v3 expects lowercase mode: "production" or "sandbox"
