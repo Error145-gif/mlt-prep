@@ -240,16 +240,26 @@ export default function Landing() {
           </motion.div>
           
           <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold text-white tracking-tight drop-shadow-2xl">
-            Master MLT with
+            MLT Exam Preparation with
             <br />
             <span className="bg-gradient-to-r from-yellow-300 via-pink-300 to-purple-300 bg-clip-text text-transparent">
-              Smart Learning
+              AI-Powered Smart Learning
             </span>
           </h1>
           
-          <p className="text-base sm:text-xl text-white/90 max-w-2xl mx-auto lg:mx-0 drop-shadow-lg">
-            Comprehensive study materials, AI-generated practice questions, and personalized analytics to help you excel in Medical Lab Technology
+          <p className="text-base sm:text-xl text-white/90 max-w-2xl mx-auto lg:mx-0 drop-shadow-lg mb-4">
+            DMLT, BMLT, Lab Technician Govt Exam Mock Tests and PYQs at one place.
           </p>
+          
+          <div className="flex flex-wrap justify-center lg:justify-start gap-2 text-sm sm:text-base text-white/80 font-medium">
+            <span>MLT Mock Tests</span>
+            <span>•</span>
+            <span>Lab Technician Exam Preparation</span>
+            <span>•</span>
+            <span>DMLT/BMLT PYQs</span>
+            <span>•</span>
+            <span>AI-based MLT Questions</span>
+          </div>
           
             <div className="flex items-center justify-center lg:justify-start gap-3 sm:gap-4 pt-4">
               <motion.div
@@ -385,6 +395,30 @@ export default function Landing() {
             Get Started Free
             <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
+        </motion.div>
+      </section>
+
+      {/* SEO Block */}
+      <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+          className="glass-card border border-white/20 backdrop-blur-xl bg-white/10 p-6 sm:p-8 rounded-2xl"
+        >
+          <p className="text-white/90 text-base sm:text-lg leading-relaxed mb-4">
+            MLT Prep is India's trusted platform for Medical Lab Technician exam preparation. Practice AI-generated MLT MCQs, solve Previous Year Questions (PYQs), and crack DMLT, BMLT, AIIMS, ESIC, RRB, State Govt Lab Technician exams.
+          </p>
+          <div className="flex flex-wrap gap-2 text-sm text-white/70">
+            <span className="px-3 py-1 bg-white/10 rounded-full">MLT Exam</span>
+            <span className="px-3 py-1 bg-white/10 rounded-full">Lab Technician</span>
+            <span className="px-3 py-1 bg-white/10 rounded-full">DMLT Exam</span>
+            <span className="px-3 py-1 bg-white/10 rounded-full">BMLT Exam</span>
+            <span className="px-3 py-1 bg-white/10 rounded-full">MLT Govt Jobs</span>
+            <span className="px-3 py-1 bg-white/10 rounded-full">MLT PYQs</span>
+            <span className="px-3 py-1 bg-white/10 rounded-full">MLT MCQs</span>
+          </div>
         </motion.div>
       </section>
 
