@@ -44,6 +44,7 @@ import ImageQuestionManagement from "./pages/ImageQuestionManagement.tsx";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import MLTExam from "./pages/MLTExam";
 import LabTechnicianExam from "./pages/LabTechnicianExam";
+import DMLTExam from "./pages/DMLTExam";
 
 // Get Convex URL from environment variable with fallback
 const convexUrl = (import.meta as any).env?.VITE_CONVEX_URL ?? "https://successful-bandicoot-650.convex.cloud";
@@ -245,6 +246,7 @@ createRoot(document.getElementById("root")!).render(
               />
               <Route path="/mlt-exam" element={<MLTExam />} />
               <Route path="/lab-technician-exam" element={<LabTechnicianExam />} />
+              <Route path="/dmlt-exam" element={<DMLTExam />} />
 
               {/* Admin Routes */}
               <Route
