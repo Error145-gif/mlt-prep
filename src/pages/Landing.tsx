@@ -47,7 +47,7 @@ export default function Landing() {
         "@type": "EducationalOrganization",
         "name": "MLT Prep",
         "url": "https://www.mltprep.online",
-        "logo": "https://www.mltprep.online/logo.png",
+        "logo": "https://www.mltprep.online/favicon.png",
         "description": "MLT exam preparation with AI-powered mock tests, PYQs, and analytics for DMLT, BMLT and Govt MLT exams."
       });
       document.head.appendChild(schemaScript);
