@@ -75,7 +75,8 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
         
         if (checkUser.ok) {
           const userData = await checkUser.json();
-          if (!userData || !userData.value) {
+          // Check if user exists in the response
+          if (!userData || !userData.value || !userData.value.exists) {
             setError("No account found with this email. Please create an account first.");
             setIsLoading(false);
             return;
