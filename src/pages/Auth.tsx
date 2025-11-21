@@ -14,6 +14,7 @@ import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface AuthProps {
   redirectAfterAuth?: string;
@@ -22,6 +23,7 @@ interface AuthProps {
 function Auth({ redirectAfterAuth }: AuthProps = {}) {
   const { isLoading: authLoading, isAuthenticated, user, signIn } = useAuth();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [step, setStep] = useState<"signIn" | { email: string }>("signIn");
   const [otp, setOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -156,7 +158,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       <div className="absolute inset-0 overflow-hidden">
         {/* Floating DNA Strands */}
         <motion.div
-          animate={{ y: [0, -20, 0], rotate: [0, 5, 0] }}
+          animate={isMobile ? {} : { y: [0, -20, 0], rotate: [0, 5, 0] }}
           transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
           className="absolute top-20 left-10 opacity-20"
         >
@@ -164,7 +166,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
         </motion.div>
         
         <motion.div
-          animate={{ y: [0, 20, 0], rotate: [0, -5, 0] }}
+          animate={isMobile ? {} : { y: [0, 20, 0], rotate: [0, -5, 0] }}
           transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
           className="absolute bottom-32 right-16 opacity-20"
         >
@@ -172,7 +174,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
         </motion.div>
 
         <motion.div
-          animate={{ y: [0, -15, 0], x: [0, 10, 0] }}
+          animate={isMobile ? {} : { y: [0, -15, 0], x: [0, 10, 0] }}
           transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
           className="absolute top-1/3 right-20 opacity-20"
         >
@@ -180,9 +182,9 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
         </motion.div>
 
         {/* Glowing Orbs */}
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-purple-400/30 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-cyan-400/20 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-violet-500/20 rounded-full blur-3xl" />
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-purple-400/30 rounded-full blur-xl md:blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-cyan-400/20 rounded-full blur-xl md:blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-violet-500/20 rounded-full blur-xl md:blur-3xl" />
       </div>
 
       {/* Home Button */}

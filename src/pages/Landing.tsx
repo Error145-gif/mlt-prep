@@ -9,9 +9,11 @@ import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
 import { useEffect } from "react";
 import { useAuthActions } from "@convex-dev/auth/react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function Landing() {
   const { signOut } = useAuthActions();
+  const isMobile = useIsMobile();
   
   useEffect(() => {
     // Set meta tags for SEO
@@ -115,10 +117,10 @@ export default function Landing() {
 
       {/* Animated Background Gradients - Vibrant Purple/Blue Theme */}
       <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
-        <div className="absolute top-0 left-1/4 w-[300px] h-[300px] md:w-[500px] md:h-[500px] bg-blue-400/30 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-[300px] h-[300px] md:w-[500px] md:h-[500px] bg-purple-500/30 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 w-[400px] h-[400px] md:w-[600px] md:h-[600px] bg-pink-400/25 rounded-full blur-3xl" />
-        <div className="absolute top-1/4 right-1/3 w-[250px] h-[250px] md:w-[400px] md:h-[400px] bg-cyan-400/25 rounded-full blur-3xl" />
+        <div className="absolute top-0 left-1/4 w-[300px] h-[300px] md:w-[500px] md:h-[500px] bg-blue-400/30 rounded-full blur-xl md:blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 w-[300px] h-[300px] md:w-[500px] md:h-[500px] bg-purple-500/30 rounded-full blur-xl md:blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 w-[400px] h-[400px] md:w-[600px] md:h-[600px] bg-pink-400/25 rounded-full blur-xl md:blur-3xl" />
+        <div className="absolute top-1/4 right-1/3 w-[250px] h-[250px] md:w-[400px] md:h-[400px] bg-cyan-400/25 rounded-full blur-xl md:blur-3xl" />
         
         {/* Floating Medical Icons - Hidden on mobile for performance */}
         <motion.div
@@ -252,7 +254,7 @@ export default function Landing() {
           >
           <motion.div 
             className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full glass-card border border-white/30 backdrop-blur-xl bg-white/20 text-white mb-4 shadow-md text-xs sm:text-sm"
-            animate={{
+            animate={isMobile ? {} : {
               boxShadow: [
                 "0 0 20px rgba(255, 255, 255, 0.3)",
                 "0 0 40px rgba(255, 255, 255, 0.6)",
@@ -266,7 +268,7 @@ export default function Landing() {
             }}
           >
             <motion.div
-              animate={{ rotate: [0, 360] }}
+              animate={isMobile ? {} : { rotate: [0, 360] }}
               transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
             >
               <Sparkles className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -308,7 +310,7 @@ export default function Landing() {
                 >
                   {isAuthenticated ? (user?.role === "admin" ? "Admin Panel" : "Go to Dashboard") : "Start Learning"}
                   <motion.div
-                    animate={{ x: [0, 5, 0] }}
+                    animate={isMobile ? {} : { x: [0, 5, 0] }}
                     transition={{ duration: 1.5, repeat: Infinity }}
                     className="inline-block ml-2"
                   >
@@ -327,7 +329,7 @@ export default function Landing() {
             className="flex justify-center lg:justify-end"
           >
             <motion.div
-              animate={{
+              animate={isMobile ? {} : {
                 y: [0, -20, 0],
                 rotate: [0, 5, -5, 0],
               }}
@@ -343,7 +345,7 @@ export default function Landing() {
                 alt="MLT Mascot"
                 loading="lazy"
                 className="w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 drop-shadow-2xl"
-                animate={{
+                animate={isMobile ? {} : {
                   scale: [1, 1.05, 1],
                 }}
                 transition={{
@@ -387,7 +389,7 @@ export default function Landing() {
             >
               <motion.div 
                 className="p-2 sm:p-3 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 w-fit mb-3 sm:mb-4"
-                animate={{
+                animate={isMobile ? {} : {
                   boxShadow: [
                     "0 0 20px rgba(139, 92, 246, 0.5)",
                     "0 0 40px rgba(139, 92, 246, 0.8)",
