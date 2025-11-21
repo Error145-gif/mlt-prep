@@ -49,7 +49,7 @@ export default function Landing() {
         "@type": "EducationalOrganization",
         "name": "MLT Prep",
         "url": "https://www.mltprep.online",
-        "logo": "https://www.mltprep.online/favicon.png",
+        "logo": "https://www.mltprep.online/logo.png",
         "description": "MLT exam preparation with AI-powered mock tests, PYQs, and analytics for DMLT, BMLT and Govt MLT exams."
       });
       document.head.appendChild(schemaScript);
@@ -191,7 +191,15 @@ export default function Landing() {
       <nav className="glass-card border-b border-white/20 backdrop-blur-xl bg-white/10 sticky top-0 z-50 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3 cursor-pointer" onClick={() => navigate("/")}>
-            <img src="https://harmless-tapir-303.convex.cloud/api/storage/8af2d6e2-1e31-425a-8e19-d4b8ee96878f" alt="MLT Logo" loading="eager" className="h-12 w-12 sm:h-16 sm:w-16 object-contain" onError={(e) => { e.currentTarget.src = "/favicon.png"; }} />
+            <img
+              src="/logo.png"
+              alt="MLT Logo"
+              loading="eager"
+              className="h-12 w-12 sm:h-16 sm:w-16 object-contain"
+              onError={(e) => {
+                e.currentTarget.src = "/favicon.png";
+              }}
+            />
             <span className="text-lg sm:text-2xl font-bold text-white drop-shadow-lg">MLT Prep</span>
           </div>
           
