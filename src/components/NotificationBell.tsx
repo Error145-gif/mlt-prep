@@ -70,6 +70,44 @@ export default function NotificationBell() {
     }
   }, [unreadCount, notifications]);
 
+  useEffect(() => {
+    if (notifications) {
+      const unreadCount = notifications.filter((n: any) => !n.read).length;
+      setUnreadCount(unreadCount);
+
+      // Check for new notifications to show browser notification
+      // Only show if we have new notifications and permission is granted
+      if (notifications.length > 0) {
+        const latestNotification = notifications[0];
+        const lastSeenId = localStorage.getItem("lastSeenNotificationId");
+        
+        if (latestNotification._id !== lastSeenId && !latestNotification.read) {
+          // Update last seen
+          localStorage.setItem("lastSeenNotificationId", latestNotification._id);
+          
+          // Show browser notification if supported and permitted
+          if ("Notification" in window && Notification.permission === "granted") {
+            try {
+              // Check if we are on mobile/Android where new Notification() might fail
+              // The error "Illegal constructor" happens on Android Chrome when using new Notification()
+              // We should wrap this in a try-catch or check for service worker registration if we were using push
+              // For now, we'll just try-catch it to prevent the crash
+              new Notification("New Notification", {
+                body: latestNotification.message,
+                icon: "/logo.png"
+              });
+            } catch (e) {
+              console.log("Browser notification failed (likely mobile restriction):", e);
+              // On mobile, we might need ServiceWorkerRegistration.showNotification() 
+              // but that requires a service worker setup. 
+              // For now, suppressing the error prevents the white screen crash.
+            }
+          }
+        }
+      }
+    }
+  }, [notifications]);
+
   const handleNotificationClick = async (notificationId: Id<"notifications">) => {
     await markAsRead({ notificationId });
   };
