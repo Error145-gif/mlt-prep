@@ -39,20 +39,24 @@ export default function Landing() {
     canonicalLink.setAttribute('href', window.location.href);
 
     // Add JSON-LD schema for homepage only
-    let schemaScript = document.querySelector('script[type="application/ld+json"][data-page="landing"]');
-    if (!schemaScript) {
-      schemaScript = document.createElement('script');
-      schemaScript.setAttribute('type', 'application/ld+json');
-      schemaScript.setAttribute('data-page', 'landing');
-      schemaScript.textContent = JSON.stringify({
-        "@context": "https://schema.org",
-        "@type": "EducationalOrganization",
-        "name": "MLT Prep",
-        "url": "https://www.mltprep.online",
-        "logo": "https://www.mltprep.online/logo.png",
-        "description": "MLT exam preparation with AI-powered mock tests, PYQs, and analytics for DMLT, BMLT and Govt MLT exams."
-      });
-      document.head.appendChild(schemaScript);
+    try {
+      let schemaScript = document.querySelector('script[type="application/ld+json"][data-page="landing"]');
+      if (!schemaScript) {
+        schemaScript = document.createElement('script');
+        schemaScript.setAttribute('type', 'application/ld+json');
+        schemaScript.setAttribute('data-page', 'landing');
+        schemaScript.textContent = JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "EducationalOrganization",
+          "name": "MLT Prep",
+          "url": "https://www.mltprep.online",
+          "logo": "https://www.mltprep.online/logo.png",
+          "description": "MLT exam preparation with AI-powered mock tests, PYQs, and analytics for DMLT, BMLT and Govt MLT exams."
+        });
+        document.head.appendChild(schemaScript);
+      }
+    } catch (e) {
+      console.error("Error adding JSON-LD schema:", e);
     }
 
     // Cleanup function
