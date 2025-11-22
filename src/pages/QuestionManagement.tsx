@@ -28,7 +28,7 @@ export default function QuestionManagement() {
   const [showManualForm, setShowManualForm] = useState(false);
   // State variables for form visibility and saving
   // These are used throughout the component for managing dialog states
-  const [mockTestQuestions, setMockTestQuestions] = useState<any[]>([]);
+  const [mockTestQuestions, setMockTestQuestions] = useState<string>("");
   const [creatingMockTest, setCreatingMockTest] = useState(false);
   const [deleteSourceType, setDeleteSourceType] = useState<"manual" | "ai" | "pyq">("manual");
   const [isDeletingBulk, setIsDeletingBulk] = useState(false);
