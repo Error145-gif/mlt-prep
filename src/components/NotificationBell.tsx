@@ -72,9 +72,6 @@ export default function NotificationBell() {
 
   useEffect(() => {
     if (notifications) {
-      const unreadCount = notifications.filter((n: any) => !n.read).length;
-      setUnreadCount(unreadCount);
-
       // Check for new notifications to show browser notification
       // Only show if we have new notifications and permission is granted
       if (notifications.length > 0) {
