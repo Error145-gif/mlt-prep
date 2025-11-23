@@ -55,12 +55,16 @@ export default function NotificationBell() {
 
         // Show browser notification if permission granted
         if ("Notification" in window && Notification.permission === "granted") {
-          new Notification(latestNotification.title, {
-            body: latestNotification.message,
-            icon: "/logo.png",
-            badge: "/logo.png",
-            tag: latestNotification._id,
-          });
+          try {
+            new Notification(latestNotification.title, {
+              body: latestNotification.message,
+              icon: "/logo.png",
+              badge: "/logo.png",
+              tag: latestNotification._id,
+            });
+          } catch (e) {
+            console.error("Notification creation failed:", e);
+          }
         }
       }
     }

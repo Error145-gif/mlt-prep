@@ -95,7 +95,7 @@ export default function StudentNav() {
                       </AvatarFallback>
                     </Avatar>
                   ) : (
-                    <img src="/logo.svg" alt="Logo" className="h-10 w-10" />
+                    <img src="/logo.png" alt="Logo" className="h-10 w-10 object-contain" />
                   )}
                   <div className="flex flex-col">
                     <h2 className="text-xl font-bold text-white">MLT Prep</h2>
