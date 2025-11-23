@@ -27,11 +27,26 @@ export default function NotificationBell() {
   const previousCountRef = useRef<number>(0);
   const hasRequestedPermission = useRef(false);
 
+  // Helper to check if we should try browser notifications
+  const canUseBrowserNotifications = () => {
+    if (typeof window === "undefined") return false;
+    if (isMobile) return false;
+    if (!("Notification" in window)) return false;
+    
+    // Extra check for mobile user agents just in case isMobile is delayed
+    const userAgent = window.navigator.userAgent.toLowerCase();
+    if (/android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent)) {
+      return false;
+    }
+    
+    return true;
+  };
+
   // Request notification permission on mount
   useEffect(() => {
-    if (!hasRequestedPermission.current && "Notification" in window && !isMobile) {
+    if (!hasRequestedPermission.current && canUseBrowserNotifications()) {
       if (Notification.permission === "default") {
-        Notification.requestPermission();
+        Notification.requestPermission().catch(err => console.error("Permission request failed", err));
       }
       hasRequestedPermission.current = true;
     }
@@ -39,14 +54,9 @@ export default function NotificationBell() {
 
   // Show browser notification and toast when new notification arrives
   useEffect(() => {
-    console.log("Notification check - Unread count:", unreadCount, "Previous:", previousCountRef.current);
-    console.log("Notifications:", notifications?.length || 0);
-    
     if (unreadCount !== undefined && unreadCount > previousCountRef.current) {
       // Get the latest notification
       const latestNotification = notifications?.[0];
-      
-      console.log("New notification detected:", latestNotification);
       
       if (latestNotification && !latestNotification.isRead) {
         // Show toast notification
@@ -56,7 +66,7 @@ export default function NotificationBell() {
         });
 
         // Show browser notification if permission granted and NOT on mobile
-        if (!isMobile && "Notification" in window && Notification.permission === "granted") {
+        if (canUseBrowserNotifications() && Notification.permission === "granted") {
           try {
             new Notification(latestNotification.title, {
               body: latestNotification.message,
@@ -65,6 +75,7 @@ export default function NotificationBell() {
               tag: latestNotification._id,
             });
           } catch (e) {
+            // Silently fail for notifications to prevent app crashes
             console.error("Notification creation failed:", e);
           }
         }
@@ -77,34 +88,23 @@ export default function NotificationBell() {
   }, [unreadCount, notifications, isMobile]);
 
   useEffect(() => {
-    if (notifications) {
-      // Check for new notifications to show browser notification
-      // Only show if we have new notifications and permission is granted
-      if (notifications.length > 0) {
-        const latestNotification = notifications[0];
-        const lastSeenId = localStorage.getItem("lastSeenNotificationId");
+    if (notifications && notifications.length > 0) {
+      const latestNotification = notifications[0];
+      const lastSeenId = localStorage.getItem("lastSeenNotificationId");
+      
+      if (latestNotification._id !== lastSeenId && !latestNotification.isRead) {
+        // Update last seen
+        localStorage.setItem("lastSeenNotificationId", latestNotification._id);
         
-        if (latestNotification._id !== lastSeenId && !latestNotification.read) {
-          // Update last seen
-          localStorage.setItem("lastSeenNotificationId", latestNotification._id);
-          
-          // Show browser notification if supported and permitted and NOT on mobile
-          if (!isMobile && "Notification" in window && Notification.permission === "granted") {
-            try {
-              // Check if we are on mobile/Android where new Notification() might fail
-              // The error "Illegal constructor" happens on Android Chrome when using new Notification()
-              // We should wrap this in a try-catch or check for service worker registration if we were using push
-              // For now, we'll just try-catch it to prevent the crash
-              new Notification("New Notification", {
-                body: latestNotification.message,
-                icon: "/logo.png"
-              });
-            } catch (e) {
-              console.log("Browser notification failed (likely mobile restriction):", e);
-              // On mobile, we might need ServiceWorkerRegistration.showNotification() 
-              // but that requires a service worker setup. 
-              // For now, suppressing the error prevents the white screen crash.
-            }
+        // Show browser notification if supported and permitted and NOT on mobile
+        if (canUseBrowserNotifications() && Notification.permission === "granted") {
+          try {
+            new Notification("New Notification", {
+              body: latestNotification.message,
+              icon: "/logo.png"
+            });
+          } catch (e) {
+            // Silently fail
           }
         }
       }
