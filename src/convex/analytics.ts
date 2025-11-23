@@ -96,9 +96,9 @@ export const getAllRegisteredUsers = query({
 
     const allUsers = await ctx.db.query("users").collect();
     
-    // Filter for Gmail accounts and return relevant info
-    const gmailUsers = allUsers
-      .filter(u => u.email?.endsWith("@gmail.com"))
+    // Return all users with email (removed strict @gmail.com filter to show all users)
+    const registeredUsers = allUsers
+      .filter(u => u.email)
       .map(u => ({
         _id: u._id,
         name: u.name,
@@ -109,9 +109,9 @@ export const getAllRegisteredUsers = query({
       }));
 
     return {
-      totalUsers: gmailUsers.length,
-      activeUsers: gmailUsers.filter(u => u.isRegistered).length,
-      users: gmailUsers,
+      totalUsers: registeredUsers.length,
+      activeUsers: registeredUsers.filter(u => u.isRegistered).length,
+      users: registeredUsers,
     };
   },
 });

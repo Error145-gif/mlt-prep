@@ -23,6 +23,8 @@ export const createSubscription = internalMutation({
       .filter((q) => q.eq(q.field("status"), "active"))
       .first();
 
+    let subscriptionId;
+
     if (existingSubscription) {
       console.log("Found existing active subscription, updating it");
       await ctx.db.patch(existingSubscription._id, {
@@ -32,9 +34,10 @@ export const createSubscription = internalMutation({
         endDate,
         paymentId: args.paymentId,
       });
+      subscriptionId = existingSubscription._id;
       console.log("Subscription updated successfully");
     } else {
-      const subscriptionId = await ctx.db.insert("subscriptions", {
+      subscriptionId = await ctx.db.insert("subscriptions", {
         userId,
         planName: args.planName,
         amount: args.amount,
@@ -45,6 +48,20 @@ export const createSubscription = internalMutation({
       });
       console.log("New subscription created with ID:", subscriptionId);
     }
+
+    // Record the payment for analytics
+    await ctx.db.insert("payments", {
+      userId,
+      subscriptionId,
+      amount: args.amount,
+      currency: "INR",
+      status: "success",
+      paymentMethod: "cashfree",
+      orderId: args.orderId,
+      paymentId: args.paymentId,
+      planName: args.planName,
+      duration: args.duration,
+    });
 
     console.log("=== Cashfree Subscription Creation Complete ===");
   },

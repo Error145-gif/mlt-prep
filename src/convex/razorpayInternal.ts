@@ -29,6 +29,8 @@ export const createSubscription = internalMutation({
       .filter((q) => q.eq(q.field("status"), "active"))
       .first();
 
+    let subscriptionId;
+
     if (existingSubscription) {
       console.log("Found existing active subscription, updating it");
       // Update existing subscription instead of creating new one
@@ -39,10 +41,11 @@ export const createSubscription = internalMutation({
         endDate,
         paymentId: args.paymentId,
       });
+      subscriptionId = existingSubscription._id;
       console.log("Subscription updated successfully");
     } else {
       // Create new subscription
-      const subscriptionId = await ctx.db.insert("subscriptions", {
+      subscriptionId = await ctx.db.insert("subscriptions", {
         userId,
         planName: args.planName,
         amount: args.amount,
@@ -54,6 +57,20 @@ export const createSubscription = internalMutation({
       console.log("New subscription created with ID:", subscriptionId);
     }
 
-    console.log("=== Subscription Creation Complete ===");
+    // Record the payment for analytics
+    await ctx.db.insert("payments", {
+      userId,
+      subscriptionId,
+      amount: args.amount,
+      currency: "INR",
+      status: "success",
+      paymentMethod: "razorpay",
+      orderId: args.orderId,
+      paymentId: args.paymentId,
+      planName: args.planName,
+      duration: args.duration,
+    });
+
+    console.log("=== Subscription Creation Complete === ");
   },
 });
