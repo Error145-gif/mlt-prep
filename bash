@@ -1,4 +1,1 @@
-   git add .
-   git commit -m "Production ready - Cashfree sandbox configured"
-   git push
-   
+curl -L "https://harmless-tapir-303.convex.cloud/api/storage/39c4275e-7220-41f1-b10f-c38ae74bf9f1" -o public/logo.png && curl -L "https://harmless-tapir-303.convex.cloud/api/storage/39c4275e-7220-41f1-b10f-c38ae74bf9f1" -o public/favicon.png
