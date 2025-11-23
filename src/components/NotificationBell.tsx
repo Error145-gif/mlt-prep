@@ -15,25 +15,27 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { Id } from "@/convex/_generated/dataModel";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function NotificationBell() {
   const notifications = useQuery(api.notifications.getUserNotifications);
   const unreadCount = useQuery(api.notifications.getUnreadCount);
   const markAsRead = useMutation(api.notifications.markAsRead);
   const markAllAsRead = useMutation(api.notifications.markAllAsRead);
+  const isMobile = useIsMobile();
   
   const previousCountRef = useRef<number>(0);
   const hasRequestedPermission = useRef(false);
 
   // Request notification permission on mount
   useEffect(() => {
-    if (!hasRequestedPermission.current && "Notification" in window) {
+    if (!hasRequestedPermission.current && "Notification" in window && !isMobile) {
       if (Notification.permission === "default") {
         Notification.requestPermission();
       }
       hasRequestedPermission.current = true;
     }
-  }, []);
+  }, [isMobile]);
 
   // Show browser notification and toast when new notification arrives
   useEffect(() => {
@@ -53,8 +55,8 @@ export default function NotificationBell() {
           duration: 5000,
         });
 
-        // Show browser notification if permission granted
-        if ("Notification" in window && Notification.permission === "granted") {
+        // Show browser notification if permission granted and NOT on mobile
+        if (!isMobile && "Notification" in window && Notification.permission === "granted") {
           try {
             new Notification(latestNotification.title, {
               body: latestNotification.message,
@@ -72,7 +74,7 @@ export default function NotificationBell() {
     if (unreadCount !== undefined) {
       previousCountRef.current = unreadCount;
     }
-  }, [unreadCount, notifications]);
+  }, [unreadCount, notifications, isMobile]);
 
   useEffect(() => {
     if (notifications) {
@@ -86,8 +88,8 @@ export default function NotificationBell() {
           // Update last seen
           localStorage.setItem("lastSeenNotificationId", latestNotification._id);
           
-          // Show browser notification if supported and permitted
-          if ("Notification" in window && Notification.permission === "granted") {
+          // Show browser notification if supported and permitted and NOT on mobile
+          if (!isMobile && "Notification" in window && Notification.permission === "granted") {
             try {
               // Check if we are on mobile/Android where new Notification() might fail
               // The error "Illegal constructor" happens on Android Chrome when using new Notification()
@@ -107,7 +109,7 @@ export default function NotificationBell() {
         }
       }
     }
-  }, [notifications]);
+  }, [notifications, isMobile]);
 
   const handleNotificationClick = async (notificationId: Id<"notifications">) => {
     await markAsRead({ notificationId });
