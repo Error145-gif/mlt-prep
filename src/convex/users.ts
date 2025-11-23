@@ -105,12 +105,17 @@ export const updateUserProfile = mutation({
   },
 });
 
-// Set user role to admin (for initial setup)
+// Set user role to admin (Restricted to existing admins only)
 export const setUserAsAdmin = mutation({
   args: {
     email: v.string(),
   },
   handler: async (ctx, args) => {
+    const currentUser = await getCurrentUser(ctx);
+    if (!currentUser || currentUser.role !== "admin") {
+      throw new Error("Unauthorized: Only admins can promote other users.");
+    }
+
     const user = await ctx.db
       .query("users")
       .withIndex("email", (q) => q.eq("email", args.email))
