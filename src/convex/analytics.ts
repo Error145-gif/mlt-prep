@@ -11,54 +11,36 @@ export const getDashboardStats = query({
       throw new Error("Unauthorized");
     }
 
-    const [
-      totalUsers,
-      activeSubscriptions,
-      totalContent,
-      pendingQuestions,
-      recentPayments,
-      totalQuestions,
-      approvedQuestions,
-      manualQuestions,
-    ] = await Promise.all([
-      ctx.db.query("users").collect().then((users) => users.length),
-      ctx.db
-        .query("subscriptions")
-        .withIndex("by_status", (q) => q.eq("status", "active"))
-        .collect()
-        .then((subs) => subs.length),
-      ctx.db.query("content").collect().then((content) => content.length),
-      ctx.db
-        .query("questions")
-        .withIndex("by_status", (q) => q.eq("status", "pending"))
-        .collect()
-        .then((questions) => questions.length),
-      ctx.db.query("payments").order("desc").take(10),
-      ctx.db.query("questions").collect().then((questions) => questions.length),
-      ctx.db
-        .query("questions")
-        .withIndex("by_status", (q) => q.eq("status", "approved"))
-        .collect()
-        .then((questions) => questions.length),
-      ctx.db
-        .query("questions")
-        .withIndex("by_source", (q) => q.eq("source", "manual"))
-        .collect()
-        .then((questions) => questions.length),
+    // Fetch all data in parallel for efficiency
+    const [allUsers, allSubscriptions, allContent, allQuestions, allPayments] = await Promise.all([
+      ctx.db.query("users").collect(),
+      ctx.db.query("subscriptions").collect(),
+      ctx.db.query("content").collect(),
+      ctx.db.query("questions").collect(),
+      ctx.db.query("payments").collect(),
     ]);
 
+    // Calculate stats from collected data
+    const totalUsers = allUsers.length;
+    const activeSubscriptions = allSubscriptions.filter((s) => s.status === "active").length;
+    const totalContent = allContent.length;
+    const totalQuestions = allQuestions.length;
+    const approvedQuestions = allQuestions.filter((q) => q.status === "approved").length;
+    const pendingQuestions = allQuestions.filter((q) => q.status === "pending").length;
+    const manualQuestions = allQuestions.filter((q) => q.source === "manual").length;
+
     // Calculate revenue
-    const allPayments = await ctx.db.query("payments").collect();
     const totalRevenue = allPayments
       .filter((p) => p.status === "success")
       .reduce((sum, p) => sum + p.amount, 0);
 
     // Get recent content
-    const recentContent = await ctx.db.query("content").order("desc").take(5);
+    const recentContent = allContent.sort((a, b) => b._creationTime - a._creationTime).slice(0, 5);
+
+    // Get recent payments
+    const recentPayments = allPayments.sort((a, b) => b._creationTime - a._creationTime).slice(0, 10);
 
     // Calculate test set counts
-    const allQuestions = await ctx.db.query("questions").collect();
-    
     const mockQuestions = allQuestions.filter(q => q.source === "manual" && q.status === "approved");
     const aiQuestions = allQuestions.filter(q => q.source === "ai" && q.status === "approved");
     const pyqQuestions = allQuestions.filter(q => q.source === "pyq" && q.status === "approved");
