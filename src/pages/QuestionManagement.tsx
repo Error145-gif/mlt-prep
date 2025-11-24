@@ -72,6 +72,7 @@ export default function QuestionManagement() {
   const [isAutoCreating, setIsAutoCreating] = useState(false);
   const [showAutoCreateDialog, setShowAutoCreateDialog] = useState(false);
   const [autoCreateSource, setAutoCreateSource] = useState<"manual" | "ai" | "pyq">("manual");
+  const [showAITestCreator, setShowAITestCreator] = useState(false);
   const autoGenerateMistralQuestions = useAction(api.aiQuestions.autoGenerateMistralQuestions);
 
   // Manual question form state
