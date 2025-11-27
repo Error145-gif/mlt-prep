@@ -73,6 +73,12 @@ export default function QuestionManagement() {
   const [showAutoCreateDialog, setShowAutoCreateDialog] = useState(false);
   const [autoCreateSource, setAutoCreateSource] = useState<"manual" | "ai" | "pyq">("manual");
   const [showAITestCreator, setShowAITestCreator] = useState(false);
+  const [showMockTestCreator, setShowMockTestCreator] = useState(false);
+  const [showPYQManualForm, setShowPYQManualForm] = useState(false);
+  const [showBulkManualForm, setShowBulkManualForm] = useState(false);
+  const [showAIBulkForm, setShowAIBulkForm] = useState(false);
+  const [showBulkPYQDialog, setShowBulkPYQDialog] = useState(false);
+  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
   const autoGenerateMistralQuestions = useAction(api.aiQuestions.autoGenerateMistralQuestions);
 
   // Manual question form state
