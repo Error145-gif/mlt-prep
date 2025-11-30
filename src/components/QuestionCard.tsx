@@ -5,6 +5,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import React from "react";
 
 interface QuestionCardProps {
   questionNumber: number;
@@ -31,17 +32,17 @@ export function QuestionCard({
   isLastQuestion,
   imageUrl,
 }: QuestionCardProps) {
-  const handleCopy = (e: React.ClipboardEvent) => {
+  const handleCopy = (e: React.ClipboardEvent<HTMLDivElement>) => {
     e.preventDefault();
     toast.error("Copying is disabled during tests");
   };
 
-  const handleCut = (e: React.ClipboardEvent) => {
+  const handleCut = (e: React.ClipboardEvent<HTMLDivElement>) => {
     e.preventDefault();
     toast.error("Cutting is disabled during tests");
   };
 
-  const handleContextMenu = (e: React.MouseEvent) => {
+  const handleContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
     toast.error("Right-click is disabled during tests");
   };
@@ -89,7 +90,7 @@ export function QuestionCard({
                 alt="Question"
                 className="max-w-full h-auto rounded-lg border-2 border-gray-200 shadow-sm"
                 style={{ userSelect: 'none', pointerEvents: 'none' }}
-                onContextMenu={(e) => e.preventDefault()}
+                onContextMenu={(e: React.MouseEvent<HTMLImageElement>) => e.preventDefault()}
                 draggable={false}
               />
             </div>

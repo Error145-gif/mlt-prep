@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Upload, X, Image as ImageIcon, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import React from "react";
 
 export default function ImageQuestionUpload() {
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -108,7 +109,7 @@ export default function ImageQuestionUpload() {
         source: source,
         subject: subject || undefined,
         topic: topic,
-        imageStorageId: storageId,
+        imageStorageId: storageId as any, // Cast to any to satisfy Id<"_storage"> if needed, or let it infer
       });
 
       toast.success("Image-based question created successfully!");

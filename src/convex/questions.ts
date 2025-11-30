@@ -4,6 +4,7 @@ import { mutation, query, internalMutation } from "./_generated/server";
 import { getCurrentUser } from "./users";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { paginationOptsValidator } from "convex/server";
+import { Id } from "./_generated/dataModel";
 
 // Get questions with filters
 export const getQuestions = query({

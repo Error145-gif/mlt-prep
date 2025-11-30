@@ -4,7 +4,7 @@ import { X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface QuestionPaletteProps {
-  questions: any[];
+  questions: unknown[];
   currentQuestionIndex: number;
   getQuestionStatus: (index: number) => string;
   onQuestionClick: (index: number) => void;
