@@ -1,2 +1,57 @@
-// Run the backfill mutation
-// npx convex run questions:backfillImageTags
+const questions = await ctx.db
+  .query("questions")
+  .filter((q) => q.eq(q.field("hasImage"), undefined))
+  .take(500);
+
+imageBasedQuestions: questions.filter(q => q.type === 'image-based').length,
+
+return await ctx.db.insert("questions", {
+  // ...
+  hasImage: true,
+});
+const id = await ctx.db.insert("questions", {
+  // ...
+  hasImage: true,
+});
+
+// Create image-based question
+export const createImageQuestion = mutation({
+  args: {},
+  handler: async (ctx, args) => {
+    return await ctx.db.insert("questions", {
+      // ...
+      hasImage: true,
+    });
+  },
+});
+
+// Backfill image tags
+export const backfillImageTags = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const questions = await ctx.db.query("questions").collect();
+    let updated = 0;
+    
+    for (const q of questions) {
+        const hasImageContent = !!(q.imageUrl || q.imageStorageId || (q as any).image);
+        if (q.hasImage !== hasImageContent) {
+            await ctx.db.patch(q._id, { hasImage: hasImageContent });
+            updated++;
+            if (updated >= 500) break; // Limit updates
+        }
+    }
+
+    return { total: questions.length, updated, status: updated >= 500 ? "More to process" : "Complete" };
+  },
+});
+
+export const getQuestionsWithImages = query({
+  args: {},
+  handler: async (ctx) => {
+    const questions = await ctx.db
+      .query("questions")
+      .filter((q) => q.eq(q.field("hasImage"), true))
+      .collect();
+    return questions;
+  },
+});

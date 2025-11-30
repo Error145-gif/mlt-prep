@@ -929,16 +929,26 @@ export const backfillImageTags = mutation({
     // Process in batches to avoid "Too many reads" error
     const questions = await ctx.db
       .query("questions")
-      .filter((q) => q.eq(q.field("hasImage"), undefined))
-      .take(500); // Process 500 at a time
+      .order("desc")
+      .take(500); 
 
     let count = 0;
+    let updated = 0;
     for (const q of questions) {
-      const hasImage = !!(q.imageUrl || q.imageStorageId);
-      await ctx.db.patch(q._id, { hasImage });
+      const hasImageContent = !!(q.imageUrl || q.imageStorageId || (q as any).image);
+      
+      // Update if hasImage flag doesn't match reality
+      if (q.hasImage !== hasImageContent) {
+        await ctx.db.patch(q._id, { hasImage: hasImageContent });
+        updated++;
+      }
       count++;
     }
 
-    return { count, status: count < 500 ? "Complete" : "More to process (run again)" };
+    return { 
+      processed: count, 
+      updated, 
+      status: "Processed latest 500 questions. Run again to process more." 
+    };
   },
 });
