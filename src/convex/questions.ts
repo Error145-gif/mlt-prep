@@ -1,10 +1,8 @@
-// @ts-nocheck
 import { v } from "convex/values";
 import { mutation, query, internalMutation } from "./_generated/server";
 import { getCurrentUser } from "./users";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { paginationOptsValidator } from "convex/server";
-import { Id } from "./_generated/dataModel";
 
 // Get questions with filters
 export const getQuestions = query({
@@ -597,7 +595,7 @@ export const createPYQTestWithQuestions = mutation({
 // Delete all AI-based questions
 export const deleteAllAIQuestions = mutation({
   args: {},
-  handler: async (ctx, args) => {
+  handler: async (ctx) => {
     const user = await getCurrentUser(ctx);
     if (!user || user.role !== "admin") {
       throw new Error("Unauthorized");
@@ -991,7 +989,7 @@ export const getQuestionsPaginated = query({
   args: {
     paginationOpts: paginationOptsValidator,
     examName: v.optional(v.string()),
-    year: v.optional(v.string()),
+    year: v.optional(v.number()),
     setNumber: v.optional(v.number()),
     subject: v.optional(v.string()),
     difficulty: v.optional(v.string()),

@@ -11,6 +11,18 @@ export const getDashboardStats = query({
     const allUsers = await ctx.db.query("users").collect();
     const allSubscriptions = await ctx.db.query("subscriptions").collect();
 
+    // Fetch recent data
+    const recentPayments = await ctx.db.query("payments").order("desc").take(5);
+    const recentQuestions = await ctx.db.query("questions").order("desc").take(5);
+    
+    const recentContent = recentQuestions.map(q => ({
+      _id: q._id,
+      title: (q.question || "Untitled").substring(0, 50) + ((q.question?.length || 0) > 50 ? "..." : ""),
+      type: "Question",
+      views: 0,
+      _creationTime: q._creationTime
+    }));
+
     // Calculate stats
     const approvedQuestions = allQuestions.filter((q) => q.status === "approved").length;
     const pendingQuestions = allQuestions.filter((q) => q.status === "pending" || !q.status).length; // Treat undefined as pending or handle accordingly
@@ -25,6 +37,15 @@ export const getDashboardStats = query({
       activeSubscriptions: allSubscriptions.filter((s) => s.status === "active").length,
       totalRevenue: allSubscriptions.reduce((acc, curr) => acc + (curr.amount || 0), 0),
       
+      // Dashboard specific stats
+      totalContent: allQuestions.length + allTestSets.length,
+      manualQuestions: allQuestions.filter(q => q.source === "manual").length,
+      mockTestSets: allTestSets.filter(t => t.type === "mock").length,
+      aiTestSets: allTestSets.filter(t => t.type === "ai").length,
+      pyqTestSets: allTestSets.filter(t => t.type === "pyq").length,
+      recentContent,
+      recentPayments,
+
       // Detailed question stats
       questionsBySource: {
         manual: allQuestions.filter(q => q.source === "manual").length,

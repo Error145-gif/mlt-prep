@@ -1,11 +1,10 @@
-// @ts-nocheck
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Navigate, useNavigate } from "react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, FileText, TrendingUp, Menu, X, Loader2, CreditCard, AlertCircle, Image as ImageIcon, LogOut } from "lucide-react";
+import { Users, FileText, TrendingUp, Menu, X, Loader2, CreditCard, AlertCircle, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { useAuthActions } from "@convex-dev/auth/react";
