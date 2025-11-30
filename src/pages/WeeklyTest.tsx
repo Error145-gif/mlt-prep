@@ -44,7 +44,9 @@ export default function WeeklyTest() {
     );
   }
 
-  if (!currentTest || currentTest.status !== "active") {
+  const isReady = currentTest && (currentTest.status === "active" || (currentTest.status === "scheduled" && currentTest.scheduledDate <= Date.now()));
+
+  if (!currentTest || !isReady) {
     const nextTestDate = currentTest?.scheduledDate ? new Date(currentTest.scheduledDate) : null;
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">

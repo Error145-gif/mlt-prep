@@ -7,8 +7,6 @@ import { paginationOptsValidator } from "convex/server";
 export const getCurrentWeeklyTest = query({
   args: {},
   handler: async (ctx) => {
-    const now = Date.now();
-    
     // Find active test (Sunday only)
     const activeTest = await ctx.db
       .query("weeklyTests")
@@ -23,7 +21,7 @@ export const getCurrentWeeklyTest = query({
     const scheduledTest = await ctx.db
       .query("weeklyTests")
       .withIndex("by_status", (q) => q.eq("status", "scheduled"))
-      .filter((q) => q.gte(q.field("scheduledDate"), now))
+      // .filter((q) => q.gte(q.field("scheduledDate"), now))
       .order("asc")
       .first();
 
@@ -73,7 +71,9 @@ export const getWeeklyTestQuestions = query({
     if (!user) return null;
 
     const test = await ctx.db.get(args.weeklyTestId);
-    if (!test || test.status !== "active") return null;
+    // Allow if active OR if it's scheduled and time has passed (e.g. today)
+    const isReady = test && (test.status === "active" || (test.status === "scheduled" && test.scheduledDate <= Date.now()));
+    if (!isReady || !test) return null;
 
     // Check if user already attempted
     const hasAttempted = await ctx.db
@@ -123,7 +123,9 @@ export const submitWeeklyTestAttempt = mutation({
     if (!user) throw new Error("Not authenticated");
 
     const test = await ctx.db.get(args.weeklyTestId);
-    if (!test || test.status !== "active") {
+    const isReady = test && (test.status === "active" || (test.status === "scheduled" && test.scheduledDate <= Date.now()));
+    
+    if (!isReady || !test) {
       throw new Error("Test is not active");
     }
 

@@ -1,57 +1,81 @@
-const questions = await ctx.db
-  .query("questions")
-  .filter((q) => q.eq(q.field("hasImage"), undefined))
-  .take(500);
+const isReady = currentTest && (currentTest.status === "active" || (currentTest.status === "scheduled" && currentTest.scheduledDate <= Date.now()));
 
-imageBasedQuestions: questions.filter(q => q.type === 'image-based').length,
+const startTest = useMutation(api.student.startTest);
+const submitTest = useMutation(api.student.submitTest);
 
-return await ctx.db.insert("questions", {
-  // ...
-  hasImage: true,
+// Auto-start test
+useEffect(() => {
+  if (!sessionId && questions && questions.length > 0 && !showInstructions) {
+    const initTest = async () => {
+      try {
+        const questionIds = questions.map((q) => q._id);
+        const id = await startTest({
+          testType,
+          topicId,
+          year,
+          setNumber,
+          questionIds,
+        });
+        setSessionId(id);
+        toast.success("Test started!");
+      } catch (error) {
+        console.error("Failed to start test:", error);
+      }
+    };
+    initTest();
+  }
+}, [sessionId, questions, showInstructions, testType, topicId, year, setNumber]);
+
+// Prevent copying during test
+useEffect(() => {
+  if (!showInstructions && sessionId) {
+    const preventCopy = (e: ClipboardEvent) => {
+      e.preventDefault();
+      toast.error("Copying is disabled during the test");
+      return false;
+    };
+
+    const preventContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+      return false;
+    };
+
+    const preventKeyboardShortcuts = (e: KeyboardEvent) => {
+      // Prevent Ctrl+C, Ctrl+A, Ctrl+X, Ctrl+U, F12, Ctrl+Shift+I
+      if (
+        (e.ctrlKey && (e.key === 'c' || e.key === 'C' || e.key === 'a' || e.key === 'A' || e.key === 'x' || e.key === 'X' || e.key === 'u' || e.key === 'U')) ||
+        e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && (e.key === 'i' || e.key === 'I' || e.key === 'j' || e.key === 'J'))
+      ) {
+        e.preventDefault();
+        toast.error("This action is disabled during the test");
+        return false;
+      }
+    };
+
+    document.addEventListener('copy', preventCopy);
+    document.addEventListener('cut', preventCopy);
+    document.addEventListener('contextmenu', preventContextMenu);
+    document.addEventListener('keydown', preventKeyboardShortcuts);
+
+    return () => {
+      document.removeEventListener('copy', preventCopy);
+      document.removeEventListener('cut', preventCopy);
+      document.removeEventListener('contextmenu', preventContextMenu);
+      document.removeEventListener('keydown', preventKeyboardShortcuts);
+    };
+  }
+}, [showInstructions, sessionId]);
+
+// Fetch questions for the test - with loading optimization
+const testQuestions = useQuery(api.student.getTestQuestions, {
+  testType,
+  ...(topicId && { topicId }),
+  ...(year && { year }),
+  ...(setNumber && { setNumber }),
+  ...(examName && { examName }), // Pass examName to query
 });
-const id = await ctx.db.insert("questions", {
-  // ...
-  hasImage: true,
-});
 
-// Create image-based question
-export const createImageQuestion = mutation({
-  args: {},
-  handler: async (ctx, args) => {
-    return await ctx.db.insert("questions", {
-      // ...
-      hasImage: true,
-    });
-  },
-});
-
-// Backfill image tags
-export const backfillImageTags = mutation({
-  args: {},
-  handler: async (ctx) => {
-    const questions = await ctx.db.query("questions").collect();
-    let updated = 0;
-    
-    for (const q of questions) {
-        const hasImageContent = !!(q.imageUrl || q.imageStorageId || (q as any).image);
-        if (q.hasImage !== hasImageContent) {
-            await ctx.db.patch(q._id, { hasImage: hasImageContent });
-            updated++;
-            if (updated >= 500) break; // Limit updates
-        }
-    }
-
-    return { total: questions.length, updated, status: updated >= 500 ? "More to process" : "Complete" };
-  },
-});
-
-export const getQuestionsWithImages = query({
-  args: {},
-  handler: async (ctx) => {
-    const questions = await ctx.db
-      .query("questions")
-      .filter((q) => q.eq(q.field("hasImage"), true))
-      .collect();
-    return questions;
-  },
-});
+const questions = Array.isArray(testQuestions) ? testQuestions : [];
+const hasError = testQuestions === undefined && !isLoading;
+const [testName, setTestName] = useState("");

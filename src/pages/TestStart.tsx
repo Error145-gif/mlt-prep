@@ -63,6 +63,19 @@ export default function TestStart() {
   const startTest = useMutation(api.student.startTest);
   const submitTest = useMutation(api.student.submitTest);
 
+  // Fetch questions for the test - with loading optimization
+  const testQuestions = useQuery(api.student.getTestQuestions, {
+    testType,
+    ...(topicId && { topicId }),
+    ...(year && { year }),
+    ...(setNumber && { setNumber }),
+    ...(examName && { examName }), // Pass examName to query
+  });
+
+  const questions = Array.isArray(testQuestions) ? testQuestions : [];
+  const hasError = testQuestions === undefined && !isLoading;
+  const [testName, setTestName] = useState("");
+
   // Auto-start test
   useEffect(() => {
     if (!sessionId && questions && questions.length > 0 && !showInstructions) {
@@ -126,19 +139,6 @@ export default function TestStart() {
       };
     }
   }, [showInstructions, sessionId]);
-
-  // Fetch questions for the test - with loading optimization
-  const testQuestions = useQuery(api.student.getTestQuestions, {
-    testType,
-    ...(topicId && { topicId }),
-    ...(year && { year }),
-    ...(setNumber && { setNumber }),
-    ...(examName && { examName }), // Pass examName to query
-  });
-
-  const questions = Array.isArray(testQuestions) ? testQuestions : [];
-  const hasError = testQuestions === undefined && !isLoading;
-  const [testName, setTestName] = useState("");
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
