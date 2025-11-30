@@ -3111,11 +3111,11 @@ Explanation: Explanation text here
                     </Card>
                   </div>
                 </TabsContent>
-              </CardContent>
-            </Card>
-          </div>
-        </Tabs>
+            </div>
+          </Tabs>
+        </div>
       </motion.div>
+=======
 
       {/* Auto Create Test Sets Dialog */}
       <Dialog open={showAutoCreateDialog} onOpenChange={setShowAutoCreateDialog}>
