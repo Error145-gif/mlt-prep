@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation, usePaginatedQuery, useAction } from "convex/react";
-import { api } from "../../convex/_generated/api";
+import { api } from "@/convex/_generated/api";
 import { Navigate, useNavigate } from "react-router";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
