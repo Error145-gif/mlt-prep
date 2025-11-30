@@ -296,23 +296,17 @@ export const getAllWeeklyTests = query({
   },
 });
 
-// ADMIN: Create weekly test
+// ADMIN: Create weekly test with auto-selected questions
 export const createWeeklyTest = mutation({
   args: {
     title: v.string(),
     description: v.optional(v.string()),
     scheduledDate: v.number(),
-    questionIds: v.array(v.id("questions")),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
     if (!user || user.role !== "admin") {
       throw new Error("Unauthorized");
-    }
-
-    // Validate exactly 100 questions
-    if (args.questionIds.length !== 100) {
-      throw new Error("Weekly test must have exactly 100 questions");
     }
 
     // Validate scheduled date is a Sunday
@@ -321,12 +315,27 @@ export const createWeeklyTest = mutation({
       throw new Error("Weekly test must be scheduled on a Sunday");
     }
 
+    // Auto-select 100 random approved questions
+    const allQuestions = await ctx.db
+      .query("questions")
+      .withIndex("by_status", (q) => q.eq("status", "approved"))
+      .collect();
+
+    if (allQuestions.length < 100) {
+      throw new Error(`Not enough approved questions. Found ${allQuestions.length}, need 100.`);
+    }
+
+    // Shuffle and select 100 random questions
+    const shuffled = allQuestions.sort(() => Math.random() - 0.5);
+    const selectedQuestions = shuffled.slice(0, 100);
+    const questionIds = selectedQuestions.map(q => q._id);
+
     const testId = await ctx.db.insert("weeklyTests", {
       title: args.title,
       description: args.description,
       scheduledDate: args.scheduledDate,
       status: "scheduled",
-      questionIds: args.questionIds,
+      questionIds: questionIds,
       totalAttempts: 0,
       createdBy: user._id,
     });

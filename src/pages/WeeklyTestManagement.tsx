@@ -22,6 +22,7 @@ export default function WeeklyTestManagement() {
   const [scheduledDate, setScheduledDate] = useState("");
 
   const weeklyTests = useQuery(api.weeklyTests.getAllWeeklyTests);
+  const createTest = useMutation(api.weeklyTests.createWeeklyTest);
   const updateStatus = useMutation(api.weeklyTests.updateWeeklyTestStatus);
   const deleteTest = useMutation(api.weeklyTests.deleteWeeklyTest);
 
@@ -50,9 +51,13 @@ export default function WeeklyTestManagement() {
     }
 
     try {
-      // TODO: Implement auto-selection of 100 random approved questions
-      // For now, just show success message
-      toast.success("Weekly test creation feature coming soon!");
+      await createTest({
+        title,
+        description: description || undefined,
+        scheduledDate: date.getTime(),
+      });
+      
+      toast.success("Weekly test created successfully with 100 random questions!");
       setShowCreateForm(false);
       setTitle("");
       setDescription("");
@@ -125,12 +130,16 @@ export default function WeeklyTestManagement() {
                 </div>
                 <div className="flex gap-4">
                   <Button onClick={handleCreateTest} className="bg-gradient-to-r from-green-500 to-emerald-600">
+                    <Plus className="h-4 w-4 mr-2" />
                     Create Test (Auto-select 100 Questions)
                   </Button>
                   <Button onClick={() => setShowCreateForm(false)} variant="outline" className="bg-white/10 border-white/30 text-white">
                     Cancel
                   </Button>
                 </div>
+                <p className="text-white/70 text-sm mt-2">
+                  ℹ️ The system will automatically select 100 random approved questions for this test.
+                </p>
               </CardContent>
             </Card>
           </motion.div>
