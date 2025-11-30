@@ -1,7 +1,7 @@
 // @ts-nocheck
 
 import { useAuth } from "@/hooks/use-auth";
-import { useQuery, useMutation, useAction } from "convex/react";
+import { useQuery, useMutation, usePaginatedQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Navigate, useNavigate } from "react-router";
 import { useState } from "react";
@@ -56,37 +56,35 @@ export default function QuestionManagement() {
   const [isCreatingPYQTest, setIsCreatingPYQTest] = useState(false);
   const [isDeletingQuestion, setIsDeletingQuestion] = useState<Id<"questions"> | null>(null);
 
-  const questions = useQuery(api.questions.getQuestions, {});
-  const unassignedQuestions = questions?.filter((q) => !q.testSetId) || [];
-  
-  // Filter questions based on active tab and image filter
-  const filteredQuestions = questions?.filter((q) => {
-    // First apply image filter if active
-    if (filterImageBased && !q.hasImage) return false;
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterSubject, setFilterSubject] = useState("all");
+  const [filterDifficulty, setFilterDifficulty] = useState("all");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterExam, setFilterExam] = useState("all");
+  const [filterYear, setFilterYear] = useState("all");
+  const [filterSet, setFilterSet] = useState("all");
+  const [showImageQuestions, setShowImageQuestions] = useState(false);
 
-    if (activeTab === "all") return true;
-    if (activeTab === "manual") return q.source === "manual";
-    if (activeTab === "ai") return q.source === "ai";
-    if (activeTab === "pyq") return q.source === "pyq";
-    if (activeTab === "duplicates") {
-      // Simple duplicate detection based on text
-      const count = questions.filter((oq) => oq.text === q.text || (oq.question && oq.question === q.question)).length;
-      return count > 1;
-    }
-    return true;
-  });
+  // Use paginated query instead of fetching all questions
+  const {
+    results: questions,
+    status: queryStatus,
+    loadMore,
+    isLoading: isQuestionsLoading,
+  } = usePaginatedQuery(
+    api.questions.getQuestionsPaginated,
+    {
+      examName: filterExam !== "all" ? filterExam : undefined,
+      year: filterYear !== "all" ? filterYear : undefined,
+      setNumber: filterSet !== "all" ? parseInt(filterSet) : undefined,
+      subject: filterSubject !== "all" ? filterSubject : undefined,
+      difficulty: filterDifficulty !== "all" ? filterDifficulty : undefined,
+      status: filterStatus !== "all" ? filterStatus : undefined,
+      hasImage: showImageQuestions ? true : undefined,
+    },
+    { initialNumItems: 20 }
+  );
 
-  const stats = {
-    total: questions?.length || 0,
-    manual: questions?.filter((q) => q.source === "manual").length || 0,
-    ai: questions?.filter((q) => q.source === "ai").length || 0,
-    pyq: questions?.filter((q) => q.source === "pyq").length || 0,
-    imageBased: questions?.filter((q) => q.hasImage).length || 0,
-  };
-
-  const topics = useQuery(api.topics.getAllTopics);
-  const reviewQuestion = useMutation(api.questions.reviewQuestion);
-  const createQuestion = useMutation(api.questions.createQuestion);
   const deleteQuestion = useMutation(api.questions.deleteQuestion);
   const batchCreateQuestions = useMutation(api.questions.batchCreateQuestions);
   const generateUploadUrl = useMutation(api.content.generateUploadUrl);

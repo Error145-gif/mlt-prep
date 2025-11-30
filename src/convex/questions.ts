@@ -3,6 +3,7 @@ import { v } from "convex/values";
 import { mutation, query, internalMutation } from "./_generated/server";
 import { getCurrentUser } from "./users";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { paginationOptsValidator } from "convex/server";
 
 // Get questions with filters
 export const getQuestions = query({
@@ -982,5 +983,60 @@ export const backfillImageTags = mutation({
       updated, 
       status: "Processed latest 500 questions. Run again to process more." 
     };
+  },
+});
+
+export const getQuestionsPaginated = query({
+  args: {
+    paginationOpts: paginationOptsValidator,
+    examName: v.optional(v.string()),
+    year: v.optional(v.string()),
+    setNumber: v.optional(v.number()),
+    subject: v.optional(v.string()),
+    difficulty: v.optional(v.string()),
+    status: v.optional(v.string()),
+    hasImage: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    let query = ctx.db.query("questions");
+
+    // Apply filters
+    if (args.examName) {
+      query = query.filter((q) => q.eq(q.field("examName"), args.examName));
+    }
+    if (args.year) {
+      query = query.filter((q) => q.eq(q.field("year"), args.year));
+    }
+    if (args.setNumber) {
+      query = query.filter((q) => q.eq(q.field("setNumber"), args.setNumber));
+    }
+    if (args.subject) {
+      query = query.filter((q) => q.eq(q.field("subject"), args.subject));
+    }
+    if (args.difficulty) {
+      query = query.filter((q) => q.eq(q.field("difficulty"), args.difficulty));
+    }
+    if (args.status) {
+      query = query.filter((q) => q.eq(q.field("status"), args.status));
+    }
+    if (args.hasImage !== undefined) {
+      query = query.filter((q) => q.eq(q.field("hasImage"), args.hasImage));
+    }
+
+    const results = await query.order("desc").paginate(args.paginationOpts);
+
+    // Map results to include image URLs
+    const pageWithUrls = await Promise.all(
+      results.page.map(async (q) => {
+        let imageUrl = q.imageUrl;
+        if (q.imageStorageId) {
+          const url = await ctx.storage.getUrl(q.imageStorageId);
+          if (url) imageUrl = url;
+        }
+        return { ...q, imageUrl };
+      })
+    );
+
+    return { ...results, page: pageWithUrls };
   },
 });
