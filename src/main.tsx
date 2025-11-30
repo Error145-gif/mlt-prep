@@ -40,7 +40,6 @@ import StudyMaterialsManagement from "./pages/StudyMaterialsManagement.tsx";
 import FreeLibrary from "./pages/FreeLibrary.tsx";
 import { useAuth } from "@/hooks/use-auth";
 import SectionsManagement from "./pages/SectionsManagement.tsx";
-import ImageQuestionManagement from "./pages/ImageQuestionManagement.tsx";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import MLTExam from "./pages/MLTExam";
 import LabTechnicianExam from "./pages/LabTechnicianExam";
@@ -318,14 +317,6 @@ createRoot(document.getElementById("root")!).render(
                 element={
                   <AdminRoute>
                     <SectionsManagement />
-                  </AdminRoute>
-                }
-              />
-              <Route
-                path="/admin/image-questions"
-                element={
-                  <AdminRoute>
-                    <ImageQuestionManagement />
                   </AdminRoute>
                 }
               />
