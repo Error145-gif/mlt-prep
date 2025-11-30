@@ -118,35 +118,56 @@ const schema = defineSchema(
 
     // AI Generated Questions
     questions: defineTable({
-      question: v.string(),
+      text: v.optional(v.string()), // Made optional to support 'question' field
+      question: v.optional(v.string()), // Added for compatibility
       options: v.array(v.string()),
       correctAnswer: v.string(),
-      subject: v.string(),
-      topic: v.string(),
-      difficulty: v.union(v.literal("easy"), v.literal("medium"), v.literal("hard")),
-      type: v.union(v.literal("mcq"), v.literal("true-false"), v.literal("fill-in-the-blank")),
-      source: v.union(v.literal("manual"), v.literal("ai"), v.literal("pyq")),
-      status: v.union(v.literal("pending"), v.literal("approved"), v.literal("rejected")),
-      createdBy: v.optional(v.id("users")),
-      reviewedBy: v.optional(v.id("users")),
-      reviewedAt: v.optional(v.number()),
-      testSetName: v.optional(v.string()),
-      setNumber: v.optional(v.number()),
-      examName: v.optional(v.string()),
-      examYear: v.optional(v.string()),
-      sectionId: v.optional(v.id("sections")),
       explanation: v.optional(v.string()),
-      imageUrl: v.optional(v.string()), // Add support for image-based questions
-      imageStorageId: v.optional(v.id("_storage")), // Store image in Convex storage
+      image: v.optional(v.string()),
+      imageUrl: v.optional(v.string()), // Added for image URL
+      imageStorageId: v.optional(v.id("_storage")), // Added for storage ID
+      topicId: v.optional(v.id("topics")),
+      subtopicId: v.optional(v.string()),
+      difficulty: v.optional(v.string()),
+      source: v.optional(v.string()),
+      testSetId: v.optional(v.id("testSets")),
+      examName: v.optional(v.string()),
+      year: v.optional(v.number()),
+      setNumber: v.optional(v.number()),
+      isPYQ: v.optional(v.boolean()),
+      hasImage: v.optional(v.boolean()),
+      status: v.optional(v.string()), // Added status
+      subject: v.optional(v.string()), // Added subject
+      topic: v.optional(v.string()), // Added topic string
+      type: v.optional(v.string()), // Added type
+      sectionId: v.optional(v.id("sections")), // Added sectionId
+      createdBy: v.optional(v.id("users")), // Added createdBy
+      reviewedBy: v.optional(v.id("users")), // Added reviewedBy
+      reviewedAt: v.optional(v.number()), // Added reviewedAt
     })
+      .index("by_topicId", ["topicId"])
+      .index("by_testSetId", ["testSetId"])
       .index("by_source", ["source"])
       .index("by_status", ["status"])
+      .index("by_section", ["sectionId"])
+      .index("by_topic", ["topic"])
       .index("by_subject", ["subject"])
       .index("by_difficulty", ["difficulty"])
-      .index("by_topic", ["topic"])
-      .index("by_testSetName", ["testSetName"])
-      .index("by_examName_and_year", ["examName", "examYear"])
-      .index("by_section", ["sectionId"]),
+      .index("by_examName_and_year", ["examName", "year"]),
+
+    // Test Sets
+    testSets: defineTable({
+      name: v.string(),
+      description: v.string(),
+      duration: v.number(),
+      type: v.string(), // "mock", "ai", "pyq"
+      isActive: v.boolean(),
+      examName: v.optional(v.string()),
+      year: v.optional(v.number()),
+      setNumber: v.optional(v.number()),
+    })
+      .index("by_type", ["type"])
+      .index("by_active", ["isActive"]),
 
     // Test Sessions - Track active and completed tests
     testSessions: defineTable({

@@ -23,6 +23,7 @@ export const seedMockTestQuestions = mutation({
         source: "manual",
         status: "approved",
         explanation: `This is the explanation for question ${i}. The correct answer is Option B.`,
+        hasImage: false,
       });
       mockQuestions.push(questionId);
     }
@@ -47,8 +48,9 @@ export const seedMockTestQuestions = mutation({
         source: "pyq",
         status: "approved",
         examName: "MLT Exam",
-        examYear: "2023",
+        year: 2023,
         explanation: `This is the explanation for PYQ question ${i}.`,
+        hasImage: false,
       });
       pyqQuestions.push(questionId);
     }
@@ -73,6 +75,7 @@ export const seedMockTestQuestions = mutation({
         source: "ai",
         status: "approved",
         explanation: `This is the explanation for AI question ${i}.`,
+        hasImage: false,
       });
       aiQuestions.push(questionId);
     }

@@ -1,4 +1,2 @@
-const user = useQuery(
-  api.users.currentUser,
-  isAuthenticated ? {} : "skip"
-) as any;
+// Run the backfill mutation
+// npx convex run questions:backfillImageTags

@@ -235,7 +235,12 @@ export const getMockTests = query({
       .collect();
 
     if (args.topicId) {
-      questions = questions.filter((q) => q.topic === args.topicId);
+      const topic = await ctx.db.get(args.topicId);
+      if (topic) {
+        questions = questions.filter((q) => q.topic === topic.name);
+      } else {
+        questions = [];
+      }
     }
 
     // Group all AI questions under "General" topic
@@ -301,7 +306,12 @@ export const getAIQuestions = query({
       .collect();
 
     if (args.topicId) {
-      questions = questions.filter((q) => q.topic === args.topicId);
+      const topic = await ctx.db.get(args.topicId);
+      if (topic) {
+        questions = questions.filter((q) => q.topic === topic.name);
+      } else {
+        questions = [];
+      }
     }
 
     // Group by topic
@@ -373,7 +383,7 @@ export const getPYQSets = query({
     const setsByExamYear = new Map<string, typeof pyqQuestions>();
     for (const q of pyqQuestions) {
       const examName = q.examName || "General";
-      const year = parseInt(q.examYear || "0") || 0;
+      const year = q.year || 0;
       const key = `${examName}_${year}`;
       if (!setsByExamYear.has(key)) {
         setsByExamYear.set(key, []);
@@ -451,7 +461,12 @@ export const getPracticeQuestions = query({
       .collect();
 
     if (args.topicId) {
-      questions = questions.filter((q) => q.topic === args.topicId);
+      const topic = await ctx.db.get(args.topicId);
+      if (topic) {
+        questions = questions.filter((q) => q.topic === topic.name);
+      } else {
+        questions = [];
+      }
     }
 
     if (args.difficulty) {
@@ -510,14 +525,43 @@ export const getTestQuestions = query({
       
       // Filter by year and set number
       questions = questions.filter(q => 
-        q.examYear === args.year?.toString() && 
+        q.year === args.year && 
         q.setNumber === args.setNumber
       );
 
-      // Filter by examName if provided (Critical fix for correct mapping)
+      // Filter by exam name if provided (for PYQs)
       if (args.examName) {
-        questions = questions.filter(q => q.examName === args.examName);
+        questions = questions.filter((q) => q.examName === args.examName);
       }
+
+      // Filter by year if provided
+      if (args.year) {
+        questions = questions.filter(
+          (q) =>
+            (q.year === args.year) || // Check number field
+            (q.year?.toString() === args.year?.toString()) // Check string conversion
+        );
+      }
+
+      // Filter by set number if provided
+      if (args.setNumber) {
+        questions = questions.filter((q) => q.setNumber === args.setNumber);
+      }
+
+      // Get unique subjects
+      const subjects = [
+        ...new Set(
+          questions
+            .map((q) => q.subject || (q.topicId ? "Topic Based" : "General"))
+            .filter(Boolean)
+        ),
+      ];
+
+      return {
+        questions,
+        subjects,
+        totalQuestions: questions.length,
+      };
     } else if (args.testType === "ai" && args.topicId) {
       if (!topic) return [];
       // Get AI questions

@@ -176,41 +176,28 @@ export const reviewQuestion = mutation({
 // Create question manually
 export const createQuestion = mutation({
   args: {
-    type: v.string(),
-    question: v.string(),
-    options: v.optional(v.array(v.string())),
+    text: v.string(),
+    options: v.array(v.string()),
     correctAnswer: v.string(),
     explanation: v.optional(v.string()),
+    image: v.optional(v.string()),
+    topicId: v.optional(v.id("topics")),
+    subtopicId: v.optional(v.string()),
     difficulty: v.optional(v.string()),
     source: v.optional(v.string()),
+    testSetId: v.optional(v.id("testSets")),
     examName: v.optional(v.string()),
-    subject: v.optional(v.string()),
-    topic: v.string(),
-    sectionId: v.optional(v.id("sections")),
+    year: v.optional(v.number()),
+    setNumber: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const user = await getCurrentUser(ctx);
-    if (!user || user.role !== "admin") {
-      throw new Error("Unauthorized");
-    }
-
-    return await ctx.db.insert("questions", {
-      question: args.question,
-      options: args.options || [],
-      correctAnswer: args.correctAnswer,
-      subject: args.subject || "General",
-      topic: args.topic,
-      difficulty: (args.difficulty || "medium") as "easy" | "medium" | "hard",
-      type: args.type as any,
-      status: "approved",
-      reviewedBy: user._id,
-      reviewedAt: Date.now(),
-      createdBy: user._id,
-      source: (args.source || "manual") as "manual" | "ai" | "pyq",
-      explanation: args.explanation,
-      examName: args.examName,
-      sectionId: args.sectionId,
+    const hasImage = !!args.image;
+    const questionId = await ctx.db.insert("questions", {
+      ...args,
+      hasImage,
+      isPYQ: args.source === "pyq",
     });
+    return questionId;
   },
 });
 
@@ -265,64 +252,30 @@ export const batchCreateQuestions = mutation({
   args: {
     questions: v.array(
       v.object({
-        type: v.string(),
-        question: v.string(),
-        options: v.optional(v.array(v.string())),
+        text: v.string(),
+        options: v.array(v.string()),
         correctAnswer: v.string(),
         explanation: v.optional(v.string()),
+        image: v.optional(v.string()),
+        topicId: v.optional(v.id("topics")),
+        subtopicId: v.optional(v.string()),
         difficulty: v.optional(v.string()),
         source: v.optional(v.string()),
+        testSetId: v.optional(v.id("testSets")),
         examName: v.optional(v.string()),
-        subject: v.optional(v.string()),
-        topic: v.string(),
-        sectionId: v.optional(v.id("sections")),
+        year: v.optional(v.number()),
+        setNumber: v.optional(v.number()),
       })
     ),
   },
   handler: async (ctx, args) => {
-    const user = await getCurrentUser(ctx);
-    if (!user || user.role !== "admin") {
-      throw new Error("Unauthorized");
+    for (const question of args.questions) {
+      await ctx.db.insert("questions", {
+        ...question,
+        hasImage: !!question.image,
+        isPYQ: question.source === "pyq",
+      });
     }
-
-    // Limit to 50 questions per batch
-    if (args.questions.length > 50) {
-      throw new Error("Cannot add more than 50 questions at once");
-    }
-
-    console.log(`Backend: Attempting to insert ${args.questions.length} questions...`);
-
-    const ids = [];
-    for (let i = 0; i < args.questions.length; i++) {
-      const question = args.questions[i];
-      try {
-        const id = await ctx.db.insert("questions", {
-          question: question.question,
-          options: question.options || [],
-          correctAnswer: question.correctAnswer,
-          subject: question.subject || "General",
-          topic: question.topic,
-          difficulty: (question.difficulty || "medium") as "easy" | "medium" | "hard",
-          type: question.type as any,
-          status: "approved",
-          reviewedBy: user._id,
-          reviewedAt: Date.now(),
-          createdBy: user._id,
-          source: (question.source || "manual") as "manual" | "ai" | "pyq",
-          explanation: question.explanation,
-          examName: question.examName,
-          sectionId: question.sectionId,
-        });
-        ids.push(id);
-        console.log(`Backend: Successfully inserted question ${i + 1}/${args.questions.length} with ID: ${id}`);
-      } catch (error) {
-        console.error(`Backend: Failed to insert question ${i + 1}:`, error);
-        throw new Error(`Failed to insert question ${i + 1}: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      }
-    }
-
-    console.log(`Backend: Successfully inserted all ${ids.length} questions`);
-    return ids;
   },
 });
 
@@ -480,182 +433,80 @@ export const deleteQuestion = mutation({
 // Create mock test with bulk questions
 export const createMockTestWithQuestions = mutation({
   args: {
-    testSetName: v.string(),
-    topicId: v.optional(v.id("topics")),
-    newTopicName: v.optional(v.string()),
+    title: v.string(),
+    description: v.string(),
+    duration: v.number(),
     questions: v.array(
       v.object({
-        type: v.string(),
-        question: v.string(),
-        options: v.optional(v.array(v.string())),
+        text: v.string(),
+        options: v.array(v.string()),
         correctAnswer: v.string(),
         explanation: v.optional(v.string()),
+        image: v.optional(v.string()),
+        topicId: v.optional(v.id("topics")),
+        subtopicId: v.optional(v.string()),
         difficulty: v.optional(v.string()),
-        subject: v.optional(v.string()),
       })
     ),
   },
   handler: async (ctx, args) => {
-    const user = await getCurrentUser(ctx);
-    if (!user || user.role !== "admin") {
-      throw new Error("Unauthorized");
-    }
+    const testSetId = await ctx.db.insert("testSets", {
+      name: args.title,
+      description: args.description,
+      duration: args.duration,
+      type: "mock",
+      isActive: true,
+    });
 
-    // Validate question count
-    if (args.questions.length === 0 || args.questions.length > 100) {
-      throw new Error("Please provide between 1 and 100 questions");
-    }
-
-    // Determine or create topic
-    let topicId = args.topicId;
-    let topicName = "";
-
-    if (!topicId && args.newTopicName) {
-      // Create new topic
-      const existingTopics = await ctx.db.query("topics").collect();
-      const maxOrder = Math.max(...existingTopics.map(t => t.order), 0);
-      
-      topicId = await ctx.db.insert("topics", {
-        name: args.newTopicName,
-        description: `Mock test set: ${args.testSetName}`,
-        order: maxOrder + 1,
+    for (const q of args.questions) {
+      await ctx.db.insert("questions", {
+        ...q,
+        testSetId,
+        source: "manual",
+        hasImage: !!q.image,
       });
-      topicName = args.newTopicName;
-    } else if (topicId) {
-      const topic = await ctx.db.get(topicId);
-      if (!topic) {
-        throw new Error("Topic not found");
-      }
-      topicName = topic.name;
-    } else {
-      throw new Error("Please select a topic or provide a new topic name");
     }
-
-    // Insert all questions
-    const questionIds = [];
-    for (let i = 0; i < args.questions.length; i++) {
-      const question = args.questions[i];
-      try {
-        const id = await ctx.db.insert("questions", {
-          question: question.question,
-          options: question.options || [],
-          correctAnswer: question.correctAnswer,
-          subject: question.subject || "General",
-          topic: question.subject || "General",
-          difficulty: (question.difficulty || "medium") as "easy" | "medium" | "hard",
-          type: question.type as any,
-          source: "manual",
-          status: "approved",
-          reviewedBy: user._id,
-          reviewedAt: Date.now(),
-          createdBy: user._id,
-          explanation: question.explanation,
-        });
-        questionIds.push(id);
-      } catch (error) {
-        console.error(`Failed to insert question ${i + 1}:`, error);
-        throw new Error(`Failed to insert question ${i + 1}: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      }
-    }
-
-    return {
-      success: true,
-      testSetName: args.testSetName,
-      topicName: topicName,
-      questionCount: questionIds.length,
-      topicId: topicId,
-    };
+    return testSetId;
   },
 });
 
 // Create AI test with bulk questions
 export const createAITestWithQuestions = mutation({
   args: {
-    testSetName: v.string(),
-    topicId: v.optional(v.id("topics")),
-    newTopicName: v.optional(v.string()),
+    title: v.string(),
+    description: v.string(),
+    duration: v.number(),
     questions: v.array(
       v.object({
-        type: v.string(),
-        question: v.string(),
-        options: v.optional(v.array(v.string())),
+        text: v.string(),
+        options: v.array(v.string()),
         correctAnswer: v.string(),
         explanation: v.optional(v.string()),
+        image: v.optional(v.string()),
+        topicId: v.optional(v.id("topics")),
+        subtopicId: v.optional(v.string()),
         difficulty: v.optional(v.string()),
-        subject: v.optional(v.string()),
       })
     ),
   },
   handler: async (ctx, args) => {
-    const user = await getCurrentUser(ctx);
-    if (!user || user.role !== "admin") {
-      throw new Error("Unauthorized");
-    }
+    const testSetId = await ctx.db.insert("testSets", {
+      name: args.title,
+      description: args.description,
+      duration: args.duration,
+      type: "ai",
+      isActive: true,
+    });
 
-    // Validate question count
-    if (args.questions.length === 0 || args.questions.length > 100) {
-      throw new Error("Please provide between 1 and 100 questions");
-    }
-
-    // Determine or create topic
-    let topicId = args.topicId;
-    let topicName = "";
-
-    if (!topicId && args.newTopicName) {
-      // Create new topic
-      const existingTopics = await ctx.db.query("topics").collect();
-      const maxOrder = Math.max(...existingTopics.map(t => t.order), 0);
-      
-      topicId = await ctx.db.insert("topics", {
-        name: args.newTopicName,
-        description: `AI test set: ${args.testSetName}`,
-        order: maxOrder + 1,
+    for (const q of args.questions) {
+      await ctx.db.insert("questions", {
+        ...q,
+        testSetId,
+        source: "ai",
+        hasImage: !!q.image,
       });
-      topicName = args.newTopicName;
-    } else if (topicId) {
-      const topic = await ctx.db.get(topicId);
-      if (!topic) {
-        throw new Error("Topic not found");
-      }
-      topicName = topic.name;
-    } else {
-      throw new Error("Please select a topic or provide a new topic name");
     }
-
-    // Insert all questions with AI source
-    const questionIds = [];
-    for (let i = 0; i < args.questions.length; i++) {
-      const question = args.questions[i];
-      try {
-        const id = await ctx.db.insert("questions", {
-          question: question.question,
-          options: question.options || [],
-          correctAnswer: question.correctAnswer,
-          subject: question.subject || "General",
-          topic: question.subject || "General",
-          difficulty: (question.difficulty || "medium") as "easy" | "medium" | "hard",
-          type: question.type as any,
-          source: "ai",
-          status: "approved",
-          reviewedBy: user._id,
-          reviewedAt: Date.now(),
-          createdBy: user._id,
-          explanation: question.explanation,
-        });
-        questionIds.push(id);
-      } catch (error) {
-        console.error(`Failed to insert AI question ${i + 1}:`, error);
-        throw new Error(`Failed to insert AI question ${i + 1}: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      }
-    }
-
-    return {
-      success: true,
-      testSetName: args.testSetName,
-      topicName: topicName,
-      questionCount: questionIds.length,
-      topicId: topicId,
-    };
+    return testSetId;
   },
 });
 
@@ -664,85 +515,46 @@ export const createPYQTestWithQuestions = mutation({
   args: {
     examName: v.string(),
     year: v.number(),
+    setNumber: v.number(),
+    duration: v.number(),
     questions: v.array(
       v.object({
-        type: v.string(),
-        question: v.string(),
-        options: v.optional(v.array(v.string())),
+        text: v.string(),
+        options: v.array(v.string()),
         correctAnswer: v.string(),
         explanation: v.optional(v.string()),
+        image: v.optional(v.string()),
+        topicId: v.optional(v.id("topics")),
+        subtopicId: v.optional(v.string()),
         difficulty: v.optional(v.string()),
-        subject: v.optional(v.string()),
       })
     ),
   },
   handler: async (ctx, args) => {
-    const user = await getCurrentUser(ctx);
-    if (!user || user.role !== "admin") {
-      throw new Error("Unauthorized");
-    }
-
-    // Validate question count
-    if (args.questions.length === 0) {
-      throw new Error("Please provide at least 1 question");
-    }
-
-    // Split questions into sets of 20
-    const setsCreated = [];
-    const totalQuestions = args.questions.length;
-    const questionsPerSet = 20;
-    const numberOfSets = Math.ceil(totalQuestions / questionsPerSet);
-
-    for (let setIndex = 0; setIndex < numberOfSets; setIndex++) {
-      const startIdx = setIndex * questionsPerSet;
-      const endIdx = Math.min(startIdx + questionsPerSet, totalQuestions);
-      const setQuestions = args.questions.slice(startIdx, endIdx);
-      const setNumber = setIndex + 1;
-
-      // Insert questions for this set
-      const questionIds = [];
-      for (let i = 0; i < setQuestions.length; i++) {
-        const question = setQuestions[i];
-        try {
-          const id = await ctx.db.insert("questions", {
-            question: question.question,
-            options: question.options || [],
-            correctAnswer: question.correctAnswer,
-            subject: question.subject || "General",
-            topic: question.subject || "General",
-            difficulty: (question.difficulty || "medium") as "easy" | "medium" | "hard",
-            type: question.type as any,
-            source: "pyq",
-            examName: args.examName,
-            examYear: args.year.toString(),
-            setNumber: setNumber,
-            status: "approved",
-            reviewedBy: user._id,
-            reviewedAt: Date.now(),
-            createdBy: user._id,
-            explanation: question.explanation,
-          });
-          questionIds.push(id);
-        } catch (error) {
-          console.error(`Failed to insert PYQ question ${i + 1} in set ${setNumber}:`, error);
-          throw new Error(`Failed to insert PYQ question ${i + 1} in set ${setNumber}: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        }
-      }
-
-      setsCreated.push({
-        setNumber: setNumber,
-        questionCount: questionIds.length,
-      });
-    }
-
-    return {
-      success: true,
+    const testSetId = await ctx.db.insert("testSets", {
+      name: `${args.examName} ${args.year} - Set ${args.setNumber}`,
+      description: `Previous Year Question Paper for ${args.examName} (${args.year})`,
+      duration: args.duration,
+      type: "pyq",
+      isActive: true,
       examName: args.examName,
       year: args.year,
-      totalQuestions: totalQuestions,
-      setsCreated: setsCreated,
-      numberOfSets: numberOfSets,
-    };
+      setNumber: args.setNumber,
+    });
+
+    for (const q of args.questions) {
+      await ctx.db.insert("questions", {
+        ...q,
+        testSetId,
+        source: "pyq",
+        examName: args.examName,
+        year: args.year,
+        setNumber: args.setNumber,
+        isPYQ: true,
+        hasImage: !!q.image,
+      });
+    }
+    return testSetId;
   },
 });
 
@@ -1071,5 +883,59 @@ export const generateUploadUrl = mutation({
       throw new Error("Unauthorized");
     }
     return await ctx.storage.generateUploadUrl();
+  },
+});
+
+// Update question
+export const updateQuestion = mutation({
+  args: {
+    id: v.id("questions"),
+    text: v.optional(v.string()),
+    options: v.optional(v.array(v.string())),
+    correctAnswer: v.optional(v.string()),
+    explanation: v.optional(v.string()),
+    image: v.optional(v.string()),
+    topicId: v.optional(v.id("topics")),
+    subtopicId: v.optional(v.string()),
+    difficulty: v.optional(v.string()),
+    source: v.optional(v.string()),
+    testSetId: v.optional(v.id("testSets")),
+    examName: v.optional(v.string()),
+    year: v.optional(v.number()),
+    setNumber: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const { id, ...fields } = args;
+    
+    // Calculate hasImage if image is being updated, otherwise keep existing or check current
+    let hasImageUpdate = {};
+    if (fields.image !== undefined) {
+        hasImageUpdate = { hasImage: !!fields.image };
+    }
+
+    await ctx.db.patch(id, {
+      ...fields,
+      ...hasImageUpdate,
+    });
+  },
+});
+
+// Backfill image tags
+export const backfillImageTags = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const questions = await ctx.db.query("questions").collect();
+    let count = 0;
+    for (const q of questions) {
+      // Check if question has image field or imageUrl field or imageStorageId
+      const hasImage = !!(q.image || q.imageUrl || q.imageStorageId);
+      
+      // Only update if changed
+      if (q.hasImage !== hasImage) {
+        await ctx.db.patch(q._id, { hasImage });
+        count++;
+      }
+    }
+    return `Updated ${count} questions with correct image tags`;
   },
 });

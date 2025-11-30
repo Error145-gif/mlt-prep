@@ -6,64 +6,48 @@ import { getCurrentUser } from "./users";
 export const getDashboardStats = query({
   args: {},
   handler: async (ctx) => {
-    const user = await getCurrentUser(ctx);
-    if (!user || user.role !== "admin") {
-      throw new Error("Unauthorized");
-    }
+    const allQuestions = await ctx.db.query("questions").collect();
+    const allTestSets = await ctx.db.query("testSets").collect();
+    const allUsers = await ctx.db.query("users").collect();
+    const allSubscriptions = await ctx.db.query("subscriptions").collect();
 
-    // Fetch all data in parallel for efficiency
-    const [allUsers, allSubscriptions, allContent, allQuestions, allPayments] = await Promise.all([
-      ctx.db.query("users").collect(),
-      ctx.db.query("subscriptions").collect(),
-      ctx.db.query("content").collect(),
-      ctx.db.query("questions").collect(),
-      ctx.db.query("payments").collect(),
-    ]);
-
-    // Calculate stats from collected data
-    const totalUsers = allUsers.length;
-    const activeSubscriptions = allSubscriptions.filter((s) => s.status === "active").length;
-    const totalContent = allContent.length;
-    const totalQuestions = allQuestions.length;
+    // Calculate stats
     const approvedQuestions = allQuestions.filter((q) => q.status === "approved").length;
-    const pendingQuestions = allQuestions.filter((q) => q.status === "pending").length;
-    const manualQuestions = allQuestions.filter((q) => q.source === "manual").length;
-
-    // Calculate revenue
-    const totalRevenue = allPayments
-      .filter((p) => p.status === "success")
-      .reduce((sum, p) => sum + p.amount, 0);
-
-    // Get recent content
-    const recentContent = allContent.sort((a, b) => b._creationTime - a._creationTime).slice(0, 5);
-
-    // Get recent payments
-    const recentPayments = allPayments.sort((a, b) => b._creationTime - a._creationTime).slice(0, 10);
-
-    // Calculate test set counts
-    const mockQuestions = allQuestions.filter(q => q.source === "manual" && q.status === "approved");
-    const aiQuestions = allQuestions.filter(q => q.source === "ai" && q.status === "approved");
-    const pyqQuestions = allQuestions.filter(q => q.source === "pyq" && q.status === "approved");
+    const pendingQuestions = allQuestions.filter((q) => q.status === "pending" || !q.status).length; // Treat undefined as pending or handle accordingly
     
-    const mockTestSets = Math.floor(mockQuestions.length / 100);
-    const aiTestSets = Math.floor(aiQuestions.length / 25);
-    const pyqTestSets = Math.floor(pyqQuestions.length / 20);
-
-    return {
-      totalUsers,
-      activeSubscriptions,
-      totalRevenue,
-      totalContent,
-      pendingQuestions,
-      totalQuestions,
+    const stats = {
+      totalQuestions: allQuestions.length,
       approvedQuestions,
-      manualQuestions,
-      mockTestSets,
-      aiTestSets,
-      pyqTestSets,
-      recentContent,
-      recentPayments,
+      pendingQuestions,
+      totalTestSets: allTestSets.length,
+      activeTestSets: allTestSets.filter((t) => t.isActive).length,
+      totalUsers: allUsers.length,
+      activeSubscriptions: allSubscriptions.filter((s) => s.status === "active").length,
+      totalRevenue: allSubscriptions.reduce((acc, curr) => acc + (curr.amount || 0), 0),
+      
+      // Detailed question stats
+      questionsBySource: {
+        manual: allQuestions.filter(q => q.source === "manual").length,
+        ai: allQuestions.filter(q => q.source === "ai").length,
+        pyq: allQuestions.filter(q => q.source === "pyq").length,
+      },
+      
+      questionsByDifficulty: {
+        easy: allQuestions.filter(q => q.difficulty === "easy").length,
+        medium: allQuestions.filter(q => q.difficulty === "medium").length,
+        hard: allQuestions.filter(q => q.difficulty === "hard").length,
+      },
+
+      questionsByStatus: {
+        approved: approvedQuestions,
+        pending: pendingQuestions,
+        rejected: allQuestions.filter(q => q.status === "rejected").length,
+      },
+      
+      imageBasedQuestions: allQuestions.filter(q => (q as any).hasImage).length,
     };
+
+    return stats;
   },
 });
 
