@@ -27,11 +27,6 @@ export default function QuestionManagement() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Queries
-  const { results, status, loadMore } = usePaginatedQuery(
-    api.questions.getQuestionsPaginated,
-    {},
-    { initialNumItems: 50 }
-  );
   const topics = useQuery(api.topics.getAllTopics);
 
   const [activeTab, setActiveTab] = useState("all");
