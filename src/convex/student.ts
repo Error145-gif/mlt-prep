@@ -536,16 +536,18 @@ export const getTestQuestions = query({
       
       if (args.testType === "mock") {
         // Get approved manual questions - optimized query
-        let query = ctx.db
+        const allQuestions = await ctx.db
           .query("questions")
           .withIndex("by_source", (q) => q.eq("source", "manual"))
-          .filter((q) => q.eq(q.field("status"), "approved"));
+          .filter((q) => q.eq(q.field("status"), "approved"))
+          .collect();
         
-        // If setNumber provided, filter in memory after collecting
-        const allQuestions = await query.collect();
-        
+        // Organize into sets dynamically based on setNumber parameter
         if (args.setNumber) {
-          questions = allQuestions.filter(q => q.setNumber === args.setNumber);
+          const setSize = 100;
+          const startIndex = (args.setNumber - 1) * setSize;
+          const endIndex = startIndex + setSize;
+          questions = allQuestions.slice(startIndex, endIndex);
         } else {
           questions = allQuestions.slice(0, 100);
         }
@@ -558,12 +560,20 @@ export const getTestQuestions = query({
           .filter((q) => q.eq(q.field("status"), "approved"))
           .collect();
         
-        // Filter by year, setNumber, and examName in memory
-        questions = allPyqQuestions.filter(q => 
-          q.year === args.year && 
-          q.setNumber === args.setNumber &&
+        // Filter by year and examName, then organize into sets dynamically
+        const filteredQuestions = allPyqQuestions.filter(q => 
+          q.year === args.year &&
           (!args.examName || q.examName === args.examName)
         );
+        
+        if (args.setNumber) {
+          const setSize = 20;
+          const startIndex = (args.setNumber - 1) * setSize;
+          const endIndex = startIndex + setSize;
+          questions = filteredQuestions.slice(startIndex, endIndex);
+        } else {
+          questions = filteredQuestions.slice(0, 20);
+        }
         
       } else if (args.testType === "ai") {
         // Get approved AI questions - optimized
@@ -573,9 +583,12 @@ export const getTestQuestions = query({
           .filter((q) => q.eq(q.field("status"), "approved"))
           .collect();
         
-        // Filter by setNumber if provided
+        // Organize into sets dynamically based on setNumber parameter
         if (args.setNumber) {
-          questions = allQuestions.filter(q => q.setNumber === args.setNumber);
+          const setSize = 25;
+          const startIndex = (args.setNumber - 1) * setSize;
+          const endIndex = startIndex + setSize;
+          questions = allQuestions.slice(startIndex, endIndex);
         } else {
           questions = allQuestions.slice(0, 25);
         }
