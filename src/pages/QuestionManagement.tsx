@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Plus, Pencil, Trash2, Search, Filter, Menu, X, Sparkles, Upload, XCircle, FileText, CheckCircle, CheckCircle2, AlertTriangle, ImageIcon } from "lucide-react";
+import { Loader2, Plus, Pencil, Trash2, Search, Filter, Menu, X, Sparkles, Upload, XCircle, FileText, CheckCircle, CheckCircle2, AlertTriangle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { Id } from "@/convex/_generated/dataModel";
@@ -26,7 +26,6 @@ export default function QuestionManagement() {
 
   const [activeTab, setActiveTab] = useState("all");
   const [showManualForm, setShowManualForm] = useState(false);
-  const [filterImageBased, setFilterImageBased] = useState(false);
   // State variables for form visibility and saving
   // These are used throughout the component for managing dialog states
   const [mockTestQuestions, setMockTestQuestions] = useState<string>("");
@@ -63,7 +62,6 @@ export default function QuestionManagement() {
   const [filterExam, setFilterExam] = useState("all");
   const [filterYear, setFilterYear] = useState("all");
   const [filterSet, setFilterSet] = useState("all");
-  const [showImageQuestions, setShowImageQuestions] = useState(false);
 
   // Use paginated query instead of fetching all questions
   const {
@@ -80,7 +78,6 @@ export default function QuestionManagement() {
       subject: filterSubject !== "all" ? filterSubject : undefined,
       difficulty: filterDifficulty !== "all" ? filterDifficulty : undefined,
       status: filterStatus !== "all" ? filterStatus : undefined,
-      hasImage: showImageQuestions ? true : undefined,
     },
     { initialNumItems: 20 }
   );
@@ -1278,20 +1275,20 @@ export default function QuestionManagement() {
                           All Questions
                         </Button>
                         <Button
-                          variant={activeTab === "manual" && !filterImageBased ? "default" : "outline"}
-                          onClick={() => { setActiveTab("manual"); setFilterImageBased(false); }}
+                          variant={activeTab === "manual" ? "default" : "outline"}
+                          onClick={() => { setActiveTab("manual"); }}
                         >
                           Manual / Mock
                         </Button>
                         <Button
-                          variant={activeTab === "ai" && !filterImageBased ? "default" : "outline"}
-                          onClick={() => { setActiveTab("ai"); setFilterImageBased(false); }}
+                          variant={activeTab === "ai" ? "default" : "outline"}
+                          onClick={() => { setActiveTab("ai"); }}
                         >
                           AI Questions
                         </Button>
                         <Button
-                          variant={activeTab === "pyq" && !filterImageBased ? "default" : "outline"}
-                          onClick={() => { setActiveTab("pyq"); setFilterImageBased(false); }}
+                          variant={activeTab === "pyq" ? "default" : "outline"}
+                          onClick={() => { setActiveTab("pyq"); }}
                         >
                           PYQ
                         </Button>
