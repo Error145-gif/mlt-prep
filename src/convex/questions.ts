@@ -243,6 +243,7 @@ export const createImageQuestion = mutation({
       explanation: args.explanation,
       imageUrl: imageUrl,
       imageStorageId: args.imageStorageId,
+      hasImage: true,
     });
   },
 });
@@ -332,6 +333,7 @@ export const batchCreateImageQuestions = mutation({
           explanation: question.explanation,
           imageUrl: imageUrl,
           imageStorageId: question.imageStorageId,
+          hasImage: true,
         });
         ids.push(id);
       } catch (error) {
