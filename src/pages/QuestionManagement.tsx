@@ -28,6 +28,7 @@ export default function QuestionManagement() {
 
   // Queries
   const topics = useQuery(api.topics.getAllTopics);
+  const stats = useQuery(api.analytics.getDashboardStats);
 
   const [activeTab, setActiveTab] = useState("all");
   const [showManualForm, setShowManualForm] = useState(false);
@@ -1218,6 +1219,52 @@ export default function QuestionManagement() {
                     <CardTitle className="text-white">Question Management</CardTitle>
                   </CardHeader>
                   <CardContent>
+                    {/* Statistics Cards */}
+                    {stats && (
+                      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+                        <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
+                          <CardContent className="pt-6">
+                            <div className="text-center">
+                              <p className="text-2xl font-bold text-white">{stats.totalQuestions}</p>
+                              <p className="text-sm text-white/60">Total Questions</p>
+                            </div>
+                          </CardContent>
+                        </Card>
+                        <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
+                          <CardContent className="pt-6">
+                            <div className="text-center">
+                              <p className="text-2xl font-bold text-white">{stats.questionsBySource.manual}</p>
+                              <p className="text-sm text-white/60">Manual/Mock</p>
+                            </div>
+                          </CardContent>
+                        </Card>
+                        <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
+                          <CardContent className="pt-6">
+                            <div className="text-center">
+                              <p className="text-2xl font-bold text-white">{stats.questionsBySource.ai}</p>
+                              <p className="text-sm text-white/60">AI Questions</p>
+                            </div>
+                          </CardContent>
+                        </Card>
+                        <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
+                          <CardContent className="pt-6">
+                            <div className="text-center">
+                              <p className="text-2xl font-bold text-white">{stats.questionsBySource.pyq}</p>
+                              <p className="text-sm text-white/60">PYQ</p>
+                            </div>
+                          </CardContent>
+                        </Card>
+                        <Card className="glass-card border-white/20 backdrop-blur-xl bg-red-500/10 border-red-500/30">
+                          <CardContent className="pt-6">
+                            <div className="text-center">
+                              <p className="text-2xl font-bold text-red-400">{errorQuestions.length}</p>
+                              <p className="text-sm text-white/60">Error Questions</p>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </div>
+                    )}
+
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                       <div className="flex flex-wrap gap-2">
                         <Button
@@ -1387,6 +1434,11 @@ export default function QuestionManagement() {
                           </Card>
                         ) : (
                           questions
+                            .filter(q => {
+                              // Filter by active tab (source)
+                              if (activeTab === "all") return true;
+                              return q.source === activeTab;
+                            })
                             .map((question, index) => {
                               const isDuplicate = duplicateQuestions.has(question._id);
                               
