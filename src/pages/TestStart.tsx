@@ -58,6 +58,7 @@ export default function TestStart() {
   const topicId = topicIdParam && topicIdParam !== "general" && topicIdParam !== "null" ? (topicIdParam as Id<"topics">) : undefined;
   const year = searchParams.get("year") ? parseInt(searchParams.get("year")!) : undefined;
   const setNumber = searchParams.get("setNumber") ? parseInt(searchParams.get("setNumber")!) : undefined;
+  const examName = searchParams.get("examName") ? decodeURIComponent(searchParams.get("examName")!) : undefined;
 
   const startTest = useMutation(api.student.startTest);
   const submitTest = useMutation(api.student.submitTest);
@@ -109,6 +110,7 @@ export default function TestStart() {
     ...(topicId && { topicId }),
     ...(year && { year }),
     ...(setNumber && { setNumber }),
+    ...(examName && { examName }), // Pass examName to query
   });
 
   const questions = testQuestions || [];
@@ -125,8 +127,10 @@ export default function TestStart() {
     if (testType === "mock") {
       setTestName("Mock Test");
     } else if (testType === "pyq") {
-      // Get exam name from first question if available
-      if (questions && questions.length > 0 && questions[0] && questions[0].examName) {
+      // Use examName from URL if available, otherwise fallback to question data
+      if (examName) {
+        setTestName(examName);
+      } else if (questions && questions.length > 0 && questions[0] && questions[0].examName) {
         setTestName(questions[0].examName);
       } else {
         setTestName(`PYQ ${year || ""}`);
@@ -134,7 +138,7 @@ export default function TestStart() {
     } else if (testType === "ai") {
       setTestName("AI Generated Questions");
     }
-  }, [testType, year, questions]);
+  }, [testType, year, questions, examName]);
 
   // Set initial timer based on test type and question count
   useEffect(() => {

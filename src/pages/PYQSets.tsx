@@ -62,7 +62,8 @@ export default function PYQSets() {
     }
     
     // Direct start - navigate immediately
-    navigate(`/test-start?type=pyq&year=${set.year}&setNumber=${set.setNumber}`);
+    // Pass examName in URL to ensure correct mapping
+    navigate(`/test-start?type=pyq&year=${set.year}&setNumber=${set.setNumber}&examName=${encodeURIComponent(set.examName)}`);
   };
 
   // If a set is selected, show instructions

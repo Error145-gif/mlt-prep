@@ -475,72 +475,62 @@ export const getTestQuestions = query({
     topicId: v.optional(v.id("topics")),
     year: v.optional(v.number()),
     setNumber: v.optional(v.number()),
+    examName: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
-    if (!user) {
-      throw new Error("Not authenticated");
+    if (!user) return [];
+
+    let questions;
+    
+    // Fetch topic if topicId is provided
+    let topic = null;
+    if (args.topicId) {
+      topic = await ctx.db.get(args.topicId);
     }
 
-    let questions: any[] = [];
-
-    if (args.testType === "mock") {
+    if (args.testType === "mock" && args.topicId) {
+      if (!topic) return [];
       // Get mock/manual questions
       questions = await ctx.db
         .query("questions")
-        .withIndex("by_source", (q) => q.eq("source", "manual"))
-        .filter((q) => q.eq(q.field("status"), "approved"))
+        .withIndex("by_topic", (q) => q.eq("topic", topic.name))
+        .filter((q) => q.eq(q.field("source"), "manual"))
         .collect();
       
-      // Apply set filtering for mock tests (100 questions per set)
-      if (args.setNumber) {
-        const setSize = 100;
-        const startIndex = (args.setNumber - 1) * setSize;
-        const endIndex = startIndex + setSize;
-        questions = questions.slice(startIndex, endIndex);
-      }
-    } else if (args.testType === "pyq") {
-      // Get PYQ questions
-      questions = await ctx.db
+      // Randomly select 100 questions
+      questions = questions.sort(() => Math.random() - 0.5).slice(0, 100);
+    } else if (args.testType === "pyq" && args.year && args.setNumber) {
+      // PYQ Logic - Now filtering by examName if provided
+      let query = ctx.db
         .query("questions")
-        .withIndex("by_source", (q) => q.eq("source", "pyq"))
-        .filter((q) => q.eq(q.field("status"), "approved"))
-        .collect();
+        .withIndex("by_source", (q) => q.eq("source", "pyq"));
       
-      if (args.year !== undefined) {
-        // Convert year number to string for comparison with examYear field
-        questions = questions.filter((q) => q.examYear === args.year!.toString());
-      }
+      questions = await query.collect();
       
-      // Apply set filtering for PYQ (20 questions per set)
-      if (args.setNumber) {
-        const setSize = 20;
-        const startIndex = (args.setNumber - 1) * setSize;
-        const endIndex = startIndex + setSize;
-        questions = questions.slice(startIndex, endIndex);
+      // Filter by year and set number
+      questions = questions.filter(q => 
+        q.examYear === args.year?.toString() && 
+        q.setNumber === args.setNumber
+      );
+
+      // Filter by examName if provided (Critical fix for correct mapping)
+      if (args.examName) {
+        questions = questions.filter(q => q.examName === args.examName);
       }
-    } else if (args.testType === "ai") {
+    } else if (args.testType === "ai" && args.topicId) {
+      if (!topic) return [];
       // Get AI questions
       questions = await ctx.db
         .query("questions")
-        .withIndex("by_source", (q) => q.eq("source", "ai"))
-        .filter((q) => q.eq(q.field("status"), "approved"))
+        .withIndex("by_topic", (q) => q.eq("topic", topic.name))
+        .filter((q) => q.eq(q.field("source"), "ai"))
         .collect();
-      
-      // Apply set filtering for AI (25 questions per set)
-      if (args.setNumber) {
-        const setSize = 25;
-        const startIndex = (args.setNumber - 1) * setSize;
-        const endIndex = startIndex + setSize;
-        questions = questions.slice(startIndex, endIndex);
-      }
+        
+      // Randomly select 25 questions
+      questions = questions.sort(() => Math.random() - 0.5).slice(0, 25);
     } else {
-      questions = [];
-    }
-
-    // For mock tests, shuffle within the set; for PYQ and AI, maintain order
-    if (args.testType === "mock") {
-      questions = questions.sort(() => Math.random() - 0.5);
+      return [];
     }
 
     return questions;
