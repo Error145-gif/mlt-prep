@@ -18,11 +18,21 @@ import { Loader2, Plus, Pencil, Trash2, Search, Filter, Menu, X, Sparkles, Uploa
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { Id } from "@/convex/_generated/dataModel";
+import { useAuthActions } from "@/hooks/use-auth-actions";
 
 export default function QuestionManagement() {
   const { isLoading, isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
+  const { signOut } = useAuthActions();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  // Queries
+  const { results, status, loadMore } = usePaginatedQuery(
+    api.questions.getQuestionsPaginated,
+    {},
+    { initialNumItems: 50 }
+  );
+  const topics = useQuery(api.topics.getAllTopics);
 
   const [activeTab, setActiveTab] = useState("all");
   const [showManualForm, setShowManualForm] = useState(false);
