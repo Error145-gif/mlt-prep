@@ -239,6 +239,8 @@ export const getMockTests = query({
       console.log("No manual questions found in database");
       return [];
     }
+    
+    console.log(`Found ${questions.length} manual questions for mock tests`);
 
     if (args.topicId) {
       const topic = await ctx.db.get(args.topicId);
@@ -316,6 +318,8 @@ export const getAIQuestions = query({
       console.log("No AI questions found in database");
       return [];
     }
+    
+    console.log(`Found ${questions.length} AI questions`);
 
     if (args.topicId) {
       const topic = await ctx.db.get(args.topicId);
@@ -396,6 +400,8 @@ export const getPYQSets = query({
       console.log("No PYQ questions found in database");
       return [];
     }
+    
+    console.log(`Found ${pyqQuestions.length} PYQ questions`);
 
     // Group by exam name and year
     const setsByExamYear = new Map<string, typeof pyqQuestions>();
