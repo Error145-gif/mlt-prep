@@ -224,10 +224,8 @@ export const getMockTests = query({
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
-    if (!user) {
-      return [];
-    }
-
+    // Allow viewing tests even if user record is missing (but auth might be present)
+    
     let questions = await ctx.db
       .query("questions")
       .withIndex("by_source", (q) => q.eq("source", "manual"))
@@ -257,19 +255,22 @@ export const getMockTests = query({
     testsByTopic.set(topicName, questions);
 
     // Get user's completed test sessions for mock tests
-    const completedSessions = await ctx.db
-      .query("testSessions")
-      .withIndex("by_user", (q) => q.eq("userId", user._id))
-      .filter((q) => q.eq(q.field("status"), "completed"))
-      .filter((q) => q.eq(q.field("testType"), "mock"))
-      .collect();
+    let completedSessions: any[] = [];
+    if (user) {
+      completedSessions = await ctx.db
+        .query("testSessions")
+        .withIndex("by_user", (q) => q.eq("userId", user._id))
+        .filter((q) => q.eq(q.field("status"), "completed"))
+        .filter((q) => q.eq(q.field("testType"), "mock"))
+        .collect();
+    }
 
     const tests: any[] = [];
     
     for (const [topicName, qs] of testsByTopic.entries()) {
       // Organize into sets of 100 questions each - ONLY COMPLETE SETS
       const setSize = 100;
-      const totalSets = Math.floor(qs.length / setSize); // Changed from Math.ceil to Math.floor
+      const totalSets = Math.floor(qs.length / setSize); 
       
       for (let setNumber = 1; setNumber <= totalSets; setNumber++) {
         const startIndex = (setNumber - 1) * setSize;
@@ -303,9 +304,7 @@ export const getAIQuestions = query({
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
-    if (!user) {
-      return [];
-    }
+    // Allow viewing tests even if user record is missing
 
     let questions = await ctx.db
       .query("questions")
@@ -341,19 +340,22 @@ export const getAIQuestions = query({
     }
 
     // Get user's completed test sessions for AI tests
-    const completedSessions = await ctx.db
-      .query("testSessions")
-      .withIndex("by_user", (q) => q.eq("userId", user._id))
-      .filter((q) => q.eq(q.field("status"), "completed"))
-      .filter((q) => q.eq(q.field("testType"), "ai"))
-      .collect();
+    let completedSessions: any[] = [];
+    if (user) {
+      completedSessions = await ctx.db
+        .query("testSessions")
+        .withIndex("by_user", (q) => q.eq("userId", user._id))
+        .filter((q) => q.eq(q.field("status"), "completed"))
+        .filter((q) => q.eq(q.field("testType"), "ai"))
+        .collect();
+    }
 
     const tests: any[] = [];
     
     for (const [topicName, qs] of testsByTopic.entries()) {
       // Organize into sets of 25 questions each - ONLY COMPLETE SETS
       const setSize = 25;
-      const totalSets = Math.floor(qs.length / setSize); // Changed from Math.ceil to Math.floor
+      const totalSets = Math.floor(qs.length / setSize); 
       
       for (let setNumber = 1; setNumber <= totalSets; setNumber++) {
         const startIndex = (setNumber - 1) * setSize;
@@ -385,9 +387,7 @@ export const getPYQSets = query({
   args: {},
   handler: async (ctx) => {
     const user = await getCurrentUser(ctx);
-    if (!user) {
-      return [];
-    }
+    // Allow viewing tests even if user record is missing
 
     const pyqQuestions = await ctx.db
       .query("questions")
@@ -416,12 +416,15 @@ export const getPYQSets = query({
     }
 
     // Get user's completed test sessions for PYQ tests
-    const completedSessions = await ctx.db
-      .query("testSessions")
-      .withIndex("by_user", (q) => q.eq("userId", user._id))
-      .filter((q) => q.eq(q.field("status"), "completed"))
-      .filter((q) => q.eq(q.field("testType"), "pyq"))
-      .collect();
+    let completedSessions: any[] = [];
+    if (user) {
+      completedSessions = await ctx.db
+        .query("testSessions")
+        .withIndex("by_user", (q) => q.eq("userId", user._id))
+        .filter((q) => q.eq(q.field("status"), "completed"))
+        .filter((q) => q.eq(q.field("testType"), "pyq"))
+        .collect();
+    }
 
     const sets: any[] = [];
     
@@ -528,9 +531,8 @@ export const getTestQuestions = query({
     examName: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const user = await getCurrentUser(ctx);
-    if (!user) return [];
-
+    // Allow fetching questions even if user record is missing (for preview)
+    
     try {
       let questions: any[] = [];
       

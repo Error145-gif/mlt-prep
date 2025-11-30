@@ -40,21 +40,23 @@ export default function TestStart() {
   const [searchParams] = useSearchParams();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const userProfile = useQuery(api.users.getUserProfile);
-  const [showInstructions, setShowInstructions] = useState(false);
-  const [acceptedInstructions, setAcceptedInstructions] = useState(true);
+  
+  // State definitions
+  const [showInstructions, setShowInstructions] = useState(true);
+  const [acceptedInstructions, setAcceptedInstructions] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Map<string, Answer>>(new Map());
   const [visitedQuestions, setVisitedQuestions] = useState<Set<number>>(new Set([0]));
-  const [timeRemaining, setTimeRemaining] = useState(0); // Will be set based on test type and question count
+  const [timeRemaining, setTimeRemaining] = useState(0);
   const [sessionId, setSessionId] = useState<Id<"testSessions"> | null>(null);
   const [showQuestionPalette, setShowQuestionPalette] = useState(false);
   const [isTabVisible, setIsTabVisible] = useState(true);
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const [testName, setTestName] = useState("");
 
   const testType = searchParams.get("type") || "mock";
   const topicIdParam = searchParams.get("topicId");
-  // Only set topicId if it exists and is not "general" or "null"
   const topicId = topicIdParam && topicIdParam !== "general" && topicIdParam !== "null" ? (topicIdParam as Id<"topics">) : undefined;
   const year = searchParams.get("year") ? parseInt(searchParams.get("year")!) : undefined;
   const setNumber = searchParams.get("setNumber") ? parseInt(searchParams.get("setNumber")!) : undefined;
@@ -63,20 +65,19 @@ export default function TestStart() {
   const startTest = useMutation(api.student.startTest);
   const submitTest = useMutation(api.student.submitTest);
 
-  // Fetch questions for the test - with loading optimization
+  // Fetch questions
   const testQuestions = useQuery(api.student.getTestQuestions, {
     testType,
     ...(topicId && { topicId }),
     ...(year && { year }),
     ...(setNumber && { setNumber }),
-    ...(examName && { examName }), // Pass examName to query
+    ...(examName && { examName }),
   });
 
   const questions = Array.isArray(testQuestions) ? testQuestions : [];
   const hasError = testQuestions === undefined && !isLoading;
-  const [testName, setTestName] = useState("");
 
-  // Auto-start test
+  // Auto-start test logic (only if instructions are skipped/accepted)
   useEffect(() => {
     if (!sessionId && questions && questions.length > 0 && !showInstructions) {
       const initTest = async () => {
@@ -114,7 +115,6 @@ export default function TestStart() {
       };
 
       const preventKeyboardShortcuts = (e: KeyboardEvent) => {
-        // Prevent Ctrl+C, Ctrl+A, Ctrl+X, Ctrl+U, F12, Ctrl+Shift+I
         if (
           (e.ctrlKey && (e.key === 'c' || e.key === 'C' || e.key === 'a' || e.key === 'A' || e.key === 'x' || e.key === 'X' || e.key === 'u' || e.key === 'U')) ||
           e.key === 'F12' ||
@@ -147,11 +147,9 @@ export default function TestStart() {
   }, [isAuthenticated, isLoading, navigate]);
 
   useEffect(() => {
-    // Set test name based on type
     if (testType === "mock") {
       setTestName("Mock Test");
     } else if (testType === "pyq") {
-      // Use examName from URL if available, otherwise fallback to question data
       if (examName) {
         setTestName(examName);
       } else if (questions && questions.length > 0 && questions[0] && questions[0].examName) {
@@ -164,19 +162,15 @@ export default function TestStart() {
     }
   }, [testType, year, questions, examName]);
 
-  // Set initial timer based on test type and question count
   useEffect(() => {
     if (questions && questions.length > 0 && timeRemaining === 0) {
-      let duration = 60 * 60; // Default 60 minutes
+      let duration = 60 * 60;
       
       if (testType === "pyq") {
-        // PYQ: 10 minutes per 20 questions (30 seconds per question)
         duration = Math.ceil(questions.length / 20) * 10 * 60;
       } else if (testType === "mock") {
-        // Mock: 60 minutes fixed
         duration = 60 * 60;
       } else if (testType === "ai") {
-        // AI: 30 minutes fixed for 25 questions
         duration = 30 * 60;
       }
       
@@ -184,7 +178,6 @@ export default function TestStart() {
     }
   }, [questions.length, testType, timeRemaining]);
 
-  // Prevent browser navigation/close during test
   useEffect(() => {
     if (!showInstructions && sessionId) {
       const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -198,13 +191,11 @@ export default function TestStart() {
     }
   }, [showInstructions, sessionId]);
 
-  // Handle tab visibility changes (pause timer when tab is hidden)
   useEffect(() => {
     const handleVisibilityChange = () => {
       setIsTabVisible(!document.hidden);
       
       if (document.hidden && !showInstructions && sessionId) {
-        // Tab is hidden - show warning toast
         toast.warning("Test paused - Please return to the test tab");
       }
     };
@@ -213,7 +204,6 @@ export default function TestStart() {
     return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
   }, [showInstructions, sessionId]);
 
-  // Timer countdown (only runs when tab is visible and not paused)
   useEffect(() => {
     if (!showInstructions && timeRemaining > 0 && isTabVisible && !isPaused) {
       const timer = setInterval(() => {
@@ -233,7 +223,6 @@ export default function TestStart() {
     if (!acceptedInstructions) return;
     
     try {
-      // Create test session
       const questionIds = questions.map((q) => q._id);
       const id = await startTest({
         testType,
@@ -352,52 +341,7 @@ export default function TestStart() {
     toast.success("Test resumed!");
   };
 
-  // Enhanced loading state with error handling
-  if (isLoading || (!sessionId && !showInstructions && !hasError)) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-blue-50">
-        <div className="text-center space-y-4">
-          <div className="relative">
-            <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
-          </div>
-          <div className="text-gray-700 text-xl font-medium">Preparing your test...</div>
-          <div className="text-gray-600 text-sm">Loading questions</div>
-        </div>
-      </div>
-    );
-  }
-
-  // Error state
-  if (hasError || !questions || questions.length === 0) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-red-50 to-orange-50 p-6">
-        <div className="text-center space-y-4 max-w-md">
-          <div className="text-6xl mb-4">⚠️</div>
-          <div className="text-gray-900 text-2xl font-bold">Unable to Load Test</div>
-          <div className="text-gray-600">
-            {hasError 
-              ? "There was an error loading the test questions. Please try again."
-              : "No questions available for this test. Please contact support or try a different test."}
-          </div>
-          <div className="flex gap-3 justify-center mt-6">
-            <Button 
-              onClick={() => window.location.reload()} 
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              Try Again
-            </Button>
-            <Button 
-              onClick={() => navigate("/student")} 
-              variant="outline"
-            >
-              Return to Dashboard
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
+  // 1. Show Instructions Screen FIRST
   if (showInstructions) {
     const testTypeIcon = testType === "ai" ? "🤖" : testType === "pyq" ? "📘" : "🧩";
     const duration = testType === "mock" ? 60 : testType === "pyq" ? (questions && questions.length > 0 ? Math.ceil(questions.length / 20) * 10 : 10) : 30;
@@ -574,10 +518,10 @@ export default function TestStart() {
             <div className="mt-6 flex justify-center">
               <Button
                 onClick={handleStartTest}
-                disabled={!acceptedInstructions}
+                disabled={!acceptedInstructions || !questions || questions.length === 0}
                 className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-12 py-4 text-lg font-bold shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed animate-pulse"
               >
-                Start Test 🚀
+                {(!questions || questions.length === 0) ? "No Questions Available" : "Start Test 🚀"}
               </Button>
             </div>
           </Card>
@@ -586,41 +530,63 @@ export default function TestStart() {
     );
   }
 
-  const currentQuestion = questions && questions.length > 0 && currentQuestionIndex < questions.length ? questions[currentQuestionIndex] : null;
-  const currentAnswer = currentQuestion ? answers.get(currentQuestion._id) : null;
-  const answeredCount = Array.from(answers.values()).filter(a => a.answer).length;
-  
-  if (!currentQuestion || !questions || questions.length === 0) {
+  // 2. Loading State (only if not showing instructions and no error)
+  if (isLoading || (!sessionId && !hasError)) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-blue-50">
         <div className="text-center space-y-4">
-          <div className="text-gray-700 text-xl font-medium">No questions available</div>
-          <Button onClick={() => navigate("/student")} className="bg-blue-600 hover:bg-blue-700">
-            Return to Dashboard
-          </Button>
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+          </div>
+          <div className="text-gray-700 text-xl font-medium">Preparing your test...</div>
+          <div className="text-gray-600 text-sm">Loading questions</div>
         </div>
       </div>
     );
   }
 
-  return (
-    <div className="min-h-screen flex flex-col relative overflow-hidden" style={{ userSelect: showInstructions ? 'auto' : 'none' }}>
-      {/* Hide StudentNav during test */}
-      {showInstructions && <StudentNav />}
-      {/* Hamburger Menu Button - Mobile Only (hidden during test) */}
-      {showInstructions && (
-        <button
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="fixed top-6 right-6 z-50 md:hidden bg-white/20 backdrop-blur-sm p-2 rounded-lg hover:bg-white/30 transition-all"
-        >
-          {isMenuOpen ? (
-            <X className="h-6 w-6 text-white" />
-          ) : (
-            <Menu className="h-6 w-6 text-white" />
-          )}
-        </button>
-      )}
+  // 3. Error State
+  if (hasError || !questions || questions.length === 0) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-red-50 to-orange-50 p-6">
+        <div className="text-center space-y-4 max-w-md">
+          <div className="text-6xl mb-4">⚠️</div>
+          <div className="text-gray-900 text-2xl font-bold">Unable to Load Test</div>
+          <div className="text-gray-600">
+            {hasError 
+              ? "There was an error loading the test questions. Please try again."
+              : "No questions available for this test. Please contact support or try a different test."}
+          </div>
+          <div className="flex gap-3 justify-center mt-6">
+            <Button 
+              onClick={() => window.location.reload()} 
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              Try Again
+            </Button>
+            <Button 
+              onClick={() => navigate("/student")} 
+              variant="outline"
+            >
+              Return to Dashboard
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
+  // 4. Test Interface
+  const currentQuestion = questions && questions.length > 0 && currentQuestionIndex < questions.length ? questions[currentQuestionIndex] : null;
+  const currentAnswer = currentQuestion ? answers.get(currentQuestion._id) : null;
+  const answeredCount = Array.from(answers.values()).filter(a => a.answer).length;
+  
+  if (!currentQuestion) {
+    return null; // Should be handled by error state above
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col relative overflow-hidden" style={{ userSelect: 'none' }}>
       {/* Mobile Menu */}
       <AnimatePresence>
         {isMenuOpen && (
@@ -682,7 +648,7 @@ export default function TestStart() {
         )}
       </AnimatePresence>
 
-      {/* Animated Background Gradients - Same as Landing */}
+      {/* Animated Background Gradients */}
       <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
         <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-400/50 rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-500/50 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
@@ -716,7 +682,7 @@ export default function TestStart() {
         </div>
 
         <div className="flex-1 p-4 md:p-8 overflow-y-auto">
-          {/* Test Controls - Moved to top */}
+          {/* Test Controls */}
           <div className="mb-6 flex flex-wrap gap-3 justify-center md:justify-start">
             {testType === "mock" && (
               <Button
