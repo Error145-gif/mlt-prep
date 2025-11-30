@@ -1211,16 +1211,15 @@ export default function QuestionManagement() {
               <TabsTrigger value="errors">Error Questions</TabsTrigger>
             </TabsList>
 
-            {/* All Questions Tab */}
-            <TabsContent value="all">
-              <div className="space-y-6">
-                <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
-                  <CardHeader>
-                    <CardTitle className="text-white">Question Management</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {/* Statistics Cards */}
-                    {stats && (
+            {/* Question Management Section */}
+            <div className="space-y-6">
+              <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
+                <CardHeader>
+                  <CardTitle className="text-white">Question Management</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {/* Statistics Cards */}
+                  {stats && (
                       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
                         <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
                           <CardContent className="pt-6">
@@ -3112,10 +3111,10 @@ Explanation: Explanation text here
                     </Card>
                   </div>
                 </TabsContent>
-              </div>
-            </TabsContent>
-          </Tabs>
-        </div>
+              </CardContent>
+            </Card>
+          </div>
+        </Tabs>
       </motion.div>
 
       {/* Auto Create Test Sets Dialog */}
