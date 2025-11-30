@@ -46,6 +46,7 @@ import LabTechnicianExam from "./pages/LabTechnicianExam";
 import DMLTExam from "./pages/DMLTExam";
 import WeeklyTest from "./pages/WeeklyTest";
 import WeeklyLeaderboard from "./pages/WeeklyLeaderboard";
+import WeeklyTestManagement from "./pages/WeeklyTestManagement.tsx";
 
 // Get Convex URL from environment variable with fallback
 const convexUrl = (import.meta as any).env?.VITE_CONVEX_URL ?? "https://successful-bandicoot-650.convex.cloud";
@@ -266,6 +267,14 @@ createRoot(document.getElementById("root")!).render(
               <Route path="/dmlt-exam" element={<DMLTExam />} />
 
               {/* Admin Routes */}
+              <Route
+                path="/admin/weekly-tests"
+                element={
+                  <AdminRoute>
+                    <WeeklyTestManagement />
+                  </AdminRoute>
+                }
+              />
               <Route
                 path="/admin/content"
                 element={
