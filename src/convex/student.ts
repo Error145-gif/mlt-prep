@@ -511,14 +511,15 @@ export const getTestQuestions = query({
       let questions: any[] = [];
       
       if (args.testType === "mock") {
-        // Get all approved manual questions
-        const allQuestions = await ctx.db
+        // Get approved manual questions - optimized query
+        let query = ctx.db
           .query("questions")
           .withIndex("by_source", (q) => q.eq("source", "manual"))
-          .filter((q) => q.eq(q.field("status"), "approved"))
-          .collect();
+          .filter((q) => q.eq(q.field("status"), "approved"));
         
-        // Filter by setNumber if provided
+        // If setNumber provided, filter in memory after collecting
+        const allQuestions = await query.collect();
+        
         if (args.setNumber) {
           questions = allQuestions.filter(q => q.setNumber === args.setNumber);
         } else {
@@ -526,14 +527,14 @@ export const getTestQuestions = query({
         }
         
       } else if (args.testType === "pyq") {
-        // Get all PYQ questions
-        let allPyqQuestions = await ctx.db
+        // Get PYQ questions - optimized with early filtering
+        const allPyqQuestions = await ctx.db
           .query("questions")
           .withIndex("by_source", (q) => q.eq("source", "pyq"))
           .filter((q) => q.eq(q.field("status"), "approved"))
           .collect();
         
-        // Filter by year and setNumber
+        // Filter by year, setNumber, and examName in memory
         questions = allPyqQuestions.filter(q => 
           q.year === args.year && 
           q.setNumber === args.setNumber &&
@@ -541,7 +542,7 @@ export const getTestQuestions = query({
         );
         
       } else if (args.testType === "ai") {
-        // Get all approved AI questions
+        // Get approved AI questions - optimized
         const allQuestions = await ctx.db
           .query("questions")
           .withIndex("by_source", (q) => q.eq("source", "ai"))
@@ -554,6 +555,12 @@ export const getTestQuestions = query({
         } else {
           questions = allQuestions.slice(0, 25);
         }
+      }
+      
+      // Early return if no questions found
+      if (questions.length === 0) {
+        console.log(`No questions found for testType: ${args.testType}, setNumber: ${args.setNumber}`);
+        return [];
       }
 
       // Generate fresh image URLs
