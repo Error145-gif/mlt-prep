@@ -1269,8 +1269,8 @@ export default function QuestionManagement() {
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                       <div className="flex flex-wrap gap-2">
                         <Button
-                          variant={activeTab === "all" && !filterImageBased ? "default" : "outline"}
-                          onClick={() => { setActiveTab("all"); setFilterImageBased(false); }}
+                          variant={activeTab === "all" ? "default" : "outline"}
+                          onClick={() => setActiveTab("all")}
                         >
                           All Questions
                         </Button>
@@ -1291,14 +1291,6 @@ export default function QuestionManagement() {
                           onClick={() => { setActiveTab("pyq"); }}
                         >
                           PYQ
-                        </Button>
-                        <Button
-                          variant={filterImageBased ? "default" : "outline"}
-                          className={filterImageBased ? "bg-purple-600 hover:bg-purple-700" : "text-purple-600 border-purple-200 hover:bg-purple-50"}
-                          onClick={() => setFilterImageBased(!filterImageBased)}
-                        >
-                          <ImageIcon className="w-4 h-4 mr-2" />
-                          Image-Based
                         </Button>
                       </div>
                     </div>
