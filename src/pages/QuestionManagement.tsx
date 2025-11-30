@@ -18,7 +18,7 @@ import { Loader2, Plus, Pencil, Trash2, Search, Filter, Menu, X, Sparkles, Uploa
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { Id } from "@/convex/_generated/dataModel";
-import { useAuthActions } from "@/hooks/use-auth-actions";
+import { useAuthActions } from "@convex-dev/auth/react";
 
 export default function QuestionManagement() {
   const { isLoading, isAuthenticated, user } = useAuth();
