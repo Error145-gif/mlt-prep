@@ -16,14 +16,7 @@ export const getCurrentWeeklyTest = query({
       .first();
 
     if (activeTest) {
-      // Check if it's still Sunday
-      const testDate = new Date(activeTest.scheduledDate);
-      const currentDate = new Date(now);
-      
-      if (testDate.getDay() === 0 && currentDate.getDay() === 0 && 
-          testDate.toDateString() === currentDate.toDateString()) {
-        return activeTest;
-      }
+      return activeTest;
     }
 
     // Find next scheduled test

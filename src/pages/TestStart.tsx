@@ -40,8 +40,8 @@ export default function TestStart() {
   const [searchParams] = useSearchParams();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const userProfile = useQuery(api.users.getUserProfile);
-  const [showInstructions, setShowInstructions] = useState(true);
-  const [acceptedInstructions, setAcceptedInstructions] = useState(false);
+  const [showInstructions, setShowInstructions] = useState(false);
+  const [acceptedInstructions, setAcceptedInstructions] = useState(true);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Map<string, Answer>>(new Map());
   const [visitedQuestions, setVisitedQuestions] = useState<Set<number>>(new Set([0]));
@@ -62,6 +62,29 @@ export default function TestStart() {
 
   const startTest = useMutation(api.student.startTest);
   const submitTest = useMutation(api.student.submitTest);
+
+  // Auto-start test
+  useEffect(() => {
+    if (!sessionId && questions && questions.length > 0 && !showInstructions) {
+      const initTest = async () => {
+        try {
+          const questionIds = questions.map((q) => q._id);
+          const id = await startTest({
+            testType,
+            topicId,
+            year,
+            setNumber,
+            questionIds,
+          });
+          setSessionId(id);
+          toast.success("Test started!");
+        } catch (error) {
+          console.error("Failed to start test:", error);
+        }
+      };
+      initTest();
+    }
+  }, [sessionId, questions, showInstructions, testType, topicId, year, setNumber]);
 
   // Prevent copying during test
   useEffect(() => {
@@ -330,7 +353,7 @@ export default function TestStart() {
   };
 
   // Enhanced loading state with error handling
-  if (isLoading) {
+  if (isLoading || (!sessionId && !showInstructions && !hasError)) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-blue-50">
         <div className="text-center space-y-4">
