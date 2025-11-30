@@ -1437,7 +1437,19 @@ export default function QuestionManagement() {
                             .filter(q => {
                               // Filter by active tab (source)
                               if (activeTab === "all") return true;
-                              return q.source === activeTab;
+                              if (activeTab === "duplicates") {
+                                return duplicateQuestions.has(q._id);
+                              }
+                              if (activeTab === "manual") {
+                                return q.source === "manual" || !q.source;
+                              }
+                              if (activeTab === "ai") {
+                                return q.source === "ai";
+                              }
+                              if (activeTab === "pyq") {
+                                return q.source === "pyq";
+                              }
+                              return false;
                             })
                             .map((question, index) => {
                               const isDuplicate = duplicateQuestions.has(question._id);
