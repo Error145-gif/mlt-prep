@@ -5,7 +5,25 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import React from "react";
+import React, { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Flag } from "lucide-react";
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 interface QuestionCardProps {
   questionNumber: number;
@@ -18,6 +36,7 @@ interface QuestionCardProps {
   onClearResponse: () => void;
   isLastQuestion: boolean;
   imageUrl?: string;
+  questionId?: string;
 }
 
 export function QuestionCard({
@@ -31,7 +50,41 @@ export function QuestionCard({
   onClearResponse,
   isLastQuestion,
   imageUrl,
+  questionId,
 }: QuestionCardProps) {
+  const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
+  const [reportIssueType, setReportIssueType] = useState("wrong_answer");
+  const [reportDescription, setReportDescription] = useState("");
+  const reportQuestion = useMutation(api.questions.reportQuestion);
+
+  const handleReportSubmit = async () => {
+    if (!questionId) {
+      toast.error("Cannot report this question (ID missing)");
+      return;
+    }
+    if (!reportDescription.trim()) {
+      toast.error("Please provide a description of the error");
+      return;
+    }
+
+    try {
+      // @ts-ignore
+      await reportQuestion({
+        // @ts-ignore
+        questionId: questionId,
+        issueType: reportIssueType,
+        description: reportDescription,
+      });
+      toast.success("Error reported successfully. Thank you!");
+      setIsReportDialogOpen(false);
+      setReportDescription("");
+      setReportIssueType("wrong_answer");
+    } catch (error) {
+      toast.error("Failed to submit report");
+      console.error(error);
+    }
+  };
+
   const handleCopy = (e: React.ClipboardEvent<HTMLDivElement>) => {
     e.preventDefault();
     toast.error("Copying is disabled during tests");
@@ -75,6 +128,16 @@ export function QuestionCard({
               </span>
             </div>
           </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsReportDialogOpen(true)}
+            className="text-gray-500 hover:text-red-600 hover:bg-red-50"
+            title="Report Error"
+          >
+            <Flag className="w-4 h-4 mr-2" />
+            Report Error
+          </Button>
         </div>
 
         <div className="flex-1 mb-6">
@@ -162,6 +225,47 @@ export function QuestionCard({
           </div>
         </div>
       </Card>
+
+      <Dialog open={isReportDialogOpen} onOpenChange={setIsReportDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Report Question Error</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Issue Type</label>
+              <Select value={reportIssueType} onValueChange={setReportIssueType}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="wrong_answer">Wrong Answer</SelectItem>
+                  <SelectItem value="typo">Spelling/Grammar Mistake</SelectItem>
+                  <SelectItem value="image_issue">Image Issue</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Description</label>
+              <Textarea
+                value={reportDescription}
+                onChange={(e) => setReportDescription(e.target.value)}
+                placeholder="Please describe the error..."
+                rows={4}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsReportDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleReportSubmit} className="bg-red-600 hover:bg-red-700">
+              Submit Report
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 }

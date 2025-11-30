@@ -271,7 +271,37 @@ const schema = defineSchema(
       .index("by_user", ["userId"])
       .index("by_topic", ["topicId"]),
 
-    // Notifications
+    // Feedback table
+    feedback: defineTable({
+      userId: v.id("users"),
+      type: v.string(), // "bug", "feature", "content", "other"
+      message: v.string(),
+      rating: v.optional(v.number()),
+      status: v.string(), // "pending", "reviewed", "resolved"
+      adminResponse: v.optional(v.string()),
+      reviewedBy: v.optional(v.id("users")),
+      reviewedAt: v.optional(v.number()),
+    })
+      .index("by_user", ["userId"])
+      .index("by_status", ["status"])
+      .index("by_type", ["type"]),
+
+    // Reported Questions table
+    reportedQuestions: defineTable({
+      questionId: v.id("questions"),
+      userId: v.id("users"),
+      issueType: v.string(), // "wrong_answer", "typo", "image_issue", "other"
+      description: v.string(),
+      status: v.string(), // "pending", "resolved", "dismissed"
+      adminNote: v.optional(v.string()),
+      resolvedBy: v.optional(v.id("users")),
+      resolvedAt: v.optional(v.number()),
+    })
+    .index("by_status", ["status"])
+    .index("by_question", ["questionId"])
+    .index("by_user", ["userId"]),
+
+    // Notifications table
     notifications: defineTable({
       title: v.string(),
       message: v.string(),
@@ -292,23 +322,6 @@ const schema = defineSchema(
       .index("by_user", ["userId"])
       .index("by_notification", ["notificationId"])
       .index("by_user_and_notification", ["userId", "notificationId"]),
-
-    // User Feedback
-    feedback: defineTable({
-      userId: v.id("users"),
-      userName: v.optional(v.string()),
-      userEmail: v.optional(v.string()),
-      rating: v.number(), // 1-5 stars
-      category: v.string(), // "bug", "feature", "improvement", "other"
-      message: v.string(),
-      status: v.string(), // "new", "reviewed", "resolved"
-      adminNotes: v.optional(v.string()),
-      reviewedBy: v.optional(v.id("users")),
-      reviewedAt: v.optional(v.number()),
-    })
-      .index("by_user", ["userId"])
-      .index("by_status", ["status"])
-      .index("by_category", ["category"]),
 
     // Coupon Codes
     coupons: defineTable({

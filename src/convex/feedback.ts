@@ -17,10 +17,9 @@ export const submitFeedback = mutation({
 
     const feedbackId = await ctx.db.insert("feedback", {
       userId: user._id,
-      userName: user.name,
-      userEmail: user.email,
+      // userName and userEmail are not in schema, relying on userId
       rating: args.rating,
-      category: args.category,
+      type: args.category, // Map category to type
       message: args.message,
       status: "new",
     });
@@ -71,14 +70,31 @@ export const getAllFeedback = query({
     } else if (args.category && args.category !== undefined) {
       feedback = await ctx.db
         .query("feedback")
-        .withIndex("by_category", (q) => q.eq("category", args.category as string))
+        .withIndex("by_type", (q) => q.eq("type", args.category as string))
         .order("desc")
         .collect();
     } else {
       feedback = await ctx.db.query("feedback").order("desc").collect();
     }
 
-    return feedback;
+    // Enrich with user details if needed, but for now returning as is
+    // The frontend might need to fetch user details separately or we can join here
+    // For simplicity and performance, we'll return the feedback docs. 
+    // If names are needed, we should fetch them.
+    
+    const feedbackWithUsers = await Promise.all(
+      feedback.map(async (f) => {
+        const user = await ctx.db.get(f.userId);
+        return {
+          ...f,
+          userName: user?.name || "Unknown",
+          userEmail: user?.email || "No Email",
+          category: f.type, // Map type back to category for frontend compatibility
+        };
+      })
+    );
+
+    return feedbackWithUsers;
   },
 });
 
@@ -97,7 +113,7 @@ export const updateFeedbackStatus = mutation({
 
     await ctx.db.patch(args.feedbackId, {
       status: args.status,
-      adminNotes: args.adminNotes,
+      adminResponse: args.adminNotes, // Map adminNotes to adminResponse
       reviewedBy: user._id,
       reviewedAt: Date.now(),
     });
@@ -123,13 +139,13 @@ export const getFeedbackStats = query({
       reviewed: allFeedback.filter((f) => f.status === "reviewed").length,
       resolved: allFeedback.filter((f) => f.status === "resolved").length,
       avgRating: allFeedback.length > 0
-        ? allFeedback.reduce((sum, f) => sum + f.rating, 0) / allFeedback.length
+        ? allFeedback.reduce((sum, f) => sum + (f.rating || 0), 0) / allFeedback.length
         : 0,
       byCategory: {
-        bug: allFeedback.filter((f) => f.category === "bug").length,
-        feature: allFeedback.filter((f) => f.category === "feature").length,
-        improvement: allFeedback.filter((f) => f.category === "improvement").length,
-        other: allFeedback.filter((f) => f.category === "other").length,
+        bug: allFeedback.filter((f) => f.type === "bug").length,
+        feature: allFeedback.filter((f) => f.type === "feature").length,
+        improvement: allFeedback.filter((f) => f.type === "improvement").length,
+        other: allFeedback.filter((f) => f.type === "other").length,
       },
     };
 

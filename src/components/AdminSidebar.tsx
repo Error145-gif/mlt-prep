@@ -1,5 +1,19 @@
 import { Link, useLocation } from "react-router";
-import { LayoutDashboard, FileText, HelpCircle, Users, CreditCard, Bell, Menu, X, MessageSquare, Tag } from "lucide-react";
+import {
+  LayoutDashboard,
+  Users,
+  BookOpen,
+  Settings,
+  MessageSquare,
+  Image as ImageIcon,
+  AlertTriangle,
+  FileQuestion,
+  CreditCard,
+  Tags,
+  Trophy,
+  X,
+  Menu,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -32,13 +46,16 @@ export default function AdminSidebar() {
 
   const navItems = [
     { path: "/admin", icon: LayoutDashboard, label: "Dashboard" },
-    { path: "/admin/questions", icon: HelpCircle, label: "Questions" },
-    { path: "/admin/study-materials", icon: FileText, label: "Study Materials" },
-    { path: "/admin/analytics", icon: Users, label: "Analytics" },
+    { path: "/admin/users", icon: Users, label: "Users" },
+    { path: "/admin/questions", icon: FileQuestion, label: "Questions" },
+    { path: "/admin/image-questions", icon: ImageIcon, label: "Image Questions" },
+    { path: "/admin/reported-errors", icon: AlertTriangle, label: "Reported Errors" },
+    { path: "/admin/study-materials", icon: BookOpen, label: "Study Materials" },
+    { path: "/admin/analytics", icon: Settings, label: "Analytics" },
     { path: "/admin/subscriptions", icon: CreditCard, label: "Subscriptions" },
-    { path: "/admin/coupons", icon: Tag, label: "Coupons" },
-    { path: "/admin/notifications", icon: Bell, label: "Notifications" },
-    { path: "/admin/feedback", icon: MessageSquare, label: "Feedback" },
+    { path: "/admin/coupons", icon: Tags, label: "Coupons" },
+    { path: "/admin/notifications", icon: MessageSquare, label: "Notifications" },
+    { path: "/admin/feedback", icon: Trophy, label: "Feedback" },
   ];
 
   return (

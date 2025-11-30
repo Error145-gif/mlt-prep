@@ -985,6 +985,74 @@ export const backfillImageTags = mutation({
   },
 });
 
+// Report a question error
+export const reportQuestion = mutation({
+  args: {
+    questionId: v.id("questions"),
+    issueType: v.string(),
+    description: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Unauthorized");
+
+    await ctx.db.insert("reportedQuestions", {
+      questionId: args.questionId,
+      userId,
+      issueType: args.issueType,
+      description: args.description,
+      status: "pending",
+    });
+  },
+});
+
+// Get reported questions (Admin only)
+export const getReportedQuestions = query({
+  args: {},
+  handler: async (ctx) => {
+    const user = await getCurrentUser(ctx);
+    if (!user || user.role !== "admin") return [];
+
+    const reports = await ctx.db
+      .query("reportedQuestions")
+      .withIndex("by_status", (q) => q.eq("status", "pending"))
+      .collect();
+
+    // Enrich with question and user details
+    return await Promise.all(
+      reports.map(async (report) => {
+        const question = await ctx.db.get(report.questionId);
+        const reportedUser = await ctx.db.get(report.userId);
+        return {
+          ...report,
+          question,
+          user: reportedUser,
+        };
+      })
+    );
+  },
+});
+
+// Resolve reported question (Admin only)
+export const resolveReportedQuestion = mutation({
+  args: {
+    reportId: v.id("reportedQuestions"),
+    status: v.union(v.literal("resolved"), v.literal("dismissed")),
+    adminNote: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user || user.role !== "admin") throw new Error("Unauthorized");
+
+    await ctx.db.patch(args.reportId, {
+      status: args.status,
+      adminNote: args.adminNote,
+      resolvedBy: user._id,
+      resolvedAt: Date.now(),
+    });
+  },
+});
+
 export const getQuestionsPaginated = query({
   args: {
     paginationOpts: paginationOptsValidator,
