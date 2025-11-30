@@ -233,6 +233,12 @@ export const getMockTests = query({
       .withIndex("by_source", (q) => q.eq("source", "manual"))
       .filter((q) => q.eq(q.field("status"), "approved"))
       .collect();
+    
+    // Early return if no questions found
+    if (questions.length === 0) {
+      console.log("No manual questions found in database");
+      return [];
+    }
 
     if (args.topicId) {
       const topic = await ctx.db.get(args.topicId);
@@ -304,6 +310,12 @@ export const getAIQuestions = query({
       .withIndex("by_source", (q) => q.eq("source", "ai"))
       .filter((q) => q.eq(q.field("status"), "approved"))
       .collect();
+    
+    // Early return if no questions found
+    if (questions.length === 0) {
+      console.log("No AI questions found in database");
+      return [];
+    }
 
     if (args.topicId) {
       const topic = await ctx.db.get(args.topicId);
@@ -378,6 +390,12 @@ export const getPYQSets = query({
       .withIndex("by_source", (q) => q.eq("source", "pyq"))
       .filter((q) => q.eq(q.field("status"), "approved"))
       .collect();
+    
+    // Early return if no questions found
+    if (pyqQuestions.length === 0) {
+      console.log("No PYQ questions found in database");
+      return [];
+    }
 
     // Group by exam name and year
     const setsByExamYear = new Map<string, typeof pyqQuestions>();
