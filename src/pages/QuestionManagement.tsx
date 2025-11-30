@@ -1386,7 +1386,7 @@ export default function QuestionManagement() {
                             </CardContent>
                           </Card>
                         ) : (
-                          filteredQuestions
+                          questions
                             .map((question, index) => {
                               const isDuplicate = duplicateQuestions.has(question._id);
                               
