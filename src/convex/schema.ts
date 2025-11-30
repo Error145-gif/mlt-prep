@@ -379,6 +379,61 @@ const schema = defineSchema(
     })
       .index("by_order", ["order"])
       .index("by_active", ["isActive"]),
+
+    // Weekly Free Mock Tests
+    weeklyTests: defineTable({
+      title: v.string(),
+      description: v.optional(v.string()),
+      scheduledDate: v.number(), // Sunday timestamp
+      status: v.string(), // "draft", "scheduled", "active", "completed"
+      questionIds: v.array(v.id("questions")),
+      publishedAt: v.optional(v.number()),
+      leaderboardPublishedAt: v.optional(v.number()),
+      totalAttempts: v.number(),
+      createdBy: v.id("users"),
+    })
+      .index("by_status", ["status"])
+      .index("by_scheduled_date", ["scheduledDate"]),
+
+    // Weekly Test Attempts
+    weeklyTestAttempts: defineTable({
+      userId: v.id("users"),
+      weeklyTestId: v.id("weeklyTests"),
+      answers: v.array(
+        v.object({
+          questionId: v.id("questions"),
+          answer: v.string(),
+          isCorrect: v.boolean(),
+        })
+      ),
+      score: v.number(), // percentage
+      accuracy: v.number(), // percentage (same as score for clarity)
+      avgTimePerQuestion: v.number(), // seconds
+      totalTimeSpent: v.number(), // seconds
+      correctAnswers: v.number(),
+      incorrectAnswers: v.number(),
+      completedAt: v.number(),
+      rank: v.optional(v.number()), // Final rank after leaderboard publish
+    })
+      .index("by_user", ["userId"])
+      .index("by_weekly_test", ["weeklyTestId"])
+      .index("by_user_and_test", ["userId", "weeklyTestId"])
+      .index("by_test_and_score", ["weeklyTestId", "score"]),
+
+    // Weekly Test Leaderboard (cached for performance)
+    weeklyLeaderboard: defineTable({
+      weeklyTestId: v.id("weeklyTests"),
+      userId: v.id("users"),
+      userName: v.string(),
+      userEmail: v.optional(v.string()),
+      score: v.number(),
+      accuracy: v.number(),
+      avgTimePerQuestion: v.number(),
+      rank: v.number(),
+      completedAt: v.number(),
+    })
+      .index("by_weekly_test", ["weeklyTestId"])
+      .index("by_test_and_rank", ["weeklyTestId", "rank"]),
   },
   {
     schemaValidation: false,

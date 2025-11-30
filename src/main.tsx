@@ -44,6 +44,8 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import MLTExam from "./pages/MLTExam";
 import LabTechnicianExam from "./pages/LabTechnicianExam";
 import DMLTExam from "./pages/DMLTExam";
+import WeeklyTest from "./pages/WeeklyTest";
+import WeeklyLeaderboard from "./pages/WeeklyLeaderboard";
 
 // Get Convex URL from environment variable with fallback
 const convexUrl = (import.meta as any).env?.VITE_CONVEX_URL ?? "https://successful-bandicoot-650.convex.cloud";
@@ -240,6 +242,22 @@ createRoot(document.getElementById("root")!).render(
                 element={
                   <ProtectedRoute>
                     <TestResults />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/weekly-test"
+                element={
+                  <ProtectedRoute>
+                    <WeeklyTest />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/weekly-leaderboard"
+                element={
+                  <ProtectedRoute>
+                    <WeeklyLeaderboard />
                   </ProtectedRoute>
                 }
               />

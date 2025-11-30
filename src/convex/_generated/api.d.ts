@@ -34,6 +34,9 @@ import type * as topics from "../topics.js";
 import type * as userDataReset from "../userDataReset.js";
 import type * as userManagement from "../userManagement.js";
 import type * as users from "../users.js";
+import type * as weeklyTests from "../weeklyTests.js";
+import type * as weeklyTestsCron from "../weeklyTestsCron.js";
+import type * as weeklyTestsCronActions from "../weeklyTestsCronActions.js";
 
 import type {
   ApiFromModules,
@@ -76,6 +79,9 @@ declare const fullApi: ApiFromModules<{
   userDataReset: typeof userDataReset;
   userManagement: typeof userManagement;
   users: typeof users;
+  weeklyTests: typeof weeklyTests;
+  weeklyTestsCron: typeof weeklyTestsCron;
+  weeklyTestsCronActions: typeof weeklyTestsCronActions;
 }>;
 declare const fullApiWithMounts: typeof fullApi;
 
