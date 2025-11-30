@@ -113,7 +113,8 @@ export default function TestStart() {
     ...(examName && { examName }), // Pass examName to query
   });
 
-  const questions = testQuestions || [];
+  const questions = Array.isArray(testQuestions) ? testQuestions : [];
+  const hasError = testQuestions === undefined && !isLoading;
   const [testName, setTestName] = useState("");
 
   useEffect(() => {
@@ -328,8 +329,8 @@ export default function TestStart() {
     toast.success("Test resumed!");
   };
 
-  // Enhanced loading state
-  if (isLoading || !questions || questions.length === 0) {
+  // Enhanced loading state with error handling
+  if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-blue-50">
         <div className="text-center space-y-4">
@@ -338,6 +339,37 @@ export default function TestStart() {
           </div>
           <div className="text-gray-700 text-xl font-medium">Preparing your test...</div>
           <div className="text-gray-600 text-sm">Loading questions</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (hasError || !questions || questions.length === 0) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-red-50 to-orange-50 p-6">
+        <div className="text-center space-y-4 max-w-md">
+          <div className="text-6xl mb-4">⚠️</div>
+          <div className="text-gray-900 text-2xl font-bold">Unable to Load Test</div>
+          <div className="text-gray-600">
+            {hasError 
+              ? "There was an error loading the test questions. Please try again."
+              : "No questions available for this test. Please contact support or try a different test."}
+          </div>
+          <div className="flex gap-3 justify-center mt-6">
+            <Button 
+              onClick={() => window.location.reload()} 
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              Try Again
+            </Button>
+            <Button 
+              onClick={() => navigate("/student")} 
+              variant="outline"
+            >
+              Return to Dashboard
+            </Button>
+          </div>
         </div>
       </div>
     );

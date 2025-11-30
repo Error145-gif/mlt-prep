@@ -507,59 +507,56 @@ export const getTestQuestions = query({
     const user = await getCurrentUser(ctx);
     if (!user) return [];
 
-    let questions;
-    
-    // Fetch topic if topicId is provided
-    let topic = null;
-    if (args.topicId) {
-      topic = await ctx.db.get(args.topicId);
-    }
-
-    if (args.testType === "mock" && args.topicId) {
-      if (!topic) return [];
-      // Get mock/manual questions
-      questions = await ctx.db
-        .query("questions")
-        .withIndex("by_topic", (q) => q.eq("topic", topic.name))
-        .filter((q) => q.eq(q.field("source"), "manual"))
-        .collect();
+    try {
+      let questions: any[] = [];
       
-      // Randomly select 100 questions
-      questions = questions.sort(() => Math.random() - 0.5).slice(0, 100);
-    } else if (args.testType === "pyq" && args.year && args.setNumber) {
-      // PYQ Logic - Now filtering by examName if provided
-      let query = ctx.db
-        .query("questions")
-        .withIndex("by_source", (q) => q.eq("source", "pyq"));
-      
-      questions = await query.collect();
-      
-      // Filter by year and set number
-      questions = questions.filter(q => 
-        q.year === args.year && 
-        q.setNumber === args.setNumber
-      );
-
-      // Filter by exam name if provided (for PYQs)
-      if (args.examName) {
-        questions = questions.filter((q) => q.examName === args.examName);
-      }
-
-      // Filter by year if provided
-      if (args.year) {
-        questions = questions.filter(
-          (q) =>
-            (q.year === args.year) || // Check number field
-            (q.year?.toString() === args.year?.toString()) // Check string conversion
+      if (args.testType === "mock") {
+        // Get all approved manual questions
+        const allQuestions = await ctx.db
+          .query("questions")
+          .withIndex("by_source", (q) => q.eq("source", "manual"))
+          .filter((q) => q.eq(q.field("status"), "approved"))
+          .collect();
+        
+        // Filter by setNumber if provided
+        if (args.setNumber) {
+          questions = allQuestions.filter(q => q.setNumber === args.setNumber);
+        } else {
+          questions = allQuestions.slice(0, 100);
+        }
+        
+      } else if (args.testType === "pyq") {
+        // Get all PYQ questions
+        let allPyqQuestions = await ctx.db
+          .query("questions")
+          .withIndex("by_source", (q) => q.eq("source", "pyq"))
+          .filter((q) => q.eq(q.field("status"), "approved"))
+          .collect();
+        
+        // Filter by year and setNumber
+        questions = allPyqQuestions.filter(q => 
+          q.year === args.year && 
+          q.setNumber === args.setNumber &&
+          (!args.examName || q.examName === args.examName)
         );
+        
+      } else if (args.testType === "ai") {
+        // Get all approved AI questions
+        const allQuestions = await ctx.db
+          .query("questions")
+          .withIndex("by_source", (q) => q.eq("source", "ai"))
+          .filter((q) => q.eq(q.field("status"), "approved"))
+          .collect();
+        
+        // Filter by setNumber if provided
+        if (args.setNumber) {
+          questions = allQuestions.filter(q => q.setNumber === args.setNumber);
+        } else {
+          questions = allQuestions.slice(0, 25);
+        }
       }
 
-      // Filter by set number if provided
-      if (args.setNumber) {
-        questions = questions.filter((q) => q.setNumber === args.setNumber);
-      }
-
-      // Generate fresh image URLs for PYQ questions
+      // Generate fresh image URLs
       const questionsWithUrls = await Promise.all(
         questions.map(async (q) => {
           if (q.imageStorageId) {
@@ -570,47 +567,12 @@ export const getTestQuestions = query({
         })
       );
 
-      // Get unique subjects
-      const subjects = [
-        ...new Set(
-          questionsWithUrls
-            .map((q) => q.subject || (q.topicId ? "Topic Based" : "General"))
-            .filter(Boolean)
-        ),
-      ];
-
-      return {
-        questions: questionsWithUrls,
-        subjects,
-        totalQuestions: questionsWithUrls.length,
-      };
-    } else if (args.testType === "ai" && args.topicId) {
-      if (!topic) return [];
-      // Get AI questions
-      questions = await ctx.db
-        .query("questions")
-        .withIndex("by_topic", (q) => q.eq("topic", topic.name))
-        .filter((q) => q.eq(q.field("source"), "ai"))
-        .collect();
-        
-      // Randomly select 25 questions
-      questions = questions.sort(() => Math.random() - 0.5).slice(0, 25);
-    } else {
+      return questionsWithUrls;
+      
+    } catch (error) {
+      console.error("Error fetching test questions:", error);
       return [];
     }
-
-    // Generate fresh image URLs for other test types
-    const questionsWithUrls = await Promise.all(
-      questions.map(async (q) => {
-        if (q.imageStorageId) {
-          const url = await ctx.storage.getUrl(q.imageStorageId);
-          return { ...q, imageUrl: url || q.imageUrl };
-        }
-        return q;
-      })
-    );
-
-    return questionsWithUrls;
   },
 });
 

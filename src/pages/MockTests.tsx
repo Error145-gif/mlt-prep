@@ -24,10 +24,33 @@ export default function MockTests() {
     }
   }, [isAuthenticated, isLoading, navigate]);
 
-  if (isLoading || !mockTests) {
+  if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-white text-xl">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
+        <div className="text-center space-y-4">
+          <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin mx-auto"></div>
+          <div className="text-white text-xl">Loading Mock Tests...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!mockTests || mockTests.length === 0) {
+    return (
+      <div className="min-h-screen p-6 lg:p-8 relative overflow-hidden">
+        <StudentNav />
+        <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500" />
+        <div className="relative z-10 max-w-2xl mx-auto text-center mt-20">
+          <div className="text-6xl mb-4">📚</div>
+          <h1 className="text-3xl font-bold text-white">No Mock Tests Available</h1>
+          <p className="text-white/70 mt-2">Check back soon or contact support</p>
+          <Button 
+            onClick={() => navigate("/student")} 
+            className="mt-6 bg-white text-blue-600 hover:bg-white/90"
+          >
+            Return to Dashboard
+          </Button>
+        </div>
       </div>
     );
   }

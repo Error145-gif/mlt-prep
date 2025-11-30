@@ -25,10 +25,13 @@ export default function PYQSets() {
     }
   }, [isAuthenticated, isLoading, navigate]);
 
-  if (isLoading || !pyqSets) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
-        <div className="text-white text-xl">Loading...</div>
+        <div className="text-center space-y-4">
+          <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin mx-auto"></div>
+          <div className="text-white text-xl">Loading PYQ Sets...</div>
+        </div>
       </div>
     );
   }
