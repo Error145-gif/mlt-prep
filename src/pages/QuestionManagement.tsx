@@ -1210,62 +1210,9 @@ export default function QuestionManagement() {
               <div className="space-y-6">
                 <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
                   <CardHeader>
-                    <CardTitle className="text-white">Question Statistics</CardTitle>
+                    <CardTitle className="text-white">Question Management</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-                      <Card>
-                        <CardHeader className="pb-2">
-                          <CardTitle className="text-sm font-medium text-muted-foreground">
-                            Total Questions
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="text-2xl font-bold">{stats.total}</div>
-                        </CardContent>
-                      </Card>
-                      <Card>
-                        <CardHeader className="pb-2">
-                          <CardTitle className="text-sm font-medium text-muted-foreground">
-                            Manual / Mock
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="text-2xl font-bold">{stats.manual}</div>
-                        </CardContent>
-                      </Card>
-                      <Card>
-                        <CardHeader className="pb-2">
-                          <CardTitle className="text-sm font-medium text-muted-foreground">
-                            AI Generated
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="text-2xl font-bold">{stats.ai}</div>
-                        </CardContent>
-                      </Card>
-                      <Card>
-                        <CardHeader className="pb-2">
-                          <CardTitle className="text-sm font-medium text-muted-foreground">
-                            PYQ
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="text-2xl font-bold">{stats.pyq}</div>
-                        </CardContent>
-                      </Card>
-                      <Card className="bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800">
-                        <CardHeader className="pb-2">
-                          <CardTitle className="text-sm font-medium text-purple-700 dark:text-purple-300">
-                            Image-Based
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="text-2xl font-bold text-purple-700 dark:text-purple-300">{stats.imageBased}</div>
-                        </CardContent>
-                      </Card>
-                    </div>
-
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                       <div className="flex flex-wrap gap-2">
                         <Button
