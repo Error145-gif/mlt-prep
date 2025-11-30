@@ -38,7 +38,16 @@ export const getQuestions = query({
       questions = await ctx.db.query("questions").collect();
     }
 
-    return questions;
+    // Generate fresh image URLs
+    return await Promise.all(
+      questions.map(async (q) => {
+        if (q.imageStorageId) {
+          const url = await ctx.storage.getUrl(q.imageStorageId);
+          return { ...q, imageUrl: url || q.imageUrl };
+        }
+        return q;
+      })
+    );
   },
 });
 
@@ -50,7 +59,17 @@ export const getQuestionsBySection = query({
       .query("questions")
       .withIndex("by_section", (q) => q.eq("sectionId", args.sectionId))
       .collect();
-    return questions;
+    
+    // Generate fresh image URLs
+    return await Promise.all(
+      questions.map(async (q) => {
+        if (q.imageStorageId) {
+          const url = await ctx.storage.getUrl(q.imageStorageId);
+          return { ...q, imageUrl: url || q.imageUrl };
+        }
+        return q;
+      })
+    );
   },
 });
 
@@ -105,10 +124,23 @@ export const getUnassignedQuestions = query({
       ? pyqQuestions.slice(-pyqLeftover) 
       : [];
 
+    // Helper to enrich with URLs
+    const enrich = async (qs: any[]) => {
+      return await Promise.all(
+        qs.map(async (q) => {
+          if (q.imageStorageId) {
+            const url = await ctx.storage.getUrl(q.imageStorageId);
+            return { ...q, imageUrl: url || q.imageUrl };
+          }
+          return q;
+        })
+      );
+    };
+
     return {
-      manual: manualUnassigned,
-      ai: aiUnassigned,
-      pyq: pyqUnassigned,
+      manual: await enrich(manualUnassigned),
+      ai: await enrich(aiUnassigned),
+      pyq: await enrich(pyqUnassigned),
       counts: {
         manual: manualLeftover,
         ai: aiLeftover,

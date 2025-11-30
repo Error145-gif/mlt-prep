@@ -479,7 +479,18 @@ export const getPracticeQuestions = query({
     // Take the requested number of questions (enforcing 10-100 limit)
     questions = questions.slice(0, limit);
 
-    return questions;
+    // Generate fresh image URLs
+    const questionsWithUrls = await Promise.all(
+      questions.map(async (q) => {
+        if (q.imageStorageId) {
+          const url = await ctx.storage.getUrl(q.imageStorageId);
+          return { ...q, imageUrl: url || q.imageUrl };
+        }
+        return q;
+      })
+    );
+
+    return questionsWithUrls;
   },
 });
 
@@ -548,19 +559,30 @@ export const getTestQuestions = query({
         questions = questions.filter((q) => q.setNumber === args.setNumber);
       }
 
+      // Generate fresh image URLs for PYQ questions
+      const questionsWithUrls = await Promise.all(
+        questions.map(async (q) => {
+          if (q.imageStorageId) {
+            const url = await ctx.storage.getUrl(q.imageStorageId);
+            return { ...q, imageUrl: url || q.imageUrl };
+          }
+          return q;
+        })
+      );
+
       // Get unique subjects
       const subjects = [
         ...new Set(
-          questions
+          questionsWithUrls
             .map((q) => q.subject || (q.topicId ? "Topic Based" : "General"))
             .filter(Boolean)
         ),
       ];
 
       return {
-        questions,
+        questions: questionsWithUrls,
         subjects,
-        totalQuestions: questions.length,
+        totalQuestions: questionsWithUrls.length,
       };
     } else if (args.testType === "ai" && args.topicId) {
       if (!topic) return [];
@@ -577,7 +599,18 @@ export const getTestQuestions = query({
       return [];
     }
 
-    return questions;
+    // Generate fresh image URLs for other test types
+    const questionsWithUrls = await Promise.all(
+      questions.map(async (q) => {
+        if (q.imageStorageId) {
+          const url = await ctx.storage.getUrl(q.imageStorageId);
+          return { ...q, imageUrl: url || q.imageUrl };
+        }
+        return q;
+      })
+    );
+
+    return questionsWithUrls;
   },
 });
 
@@ -779,9 +812,18 @@ export const getTestResults = query({
         try {
           const q = await ctx.db.get(id);
           if (!q) return null;
+          
+          // Generate fresh image URL
+          let imageUrl = q.imageUrl;
+          if (q.imageStorageId) {
+            const url = await ctx.storage.getUrl(q.imageStorageId);
+            if (url) imageUrl = url;
+          }
+
           const userAnswer = session.answers?.find((a) => a.questionId === id);
           return {
             ...q,
+            imageUrl,
             userAnswer: userAnswer?.answer,
             isCorrect: userAnswer?.isCorrect,
           };
