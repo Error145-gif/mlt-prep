@@ -924,18 +924,19 @@ export const updateQuestion = mutation({
 export const backfillImageTags = mutation({
   args: {},
   handler: async (ctx) => {
-    const questions = await ctx.db.query("questions").collect();
+    // Process in batches to avoid "Too many reads" error
+    const questions = await ctx.db
+      .query("questions")
+      .filter((q) => q.eq(q.field("hasImage"), undefined))
+      .take(500); // Process 500 at a time
+
     let count = 0;
     for (const q of questions) {
-      // Check if question has image field or imageUrl field or imageStorageId
-      const hasImage = !!(q.image || q.imageUrl || q.imageStorageId);
-      
-      // Only update if changed
-      if (q.hasImage !== hasImage) {
-        await ctx.db.patch(q._id, { hasImage });
-        count++;
-      }
+      const hasImage = !!(q.imageUrl || q.imageStorageId);
+      await ctx.db.patch(q._id, { hasImage });
+      count++;
     }
-    return `Updated ${count} questions with correct image tags`;
+
+    return { count, status: count < 500 ? "Complete" : "More to process (run again)" };
   },
 });
