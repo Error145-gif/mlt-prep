@@ -296,7 +296,11 @@ export default function QuestionManagement() {
 
       // Create AI test with auto-generated name and default topic
       const result = await createAITestWithQuestions({
-        testSetName: autoTestName,
+        testInfo: {
+          name: autoTestName,
+          timeLimit: 60,
+          description: `Mock test created on ${new Date().toLocaleDateString()}`,
+        },
         topicId: undefined,
         newTopicName: "General AI Questions",
         questions: parsedQuestions,
@@ -440,7 +444,11 @@ export default function QuestionManagement() {
 
       // Create mock test with auto-generated name and default topic
       const result = await createMockTestWithQuestions({
-        testSetName: autoTestName,
+        testInfo: {
+          name: autoTestName,
+          timeLimit: 30,
+          description: `AI test created on ${new Date().toLocaleDateString()}`,
+        },
         topicId: undefined,
         newTopicName: "General Mock Tests",
         questions: parsedQuestions,
