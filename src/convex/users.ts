@@ -147,9 +147,9 @@ export const makeCurrentUserAdmin = mutation({
       throw new Error("User not found");
     }
 
-    // Only allow ak6722909@gmail.com to become admin
-    const allowedAdminEmail = "ak6722909@gmail.com";
-    if (user.email?.toLowerCase().trim() !== allowedAdminEmail) {
+    // Only allow specific emails to become admin
+    const allowedAdminEmails = ["ak6722909@gmail.com", "historyindia145@gmail.com"];
+    if (!allowedAdminEmails.includes(user.email?.toLowerCase().trim() || "")) {
       throw new Error("Unauthorized: Only authorized emails can access the admin panel.");
     }
 

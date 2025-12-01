@@ -219,7 +219,7 @@ export default function Landing() {
                     Admin
                   </Button>
                 )}
-                {user?.role !== "admin" && user?.email === "ak6722909@gmail.com" && (
+                {user?.role !== "admin" && (user?.email === "ak6722909@gmail.com" || user?.email === "historyindia145@gmail.com") && (
                   <Button
                     onClick={handleMakeAdmin}
                     className="bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-xs sm:text-sm px-2 sm:px-4 py-1 sm:py-2"
