@@ -140,6 +140,7 @@ Make sure:
               difficulty: question.difficulty,
               subject: question.subject,
               topic: "General",
+              topicId: args.topicId, // Pass the topicId
               source: "ai",
             });
             savedIds.push(id);

@@ -214,7 +214,7 @@ export const createQuestion = mutation({
     correctAnswer: v.string(),
     explanation: v.optional(v.string()),
     image: v.optional(v.string()),
-    topicId: v.optional(v.id("topics")),
+    topicId: v.optional(v.union(v.id("topics"), v.string())),
     subtopicId: v.optional(v.string()),
     difficulty: v.optional(v.string()),
     source: v.optional(v.string()),
@@ -250,13 +250,18 @@ export const createQuestion = mutation({
       source = "manual";
     }
 
+    // Normalize topicId
+    const topicId = args.topicId 
+      ? (typeof args.topicId === "string" ? ctx.db.normalizeId("topics", args.topicId) : args.topicId)
+      : undefined;
+
     const questionId = await ctx.db.insert("questions", {
       question: questionText,
       options: args.options,
       correctAnswer: args.correctAnswer,
       explanation: args.explanation,
       imageUrl: args.image,
-      topicId: args.topicId,
+      topicId: topicId || undefined,
       subtopic: args.subtopicId,
       difficulty: difficulty as "easy" | "medium" | "hard",
       source: source as "manual" | "ai" | "pyq",
@@ -347,7 +352,7 @@ export const batchCreateQuestions = mutation({
         correctAnswer: v.string(),
         explanation: v.optional(v.string()),
         image: v.optional(v.string()),
-        topicId: v.optional(v.id("topics")),
+        topicId: v.optional(v.union(v.id("topics"), v.string())),
         subtopicId: v.optional(v.string()),
         difficulty: v.optional(v.string()),
         source: v.optional(v.string()),
@@ -382,13 +387,18 @@ export const batchCreateQuestions = mutation({
         source = "manual";
       }
 
+      // Normalize topicId
+      const topicId = question.topicId 
+        ? (typeof question.topicId === "string" ? ctx.db.normalizeId("topics", question.topicId) : question.topicId)
+        : undefined;
+
       await ctx.db.insert("questions", {
         question: questionText,
         options: question.options,
         correctAnswer: question.correctAnswer,
         explanation: question.explanation,
         imageUrl: question.image,
-        topicId: question.topicId,
+        topicId: topicId || undefined,
         subtopic: question.subtopicId,
         difficulty: difficulty as "easy" | "medium" | "hard",
         source: source as "manual" | "ai" | "pyq",
@@ -500,6 +510,7 @@ export const createQuestionInternal = internalMutation({
     examName: v.optional(v.string()),
     subject: v.optional(v.string()),
     topic: v.string(),
+    topicId: v.optional(v.union(v.id("topics"), v.string())),
     sectionId: v.optional(v.id("sections")),
     createdBy: v.id("users"),
     category: v.optional(v.string()),
@@ -517,12 +528,18 @@ export const createQuestionInternal = internalMutation({
       source = "manual";
     }
 
+    // Normalize topicId
+    const topicId = args.topicId 
+      ? (typeof args.topicId === "string" ? ctx.db.normalizeId("topics", args.topicId) : args.topicId)
+      : undefined;
+
     return await ctx.db.insert("questions", {
       question: args.question,
       options: args.options || [],
       correctAnswer: args.correctAnswer,
       subject: args.subject || "General",
       topic: args.topic,
+      topicId: topicId || undefined,
       difficulty: difficulty as "easy" | "medium" | "hard",
       type: args.type as any,
       source: source as "manual" | "ai" | "pyq",
@@ -552,6 +569,7 @@ export const createQuestionInternalFromAction = internalMutation({
     examName: v.optional(v.string()),
     subject: v.optional(v.string()),
     topic: v.string(),
+    topicId: v.optional(v.union(v.id("topics"), v.string())),
     sectionId: v.optional(v.id("sections")),
     category: v.optional(v.string()),
   },
@@ -568,6 +586,11 @@ export const createQuestionInternalFromAction = internalMutation({
       source = "ai";
     }
 
+    // Normalize topicId
+    const topicId = args.topicId 
+      ? (typeof args.topicId === "string" ? ctx.db.normalizeId("topics", args.topicId) : args.topicId)
+      : undefined;
+
     // For AI-generated questions, we don't need a specific user
     return await ctx.db.insert("questions", {
       question: args.question,
@@ -575,6 +598,7 @@ export const createQuestionInternalFromAction = internalMutation({
       correctAnswer: args.correctAnswer,
       subject: args.subject || "General",
       topic: args.topic,
+      topicId: topicId || undefined,
       difficulty: difficulty as "easy" | "medium" | "hard",
       type: args.type as any,
       source: source as "manual" | "ai" | "pyq",
@@ -611,12 +635,13 @@ export const createMockTestWithQuestions = mutation({
     duration: v.number(),
     questions: v.array(
       v.object({
-        text: v.string(),
+        text: v.optional(v.string()),
+        question: v.optional(v.string()),
         options: v.array(v.string()),
         correctAnswer: v.string(),
         explanation: v.optional(v.string()),
         image: v.optional(v.string()),
-        topicId: v.optional(v.id("topics")),
+        topicId: v.optional(v.union(v.id("topics"), v.string())),
         subtopicId: v.optional(v.string()),
         difficulty: v.optional(v.string()),
       })
@@ -635,19 +660,27 @@ export const createMockTestWithQuestions = mutation({
 
     const questionIds = [];
     for (const q of args.questions) {
+      const questionText = q.text || q.question;
+      if (!questionText) continue;
+
       // Normalize difficulty
       let difficulty = (q.difficulty || "medium").toLowerCase();
       if (!["easy", "medium", "hard"].includes(difficulty)) {
         difficulty = "medium";
       }
 
+      // Normalize topicId
+      const topicId = q.topicId 
+        ? (typeof q.topicId === "string" ? ctx.db.normalizeId("topics", q.topicId) : q.topicId)
+        : undefined;
+
       const qId = await ctx.db.insert("questions", {
-        question: q.text,
+        question: questionText,
         options: q.options,
         correctAnswer: q.correctAnswer,
         explanation: q.explanation,
         imageUrl: q.image,
-        topicId: q.topicId,
+        topicId: topicId || undefined,
         subtopic: q.subtopicId,
         difficulty: difficulty as "easy" | "medium" | "hard",
         testSetId,
@@ -676,12 +709,13 @@ export const createAITestWithQuestions = mutation({
     duration: v.number(),
     questions: v.array(
       v.object({
-        text: v.string(),
+        text: v.optional(v.string()),
+        question: v.optional(v.string()),
         options: v.array(v.string()),
         correctAnswer: v.string(),
         explanation: v.optional(v.string()),
         image: v.optional(v.string()),
-        topicId: v.optional(v.id("topics")),
+        topicId: v.optional(v.union(v.id("topics"), v.string())),
         subtopicId: v.optional(v.string()),
         difficulty: v.optional(v.string()),
       })
@@ -700,19 +734,27 @@ export const createAITestWithQuestions = mutation({
 
     const questionIds = [];
     for (const q of args.questions) {
+      const questionText = q.text || q.question;
+      if (!questionText) continue;
+
       // Normalize difficulty
       let difficulty = (q.difficulty || "medium").toLowerCase();
       if (!["easy", "medium", "hard"].includes(difficulty)) {
         difficulty = "medium";
       }
 
+      // Normalize topicId
+      const topicId = q.topicId 
+        ? (typeof q.topicId === "string" ? ctx.db.normalizeId("topics", q.topicId) : q.topicId)
+        : undefined;
+
       const qId = await ctx.db.insert("questions", {
-        question: q.text,
+        question: questionText,
         options: q.options,
         correctAnswer: q.correctAnswer,
         explanation: q.explanation,
         imageUrl: q.image,
-        topicId: q.topicId,
+        topicId: topicId || undefined,
         subtopic: q.subtopicId,
         difficulty: difficulty as "easy" | "medium" | "hard",
         testSetId,
@@ -740,12 +782,13 @@ export const createPYQTestWithQuestions = mutation({
     duration: v.number(),
     questions: v.array(
       v.object({
-        text: v.string(),
+        text: v.optional(v.string()),
+        question: v.optional(v.string()),
         options: v.array(v.string()),
         correctAnswer: v.string(),
         explanation: v.optional(v.string()),
         image: v.optional(v.string()),
-        topicId: v.optional(v.id("topics")),
+        topicId: v.optional(v.union(v.id("topics"), v.string())),
         subtopicId: v.optional(v.string()),
         difficulty: v.optional(v.string()),
       })
@@ -764,19 +807,27 @@ export const createPYQTestWithQuestions = mutation({
 
     const questionIds = [];
     for (const q of args.questions) {
+      const questionText = q.text || q.question;
+      if (!questionText) continue;
+
       // Normalize difficulty
       let difficulty = (q.difficulty || "medium").toLowerCase();
       if (!["easy", "medium", "hard"].includes(difficulty)) {
         difficulty = "medium";
       }
 
+      // Normalize topicId
+      const topicId = q.topicId 
+        ? (typeof q.topicId === "string" ? ctx.db.normalizeId("topics", q.topicId) : q.topicId)
+        : undefined;
+
       const qId = await ctx.db.insert("questions", {
-        question: q.text,
+        question: questionText,
         options: q.options,
         correctAnswer: q.correctAnswer,
         explanation: q.explanation,
         imageUrl: q.image,
-        topicId: q.topicId,
+        topicId: topicId || undefined,
         subtopic: q.subtopicId,
         difficulty: difficulty as "easy" | "medium" | "hard",
         testSetId,
@@ -1350,7 +1401,7 @@ export const create = mutation({
     category: v.optional(v.string()),
     difficulty: v.optional(v.string()),
     subtopic: v.optional(v.string()),
-    topicId: v.optional(v.id("topics")),
+    topicId: v.optional(v.union(v.id("topics"), v.string())),
     isPYQ: v.optional(v.boolean()),
     examYear: v.optional(v.string()),
     examName: v.optional(v.string()),
@@ -1364,6 +1415,11 @@ export const create = mutation({
       difficulty = "medium";
     }
 
+    // Normalize topicId
+    const topicId = args.topicId 
+      ? (typeof args.topicId === "string" ? ctx.db.normalizeId("topics", args.topicId) : args.topicId)
+      : undefined;
+
     const questionId = await ctx.db.insert("questions", {
       question: args.question,
       options: args.options,
@@ -1372,7 +1428,7 @@ export const create = mutation({
       category: args.category || "mlt",
       difficulty: difficulty as "easy" | "medium" | "hard",
       subtopic: args.subtopic,
-      topicId: args.topicId,
+      topicId: topicId || undefined,
       isPYQ: args.isPYQ,
       examYear: args.examYear,
       examName: args.examName,
@@ -1400,7 +1456,7 @@ export const createBulk = mutation({
         category: v.string(),
         difficulty: v.string(),
         subtopic: v.optional(v.string()),
-        topicId: v.optional(v.id("topics")),
+        topicId: v.optional(v.union(v.id("topics"), v.string())),
         isPYQ: v.optional(v.boolean()),
         examYear: v.optional(v.string()),
         examName: v.optional(v.string()),
@@ -1417,6 +1473,11 @@ export const createBulk = mutation({
         difficulty = "medium";
       }
 
+      // Normalize topicId
+      const topicId = q.topicId 
+        ? (typeof q.topicId === "string" ? ctx.db.normalizeId("topics", q.topicId) : q.topicId)
+        : undefined;
+
       await ctx.db.insert("questions", {
         question: q.question,
         options: q.options,
@@ -1425,7 +1486,7 @@ export const createBulk = mutation({
         category: q.category,
         difficulty: difficulty as "easy" | "medium" | "hard",
         subtopic: q.subtopic,
-        topicId: q.topicId,
+        topicId: topicId || undefined,
         isPYQ: q.isPYQ,
         examYear: q.examYear,
         examName: q.examName,
