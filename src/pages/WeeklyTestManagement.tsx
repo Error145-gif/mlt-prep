@@ -145,9 +145,22 @@ export default function WeeklyTestManagement() {
           </motion.div>
         )}
 
-        <div className="grid grid-cols-1 gap-6">
-          {weeklyTests?.map((test) => (
-            <Card key={test._id} className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {weeklyTests?.map((test: any) => (
+            <Card key={test._id} className="relative overflow-hidden">
+              <div className="absolute top-2 right-2 flex gap-2">
+                <Badge
+                  className={
+                    test.status === "active"
+                      ? "bg-green-500/20 text-green-300 border-green-500/30"
+                      : test.status === "completed"
+                      ? "bg-blue-500/20 text-blue-300 border-blue-500/30"
+                      : "bg-yellow-500/20 text-yellow-300 border-yellow-500/30"
+                  }
+                >
+                  {test.status}
+                </Badge>
+              </div>
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
@@ -161,17 +174,6 @@ export default function WeeklyTestManagement() {
                       }) : "Date not scheduled"}
                     </p>
                   </div>
-                  <Badge
-                    className={
-                      test.status === "active"
-                        ? "bg-green-500/20 text-green-300 border-green-500/30"
-                        : test.status === "completed"
-                        ? "bg-blue-500/20 text-blue-300 border-blue-500/30"
-                        : "bg-yellow-500/20 text-yellow-300 border-yellow-500/30"
-                    }
-                  >
-                    {test.status}
-                  </Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">

@@ -88,8 +88,10 @@ const schema = defineSchema(
       isRegistered: v.optional(v.boolean()),
       registrationCompleted: v.optional(v.boolean()),
       phone: v.optional(v.string()),
+      tokenIdentifier: v.optional(v.string()),
     })
-      .index("email", ["email"]),
+      .index("email", ["email"])
+      .index("by_token", ["tokenIdentifier"]),
 
     // Content Management
     content: defineTable({

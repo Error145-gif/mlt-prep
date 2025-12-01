@@ -263,11 +263,11 @@ export default function AdminDashboard() {
             {!stats?.recentContent || stats.recentContent.length === 0 ? (
               <p className="text-white/80 text-center py-8">No content uploaded yet</p>
             ) : (
-              <div className="space-y-3">
-                {stats.recentContent.map((content) => (
+              <div className="space-y-4">
+                {stats.recentContent.map((content: any) => (
                   <div
                     key={content._id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/10"
+                    className="flex items-center justify-between p-4 border rounded-lg"
                   >
                     <div>
                       <p className="font-medium text-white">{content.title}</p>
@@ -292,11 +292,11 @@ export default function AdminDashboard() {
             {!stats?.recentPayments || stats.recentPayments.length === 0 ? (
               <p className="text-white/80 text-center py-8">No payments yet</p>
             ) : (
-              <div className="space-y-3">
-                {stats.recentPayments.map((payment) => (
+              <div className="space-y-4">
+                {stats.recentPayments.map((payment: any) => (
                   <div
                     key={payment._id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/10"
+                    className="flex items-center justify-between p-4 border rounded-lg"
                   >
                     <div>
                       <p className="font-medium text-white">₹{payment.amount}</p>

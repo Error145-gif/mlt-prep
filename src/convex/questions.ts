@@ -237,25 +237,33 @@ export const createQuestion = mutation({
     }
 
     const difficulty = normalizeDifficulty(args.difficulty);
-    const source = args.source ? args.source.trim() : undefined;
-    const topicId = args.topicId && args.topicId.trim() !== "" ? args.topicId : undefined;
-    const category = args.category || "General";
+    const source = normalizeSource(args.source);
+    const year = normalizeYear(args.year);
+    
+    // Normalize topicId
+    const topicId = args.topicId 
+      ? (typeof args.topicId === "string" ? ctx.db.normalizeId("topics", args.topicId) : args.topicId)
+      : undefined;
+      
+    const category = args.category || "mlt";
 
     const questionId = await ctx.db.insert("questions", {
-      text: args.text,
+      question: args.text,
       options: args.options,
       correctAnswer: args.correctAnswer,
       explanation: args.explanation,
       difficulty,
       category,
-      subCategory: args.subCategory,
-      topicId,
-      isAI: false,
+      subtopic: args.subCategory,
+      topicId: topicId || undefined,
       source,
-      year: args.year,
+      year,
       examName: args.examName,
       imageUrl: args.imageUrl,
       created: Date.now(),
+      status: "approved",
+      type: "mcq",
+      hasImage: !!args.imageUrl,
     });
 
     return questionId;
@@ -497,25 +505,33 @@ export const createQuestionInternal = internalMutation({
   },
   handler: async (ctx, args) => {
     const difficulty = normalizeDifficulty(args.difficulty);
-    const source = args.source ? args.source.trim() : undefined;
-    const topicId = args.topicId && args.topicId.trim() !== "" ? args.topicId : undefined;
-    const category = args.category || "General";
+    const source = normalizeSource(args.source);
+    const year = normalizeYear(args.year);
+    
+    // Normalize topicId
+    const topicId = args.topicId 
+      ? (typeof args.topicId === "string" ? ctx.db.normalizeId("topics", args.topicId) : args.topicId)
+      : undefined;
+      
+    const category = args.category || "mlt";
 
     return await ctx.db.insert("questions", {
-      text: args.text,
+      question: args.text,
       options: args.options,
       correctAnswer: args.correctAnswer,
       explanation: args.explanation,
       difficulty,
       category,
-      subCategory: args.subCategory,
-      topicId,
-      isAI: false,
+      subtopic: args.subCategory,
+      topicId: topicId || undefined,
       source,
-      year: args.year,
+      year,
       examName: args.examName,
       imageUrl: args.imageUrl,
       created: Date.now(),
+      status: "approved",
+      type: "mcq",
+      hasImage: !!args.imageUrl,
     });
   },
 });
@@ -538,25 +554,33 @@ export const createQuestionInternalFromAction = internalMutation({
   },
   handler: async (ctx, args) => {
     const difficulty = normalizeDifficulty(args.difficulty);
-    const source = args.source ? args.source.trim() : undefined;
-    const topicId = args.topicId && args.topicId.trim() !== "" ? args.topicId : undefined;
-    const category = args.category || "General";
+    const source = normalizeSource(args.source);
+    const year = normalizeYear(args.year);
+    
+    // Normalize topicId
+    const topicId = args.topicId 
+      ? (typeof args.topicId === "string" ? ctx.db.normalizeId("topics", args.topicId) : args.topicId)
+      : undefined;
+      
+    const category = args.category || "mlt";
 
     return await ctx.db.insert("questions", {
-      text: args.text,
+      question: args.text,
       options: args.options,
       correctAnswer: args.correctAnswer,
       explanation: args.explanation,
       difficulty,
       category,
-      subCategory: args.subCategory,
-      topicId,
-      isAI: true,
+      subtopic: args.subCategory,
+      topicId: topicId || undefined,
       source,
-      year: args.year,
+      year,
       examName: args.examName,
       imageUrl: args.imageUrl,
       created: Date.now(),
+      status: "approved",
+      type: "mcq",
+      hasImage: !!args.imageUrl,
     });
   },
 });
@@ -618,37 +642,45 @@ export const createMockTestWithQuestions = mutation({
     const questionIds = [];
     for (const q of args.questions) {
       const difficulty = normalizeDifficulty(q.difficulty);
-      const source = q.source ? q.source.trim() : undefined;
-      const topicId = q.topicId && q.topicId.trim() !== "" ? q.topicId : undefined;
-      const category = q.category || "General";
+      const source = normalizeSource(q.source);
+      const year = normalizeYear(q.year);
+      
+      // Normalize topicId
+      const topicId = q.topicId 
+        ? (typeof q.topicId === "string" ? ctx.db.normalizeId("topics", q.topicId) : q.topicId)
+        : undefined;
+        
+      const category = q.category || "mlt";
 
       const qId = await ctx.db.insert("questions", {
-        text: q.text,
+        question: q.text,
         options: q.options,
         correctAnswer: q.correctAnswer,
         explanation: q.explanation,
         difficulty,
         category,
-        subCategory: q.subCategory,
-        topicId,
-        isAI: false,
+        subtopic: q.subCategory,
+        topicId: topicId || undefined,
         source,
-        year: q.year,
+        year,
         examName: q.examName,
         imageUrl: q.imageUrl,
         created: Date.now(),
+        status: "approved",
+        type: "mcq",
+        hasImage: !!q.imageUrl,
       });
       questionIds.push(qId);
     }
 
     const testSetId = await ctx.db.insert("testSets", {
-      name: args.testInfo.name,
+      title: args.testInfo.name,
       description: args.testInfo.description,
       type: "mock",
+      category: "mlt",
       questions: questionIds,
       timeLimit: args.testInfo.timeLimit,
-      isActive: true,
-      created: Date.now(),
+      isPublished: true,
     });
 
     return testSetId;
@@ -698,37 +730,45 @@ export const createAITestWithQuestions = mutation({
     const questionIds = [];
     for (const q of args.questions) {
       const difficulty = normalizeDifficulty(q.difficulty);
-      const source = q.source ? q.source.trim() : undefined;
-      const topicId = q.topicId && q.topicId.trim() !== "" ? q.topicId : undefined;
-      const category = q.category || "General";
+      const source = normalizeSource(q.source);
+      const year = normalizeYear(q.year);
+      
+      // Normalize topicId
+      const topicId = q.topicId 
+        ? (typeof q.topicId === "string" ? ctx.db.normalizeId("topics", q.topicId) : q.topicId)
+        : undefined;
+        
+      const category = q.category || "mlt";
 
       const qId = await ctx.db.insert("questions", {
-        text: q.text,
+        question: q.text,
         options: q.options,
         correctAnswer: q.correctAnswer,
         explanation: q.explanation,
         difficulty,
         category,
-        subCategory: q.subCategory,
-        topicId,
-        isAI: true,
+        subtopic: q.subCategory,
+        topicId: topicId || undefined,
         source,
-        year: q.year,
+        year,
         examName: q.examName,
         imageUrl: q.imageUrl,
         created: Date.now(),
+        status: "approved",
+        type: "mcq",
+        hasImage: !!q.imageUrl,
       });
       questionIds.push(qId);
     }
 
     const testSetId = await ctx.db.insert("testSets", {
-      name: args.testInfo.name,
+      title: args.testInfo.name,
       description: args.testInfo.description,
       type: "ai",
+      category: "mlt",
       questions: questionIds,
       timeLimit: args.testInfo.timeLimit,
-      isActive: true,
-      created: Date.now(),
+      isPublished: true,
     });
 
     return testSetId;
@@ -778,37 +818,45 @@ export const createPYQTestWithQuestions = mutation({
     const questionIds = [];
     for (const q of args.questions) {
       const difficulty = normalizeDifficulty(q.difficulty);
-      const source = q.source ? q.source.trim() : undefined;
-      const topicId = q.topicId && q.topicId.trim() !== "" ? q.topicId : undefined;
-      const category = q.category || "General";
+      const source = normalizeSource(q.source);
+      const year = normalizeYear(q.year);
+      
+      // Normalize topicId
+      const topicId = q.topicId 
+        ? (typeof q.topicId === "string" ? ctx.db.normalizeId("topics", q.topicId) : q.topicId)
+        : undefined;
+        
+      const category = q.category || "mlt";
 
       const qId = await ctx.db.insert("questions", {
-        text: q.text,
+        question: q.text,
         options: q.options,
         correctAnswer: q.correctAnswer,
         explanation: q.explanation,
         difficulty,
         category,
-        subCategory: q.subCategory,
-        topicId,
-        isAI: false,
+        subtopic: q.subCategory,
+        topicId: topicId || undefined,
         source,
-        year: q.year,
+        year,
         examName: q.examName,
         imageUrl: q.imageUrl,
         created: Date.now(),
+        status: "approved",
+        type: "mcq",
+        hasImage: !!q.imageUrl,
       });
       questionIds.push(qId);
     }
 
     const testSetId = await ctx.db.insert("testSets", {
-      name: args.testInfo.name,
+      title: args.testInfo.name,
       description: args.testInfo.description,
       type: "pyq",
+      category: "mlt",
       questions: questionIds,
       timeLimit: args.testInfo.timeLimit,
-      isActive: true,
-      created: Date.now(),
+      isPublished: true,
     });
 
     return testSetId;
@@ -1475,4 +1523,19 @@ function normalizeDifficulty(difficulty: string | undefined): "easy" | "medium" 
   if (lower === "medium") return "medium";
   if (lower === "hard") return "hard";
   return "medium";
+}
+
+function normalizeSource(source: string | undefined): "manual" | "ai" | "pyq" {
+  if (!source) return "manual";
+  const lower = source.toLowerCase().trim();
+  if (lower === "ai") return "ai";
+  if (lower === "pyq") return "pyq";
+  return "manual";
+}
+
+function normalizeYear(year: string | number | undefined): number | undefined {
+  if (year === undefined) return undefined;
+  if (typeof year === "number") return year;
+  const parsed = parseInt(year);
+  return isNaN(parsed) ? undefined : parsed;
 }
