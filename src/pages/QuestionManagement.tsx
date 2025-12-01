@@ -925,13 +925,20 @@ export default function QuestionManagement() {
     setIsCreatingPYQTest(true);
     try {
       const result = await createPYQTestMutation({
-        examName: bulkPYQExamName.trim(),
-        year: yearNum,
-        questions: parsedPYQQuestions,
+        testInfo: {
+          name: `${bulkPYQExamName.trim()} ${yearNum}`,
+          description: `PYQ Test for ${bulkPYQExamName.trim()} - ${yearNum}`,
+          timeLimit: 30
+        },
+        questions: parsedPYQQuestions.map(q => ({
+          ...q,
+          examName: bulkPYQExamName.trim(),
+          year: yearNum
+        }))
       });
 
       toast.success(
-        `PYQ Test created successfully! ${result.totalQuestions} questions added for ${result.examName} ${result.year} (${result.numberOfSets} sets created)`
+        `PYQ Test created successfully! ${parsedPYQQuestions.length} questions added for ${bulkPYQExamName.trim()} ${yearNum}`
       );
 
       // Reset form
