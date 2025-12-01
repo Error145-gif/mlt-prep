@@ -1,4 +1,6 @@
 import { internalMutation, internalQuery } from "./_generated/server";
+import { mutation } from "./_generated/server";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 export const checkData = internalQuery({
   args: {},
@@ -68,5 +70,37 @@ export const deleteDummyQuestions = internalMutation({
     }
 
     return { deletedCount, message: `Successfully deleted ${deletedCount} dummy/malformed questions.` };
+  },
+});
+
+// Emergency admin activation - run this if the button doesn't work
+export const forceAdminActivation = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Not authenticated");
+    }
+
+    const user = await ctx.db.get(userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    console.log("Current user email:", user.email);
+    console.log("Current user role:", user.role);
+
+    // Only allow specific emails
+    const allowedAdminEmails = ["ak6722909@gmail.com", "historyindia145@gmail.com"];
+    if (!allowedAdminEmails.includes(user.email?.toLowerCase().trim() || "")) {
+      throw new Error(`Unauthorized: ${user.email} is not in the allowed admin list`);
+    }
+
+    await ctx.db.patch(userId, {
+      role: "admin",
+    });
+
+    console.log("Admin role granted to:", user.email);
+    return { success: true, email: user.email, role: "admin" };
   },
 });
