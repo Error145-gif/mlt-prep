@@ -269,7 +269,13 @@ export default function QuestionManagement() {
           if (!question.subject) {
             question.subject = "General";
           }
-          if (question.type === 'mcq' && (!question.options || question.options.length < 2)) {
+          if (!question.explanation) {
+            question.explanation = "No explanation provided";
+          }
+          if (!question.options || question.options.length === 0) {
+            question.options = [question.correctAnswer];
+          }
+          if (question.type === 'mcq' && question.options.length < 2) {
             throw new Error(`MCQ must have at least 2 options`);
           }
           
@@ -415,7 +421,13 @@ export default function QuestionManagement() {
           if (!question.subject) {
             question.subject = "General";
           }
-          if (question.type === 'mcq' && (!question.options || question.options.length < 2)) {
+          if (!question.explanation) {
+            question.explanation = "No explanation provided";
+          }
+          if (!question.options || question.options.length === 0) {
+            question.options = [question.correctAnswer];
+          }
+          if (question.type === 'mcq' && question.options.length < 2) {
             throw new Error(`MCQ must have at least 2 options`);
           }
           
