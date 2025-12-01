@@ -223,16 +223,12 @@ export const createQuestion = mutation({
     imageUrl: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("Unauthorized");
     }
 
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_token", (q) => q.eq("tokenIdentifier", identity.tokenIdentifier))
-      .unique();
-
+    const user = await ctx.db.get(userId);
     if (!user || user.role !== "admin") {
       throw new Error("Unauthorized: Admin access required");
     }
