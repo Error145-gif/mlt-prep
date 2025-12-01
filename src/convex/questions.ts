@@ -609,7 +609,7 @@ export const createMockTestWithQuestions = mutation({
     }),
     questions: v.array(
       v.object({
-        text: v.string(),
+        question: v.string(),
         options: v.array(v.string()),
         correctAnswer: v.string(),
         explanation: v.string(),
@@ -621,6 +621,8 @@ export const createMockTestWithQuestions = mutation({
         year: v.optional(v.union(v.string(), v.number())),
         examName: v.optional(v.string()),
         imageUrl: v.optional(v.string()),
+        type: v.optional(v.string()),
+        subject: v.optional(v.string()),
       })
     ),
   },
@@ -653,7 +655,7 @@ export const createMockTestWithQuestions = mutation({
       const category = q.category || "mlt";
 
       const qId = await ctx.db.insert("questions", {
-        question: q.text,
+        question: q.question,
         options: q.options,
         correctAnswer: q.correctAnswer,
         explanation: q.explanation,
@@ -667,8 +669,9 @@ export const createMockTestWithQuestions = mutation({
         imageUrl: q.imageUrl,
         created: Date.now(),
         status: "approved",
-        type: "mcq",
+        type: (q.type as any) || "mcq",
         hasImage: !!q.imageUrl,
+        subject: q.subject,
       });
       questionIds.push(qId);
     }
@@ -697,7 +700,7 @@ export const createAITestWithQuestions = mutation({
     }),
     questions: v.array(
       v.object({
-        text: v.string(),
+        question: v.string(),
         options: v.array(v.string()),
         correctAnswer: v.string(),
         explanation: v.string(),
@@ -709,6 +712,8 @@ export const createAITestWithQuestions = mutation({
         year: v.optional(v.union(v.string(), v.number())),
         examName: v.optional(v.string()),
         imageUrl: v.optional(v.string()),
+        type: v.optional(v.string()),
+        subject: v.optional(v.string()),
       })
     ),
   },
@@ -741,7 +746,7 @@ export const createAITestWithQuestions = mutation({
       const category = q.category || "mlt";
 
       const qId = await ctx.db.insert("questions", {
-        question: q.text,
+        question: q.question,
         options: q.options,
         correctAnswer: q.correctAnswer,
         explanation: q.explanation,
@@ -755,8 +760,9 @@ export const createAITestWithQuestions = mutation({
         imageUrl: q.imageUrl,
         created: Date.now(),
         status: "approved",
-        type: "mcq",
+        type: (q.type as any) || "mcq",
         hasImage: !!q.imageUrl,
+        subject: q.subject,
       });
       questionIds.push(qId);
     }
@@ -785,7 +791,7 @@ export const createPYQTestWithQuestions = mutation({
     }),
     questions: v.array(
       v.object({
-        text: v.string(),
+        question: v.string(),
         options: v.array(v.string()),
         correctAnswer: v.string(),
         explanation: v.string(),
@@ -797,6 +803,8 @@ export const createPYQTestWithQuestions = mutation({
         year: v.optional(v.union(v.string(), v.number())),
         examName: v.optional(v.string()),
         imageUrl: v.optional(v.string()),
+        type: v.optional(v.string()),
+        subject: v.optional(v.string()),
       })
     ),
   },
@@ -829,7 +837,7 @@ export const createPYQTestWithQuestions = mutation({
       const category = q.category || "mlt";
 
       const qId = await ctx.db.insert("questions", {
-        question: q.text,
+        question: q.question,
         options: q.options,
         correctAnswer: q.correctAnswer,
         explanation: q.explanation,
@@ -843,8 +851,9 @@ export const createPYQTestWithQuestions = mutation({
         imageUrl: q.imageUrl,
         created: Date.now(),
         status: "approved",
-        type: "mcq",
+        type: (q.type as any) || "mcq",
         hasImage: !!q.imageUrl,
+        subject: q.subject,
       });
       questionIds.push(qId);
     }
