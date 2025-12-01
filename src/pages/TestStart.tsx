@@ -64,6 +64,9 @@ export default function TestStart() {
 
   const startTest = useMutation(api.student.startTest);
   const submitTest = useMutation(api.student.submitTest);
+  
+  // ADD SUBSCRIPTION VALIDATION
+  const canAccessTest = useQuery(api.student.canAccessTestType, { testType });
 
   // Fetch questions
   const testQuestions = useQuery(api.student.getTestQuestions, {
@@ -76,6 +79,25 @@ export default function TestStart() {
 
   const questions = Array.isArray(testQuestions) ? testQuestions : [];
   const hasError = testQuestions === undefined && !isLoading;
+
+  // VALIDATE SUBSCRIPTION ACCESS BEFORE ALLOWING TEST
+  useEffect(() => {
+    if (!isLoading && canAccessTest !== undefined) {
+      // If user doesn't have access and is not on instructions screen
+      if (!canAccessTest.canAccess && !showInstructions) {
+        toast.error("Your subscription has expired or you don't have access to this test.");
+        navigate("/subscription");
+        return;
+      }
+      
+      // If user is trying to start test without access
+      if (!canAccessTest.canAccess && canAccessTest.reason === "free_trial_used") {
+        toast.error("Your free trial is used. Please subscribe to continue.");
+        navigate("/subscription");
+        return;
+      }
+    }
+  }, [canAccessTest, isLoading, showInstructions, navigate]);
 
   // Auto-start test logic (only if instructions are skipped/accepted)
   useEffect(() => {
@@ -221,6 +243,17 @@ export default function TestStart() {
 
   const handleStartTest = async () => {
     if (!acceptedInstructions) return;
+    
+    // VALIDATE SUBSCRIPTION BEFORE STARTING TEST
+    if (!canAccessTest?.canAccess) {
+      if (canAccessTest?.reason === "free_trial_used") {
+        toast.error("Your free trial is used. Please subscribe to continue.");
+      } else {
+        toast.error("You don't have access to this test. Please subscribe.");
+      }
+      navigate("/subscription");
+      return;
+    }
     
     try {
       const questionIds = questions.map((q) => q._id);
