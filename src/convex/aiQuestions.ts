@@ -120,43 +120,23 @@ Make sure:
         throw new Error("No valid questions generated");
       }
 
-      // Save questions in chunks of 10
-      const CHUNK_SIZE = 10;
-      const savedIds: Array<Id<"questions"> | null> = [];
-
-      for (let i = 0; i < validQuestions.length; i += CHUNK_SIZE) {
-        const chunk = validQuestions.slice(i, i + CHUNK_SIZE);
-        console.log(`Saving chunk ${Math.floor(i / CHUNK_SIZE) + 1}/${Math.ceil(validQuestions.length / CHUNK_SIZE)}`);
-
-        for (const question of chunk) {
-          try {
-            // Call the internal mutation without createdBy - it will be set by the mutation itself
-            const id = await ctx.runMutation(internal.questions.createQuestionInternalFromAction, {
-              type: question.type,
-              question: question.question,
-              options: question.options,
-              correctAnswer: question.correctAnswer,
-              explanation: question.explanation,
-              difficulty: question.difficulty,
-              subject: question.subject,
-              topic: "General",
-              topicId: args.topicId, // Pass the topicId
-              source: "ai",
-            });
-            savedIds.push(id);
-          } catch (error) {
-            console.error("Failed to save question:", error);
-            savedIds.push(null);
-          }
-        }
-
-        // Small delay between chunks
-        if (i + CHUNK_SIZE < validQuestions.length) {
-          await new Promise(resolve => setTimeout(resolve, 100));
-        }
+      // Save questions to database
+      const questionIds = [];
+      for (const q of validQuestions) {
+        const qId = await ctx.runMutation(internal.questions.createQuestionInternalFromAction, {
+          text: q.question,
+          options: q.options,
+          correctAnswer: q.correctAnswer,
+          explanation: q.explanation,
+          difficulty: args.difficulty,
+          category: args.category,
+          subCategory: args.subCategory,
+          topicId: args.topicId,
+        });
+        questionIds.push(qId);
       }
 
-      const successCount = savedIds.filter(id => id !== null).length;
+      const successCount = questionIds.filter(id => id !== null).length;
 
       console.log(`Successfully saved ${successCount}/${validQuestions.length} questions`);
 

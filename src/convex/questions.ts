@@ -208,74 +208,56 @@ export const reviewQuestion = mutation({
 // Create question manually
 export const createQuestion = mutation({
   args: {
-    text: v.optional(v.string()),
-    question: v.optional(v.string()),
+    text: v.string(),
     options: v.array(v.string()),
     correctAnswer: v.string(),
-    explanation: v.optional(v.string()),
-    image: v.optional(v.string()),
-    topicId: v.optional(v.union(v.id("topics"), v.string())),
-    subtopicId: v.optional(v.string()),
+    explanation: v.string(),
     difficulty: v.optional(v.string()),
-    source: v.optional(v.string()),
-    testSetId: v.optional(v.id("testSets")),
-    examName: v.optional(v.string()),
-    year: v.optional(v.union(v.string(), v.number())),
-    setNumber: v.optional(v.number()),
     category: v.optional(v.string()),
+    subCategory: v.optional(v.string()),
+    topicId: v.optional(v.string()),
+    source: v.optional(v.string()),
+    year: v.optional(v.union(v.string(), v.number())),
+    examName: v.optional(v.string()),
+    imageUrl: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const questionText = args.text || args.question;
-    if (!questionText) {
-      throw new Error("Question text is required");
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthorized");
     }
 
-    const hasImage = !!args.image;
-    
-    let yearVal = args.year;
-    if (typeof yearVal === 'string') {
-      const parsed = parseInt(yearVal);
-      if (!isNaN(parsed)) yearVal = parsed;
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) => q.eq("tokenIdentifier", identity.tokenIdentifier))
+      .unique();
+
+    if (!user || user.role !== "admin") {
+      throw new Error("Unauthorized: Admin access required");
     }
 
-    // Normalize difficulty
-    let difficulty = (args.difficulty || "medium").toLowerCase();
-    if (!["easy", "medium", "hard"].includes(difficulty)) {
-      difficulty = "medium";
-    }
-
-    // Normalize source
-    let source = (args.source || "manual").toLowerCase();
-    if (!["manual", "ai", "pyq"].includes(source)) {
-      source = "manual";
-    }
-
-    // Normalize topicId
-    const topicId = args.topicId 
-      ? (typeof args.topicId === "string" ? ctx.db.normalizeId("topics", args.topicId) : args.topicId)
-      : undefined;
+    const difficulty = normalizeDifficulty(args.difficulty);
+    const source = args.source ? args.source.trim() : undefined;
+    const topicId = args.topicId && args.topicId.trim() !== "" ? args.topicId : undefined;
+    const category = args.category || "General";
 
     const questionId = await ctx.db.insert("questions", {
-      question: questionText,
+      text: args.text,
       options: args.options,
       correctAnswer: args.correctAnswer,
       explanation: args.explanation,
-      imageUrl: args.image,
-      topicId: topicId || undefined,
-      subtopic: args.subtopicId,
-      difficulty: difficulty as "easy" | "medium" | "hard",
-      source: source as "manual" | "ai" | "pyq",
-      testSetId: args.testSetId,
+      difficulty,
+      category,
+      subCategory: args.subCategory,
+      topicId,
+      isAI: false,
+      source,
+      year: args.year,
       examName: args.examName,
-      year: typeof yearVal === 'number' ? yearVal : undefined,
-      setNumber: args.setNumber,
-      category: args.category || "mlt",
-      hasImage,
-      isPYQ: source === "pyq",
-      status: "approved",
-      type: "mcq",
+      imageUrl: args.imageUrl,
       created: Date.now(),
     });
+
     return questionId;
   },
 });
@@ -500,57 +482,39 @@ export const batchCreateImageQuestions = mutation({
 // Internal mutation for batch creation (used by actions)
 export const createQuestionInternal = internalMutation({
   args: {
-    type: v.string(),
-    question: v.string(),
-    options: v.optional(v.array(v.string())),
+    text: v.string(),
+    options: v.array(v.string()),
     correctAnswer: v.string(),
-    explanation: v.optional(v.string()),
+    explanation: v.string(),
     difficulty: v.optional(v.string()),
-    source: v.optional(v.string()),
-    examName: v.optional(v.string()),
-    subject: v.optional(v.string()),
-    topic: v.string(),
-    topicId: v.optional(v.union(v.id("topics"), v.string())),
-    sectionId: v.optional(v.id("sections")),
-    createdBy: v.id("users"),
     category: v.optional(v.string()),
+    subCategory: v.optional(v.string()),
+    topicId: v.optional(v.string()),
+    source: v.optional(v.string()),
+    year: v.optional(v.union(v.string(), v.number())),
+    examName: v.optional(v.string()),
+    imageUrl: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    // Normalize difficulty
-    let difficulty = (args.difficulty || "medium").toLowerCase();
-    if (!["easy", "medium", "hard"].includes(difficulty)) {
-      difficulty = "medium";
-    }
-
-    // Normalize source
-    let source = (args.source || "manual").toLowerCase();
-    if (!["manual", "ai", "pyq"].includes(source)) {
-      source = "manual";
-    }
-
-    // Normalize topicId
-    const topicId = args.topicId 
-      ? (typeof args.topicId === "string" ? ctx.db.normalizeId("topics", args.topicId) : args.topicId)
-      : undefined;
+    const difficulty = normalizeDifficulty(args.difficulty);
+    const source = args.source ? args.source.trim() : undefined;
+    const topicId = args.topicId && args.topicId.trim() !== "" ? args.topicId : undefined;
+    const category = args.category || "General";
 
     return await ctx.db.insert("questions", {
-      question: args.question,
-      options: args.options || [],
+      text: args.text,
+      options: args.options,
       correctAnswer: args.correctAnswer,
-      subject: args.subject || "General",
-      topic: args.topic,
-      topicId: topicId || undefined,
-      difficulty: difficulty as "easy" | "medium" | "hard",
-      type: args.type as any,
-      source: source as "manual" | "ai" | "pyq",
-      status: "approved",
-      createdBy: args.createdBy,
-      reviewedBy: args.createdBy,
-      reviewedAt: Date.now(),
       explanation: args.explanation,
+      difficulty,
+      category,
+      subCategory: args.subCategory,
+      topicId,
+      isAI: false,
+      source,
+      year: args.year,
       examName: args.examName,
-      sectionId: args.sectionId,
-      category: args.category || "mlt",
+      imageUrl: args.imageUrl,
       created: Date.now(),
     });
   },
@@ -559,55 +523,39 @@ export const createQuestionInternal = internalMutation({
 // Internal mutation for AI-generated questions (doesn't require createdBy from caller)
 export const createQuestionInternalFromAction = internalMutation({
   args: {
-    type: v.string(),
-    question: v.string(),
-    options: v.optional(v.array(v.string())),
+    text: v.string(),
+    options: v.array(v.string()),
     correctAnswer: v.string(),
-    explanation: v.optional(v.string()),
+    explanation: v.string(),
     difficulty: v.optional(v.string()),
-    source: v.optional(v.string()),
-    examName: v.optional(v.string()),
-    subject: v.optional(v.string()),
-    topic: v.string(),
-    topicId: v.optional(v.union(v.id("topics"), v.string())),
-    sectionId: v.optional(v.id("sections")),
     category: v.optional(v.string()),
+    subCategory: v.optional(v.string()),
+    topicId: v.optional(v.string()),
+    source: v.optional(v.string()),
+    year: v.optional(v.union(v.string(), v.number())),
+    examName: v.optional(v.string()),
+    imageUrl: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    // Normalize difficulty
-    let difficulty = (args.difficulty || "medium").toLowerCase();
-    if (!["easy", "medium", "hard"].includes(difficulty)) {
-      difficulty = "medium";
-    }
+    const difficulty = normalizeDifficulty(args.difficulty);
+    const source = args.source ? args.source.trim() : undefined;
+    const topicId = args.topicId && args.topicId.trim() !== "" ? args.topicId : undefined;
+    const category = args.category || "General";
 
-    // Normalize source
-    let source = (args.source || "ai").toLowerCase();
-    if (!["manual", "ai", "pyq"].includes(source)) {
-      source = "ai";
-    }
-
-    // Normalize topicId
-    const topicId = args.topicId 
-      ? (typeof args.topicId === "string" ? ctx.db.normalizeId("topics", args.topicId) : args.topicId)
-      : undefined;
-
-    // For AI-generated questions, we don't need a specific user
     return await ctx.db.insert("questions", {
-      question: args.question,
-      options: args.options || [],
+      text: args.text,
+      options: args.options,
       correctAnswer: args.correctAnswer,
-      subject: args.subject || "General",
-      topic: args.topic,
-      topicId: topicId || undefined,
-      difficulty: difficulty as "easy" | "medium" | "hard",
-      type: args.type as any,
-      source: source as "manual" | "ai" | "pyq",
-      status: "approved",
-      reviewedAt: Date.now(),
       explanation: args.explanation,
+      difficulty,
+      category,
+      subCategory: args.subCategory,
+      topicId,
+      isAI: true,
+      source,
+      year: args.year,
       examName: args.examName,
-      sectionId: args.sectionId,
-      category: args.category || "mlt",
+      imageUrl: args.imageUrl,
       created: Date.now(),
     });
   },
@@ -630,73 +578,79 @@ export const deleteQuestion = mutation({
 // Create mock test with bulk questions
 export const createMockTestWithQuestions = mutation({
   args: {
-    title: v.string(),
-    description: v.optional(v.string()),
-    duration: v.number(),
+    testInfo: v.object({
+      name: v.string(),
+      description: v.optional(v.string()),
+      timeLimit: v.number(),
+    }),
     questions: v.array(
       v.object({
-        text: v.optional(v.string()),
-        question: v.optional(v.string()),
+        text: v.string(),
         options: v.array(v.string()),
         correctAnswer: v.string(),
-        explanation: v.optional(v.string()),
-        image: v.optional(v.string()),
-        topicId: v.optional(v.union(v.id("topics"), v.string())),
-        subtopicId: v.optional(v.string()),
+        explanation: v.string(),
         difficulty: v.optional(v.string()),
+        category: v.optional(v.string()),
+        subCategory: v.optional(v.string()),
+        topicId: v.optional(v.string()),
+        source: v.optional(v.string()),
+        year: v.optional(v.union(v.string(), v.number())),
+        examName: v.optional(v.string()),
+        imageUrl: v.optional(v.string()),
       })
     ),
   },
   handler: async (ctx, args) => {
-    const testSetId = await ctx.db.insert("testSets", {
-      title: args.title,
-      description: args.description,
-      timeLimit: args.duration, // Map duration to timeLimit
-      type: "mock",
-      category: "mlt",
-      isPublished: true,
-      questions: [],
-    });
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthorized");
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) => q.eq("tokenIdentifier", identity.tokenIdentifier))
+      .unique();
+
+    if (!user || user.role !== "admin") {
+      throw new Error("Unauthorized: Admin access required");
+    }
 
     const questionIds = [];
     for (const q of args.questions) {
-      const questionText = q.text || q.question;
-      if (!questionText) continue;
-
-      // Normalize difficulty
-      let difficulty = (q.difficulty || "medium").toLowerCase();
-      if (!["easy", "medium", "hard"].includes(difficulty)) {
-        difficulty = "medium";
-      }
-
-      // Normalize topicId
-      const topicId = q.topicId 
-        ? (typeof q.topicId === "string" ? ctx.db.normalizeId("topics", q.topicId) : q.topicId)
-        : undefined;
+      const difficulty = normalizeDifficulty(q.difficulty);
+      const source = q.source ? q.source.trim() : undefined;
+      const topicId = q.topicId && q.topicId.trim() !== "" ? q.topicId : undefined;
+      const category = q.category || "General";
 
       const qId = await ctx.db.insert("questions", {
-        question: questionText,
+        text: q.text,
         options: q.options,
         correctAnswer: q.correctAnswer,
         explanation: q.explanation,
-        imageUrl: q.image,
-        topicId: topicId || undefined,
-        subtopic: q.subtopicId,
-        difficulty: difficulty as "easy" | "medium" | "hard",
-        testSetId,
-        source: "manual",
-        hasImage: !!q.image,
-        category: "mlt",
-        status: "approved",
-        type: "mcq",
+        difficulty,
+        category,
+        subCategory: q.subCategory,
+        topicId,
+        isAI: false,
+        source,
+        year: q.year,
+        examName: q.examName,
+        imageUrl: q.imageUrl,
         created: Date.now(),
       });
       questionIds.push(qId);
     }
-    
-    // Update test set with questions
-    await ctx.db.patch(testSetId, { questions: questionIds });
-    
+
+    const testSetId = await ctx.db.insert("testSets", {
+      name: args.testInfo.name,
+      description: args.testInfo.description,
+      type: "mock",
+      questions: questionIds,
+      timeLimit: args.testInfo.timeLimit,
+      isActive: true,
+      created: Date.now(),
+    });
+
     return testSetId;
   },
 });
@@ -704,71 +658,79 @@ export const createMockTestWithQuestions = mutation({
 // Create AI test with bulk questions
 export const createAITestWithQuestions = mutation({
   args: {
-    title: v.string(),
-    description: v.optional(v.string()),
-    duration: v.number(),
+    testInfo: v.object({
+      name: v.string(),
+      description: v.optional(v.string()),
+      timeLimit: v.number(),
+    }),
     questions: v.array(
       v.object({
-        text: v.optional(v.string()),
-        question: v.optional(v.string()),
+        text: v.string(),
         options: v.array(v.string()),
         correctAnswer: v.string(),
-        explanation: v.optional(v.string()),
-        image: v.optional(v.string()),
-        topicId: v.optional(v.union(v.id("topics"), v.string())),
-        subtopicId: v.optional(v.string()),
+        explanation: v.string(),
         difficulty: v.optional(v.string()),
+        category: v.optional(v.string()),
+        subCategory: v.optional(v.string()),
+        topicId: v.optional(v.string()),
+        source: v.optional(v.string()),
+        year: v.optional(v.union(v.string(), v.number())),
+        examName: v.optional(v.string()),
+        imageUrl: v.optional(v.string()),
       })
     ),
   },
   handler: async (ctx, args) => {
-    const testSetId = await ctx.db.insert("testSets", {
-      title: args.title,
-      description: args.description,
-      timeLimit: args.duration,
-      type: "ai",
-      category: "mlt",
-      isPublished: true,
-      questions: [],
-    });
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthorized");
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) => q.eq("tokenIdentifier", identity.tokenIdentifier))
+      .unique();
+
+    if (!user || user.role !== "admin") {
+      throw new Error("Unauthorized: Admin access required");
+    }
 
     const questionIds = [];
     for (const q of args.questions) {
-      const questionText = q.text || q.question;
-      if (!questionText) continue;
-
-      // Normalize difficulty
-      let difficulty = (q.difficulty || "medium").toLowerCase();
-      if (!["easy", "medium", "hard"].includes(difficulty)) {
-        difficulty = "medium";
-      }
-
-      // Normalize topicId
-      const topicId = q.topicId 
-        ? (typeof q.topicId === "string" ? ctx.db.normalizeId("topics", q.topicId) : q.topicId)
-        : undefined;
+      const difficulty = normalizeDifficulty(q.difficulty);
+      const source = q.source ? q.source.trim() : undefined;
+      const topicId = q.topicId && q.topicId.trim() !== "" ? q.topicId : undefined;
+      const category = q.category || "General";
 
       const qId = await ctx.db.insert("questions", {
-        question: questionText,
+        text: q.text,
         options: q.options,
         correctAnswer: q.correctAnswer,
         explanation: q.explanation,
-        imageUrl: q.image,
-        topicId: topicId || undefined,
-        subtopic: q.subtopicId,
-        difficulty: difficulty as "easy" | "medium" | "hard",
-        testSetId,
-        source: "ai",
-        hasImage: !!q.image,
-        category: "mlt",
-        status: "approved",
-        type: "mcq",
+        difficulty,
+        category,
+        subCategory: q.subCategory,
+        topicId,
+        isAI: true,
+        source,
+        year: q.year,
+        examName: q.examName,
+        imageUrl: q.imageUrl,
         created: Date.now(),
       });
       questionIds.push(qId);
     }
 
-    await ctx.db.patch(testSetId, { questions: questionIds });
+    const testSetId = await ctx.db.insert("testSets", {
+      name: args.testInfo.name,
+      description: args.testInfo.description,
+      type: "ai",
+      questions: questionIds,
+      timeLimit: args.testInfo.timeLimit,
+      isActive: true,
+      created: Date.now(),
+    });
+
     return testSetId;
   },
 });
@@ -776,76 +738,79 @@ export const createAITestWithQuestions = mutation({
 // Create PYQ test with bulk questions (automatically splits into sets of 20)
 export const createPYQTestWithQuestions = mutation({
   args: {
-    examName: v.string(),
-    year: v.number(),
-    setNumber: v.number(),
-    duration: v.number(),
+    testInfo: v.object({
+      name: v.string(),
+      description: v.optional(v.string()),
+      timeLimit: v.number(),
+    }),
     questions: v.array(
       v.object({
-        text: v.optional(v.string()),
-        question: v.optional(v.string()),
+        text: v.string(),
         options: v.array(v.string()),
         correctAnswer: v.string(),
-        explanation: v.optional(v.string()),
-        image: v.optional(v.string()),
-        topicId: v.optional(v.union(v.id("topics"), v.string())),
-        subtopicId: v.optional(v.string()),
+        explanation: v.string(),
         difficulty: v.optional(v.string()),
+        category: v.optional(v.string()),
+        subCategory: v.optional(v.string()),
+        topicId: v.optional(v.string()),
+        source: v.optional(v.string()),
+        year: v.optional(v.union(v.string(), v.number())),
+        examName: v.optional(v.string()),
+        imageUrl: v.optional(v.string()),
       })
     ),
   },
   handler: async (ctx, args) => {
-    const testSetId = await ctx.db.insert("testSets", {
-      title: `${args.examName} ${args.year} - Set ${args.setNumber}`,
-      description: `Previous Year Question Paper for ${args.examName} (${args.year})`,
-      timeLimit: args.duration,
-      type: "pyq",
-      category: "mlt",
-      isPublished: true,
-      questions: [],
-    });
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthorized");
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) => q.eq("tokenIdentifier", identity.tokenIdentifier))
+      .unique();
+
+    if (!user || user.role !== "admin") {
+      throw new Error("Unauthorized: Admin access required");
+    }
 
     const questionIds = [];
     for (const q of args.questions) {
-      const questionText = q.text || q.question;
-      if (!questionText) continue;
-
-      // Normalize difficulty
-      let difficulty = (q.difficulty || "medium").toLowerCase();
-      if (!["easy", "medium", "hard"].includes(difficulty)) {
-        difficulty = "medium";
-      }
-
-      // Normalize topicId
-      const topicId = q.topicId 
-        ? (typeof q.topicId === "string" ? ctx.db.normalizeId("topics", q.topicId) : q.topicId)
-        : undefined;
+      const difficulty = normalizeDifficulty(q.difficulty);
+      const source = q.source ? q.source.trim() : undefined;
+      const topicId = q.topicId && q.topicId.trim() !== "" ? q.topicId : undefined;
+      const category = q.category || "General";
 
       const qId = await ctx.db.insert("questions", {
-        question: questionText,
+        text: q.text,
         options: q.options,
         correctAnswer: q.correctAnswer,
         explanation: q.explanation,
-        imageUrl: q.image,
-        topicId: topicId || undefined,
-        subtopic: q.subtopicId,
-        difficulty: difficulty as "easy" | "medium" | "hard",
-        testSetId,
-        source: "pyq",
-        examName: args.examName,
-        year: args.year,
-        setNumber: args.setNumber,
-        isPYQ: true,
-        hasImage: !!q.image,
-        category: "mlt",
-        status: "approved",
-        type: "mcq",
+        difficulty,
+        category,
+        subCategory: q.subCategory,
+        topicId,
+        isAI: false,
+        source,
+        year: q.year,
+        examName: q.examName,
+        imageUrl: q.imageUrl,
         created: Date.now(),
       });
       questionIds.push(qId);
     }
-    
-    await ctx.db.patch(testSetId, { questions: questionIds });
+
+    const testSetId = await ctx.db.insert("testSets", {
+      name: args.testInfo.name,
+      description: args.testInfo.description,
+      type: "pyq",
+      questions: questionIds,
+      timeLimit: args.testInfo.timeLimit,
+      isActive: true,
+      created: Date.now(),
+    });
+
     return testSetId;
   },
 });
@@ -1501,3 +1466,13 @@ export const createBulk = mutation({
     }
   },
 });
+
+// Helper function to normalize difficulty
+function normalizeDifficulty(difficulty: string | undefined): "easy" | "medium" | "hard" {
+  if (!difficulty) return "medium";
+  const lower = difficulty.toLowerCase();
+  if (lower === "easy") return "easy";
+  if (lower === "medium") return "medium";
+  if (lower === "hard") return "hard";
+  return "medium";
+}

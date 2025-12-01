@@ -1,110 +1,33 @@
-// Create
-export const create = mutation({
-  args: {
-    question: v.string(),
-    options: v.array(v.string()),
-    correctAnswer: v.string(),
-    explanation: v.optional(v.string()),
-    category: v.optional(v.string()),
-    difficulty: v.optional(v.string()),
-    subtopic: v.optional(v.string()),
-    topicId: v.optional(v.union(v.id("topics"), v.string())), // Update
-    isPYQ: v.optional(v.boolean()),
-    examYear: v.optional(v.string()),
-    examName: v.optional(v.string()),
-    imageUrl: v.optional(v.string()),
-    description: v.optional(v.string()),
-  },
-  handler: async (ctx, args) => {
-    // Normalize difficulty
-    let difficulty = (args.difficulty || "medium").toLowerCase();
-    if (!["easy", "medium", "hard"].includes(difficulty)) {
-      difficulty = "medium";
-    }
-
-    // Normalize topicId
-    const topicId = args.topicId 
-      ? (typeof args.topicId === "string" ? ctx.db.normalizeId("topics", args.topicId) : args.topicId)
-      : undefined;
-
-    const questionId = await ctx.db.insert("questions", {
-      question: args.question,
-      options: args.options,
-      correctAnswer: args.correctAnswer,
-      explanation: args.explanation,
-      category: args.category || "mlt",
-      difficulty: difficulty as "easy" | "medium" | "hard",
-      subtopic: args.subtopic,
-      topicId: topicId || undefined,
-      isPYQ: args.isPYQ,
-      examYear: args.examYear,
-      examName: args.examName,
-      imageUrl: args.imageUrl,
-      description: args.description,
-      status: "approved",
-      type: "mcq",
-      source: "manual",
-      hasImage: !!args.imageUrl,
-      created: Date.now(),
-    });
-    return questionId;
-  },
-});
-
-// Create bulk
-export const createBulk = mutation({
-  args: {
-    questions: v.array(
-      v.object({
-        question: v.string(),
-        options: v.array(v.string()),
-        correctAnswer: v.string(),
-        explanation: v.optional(v.string()),
-        category: v.string(),
-        difficulty: v.string(),
-        subtopic: v.optional(v.string()),
-        topicId: v.optional(v.union(v.id("topics"), v.string())), // Update
-        isPYQ: v.optional(v.boolean()),
-        examYear: v.optional(v.string()),
-        examName: v.optional(v.string()),
-        imageUrl: v.optional(v.string()),
-        description: v.optional(v.string()),
-      })
-    ),
-  },
-  handler: async (ctx, args) => {
-    for (const q of args.questions) {
-      // Normalize difficulty
-      let difficulty = (q.difficulty || "medium").toLowerCase();
-      if (!["easy", "medium", "hard"].includes(difficulty)) {
-        difficulty = "medium";
+// src/convex/aiQuestions.ts
+// ...
+      // Save questions to database
+      const questionIds = [];
+      for (const q of questions) {
+        const qId = await ctx.runMutation(internal.questions.createQuestionInternalFromAction, {
+          text: q.question,
+          options: q.options,
+          correctAnswer: q.correctAnswer,
+          explanation: q.explanation,
+          difficulty: args.difficulty,
+          category: args.category,
+          subCategory: args.subCategory,
+          topicId: args.topicId,
+          isAI: true,
+        });
+        questionIds.push(qId);
       }
-
-      // Normalize topicId
-      const topicId = q.topicId 
-        ? (typeof q.topicId === "string" ? ctx.db.normalizeId("topics", q.topicId) : q.topicId)
-        : undefined;
-
-      await ctx.db.insert("questions", {
-        question: q.question,
-        options: q.options,
-        correctAnswer: q.correctAnswer,
-        explanation: q.explanation,
-        category: q.category,
-        difficulty: difficulty as "easy" | "medium" | "hard",
-        subtopic: q.subtopic,
-        topicId: topicId || undefined,
-        isPYQ: q.isPYQ,
-        examYear: q.examYear,
-        examName: q.examName,
-        imageUrl: q.imageUrl,
-        description: q.description,
-        status: "approved",
-        type: "mcq",
-        source: "manual",
-        hasImage: !!q.imageUrl,
-        created: Date.now(),
-      });
-    }
-  },
-});
+// ...
+args: {
+  text: v.string(),
+  options: v.array(v.string()),
+  correctAnswer: v.string(),
+  explanation: v.string(),
+  difficulty: v.optional(v.string()),
+  category: v.optional(v.string()),
+  subCategory: v.optional(v.string()),
+  topicId: v.optional(v.string()),
+  source: v.optional(v.string()),
+  year: v.optional(v.union(v.string(), v.number())),
+  examName: v.optional(v.string()),
+  imageUrl: v.optional(v.string()),
+},
