@@ -208,7 +208,8 @@ export const reviewQuestion = mutation({
 // Create question manually
 export const createQuestion = mutation({
   args: {
-    text: v.string(),
+    text: v.optional(v.string()),
+    question: v.optional(v.string()),
     options: v.array(v.string()),
     correctAnswer: v.string(),
     explanation: v.string(),
@@ -236,6 +237,11 @@ export const createQuestion = mutation({
       throw new Error("Unauthorized: Admin access required");
     }
 
+    const questionText = args.text || args.question;
+    if (!questionText) {
+      throw new Error("Question text is required");
+    }
+
     const difficulty = normalizeDifficulty(args.difficulty);
     const source = normalizeSource(args.source);
     const year = normalizeYear(args.year);
@@ -248,7 +254,7 @@ export const createQuestion = mutation({
     const category = args.category || "mlt";
 
     const questionId = await ctx.db.insert("questions", {
-      question: args.text,
+      question: questionText,
       options: args.options,
       correctAnswer: args.correctAnswer,
       explanation: args.explanation,
@@ -490,7 +496,8 @@ export const batchCreateImageQuestions = mutation({
 // Internal mutation for batch creation (used by actions)
 export const createQuestionInternal = internalMutation({
   args: {
-    text: v.string(),
+    text: v.optional(v.string()),
+    question: v.optional(v.string()),
     options: v.array(v.string()),
     correctAnswer: v.string(),
     explanation: v.string(),
@@ -504,6 +511,11 @@ export const createQuestionInternal = internalMutation({
     imageUrl: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const questionText = args.text || args.question;
+    if (!questionText) {
+      throw new Error("Question text is required");
+    }
+
     const difficulty = normalizeDifficulty(args.difficulty);
     const source = normalizeSource(args.source);
     const year = normalizeYear(args.year);
@@ -516,7 +528,7 @@ export const createQuestionInternal = internalMutation({
     const category = args.category || "mlt";
 
     return await ctx.db.insert("questions", {
-      question: args.text,
+      question: questionText,
       options: args.options,
       correctAnswer: args.correctAnswer,
       explanation: args.explanation,
@@ -539,7 +551,8 @@ export const createQuestionInternal = internalMutation({
 // Internal mutation for AI-generated questions (doesn't require createdBy from caller)
 export const createQuestionInternalFromAction = internalMutation({
   args: {
-    text: v.string(),
+    text: v.optional(v.string()),
+    question: v.optional(v.string()),
     options: v.array(v.string()),
     correctAnswer: v.string(),
     explanation: v.string(),
@@ -553,6 +566,11 @@ export const createQuestionInternalFromAction = internalMutation({
     imageUrl: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const questionText = args.text || args.question;
+    if (!questionText) {
+      throw new Error("Question text is required");
+    }
+
     const difficulty = normalizeDifficulty(args.difficulty);
     const source = normalizeSource(args.source);
     const year = normalizeYear(args.year);
@@ -565,7 +583,7 @@ export const createQuestionInternalFromAction = internalMutation({
     const category = args.category || "mlt";
 
     return await ctx.db.insert("questions", {
-      question: args.text,
+      question: questionText,
       options: args.options,
       correctAnswer: args.correctAnswer,
       explanation: args.explanation,
@@ -1207,6 +1225,7 @@ export const updateQuestion = mutation({
   args: {
     id: v.id("questions"),
     text: v.optional(v.string()),
+    question: v.optional(v.string()),
     options: v.optional(v.array(v.string())),
     correctAnswer: v.optional(v.string()),
     explanation: v.optional(v.string()),
@@ -1221,7 +1240,7 @@ export const updateQuestion = mutation({
     setNumber: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const { id, difficulty, source, image, ...fields } = args;
+    const { id, difficulty, source, image, text, question, ...fields } = args;
     
     // Calculate hasImage if image is being updated
     let imageUpdate = {};
@@ -1250,11 +1269,16 @@ export const updateQuestion = mutation({
       }
     }
 
+    // Handle question text update
+    const questionText = text || question;
+    const questionUpdate = questionText ? { question: questionText } : {};
+
     await ctx.db.patch(id, {
       ...fields,
       ...imageUpdate,
       ...difficultyUpdate,
       ...sourceUpdate,
+      ...questionUpdate,
     });
   },
 });
