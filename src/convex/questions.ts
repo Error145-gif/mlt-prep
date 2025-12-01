@@ -672,7 +672,7 @@ export const createMockTestWithQuestions = mutation({
         category,
         subtopic: q.subCategory,
         topicId: topicId || undefined,
-        source: "ai", // Force AI source for AI test questions
+        source: "manual", // Force manual source for mock test questions
         year,
         examName: q.examName,
         imageUrl: q.imageUrl,
@@ -758,10 +758,9 @@ export const createAITestWithQuestions = mutation({
         category,
         subtopic: q.subCategory,
         topicId: topicId || undefined,
-        source: "pyq", // Force PYQ source for PYQ test questions
+        source: "ai", // Force AI source for AI test questions
         year,
         examName: q.examName,
-        isPYQ: true, // Mark as PYQ
         imageUrl: q.imageUrl,
         created: Date.now(),
         status: "approved",
@@ -845,9 +844,10 @@ export const createPYQTestWithQuestions = mutation({
         category,
         subtopic: q.subCategory,
         topicId: topicId || undefined,
-        source: "manual", // Force manual source for mock test questions
+        source: "pyq", // Force PYQ source for PYQ test questions
         year,
         examName: q.examName,
+        isPYQ: true, // Mark as PYQ
         imageUrl: q.imageUrl,
         created: Date.now(),
         status: "approved",
