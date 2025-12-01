@@ -208,7 +208,8 @@ export const reviewQuestion = mutation({
 // Create question manually
 export const createQuestion = mutation({
   args: {
-    text: v.string(),
+    text: v.optional(v.string()),
+    question: v.optional(v.string()),
     options: v.array(v.string()),
     correctAnswer: v.string(),
     explanation: v.optional(v.string()),
@@ -219,18 +220,56 @@ export const createQuestion = mutation({
     source: v.optional(v.string()),
     testSetId: v.optional(v.id("testSets")),
     examName: v.optional(v.string()),
-    year: v.optional(v.number()),
+    year: v.optional(v.union(v.string(), v.number())),
     setNumber: v.optional(v.number()),
+    category: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const questionText = args.text || args.question;
+    if (!questionText) {
+      throw new Error("Question text is required");
+    }
+
     const hasImage = !!args.image;
+    
+    let yearVal = args.year;
+    if (typeof yearVal === 'string') {
+      const parsed = parseInt(yearVal);
+      if (!isNaN(parsed)) yearVal = parsed;
+    }
+
+    // Normalize difficulty
+    let difficulty = (args.difficulty || "medium").toLowerCase();
+    if (!["easy", "medium", "hard"].includes(difficulty)) {
+      difficulty = "medium";
+    }
+
+    // Normalize source
+    let source = (args.source || "manual").toLowerCase();
+    if (!["manual", "ai", "pyq"].includes(source)) {
+      source = "manual";
+    }
+
     const questionId = await ctx.db.insert("questions", {
-      ...args,
-      question: args.text, // Map text to question
-      category: "mlt", // Default category
-      difficulty: args.difficulty || "medium", // Default difficulty
+      question: questionText,
+      options: args.options,
+      correctAnswer: args.correctAnswer,
+      explanation: args.explanation,
+      imageUrl: args.image,
+      topicId: args.topicId,
+      subtopic: args.subtopicId,
+      difficulty: difficulty as "easy" | "medium" | "hard",
+      source: source as "manual" | "ai" | "pyq",
+      testSetId: args.testSetId,
+      examName: args.examName,
+      year: typeof yearVal === 'number' ? yearVal : undefined,
+      setNumber: args.setNumber,
+      category: args.category || "mlt",
       hasImage,
-      isPYQ: args.source === "pyq",
+      isPYQ: source === "pyq",
+      status: "approved",
+      type: "mcq",
+      created: Date.now(),
     });
     return questionId;
   },
@@ -262,6 +301,18 @@ export const createImageQuestion = mutation({
       throw new Error("Failed to get image URL");
     }
 
+    // Normalize difficulty
+    let difficulty = (args.difficulty || "medium").toLowerCase();
+    if (!["easy", "medium", "hard"].includes(difficulty)) {
+      difficulty = "medium";
+    }
+
+    // Normalize source
+    let source = args.source.toLowerCase();
+    if (!["manual", "ai", "pyq"].includes(source)) {
+      source = "manual";
+    }
+
     return await ctx.db.insert("questions", {
       question: args.question,
       options: args.options || [],
@@ -269,17 +320,18 @@ export const createImageQuestion = mutation({
       subject: args.subject || "General",
       topic: args.topic,
       category: "mlt", // Default category
-      difficulty: (args.difficulty || "medium") as "easy" | "medium" | "hard",
+      difficulty: difficulty as "easy" | "medium" | "hard",
       type: args.type as any,
       status: "approved",
       reviewedBy: user._id,
       reviewedAt: Date.now(),
       createdBy: user._id,
-      source: args.source as "manual" | "ai" | "pyq",
+      source: source as "manual" | "ai" | "pyq",
       explanation: args.explanation,
       imageUrl: imageUrl,
       imageStorageId: args.imageStorageId,
       hasImage: true,
+      created: Date.now(),
     });
   },
 });
@@ -289,7 +341,8 @@ export const batchCreateQuestions = mutation({
   args: {
     questions: v.array(
       v.object({
-        text: v.string(),
+        text: v.optional(v.string()),
+        question: v.optional(v.string()),
         options: v.array(v.string()),
         correctAnswer: v.string(),
         explanation: v.optional(v.string()),
@@ -300,20 +353,55 @@ export const batchCreateQuestions = mutation({
         source: v.optional(v.string()),
         testSetId: v.optional(v.id("testSets")),
         examName: v.optional(v.string()),
-        year: v.optional(v.number()),
+        year: v.optional(v.union(v.string(), v.number())),
         setNumber: v.optional(v.number()),
+        category: v.optional(v.string()),
       })
     ),
   },
   handler: async (ctx, args) => {
     for (const question of args.questions) {
+      const questionText = question.text || question.question;
+      if (!questionText) continue;
+
+      let yearVal = question.year;
+      if (typeof yearVal === 'string') {
+        const parsed = parseInt(yearVal);
+        if (!isNaN(parsed)) yearVal = parsed;
+      }
+
+      // Normalize difficulty
+      let difficulty = (question.difficulty || "medium").toLowerCase();
+      if (!["easy", "medium", "hard"].includes(difficulty)) {
+        difficulty = "medium";
+      }
+
+      // Normalize source
+      let source = (question.source || "manual").toLowerCase();
+      if (!["manual", "ai", "pyq"].includes(source)) {
+        source = "manual";
+      }
+
       await ctx.db.insert("questions", {
-        ...question,
-        question: question.text, // Map text to question
-        category: "mlt", // Default category
-        difficulty: question.difficulty || "medium", // Default difficulty
+        question: questionText,
+        options: question.options,
+        correctAnswer: question.correctAnswer,
+        explanation: question.explanation,
+        imageUrl: question.image,
+        topicId: question.topicId,
+        subtopic: question.subtopicId,
+        difficulty: difficulty as "easy" | "medium" | "hard",
+        source: source as "manual" | "ai" | "pyq",
+        testSetId: question.testSetId,
+        examName: question.examName,
+        year: typeof yearVal === 'number' ? yearVal : undefined,
+        setNumber: question.setNumber,
+        category: question.category || "mlt",
         hasImage: !!question.image,
-        isPYQ: question.source === "pyq",
+        isPYQ: source === "pyq",
+        status: "approved",
+        type: "mcq",
+        created: Date.now(),
       });
     }
   },
@@ -356,6 +444,18 @@ export const batchCreateImageQuestions = mutation({
           throw new Error(`Failed to get image URL for question ${i + 1}`);
         }
 
+        // Normalize difficulty
+        let difficulty = (question.difficulty || "medium").toLowerCase();
+        if (!["easy", "medium", "hard"].includes(difficulty)) {
+          difficulty = "medium";
+        }
+
+        // Normalize source
+        let source = question.source.toLowerCase();
+        if (!["manual", "ai", "pyq"].includes(source)) {
+          source = "manual";
+        }
+
         const id = await ctx.db.insert("questions", {
           question: question.question,
           options: question.options || [],
@@ -363,17 +463,18 @@ export const batchCreateImageQuestions = mutation({
           subject: question.subject || "General",
           topic: question.topic,
           category: "mlt", // Default category
-          difficulty: (question.difficulty || "medium") as "easy" | "medium" | "hard",
+          difficulty: difficulty as "easy" | "medium" | "hard",
           type: question.type as any,
           status: "approved",
           reviewedBy: user._id,
           reviewedAt: Date.now(),
           createdBy: user._id,
-          source: question.source as "manual" | "ai" | "pyq",
+          source: source as "manual" | "ai" | "pyq",
           explanation: question.explanation,
           imageUrl: imageUrl,
           imageStorageId: question.imageStorageId,
           hasImage: true,
+          created: Date.now(),
         });
         ids.push(id);
       } catch (error) {
@@ -401,17 +502,30 @@ export const createQuestionInternal = internalMutation({
     topic: v.string(),
     sectionId: v.optional(v.id("sections")),
     createdBy: v.id("users"),
+    category: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    // Normalize difficulty
+    let difficulty = (args.difficulty || "medium").toLowerCase();
+    if (!["easy", "medium", "hard"].includes(difficulty)) {
+      difficulty = "medium";
+    }
+
+    // Normalize source
+    let source = (args.source || "manual").toLowerCase();
+    if (!["manual", "ai", "pyq"].includes(source)) {
+      source = "manual";
+    }
+
     return await ctx.db.insert("questions", {
       question: args.question,
       options: args.options || [],
       correctAnswer: args.correctAnswer,
       subject: args.subject || "General",
       topic: args.topic,
-      difficulty: (args.difficulty || "medium") as "easy" | "medium" | "hard",
+      difficulty: difficulty as "easy" | "medium" | "hard",
       type: args.type as any,
-      source: (args.source || "manual") as "manual" | "ai" | "pyq",
+      source: source as "manual" | "ai" | "pyq",
       status: "approved",
       createdBy: args.createdBy,
       reviewedBy: args.createdBy,
@@ -419,7 +533,8 @@ export const createQuestionInternal = internalMutation({
       explanation: args.explanation,
       examName: args.examName,
       sectionId: args.sectionId,
-      category: "mlt",
+      category: args.category || "mlt",
+      created: Date.now(),
     });
   },
 });
@@ -438,8 +553,21 @@ export const createQuestionInternalFromAction = internalMutation({
     subject: v.optional(v.string()),
     topic: v.string(),
     sectionId: v.optional(v.id("sections")),
+    category: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    // Normalize difficulty
+    let difficulty = (args.difficulty || "medium").toLowerCase();
+    if (!["easy", "medium", "hard"].includes(difficulty)) {
+      difficulty = "medium";
+    }
+
+    // Normalize source
+    let source = (args.source || "ai").toLowerCase();
+    if (!["manual", "ai", "pyq"].includes(source)) {
+      source = "ai";
+    }
+
     // For AI-generated questions, we don't need a specific user
     return await ctx.db.insert("questions", {
       question: args.question,
@@ -447,15 +575,16 @@ export const createQuestionInternalFromAction = internalMutation({
       correctAnswer: args.correctAnswer,
       subject: args.subject || "General",
       topic: args.topic,
-      difficulty: (args.difficulty || "medium") as "easy" | "medium" | "hard",
+      difficulty: difficulty as "easy" | "medium" | "hard",
       type: args.type as any,
-      source: (args.source || "ai") as "manual" | "ai" | "pyq",
+      source: source as "manual" | "ai" | "pyq",
       status: "approved",
       reviewedAt: Date.now(),
       explanation: args.explanation,
       examName: args.examName,
       sectionId: args.sectionId,
-      category: "mlt",
+      category: args.category || "mlt",
+      created: Date.now(),
     });
   },
 });
@@ -506,6 +635,12 @@ export const createMockTestWithQuestions = mutation({
 
     const questionIds = [];
     for (const q of args.questions) {
+      // Normalize difficulty
+      let difficulty = (q.difficulty || "medium").toLowerCase();
+      if (!["easy", "medium", "hard"].includes(difficulty)) {
+        difficulty = "medium";
+      }
+
       const qId = await ctx.db.insert("questions", {
         question: q.text,
         options: q.options,
@@ -514,13 +649,14 @@ export const createMockTestWithQuestions = mutation({
         imageUrl: q.image,
         topicId: q.topicId,
         subtopic: q.subtopicId,
-        difficulty: q.difficulty || "medium",
+        difficulty: difficulty as "easy" | "medium" | "hard",
         testSetId,
         source: "manual",
         hasImage: !!q.image,
         category: "mlt",
         status: "approved",
         type: "mcq",
+        created: Date.now(),
       });
       questionIds.push(qId);
     }
@@ -564,6 +700,12 @@ export const createAITestWithQuestions = mutation({
 
     const questionIds = [];
     for (const q of args.questions) {
+      // Normalize difficulty
+      let difficulty = (q.difficulty || "medium").toLowerCase();
+      if (!["easy", "medium", "hard"].includes(difficulty)) {
+        difficulty = "medium";
+      }
+
       const qId = await ctx.db.insert("questions", {
         question: q.text,
         options: q.options,
@@ -572,13 +714,14 @@ export const createAITestWithQuestions = mutation({
         imageUrl: q.image,
         topicId: q.topicId,
         subtopic: q.subtopicId,
-        difficulty: q.difficulty || "medium",
+        difficulty: difficulty as "easy" | "medium" | "hard",
         testSetId,
         source: "ai",
         hasImage: !!q.image,
         category: "mlt",
         status: "approved",
         type: "mcq",
+        created: Date.now(),
       });
       questionIds.push(qId);
     }
@@ -621,6 +764,12 @@ export const createPYQTestWithQuestions = mutation({
 
     const questionIds = [];
     for (const q of args.questions) {
+      // Normalize difficulty
+      let difficulty = (q.difficulty || "medium").toLowerCase();
+      if (!["easy", "medium", "hard"].includes(difficulty)) {
+        difficulty = "medium";
+      }
+
       const qId = await ctx.db.insert("questions", {
         question: q.text,
         options: q.options,
@@ -629,7 +778,7 @@ export const createPYQTestWithQuestions = mutation({
         imageUrl: q.image,
         topicId: q.topicId,
         subtopic: q.subtopicId,
-        difficulty: q.difficulty || "medium",
+        difficulty: difficulty as "easy" | "medium" | "hard",
         testSetId,
         source: "pyq",
         examName: args.examName,
@@ -640,6 +789,7 @@ export const createPYQTestWithQuestions = mutation({
         category: "mlt",
         status: "approved",
         type: "mcq",
+        created: Date.now(),
       });
       questionIds.push(qId);
     }
@@ -813,6 +963,7 @@ export const bulkAddQuestionsWithSection = mutation({
         createdBy: userId,
         reviewedBy: userId,
         reviewedAt: Date.now(),
+        created: Date.now(),
       });
       questionIds.push(questionId);
     }
@@ -997,17 +1148,40 @@ export const updateQuestion = mutation({
     setNumber: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const { id, ...fields } = args;
+    const { id, difficulty, source, image, ...fields } = args;
     
-    // Calculate hasImage if image is being updated, otherwise keep existing or check current
-    let hasImageUpdate = {};
-    if (fields.image !== undefined) {
-        hasImageUpdate = { hasImage: !!fields.image };
+    // Calculate hasImage if image is being updated
+    let imageUpdate = {};
+    if (image !== undefined) {
+        imageUpdate = { 
+          hasImage: !!image,
+          imageUrl: image 
+        };
+    }
+
+    // Normalize difficulty if present
+    let difficultyUpdate = {};
+    if (difficulty) {
+      let diff = difficulty.toLowerCase();
+      if (["easy", "medium", "hard"].includes(diff)) {
+        difficultyUpdate = { difficulty: diff as "easy" | "medium" | "hard" };
+      }
+    }
+
+    // Normalize source if present
+    let sourceUpdate = {};
+    if (source) {
+      let src = source.toLowerCase();
+      if (["manual", "ai", "pyq"].includes(src)) {
+        sourceUpdate = { source: src as "manual" | "ai" | "pyq" };
+      }
     }
 
     await ctx.db.patch(id, {
       ...fields,
-      ...hasImageUpdate,
+      ...imageUpdate,
+      ...difficultyUpdate,
+      ...sourceUpdate,
     });
   },
 });
@@ -1173,8 +1347,8 @@ export const create = mutation({
     options: v.array(v.string()),
     correctAnswer: v.string(),
     explanation: v.optional(v.string()),
-    category: v.string(),
-    difficulty: v.string(),
+    category: v.optional(v.string()),
+    difficulty: v.optional(v.string()),
     subtopic: v.optional(v.string()),
     topicId: v.optional(v.id("topics")),
     isPYQ: v.optional(v.boolean()),
@@ -1184,13 +1358,19 @@ export const create = mutation({
     description: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    // Normalize difficulty
+    let difficulty = (args.difficulty || "medium").toLowerCase();
+    if (!["easy", "medium", "hard"].includes(difficulty)) {
+      difficulty = "medium";
+    }
+
     const questionId = await ctx.db.insert("questions", {
       question: args.question,
       options: args.options,
       correctAnswer: args.correctAnswer,
       explanation: args.explanation,
-      category: args.category,
-      difficulty: args.difficulty,
+      category: args.category || "mlt",
+      difficulty: difficulty as "easy" | "medium" | "hard",
       subtopic: args.subtopic,
       topicId: args.topicId,
       isPYQ: args.isPYQ,
@@ -1198,6 +1378,11 @@ export const create = mutation({
       examName: args.examName,
       imageUrl: args.imageUrl,
       description: args.description,
+      status: "approved",
+      type: "mcq",
+      source: "manual",
+      hasImage: !!args.imageUrl,
+      created: Date.now(),
     });
     return questionId;
   },
@@ -1226,13 +1411,19 @@ export const createBulk = mutation({
   },
   handler: async (ctx, args) => {
     for (const q of args.questions) {
+      // Normalize difficulty
+      let difficulty = (q.difficulty || "medium").toLowerCase();
+      if (!["easy", "medium", "hard"].includes(difficulty)) {
+        difficulty = "medium";
+      }
+
       await ctx.db.insert("questions", {
         question: q.question,
         options: q.options,
         correctAnswer: q.correctAnswer,
         explanation: q.explanation,
         category: q.category,
-        difficulty: q.difficulty,
+        difficulty: difficulty as "easy" | "medium" | "hard",
         subtopic: q.subtopic,
         topicId: q.topicId,
         isPYQ: q.isPYQ,
@@ -1240,6 +1431,11 @@ export const createBulk = mutation({
         examName: q.examName,
         imageUrl: q.imageUrl,
         description: q.description,
+        status: "approved",
+        type: "mcq",
+        source: "manual",
+        hasImage: !!q.imageUrl,
+        created: Date.now(),
       });
     }
   },

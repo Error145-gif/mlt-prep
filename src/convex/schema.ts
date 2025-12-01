@@ -122,42 +122,42 @@ const schema = defineSchema(
       options: v.array(v.string()),
       correctAnswer: v.string(),
       explanation: v.optional(v.string()),
-      category: v.string(), // "mlt", "lab_technician", "dmlt"
-      difficulty: v.string(), // "easy", "medium", "hard"
-      subtopic: v.optional(v.string()),
-      topicId: v.optional(v.id("topics")),
-      topic: v.optional(v.string()), // Added to support legacy/string based topics
-      isPYQ: v.optional(v.boolean()),
-      examYear: v.optional(v.string()),
-      examName: v.optional(v.string()),
       imageUrl: v.optional(v.string()),
-      // Add description as optional if it's being sent but not in schema, or check if it's required elsewhere
-      description: v.optional(v.string()), 
-      // Added fields to match code usage
-      status: v.optional(v.string()),
-      source: v.optional(v.string()),
-      type: v.optional(v.string()),
-      sectionId: v.optional(v.id("sections")),
       imageStorageId: v.optional(v.id("_storage")),
-      hasImage: v.optional(v.boolean()),
-      subject: v.optional(v.string()),
-      setNumber: v.optional(v.number()),
-      year: v.optional(v.number()),
-      testSetId: v.optional(v.id("testSets")),
+      topicId: v.optional(v.id("topics")),
+      subtopic: v.optional(v.string()),
+      difficulty: v.union(v.literal("easy"), v.literal("medium"), v.literal("hard")),
+      category: v.string(), // "mlt", "dmlt", etc.
+      status: v.union(v.literal("pending"), v.literal("approved"), v.literal("rejected")),
       reviewedBy: v.optional(v.id("users")),
       reviewedAt: v.optional(v.number()),
       createdBy: v.optional(v.id("users")),
+      source: v.union(v.literal("manual"), v.literal("ai"), v.literal("pyq")),
+      
+      // For PYQs
+      examName: v.optional(v.string()),
+      year: v.optional(v.number()),
+      setNumber: v.optional(v.number()),
+      isPYQ: v.optional(v.boolean()),
+      examYear: v.optional(v.string()), // Legacy support
+
+      // For Tests
+      testSetId: v.optional(v.id("testSets")),
+      
+      // Metadata
+      hasImage: v.optional(v.boolean()),
+      type: v.union(v.literal("mcq"), v.literal("true-false"), v.literal("fill-in-the-blank")),
+      subject: v.optional(v.string()),
+      topic: v.optional(v.string()), // String version of topic
+      sectionId: v.optional(v.id("sections")),
+      description: v.optional(v.string()),
+      created: v.optional(v.number()),
     })
-    .index("by_category", ["category"])
     .index("by_topic", ["topicId"])
-    .index("by_isPYQ", ["isPYQ"])
     .index("by_status", ["status"])
-    .index("by_source", ["source"])
     .index("by_section", ["sectionId"])
-    .searchIndex("search_question", {
-      searchField: "question",
-      filterFields: ["category", "difficulty", "topicId"],
-    }),
+    .index("by_source", ["source"])
+    .index("by_test_set", ["testSetId"]),
 
     // Test Sets
     testSets: defineTable({
