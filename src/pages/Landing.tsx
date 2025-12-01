@@ -72,6 +72,25 @@ export default function Landing() {
   const { isAuthenticated, user } = useAuth();
   const makeAdmin = useMutation(api.users.makeCurrentUserAdmin);
 
+  // Auto-activate admin for authorized emails
+  useEffect(() => {
+    const autoActivateAdmin = async () => {
+      if (isAuthenticated && user && user.role !== "admin") {
+        const allowedEmails = ["ak6722909@gmail.com", "historyindia145@gmail.com"];
+        if (allowedEmails.includes(user.email?.toLowerCase().trim() || "")) {
+          try {
+            await makeAdmin({});
+            toast.success("Admin access activated automatically!");
+          } catch (error: any) {
+            console.error("Auto-activation failed:", error);
+          }
+        }
+      }
+    };
+
+    autoActivateAdmin();
+  }, [isAuthenticated, user, makeAdmin]);
+
   const handleMakeAdmin = async () => {
     try {
       await makeAdmin({});
