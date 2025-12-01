@@ -118,56 +118,60 @@ const schema = defineSchema(
 
     // AI Generated Questions
     questions: defineTable({
-      text: v.optional(v.string()), // Made optional to support 'question' field
-      question: v.optional(v.string()), // Added for compatibility
+      question: v.string(),
       options: v.array(v.string()),
       correctAnswer: v.string(),
       explanation: v.optional(v.string()),
-      image: v.optional(v.string()),
-      imageUrl: v.optional(v.string()), // Added for image URL
-      imageStorageId: v.optional(v.id("_storage")), // Added for storage ID
+      category: v.string(), // "mlt", "lab_technician", "dmlt"
+      difficulty: v.string(), // "easy", "medium", "hard"
+      subtopic: v.optional(v.string()),
       topicId: v.optional(v.id("topics")),
-      subtopicId: v.optional(v.string()),
-      difficulty: v.optional(v.string()),
-      source: v.optional(v.string()),
-      testSetId: v.optional(v.id("testSets")),
-      examName: v.optional(v.string()),
-      year: v.optional(v.number()),
-      setNumber: v.optional(v.number()),
+      topic: v.optional(v.string()), // Added to support legacy/string based topics
       isPYQ: v.optional(v.boolean()),
+      examYear: v.optional(v.string()),
+      examName: v.optional(v.string()),
+      imageUrl: v.optional(v.string()),
+      // Add description as optional if it's being sent but not in schema, or check if it's required elsewhere
+      description: v.optional(v.string()), 
+      // Added fields to match code usage
+      status: v.optional(v.string()),
+      source: v.optional(v.string()),
+      type: v.optional(v.string()),
+      sectionId: v.optional(v.id("sections")),
+      imageStorageId: v.optional(v.id("_storage")),
       hasImage: v.optional(v.boolean()),
-      status: v.optional(v.string()), // Added status
-      subject: v.optional(v.string()), // Added subject
-      topic: v.optional(v.string()), // Added topic string
-      type: v.optional(v.string()), // Added type
-      sectionId: v.optional(v.id("sections")), // Added sectionId
-      createdBy: v.optional(v.id("users")), // Added createdBy
-      reviewedBy: v.optional(v.id("users")), // Added reviewedBy
-      reviewedAt: v.optional(v.number()), // Added reviewedAt
+      subject: v.optional(v.string()),
+      setNumber: v.optional(v.number()),
+      year: v.optional(v.number()),
+      testSetId: v.optional(v.id("testSets")),
+      reviewedBy: v.optional(v.id("users")),
+      reviewedAt: v.optional(v.number()),
+      createdBy: v.optional(v.id("users")),
     })
-      .index("by_topicId", ["topicId"])
-      .index("by_testSetId", ["testSetId"])
-      .index("by_source", ["source"])
-      .index("by_status", ["status"])
-      .index("by_section", ["sectionId"])
-      .index("by_topic", ["topic"])
-      .index("by_subject", ["subject"])
-      .index("by_difficulty", ["difficulty"])
-      .index("by_examName_and_year", ["examName", "year"]),
+    .index("by_category", ["category"])
+    .index("by_topic", ["topicId"])
+    .index("by_isPYQ", ["isPYQ"])
+    .index("by_status", ["status"])
+    .index("by_source", ["source"])
+    .index("by_section", ["sectionId"])
+    .searchIndex("search_question", {
+      searchField: "question",
+      filterFields: ["category", "difficulty", "topicId"],
+    }),
 
     // Test Sets
     testSets: defineTable({
-      name: v.string(),
-      description: v.string(),
-      duration: v.number(),
-      type: v.string(), // "mock", "ai", "pyq"
-      isActive: v.boolean(),
-      examName: v.optional(v.string()),
-      year: v.optional(v.number()),
-      setNumber: v.optional(v.number()),
+      title: v.string(),
+      description: v.optional(v.string()), // Make description optional here too just in case
+      category: v.string(),
+      type: v.string(), // "mock", "pyq", "practice"
+      questions: v.array(v.id("questions")),
+      isPublished: v.boolean(),
+      timeLimit: v.optional(v.number()), // in minutes
+      passingScore: v.optional(v.number()),
     })
-      .index("by_type", ["type"])
-      .index("by_active", ["isActive"]),
+    .index("by_category", ["category"])
+    .index("by_type", ["type"]),
 
     // Test Sessions - Track active and completed tests
     testSessions: defineTable({
@@ -396,17 +400,24 @@ const schema = defineSchema(
     // Weekly Free Mock Tests
     weeklyTests: defineTable({
       title: v.string(),
-      description: v.optional(v.string()),
-      scheduledDate: v.number(), // Sunday timestamp
-      status: v.string(), // "draft", "scheduled", "active", "completed"
-      questionIds: v.array(v.id("questions")),
-      publishedAt: v.optional(v.number()),
+      description: v.optional(v.string()), // Make description optional
+      startDate: v.string(),
+      endDate: v.string(),
+      duration: v.number(), // in minutes
+      totalMarks: v.number(),
+      passingMarks: v.number(),
+      questions: v.array(v.id("questions")),
+      isActive: v.boolean(),
+      isResultPublished: v.boolean(),
+      // Added fields to match code usage
+      status: v.optional(v.string()),
+      scheduledDate: v.optional(v.number()),
       leaderboardPublishedAt: v.optional(v.number()),
-      totalAttempts: v.number(),
-      createdBy: v.id("users"),
+      totalAttempts: v.optional(v.number()),
+      publishedAt: v.optional(v.number()),
     })
-      .index("by_status", ["status"])
-      .index("by_scheduled_date", ["scheduledDate"]),
+    .index("by_status", ["status"])
+    .index("by_date", ["startDate"]),
 
     // Weekly Test Attempts
     weeklyTestAttempts: defineTable({

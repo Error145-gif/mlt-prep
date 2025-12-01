@@ -28,23 +28,33 @@ export const getDashboardStats = query({
     const pendingQuestions = allQuestions.filter((q) => q.status === "pending" || !q.status).length; // Treat undefined as pending or handle accordingly
     
     const stats = {
-      totalQuestions: allQuestions.length,
-      approvedQuestions,
-      pendingQuestions,
-      totalTestSets: allTestSets.length,
-      activeTestSets: allTestSets.filter((t) => t.isActive).length,
       totalUsers: allUsers.length,
-      activeSubscriptions: allSubscriptions.filter((s) => s.status === "active").length,
+      activeUsers: allUsers.filter((u) => {
+        const lastActive = u.lastActive || 0;
+        return Date.now() - lastActive < 30 * 24 * 60 * 60 * 1000; // 30 days
+      }).length,
+      totalQuestions: allQuestions.length,
+      questionsAddedThisMonth: allQuestions.filter(
+        (q) => q._creationTime > Date.now() - 30 * 24 * 60 * 60 * 1000
+      ).length,
+      totalTestSets: allTestSets.length,
+      activeTestSets: allTestSets.filter((t) => t.isPublished).length,
       totalRevenue: allSubscriptions.reduce((acc, curr) => acc + (curr.amount || 0), 0),
-      
-      // Dashboard specific stats
-      totalContent: allQuestions.length + allTestSets.length,
+      revenueThisMonth: allSubscriptions
+        .filter((s) => s._creationTime > Date.now() - 30 * 24 * 60 * 60 * 1000)
+        .reduce((acc, curr) => acc + (curr.amount || 0), 0),
+      recentPayments,
+      recentContent,
+
+      // Added fields for AdminDashboard compatibility
+      activeSubscriptions: allSubscriptions.filter(s => s.status === "active").length,
+      totalContent: (await ctx.db.query("content").collect()).length,
+      approvedQuestions: approvedQuestions,
       manualQuestions: allQuestions.filter(q => q.source === "manual").length,
+      pendingQuestions: pendingQuestions,
       mockTestSets: allTestSets.filter(t => t.type === "mock").length,
       aiTestSets: allTestSets.filter(t => t.type === "ai").length,
       pyqTestSets: allTestSets.filter(t => t.type === "pyq").length,
-      recentContent,
-      recentPayments,
 
       // Detailed question stats
       questionsBySource: {

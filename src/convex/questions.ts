@@ -8,7 +8,7 @@ import { paginationOptsValidator } from "convex/server";
 export const getQuestions = query({
   args: {
     status: v.optional(v.string()),
-    topic: v.optional(v.string()),
+    topicId: v.optional(v.id("topics")),
     sectionId: v.optional(v.id("sections")),
   },
   handler: async (ctx, args) => {
@@ -24,10 +24,10 @@ export const getQuestions = query({
         .query("questions")
         .withIndex("by_status", (q) => q.eq("status", args.status as any))
         .collect();
-    } else if (args.topic) {
+    } else if (args.topicId) {
       questions = await ctx.db
         .query("questions")
-        .withIndex("by_topic", (q) => q.eq("topic", args.topic!))
+        .withIndex("by_topic", (q) => q.eq("topicId", args.topicId!))
         .collect();
     } else if (args.sectionId) {
       questions = await ctx.db
@@ -226,6 +226,9 @@ export const createQuestion = mutation({
     const hasImage = !!args.image;
     const questionId = await ctx.db.insert("questions", {
       ...args,
+      question: args.text, // Map text to question
+      category: "mlt", // Default category
+      difficulty: args.difficulty || "medium", // Default difficulty
       hasImage,
       isPYQ: args.source === "pyq",
     });
@@ -265,6 +268,7 @@ export const createImageQuestion = mutation({
       correctAnswer: args.correctAnswer,
       subject: args.subject || "General",
       topic: args.topic,
+      category: "mlt", // Default category
       difficulty: (args.difficulty || "medium") as "easy" | "medium" | "hard",
       type: args.type as any,
       status: "approved",
@@ -305,6 +309,9 @@ export const batchCreateQuestions = mutation({
     for (const question of args.questions) {
       await ctx.db.insert("questions", {
         ...question,
+        question: question.text, // Map text to question
+        category: "mlt", // Default category
+        difficulty: question.difficulty || "medium", // Default difficulty
         hasImage: !!question.image,
         isPYQ: question.source === "pyq",
       });
@@ -355,6 +362,7 @@ export const batchCreateImageQuestions = mutation({
           correctAnswer: question.correctAnswer,
           subject: question.subject || "General",
           topic: question.topic,
+          category: "mlt", // Default category
           difficulty: (question.difficulty || "medium") as "easy" | "medium" | "hard",
           type: question.type as any,
           status: "approved",
@@ -411,6 +419,7 @@ export const createQuestionInternal = internalMutation({
       explanation: args.explanation,
       examName: args.examName,
       sectionId: args.sectionId,
+      category: "mlt",
     });
   },
 });
@@ -446,6 +455,7 @@ export const createQuestionInternalFromAction = internalMutation({
       explanation: args.explanation,
       examName: args.examName,
       sectionId: args.sectionId,
+      category: "mlt",
     });
   },
 });
@@ -468,7 +478,7 @@ export const deleteQuestion = mutation({
 export const createMockTestWithQuestions = mutation({
   args: {
     title: v.string(),
-    description: v.string(),
+    description: v.optional(v.string()),
     duration: v.number(),
     questions: v.array(
       v.object({
@@ -485,21 +495,39 @@ export const createMockTestWithQuestions = mutation({
   },
   handler: async (ctx, args) => {
     const testSetId = await ctx.db.insert("testSets", {
-      name: args.title,
+      title: args.title,
       description: args.description,
-      duration: args.duration,
+      timeLimit: args.duration, // Map duration to timeLimit
       type: "mock",
-      isActive: true,
+      category: "mlt",
+      isPublished: true,
+      questions: [],
     });
 
+    const questionIds = [];
     for (const q of args.questions) {
-      await ctx.db.insert("questions", {
-        ...q,
+      const qId = await ctx.db.insert("questions", {
+        question: q.text,
+        options: q.options,
+        correctAnswer: q.correctAnswer,
+        explanation: q.explanation,
+        imageUrl: q.image,
+        topicId: q.topicId,
+        subtopic: q.subtopicId,
+        difficulty: q.difficulty || "medium",
         testSetId,
         source: "manual",
         hasImage: !!q.image,
+        category: "mlt",
+        status: "approved",
+        type: "mcq",
       });
+      questionIds.push(qId);
     }
+    
+    // Update test set with questions
+    await ctx.db.patch(testSetId, { questions: questionIds });
+    
     return testSetId;
   },
 });
@@ -508,7 +536,7 @@ export const createMockTestWithQuestions = mutation({
 export const createAITestWithQuestions = mutation({
   args: {
     title: v.string(),
-    description: v.string(),
+    description: v.optional(v.string()),
     duration: v.number(),
     questions: v.array(
       v.object({
@@ -525,21 +553,37 @@ export const createAITestWithQuestions = mutation({
   },
   handler: async (ctx, args) => {
     const testSetId = await ctx.db.insert("testSets", {
-      name: args.title,
+      title: args.title,
       description: args.description,
-      duration: args.duration,
+      timeLimit: args.duration,
       type: "ai",
-      isActive: true,
+      category: "mlt",
+      isPublished: true,
+      questions: [],
     });
 
+    const questionIds = [];
     for (const q of args.questions) {
-      await ctx.db.insert("questions", {
-        ...q,
+      const qId = await ctx.db.insert("questions", {
+        question: q.text,
+        options: q.options,
+        correctAnswer: q.correctAnswer,
+        explanation: q.explanation,
+        imageUrl: q.image,
+        topicId: q.topicId,
+        subtopic: q.subtopicId,
+        difficulty: q.difficulty || "medium",
         testSetId,
         source: "ai",
         hasImage: !!q.image,
+        category: "mlt",
+        status: "approved",
+        type: "mcq",
       });
+      questionIds.push(qId);
     }
+
+    await ctx.db.patch(testSetId, { questions: questionIds });
     return testSetId;
   },
 });
@@ -566,19 +610,26 @@ export const createPYQTestWithQuestions = mutation({
   },
   handler: async (ctx, args) => {
     const testSetId = await ctx.db.insert("testSets", {
-      name: `${args.examName} ${args.year} - Set ${args.setNumber}`,
+      title: `${args.examName} ${args.year} - Set ${args.setNumber}`,
       description: `Previous Year Question Paper for ${args.examName} (${args.year})`,
-      duration: args.duration,
+      timeLimit: args.duration,
       type: "pyq",
-      isActive: true,
-      examName: args.examName,
-      year: args.year,
-      setNumber: args.setNumber,
+      category: "mlt",
+      isPublished: true,
+      questions: [],
     });
 
+    const questionIds = [];
     for (const q of args.questions) {
-      await ctx.db.insert("questions", {
-        ...q,
+      const qId = await ctx.db.insert("questions", {
+        question: q.text,
+        options: q.options,
+        correctAnswer: q.correctAnswer,
+        explanation: q.explanation,
+        imageUrl: q.image,
+        topicId: q.topicId,
+        subtopic: q.subtopicId,
+        difficulty: q.difficulty || "medium",
         testSetId,
         source: "pyq",
         examName: args.examName,
@@ -586,8 +637,14 @@ export const createPYQTestWithQuestions = mutation({
         setNumber: args.setNumber,
         isPYQ: true,
         hasImage: !!q.image,
+        category: "mlt",
+        status: "approved",
+        type: "mcq",
       });
+      questionIds.push(qId);
     }
+    
+    await ctx.db.patch(testSetId, { questions: questionIds });
     return testSetId;
   },
 });
@@ -750,6 +807,7 @@ export const bulkAddQuestionsWithSection = mutation({
     for (const question of args.questions) {
       const questionId = await ctx.db.insert("questions", {
         ...question,
+        category: "mlt", // Default category
         sectionId: args.sectionId,
         status: "approved",
         createdBy: userId,
@@ -1105,5 +1163,84 @@ export const getQuestionsPaginated = query({
     );
 
     return { ...results, page: pageWithUrls };
+  },
+});
+
+// Create
+export const create = mutation({
+  args: {
+    question: v.string(),
+    options: v.array(v.string()),
+    correctAnswer: v.string(),
+    explanation: v.optional(v.string()),
+    category: v.string(),
+    difficulty: v.string(),
+    subtopic: v.optional(v.string()),
+    topicId: v.optional(v.id("topics")),
+    isPYQ: v.optional(v.boolean()),
+    examYear: v.optional(v.string()),
+    examName: v.optional(v.string()),
+    imageUrl: v.optional(v.string()),
+    description: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const questionId = await ctx.db.insert("questions", {
+      question: args.question,
+      options: args.options,
+      correctAnswer: args.correctAnswer,
+      explanation: args.explanation,
+      category: args.category,
+      difficulty: args.difficulty,
+      subtopic: args.subtopic,
+      topicId: args.topicId,
+      isPYQ: args.isPYQ,
+      examYear: args.examYear,
+      examName: args.examName,
+      imageUrl: args.imageUrl,
+      description: args.description,
+    });
+    return questionId;
+  },
+});
+
+// Create bulk
+export const createBulk = mutation({
+  args: {
+    questions: v.array(
+      v.object({
+        question: v.string(),
+        options: v.array(v.string()),
+        correctAnswer: v.string(),
+        explanation: v.optional(v.string()),
+        category: v.string(),
+        difficulty: v.string(),
+        subtopic: v.optional(v.string()),
+        topicId: v.optional(v.id("topics")),
+        isPYQ: v.optional(v.boolean()),
+        examYear: v.optional(v.string()),
+        examName: v.optional(v.string()),
+        imageUrl: v.optional(v.string()),
+        description: v.optional(v.string()),
+      })
+    ),
+  },
+  handler: async (ctx, args) => {
+    for (const q of args.questions) {
+      await ctx.db.insert("questions", {
+        question: q.question,
+        options: q.options,
+        correctAnswer: q.correctAnswer,
+        explanation: q.explanation,
+        category: q.category,
+        difficulty: q.difficulty,
+        subtopic: q.subtopic,
+        topicId: q.topicId,
+        isPYQ: q.isPYQ,
+        examYear: q.examYear,
+        examName: q.examName,
+        imageUrl: q.imageUrl,
+        description: q.description,
+      });
+    }
   },
 });

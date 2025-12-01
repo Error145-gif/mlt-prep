@@ -44,7 +44,7 @@ export default function WeeklyTest() {
     );
   }
 
-  const isReady = currentTest && (currentTest.status === "active" || (currentTest.status === "scheduled" && currentTest.scheduledDate <= Date.now()));
+  const isReady = currentTest && (currentTest.status === "active" || (currentTest.status === "scheduled" && (currentTest.scheduledDate || 0) <= Date.now()));
 
   if (!currentTest || !isReady) {
     const nextTestDate = currentTest?.scheduledDate ? new Date(currentTest.scheduledDate) : null;

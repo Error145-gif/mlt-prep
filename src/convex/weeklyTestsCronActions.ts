@@ -11,27 +11,25 @@ export const autoPublishWeeklyTests = internalMutation({
     // Only run on Sundays
     if (today.getDay() !== 0) return;
 
-    // Find scheduled tests for today
-    const startOfDay = new Date(today.setHours(0, 0, 0, 0)).getTime();
-    const endOfDay = new Date(today.setHours(23, 59, 59, 999)).getTime();
-
+    // Find scheduled tests that should be active now
     const scheduledTests = await ctx.db
       .query("weeklyTests")
       .withIndex("by_status", (q) => q.eq("status", "scheduled"))
-      .filter((q) => 
-        q.and(
-          q.gte(q.field("scheduledDate"), startOfDay),
-          q.lte(q.field("scheduledDate"), endOfDay)
-        )
-      )
+      .filter((q) => {
+        // Check if scheduledDate is within today
+        // Note: This logic depends on how scheduledDate is stored (number timestamp)
+        return q.eq(q.field("status"), "scheduled");
+      })
       .collect();
 
-    // Publish each test
     for (const test of scheduledTests) {
-      await ctx.db.patch(test._id, {
-        status: "active",
-        publishedAt: now,
-      });
+      if (test.scheduledDate && test.scheduledDate <= now) {
+        await ctx.db.patch(test._id, {
+          status: "active",
+          isActive: true,
+          publishedAt: now,
+        });
+      }
     }
   },
 });
@@ -46,18 +44,26 @@ export const autoPublishLeaderboards = internalMutation({
     // Only run on Mondays
     if (today.getDay() !== 1) return;
 
-    // Find active tests from yesterday (Sunday)
+    // Find active tests that should be completed
     const activeTests = await ctx.db
       .query("weeklyTests")
       .withIndex("by_status", (q) => q.eq("status", "active"))
       .collect();
 
-    // Publish leaderboard for each test
     for (const test of activeTests) {
-      if (!test.leaderboardPublishedAt) {
-        await ctx.scheduler.runAfter(0, internal.weeklyTests.publishWeeklyLeaderboard, {
-          weeklyTestId: test._id,
-        });
+      // If end date passed (assuming duration logic or explicit end date)
+      // For now, let's assume 24h or check endDate string if parsable
+      // But simpler: check if it's been active for duration
+      
+      // If we use endDate string:
+      const endDate = new Date(test.endDate).getTime();
+      if (endDate <= now) {
+         // Publish leaderboard if not already
+         if (!test.leaderboardPublishedAt) {
+            await ctx.scheduler.runAfter(0, internal.weeklyTests.publishWeeklyLeaderboard, {
+              weeklyTestId: test._id,
+            });
+         }
       }
     }
   },

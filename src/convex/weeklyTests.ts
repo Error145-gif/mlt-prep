@@ -72,7 +72,7 @@ export const getWeeklyTestQuestions = query({
 
     const test = await ctx.db.get(args.weeklyTestId);
     // Allow if active OR if it's scheduled and time has passed (e.g. today)
-    const isReady = test && (test.status === "active" || (test.status === "scheduled" && test.scheduledDate <= Date.now()));
+    const isReady = test && (test.status === "active" || (test.status === "scheduled" && (test.scheduledDate ?? Infinity) <= Date.now()));
     if (!isReady || !test) return null;
 
     // Check if user already attempted
@@ -89,7 +89,7 @@ export const getWeeklyTestQuestions = query({
 
     // Fetch questions
     const questions = await Promise.all(
-      test.questionIds.map(async (id) => {
+      test.questions.map(async (id) => {
         const q = await ctx.db.get(id);
         if (!q) return null;
         
@@ -123,7 +123,7 @@ export const submitWeeklyTestAttempt = mutation({
     if (!user) throw new Error("Not authenticated");
 
     const test = await ctx.db.get(args.weeklyTestId);
-    const isReady = test && (test.status === "active" || (test.status === "scheduled" && test.scheduledDate <= Date.now()));
+    const isReady = test && (test.status === "active" || (test.status === "scheduled" && (test.scheduledDate ?? Infinity) <= Date.now()));
     
     if (!isReady || !test) {
       throw new Error("Test is not active");
@@ -143,7 +143,7 @@ export const submitWeeklyTestAttempt = mutation({
 
     // Fetch questions and validate answers
     const questions = await Promise.all(
-      test.questionIds.map((id) => ctx.db.get(id))
+      test.questions.map((id) => ctx.db.get(id))
     );
 
     const validatedAnswers = args.answers.map((ans) => {
@@ -193,8 +193,8 @@ export const submitWeeklyTestAttempt = mutation({
 
     const correctAnswers = validatedAnswers.filter((a) => a.isCorrect).length;
     const incorrectAnswers = validatedAnswers.length - correctAnswers;
-    const score = (correctAnswers / test.questionIds.length) * 100;
-    const avgTimePerQuestion = args.totalTimeSpent / test.questionIds.length;
+    const score = (correctAnswers / test.questions.length) * 100;
+    const avgTimePerQuestion = args.totalTimeSpent / test.questions.length;
 
     // Create attempt
     const attemptId = await ctx.db.insert("weeklyTestAttempts", {
@@ -212,10 +212,10 @@ export const submitWeeklyTestAttempt = mutation({
 
     // Update test attempts count
     await ctx.db.patch(args.weeklyTestId, {
-      totalAttempts: test.totalAttempts + 1,
+      totalAttempts: (test.totalAttempts || 0) + 1,
     });
 
-    return { attemptId, score, correctAnswers, totalQuestions: test.questionIds.length };
+    return { attemptId, score, correctAnswers, totalQuestions: test.questions.length };
   },
 });
 
@@ -328,13 +328,18 @@ export const createWeeklyTest = mutation({
     const testId = await ctx.db.insert("weeklyTests", {
       title: args.title,
       description: args.description,
-      scheduledDate: args.scheduledDate,
+      startDate: new Date(args.scheduledDate).toISOString(),
+      endDate: new Date(args.scheduledDate + 24 * 60 * 60 * 1000).toISOString(),
+      duration: 60, // Default 60 minutes
+      totalMarks: 100,
+      passingMarks: 40,
+      questions: questionIds,
+      isActive: false,
       status: "scheduled",
-      questionIds: questionIds,
+      scheduledDate: args.scheduledDate,
+      isResultPublished: false,
       totalAttempts: 0,
-      createdBy: user._id,
     });
-
     return testId;
   },
 });

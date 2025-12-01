@@ -153,12 +153,12 @@ export default function WeeklyTestManagement() {
                   <div>
                     <CardTitle className="text-white">{test.title}</CardTitle>
                     <p className="text-white/70 text-sm mt-1">
-                      {new Date(test.scheduledDate).toLocaleDateString("en-US", {
+                      {test.scheduledDate ? new Date(test.scheduledDate).toLocaleDateString("en-US", {
                         weekday: "long",
                         year: "numeric",
                         month: "long",
                         day: "numeric",
-                      })}
+                      }) : "Date not scheduled"}
                     </p>
                   </div>
                   <Badge
@@ -176,7 +176,7 @@ export default function WeeklyTestManagement() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="text-white/90">
-                  <p>Questions: {test.questionIds.length}</p>
+                  <p>Questions: {test.questions?.length || 0}</p>
                   <p>Total Attempts: {test.totalAttempts}</p>
                   {test.leaderboardPublishedAt && (
                     <p className="flex items-center gap-2 text-green-300">

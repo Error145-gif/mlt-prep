@@ -1,81 +1,27 @@
-const isReady = currentTest && (currentTest.status === "active" || (currentTest.status === "scheduled" && currentTest.scheduledDate <= Date.now()));
-
-const startTest = useMutation(api.student.startTest);
-const submitTest = useMutation(api.student.submitTest);
-
-// Auto-start test
-useEffect(() => {
-  if (!sessionId && questions && questions.length > 0 && !showInstructions) {
-    const initTest = async () => {
-      try {
-        const questionIds = questions.map((q) => q._id);
-        const id = await startTest({
-          testType,
-          topicId,
-          year,
-          setNumber,
-          questionIds,
+// src/convex/aiQuestions.ts
+// ...
+        const questions = JSON.parse(content);
+        // ...
+        await ctx.runMutation(internal.questions.createBulk, {
+          questions: parsedQuestions.map((q: any) => ({
+            question: q.question,
+            options: q.options,
+            correctAnswer: q.correctAnswer,
+            explanation: q.explanation,
+            category: "mlt", // Default category
+            difficulty: difficulty || "medium",
+            topicId: topicId,
+            // It doesn't seem to map description here, which is fine since it's optional now.
+          })),
         });
-        setSessionId(id);
-        toast.success("Test started!");
-      } catch (error) {
-        console.error("Failed to start test:", error);
-      }
-    };
-    initTest();
-  }
-}, [sessionId, questions, showInstructions, testType, topicId, year, setNumber]);
-
-// Prevent copying during test
-useEffect(() => {
-  if (!showInstructions && sessionId) {
-    const preventCopy = (e: ClipboardEvent) => {
-      e.preventDefault();
-      toast.error("Copying is disabled during the test");
-      return false;
-    };
-
-    const preventContextMenu = (e: MouseEvent) => {
-      e.preventDefault();
-      return false;
-    };
-
-    const preventKeyboardShortcuts = (e: KeyboardEvent) => {
-      // Prevent Ctrl+C, Ctrl+A, Ctrl+X, Ctrl+U, F12, Ctrl+Shift+I
-      if (
-        (e.ctrlKey && (e.key === 'c' || e.key === 'C' || e.key === 'a' || e.key === 'A' || e.key === 'x' || e.key === 'X' || e.key === 'u' || e.key === 'U')) ||
-        e.key === 'F12' ||
-        (e.ctrlKey && e.shiftKey && (e.key === 'i' || e.key === 'I' || e.key === 'j' || e.key === 'J'))
-      ) {
-        e.preventDefault();
-        toast.error("This action is disabled during the test");
-        return false;
-      }
-    };
-
-    document.addEventListener('copy', preventCopy);
-    document.addEventListener('cut', preventCopy);
-    document.addEventListener('contextmenu', preventContextMenu);
-    document.addEventListener('keydown', preventKeyboardShortcuts);
-
-    return () => {
-      document.removeEventListener('copy', preventCopy);
-      document.removeEventListener('cut', preventCopy);
-      document.removeEventListener('contextmenu', preventContextMenu);
-      document.removeEventListener('keydown', preventKeyboardShortcuts);
-    };
-  }
-}, [showInstructions, sessionId]);
-
-// Fetch questions for the test - with loading optimization
-const testQuestions = useQuery(api.student.getTestQuestions, {
-  testType,
-  ...(topicId && { topicId }),
-  ...(year && { year }),
-  ...(setNumber && { setNumber }),
-  ...(examName && { examName }), // Pass examName to query
-});
-
-const questions = Array.isArray(testQuestions) ? testQuestions : [];
-const hasError = testQuestions === undefined && !isLoading;
-const [testName, setTestName] = useState("");
+// ...
+testSets: defineTable({
+      title: v.string(),
+      description: v.optional(v.string()), // I added this
+      category: v.string(),
+      type: v.string(), // "mock", "pyq", "practice"
+      questions: v.array(v.id("questions")),
+      isPublished: v.boolean(),
+      timeLimit: v.optional(v.number()), // in minutes
+      passingScore: v.optional(v.number()),
+    })
