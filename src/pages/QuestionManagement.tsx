@@ -299,10 +299,8 @@ export default function QuestionManagement() {
         testInfo: {
           name: autoTestName,
           timeLimit: 60,
-          description: `Mock test created on ${new Date().toLocaleDateString()}`,
+          description: `AI test created on ${new Date().toLocaleDateString()}`,
         },
-        topicId: undefined,
-        newTopicName: "General AI Questions",
         questions: parsedQuestions,
       });
 
@@ -447,10 +445,8 @@ export default function QuestionManagement() {
         testInfo: {
           name: autoTestName,
           timeLimit: 30,
-          description: `AI test created on ${new Date().toLocaleDateString()}`,
+          description: `Mock test created on ${new Date().toLocaleDateString()}`,
         },
-        topicId: undefined,
-        newTopicName: "General Mock Tests",
         questions: parsedQuestions,
       });
 
