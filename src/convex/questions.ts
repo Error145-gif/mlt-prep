@@ -654,7 +654,6 @@ export const createMockTestWithQuestions = mutation({
     const questionIds = [];
     for (const q of args.questions) {
       const difficulty = normalizeDifficulty(q.difficulty);
-      const source = normalizeSource(q.source);
       const year = normalizeYear(q.year);
       
       // Normalize topicId
@@ -673,7 +672,7 @@ export const createMockTestWithQuestions = mutation({
         category,
         subtopic: q.subCategory,
         topicId: topicId || undefined,
-        source,
+        source: "ai", // Force AI source for AI test questions
         year,
         examName: q.examName,
         imageUrl: q.imageUrl,
@@ -741,7 +740,6 @@ export const createAITestWithQuestions = mutation({
     const questionIds = [];
     for (const q of args.questions) {
       const difficulty = normalizeDifficulty(q.difficulty);
-      const source = normalizeSource(q.source);
       const year = normalizeYear(q.year);
       
       // Normalize topicId
@@ -760,9 +758,10 @@ export const createAITestWithQuestions = mutation({
         category,
         subtopic: q.subCategory,
         topicId: topicId || undefined,
-        source,
+        source: "pyq", // Force PYQ source for PYQ test questions
         year,
         examName: q.examName,
+        isPYQ: true, // Mark as PYQ
         imageUrl: q.imageUrl,
         created: Date.now(),
         status: "approved",
@@ -828,7 +827,6 @@ export const createPYQTestWithQuestions = mutation({
     const questionIds = [];
     for (const q of args.questions) {
       const difficulty = normalizeDifficulty(q.difficulty);
-      const source = normalizeSource(q.source);
       const year = normalizeYear(q.year);
       
       // Normalize topicId
@@ -847,7 +845,7 @@ export const createPYQTestWithQuestions = mutation({
         category,
         subtopic: q.subCategory,
         topicId: topicId || undefined,
-        source,
+        source: "manual", // Force manual source for mock test questions
         year,
         examName: q.examName,
         imageUrl: q.imageUrl,
