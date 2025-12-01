@@ -995,7 +995,6 @@ export default function QuestionManagement() {
     }
   };
 
-  // Removed unused function
   const _handleAutoGenerateAI = async () => {
     if (isGeneratingAI) return;
     
@@ -1013,6 +1012,44 @@ export default function QuestionManagement() {
       toast.error(`Error: ${error.message || "Failed to generate AI questions"}`);
     } finally {
       setIsGeneratingAI(false);
+    }
+  };
+
+  const handleAIQuestionsGenerated = async (questions: any[]) => {
+    try {
+      setIsGenerating(true);
+      
+      // Format questions for the backend
+      const formattedQuestions = questions.map(q => ({
+        question: q.question,
+        options: q.options,
+        correctAnswer: q.correctAnswer,
+        explanation: q.explanation,
+        difficulty: q.difficulty || "medium",
+        category: q.category || "General",
+        subCategory: q.subCategory || "General",
+        topicId: q.topicId,
+        source: "AI Generated",
+        type: "logical",
+        subject: "MLT"
+      }));
+
+      await createAITestMutation({
+        questions: formattedQuestions,
+        testInfo: {
+          name: `AI Test - ${new Date().toLocaleString()}`,
+          description: "Auto-generated AI test",
+          timeLimit: 60
+        }
+      });
+
+      toast.success("AI Questions added successfully");
+      setIsGenerating(false);
+      setAiDialogOpen(false);
+    } catch (error) {
+      console.error("Error adding AI questions:", error);
+      toast.error("Failed to add AI questions");
+      setIsGenerating(false);
     }
   };
 
