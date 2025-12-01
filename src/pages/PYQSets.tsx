@@ -69,6 +69,14 @@ export default function PYQSets() {
     navigate(`/test-start?type=pyq&year=${set.year}&setNumber=${set.setNumber}&examName=${encodeURIComponent(set.examName)}`);
   };
 
+  // Helper function to display year
+  const displayYear = (year: number) => {
+    if (!year || year === 0) {
+      return "N/A";
+    }
+    return year.toString();
+  };
+
   // If a set is selected, show instructions
   if (selectedSet) {
     return (
@@ -97,7 +105,7 @@ export default function PYQSets() {
               <div className="p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg">
                 <p className="text-3xl mb-1">📅</p>
                 <p className="text-sm text-gray-600 font-medium">Year</p>
-                <p className="text-lg font-bold text-purple-900">{selectedSet.year}</p>
+                <p className="text-lg font-bold text-purple-900">{displayYear(selectedSet.year)}</p>
               </div>
               <div className="p-4 bg-gradient-to-br from-pink-50 to-pink-100 rounded-lg">
                 <p className="text-3xl mb-1">❓</p>
@@ -253,7 +261,7 @@ export default function PYQSets() {
                     <div className="flex items-start justify-between">
                       <div>
                         <h3 className="text-xl font-bold text-white">{set.examName}</h3>
-                        <p className="text-white/70 text-sm">Year: {set.year}</p>
+                        <p className="text-white/70 text-sm">Year: {displayYear(set.year)}</p>
                       </div>
                       {isLocked && (
                         <Lock className="h-6 w-6 text-yellow-400" />
