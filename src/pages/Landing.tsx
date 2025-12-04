@@ -321,7 +321,7 @@ export default function Landing() {
           </motion.div>
           
           <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold text-white tracking-tight drop-shadow-2xl">
-            Medical Lab Technician Exam Preparation with
+            Master Medical Lab Technician Exam with
             <br />
             <span className="bg-gradient-to-r from-yellow-300 via-pink-300 to-purple-300 bg-clip-text text-transparent">
               AI-Powered Smart Learning
@@ -329,17 +329,17 @@ export default function Landing() {
           </h1>
           
           <p className="text-base sm:text-xl text-white/90 max-w-2xl mx-auto lg:mx-0 drop-shadow-lg mb-4">
-            DMLT, BMLT, Medical Lab Technician Govt Exam Mock Tests, MLT PYQs, and Medical Lab MCQs at one place.
+            Complete MLT Exam preparation platform for DMLT, BMLT, and Lab Technician Govt Exam with comprehensive Mock Tests, Previous Year Questions, and AI-generated Medical Lab MCQs.
           </p>
           
           <div className="flex flex-wrap justify-center lg:justify-start gap-2 text-sm sm:text-base text-white/80 font-medium">
             <span>MLT Mock Tests</span>
             <span>•</span>
-            <span>Medical Lab Technician Exam Preparation</span>
+            <span>Lab Technician Exam Prep</span>
             <span>•</span>
-            <span>DMLT/BMLT Medical Lab Course PYQs</span>
+            <span>Medical Lab PYQs</span>
             <span>•</span>
-            <span>AI-based Medical Lab MCQs</span>
+            <span>Paramedical Exam Practice</span>
           </div>
           
             <div className="flex items-center justify-center lg:justify-start gap-3 sm:gap-4 pt-4">
@@ -412,8 +412,8 @@ export default function Landing() {
           viewport={{ once: true }}
           className="text-center mb-8 sm:mb-12"
         >
-          <h2 className="text-2xl sm:text-4xl font-bold text-white drop-shadow-lg mb-2 sm:mb-4">Everything You Need to Succeed in Medical Lab Technician Exam</h2>
-          <p className="text-white/90 text-base sm:text-lg drop-shadow-md">Powerful features designed for effective Medical Lab Technology learning and Paramedical Exam preparation</p>
+          <h2 className="text-2xl sm:text-4xl font-bold text-white drop-shadow-lg mb-2 sm:mb-4">Complete MLT Exam Preparation Platform</h2>
+          <p className="text-white/90 text-base sm:text-lg drop-shadow-md">Everything you need for Medical Lab Technician Exam success, Lab Technician Govt Exam preparation, and Medical Lab Technology mastery</p>
         </motion.div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
@@ -464,9 +464,9 @@ export default function Landing() {
           viewport={{ once: true }}
           className="glass-card border border-white/20 backdrop-blur-xl bg-gradient-to-br from-blue-500/20 to-purple-600/20 p-8 sm:p-12 rounded-3xl text-center"
         >
-          <h2 className="text-2xl sm:text-4xl font-bold text-white mb-3 sm:mb-4">Ready to Start Your Medical Lab Technician Journey?</h2>
+          <h2 className="text-2xl sm:text-4xl font-bold text-white mb-3 sm:mb-4">Ready to Ace Your Lab Technician Exam?</h2>
           <p className="text-white/70 text-base sm:text-lg mb-6 sm:mb-8 max-w-2xl mx-auto">
-            Join thousands of Medical Lab Tech students mastering DMLT, BMLT, and Lab Technician Govt Exam preparation with our comprehensive MLT Test platform
+            Join thousands of Medical Lab Technology students preparing for DMLT, BMLT, MLT Govt Exam, and Lab Technician Govt Exam with our comprehensive MLT Mock Tests and Medical Lab PYQs platform
           </p>
           <Button
             onClick={() => navigate("/auth")}
@@ -489,7 +489,7 @@ export default function Landing() {
           className="glass-card border border-white/20 backdrop-blur-xl bg-white/10 p-6 sm:p-8 rounded-2xl"
         >
           <p className="text-white/90 text-base sm:text-lg leading-relaxed mb-4">
-            MLT Prep is India's trusted platform for Medical Lab Technician Exam preparation and Lab Technician Govt Exam success. Practice AI-generated Medical Lab MCQs, solve MLT PYQs and Medical Lab PYQs, and crack DMLT, BMLT, Medical Lab Course exams including AIIMS, ESIC, RRB, and State Govt Lab Technician exams with our comprehensive MLT Mock Tests.
+            MLT Prep is India's leading Medical Lab Technician Exam preparation platform for Lab Technician Govt Exam, MLT Govt Exam, and Paramedical Exam success. Master Medical Lab Technology with AI-powered Medical Lab MCQs, comprehensive MLT PYQs, and full-length MLT Mock Tests designed for DMLT Medical Lab Course, BMLT Medical Lab Course, AIIMS MLT Exam, ESIC Lab Technician Exam, RRB Paramedical Exam, and State Government Lab Technician exams.
           </p>
           <div className="flex flex-wrap gap-2 text-sm text-white/70">
             <span className="px-3 py-1 bg-white/10 rounded-full">MLT Exam</span>
@@ -512,7 +512,7 @@ export default function Landing() {
             <div>
               <h3 className="text-white font-semibold mb-3">MLT Prep</h3>
               <p className="text-white/60 text-sm">
-                Comprehensive Medical Lab Technology and Medical Lab Technician education platform for Lab Technician Govt Exam, MLT Govt Exam, and Paramedical Exam preparation.
+                India's premier Medical Lab Technician Exam preparation platform offering MLT Mock Tests, Medical Lab PYQs, and comprehensive resources for Lab Technician Govt Exam, MLT Govt Exam, DMLT, BMLT, and Paramedical Exam success.
               </p>
             </div>
             <div>
