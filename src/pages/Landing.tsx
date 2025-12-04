@@ -325,17 +325,17 @@ export default function Landing() {
           </h1>
           
           <p className="text-base sm:text-xl text-white/90 max-w-2xl mx-auto lg:mx-0 drop-shadow-lg mb-4">
-            Complete exam preparation for DMLT, BMLT, and Lab Technician Govt Exam with comprehensive MLT Mock Tests, Medical Lab PYQs, and AI-generated Medical Lab MCQs.
+            Complete Medical Lab Technician (MLT) Exam preparation for DMLT, BMLT, and Lab Technician Govt Exam with comprehensive MLT Mock Tests, Medical Lab PYQs, and AI-generated Medical Lab MCQs.
           </p>
           
           <div className="flex flex-wrap justify-center lg:justify-start gap-2 text-sm sm:text-base text-white/80 font-medium">
-            <span>Mock Tests</span>
+            <span>Medical Lab Mock Tests</span>
             <span>•</span>
-            <span>Previous Year Questions</span>
+            <span>Lab Technician PYQs</span>
             <span>•</span>
-            <span>AI Practice</span>
+            <span>Medical Lab MCQs</span>
             <span>•</span>
-            <span>Govt Exam Prep</span>
+            <span>Lab Technician Govt Exam Prep</span>
           </div>
           
             <div className="flex items-center justify-center lg:justify-start gap-3 sm:gap-4 pt-4">
