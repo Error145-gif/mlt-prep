@@ -321,15 +321,11 @@ export default function Landing() {
           </motion.div>
           
           <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold text-white tracking-tight drop-shadow-2xl">
-            Medical Lab Technician (MLT) Exam Preparation with
-            <br />
-            <span className="bg-gradient-to-r from-yellow-300 via-pink-300 to-purple-300 bg-clip-text text-transparent">
-              AI-Powered Mock Tests & PYQs
-            </span>
+            Medical Lab Technician (MLT) Exam Preparation with <span className="bg-gradient-to-r from-yellow-300 via-pink-300 to-purple-300 bg-clip-text text-transparent">AI-Powered Mock Tests & PYQs</span>
           </h1>
           
           <p className="text-base sm:text-xl text-white/90 max-w-2xl mx-auto lg:mx-0 drop-shadow-lg mb-4">
-            India's leading exam preparation platform for DMLT, BMLT, and government lab technician positions. Master your exams with comprehensive mock tests, previous year questions, and AI-powered practice.
+            Complete exam preparation for DMLT, BMLT, and Lab Technician Govt Exam with comprehensive MLT Mock Tests, Medical Lab PYQs, and AI-generated Medical Lab MCQs.
           </p>
           
           <div className="flex flex-wrap justify-center lg:justify-start gap-2 text-sm sm:text-base text-white/80 font-medium">
