@@ -518,24 +518,24 @@ export default function Landing() {
             <div>
               <h3 className="text-white font-semibold mb-3">Quick Links</h3>
               <div className="space-y-2">
-                <a href="/contact-us" className="block text-white/60 hover:text-white text-sm transition-colors">Contact Us</a>
-                <a href="/terms" className="block text-white/60 hover:text-white text-sm transition-colors">Terms & Conditions</a>
-                <a href="/privacy" className="block text-white/60 hover:text-white text-sm transition-colors">Privacy Policy</a>
+                <button onClick={() => navigate("/contact-us")} className="block text-white/60 hover:text-white text-sm transition-colors text-left w-full">Contact Us</button>
+                <button onClick={() => navigate("/terms")} className="block text-white/60 hover:text-white text-sm transition-colors text-left w-full">Terms & Conditions</button>
+                <button onClick={() => navigate("/privacy")} className="block text-white/60 hover:text-white text-sm transition-colors text-left w-full">Privacy Policy</button>
               </div>
             </div>
             <div>
               <h3 className="text-white font-semibold mb-3">Medical Lab Exam Preparation</h3>
               <div className="space-y-2">
-                <a href="/mlt-exam" className="block text-white/60 hover:text-white text-sm transition-colors">Medical Lab Technician Exam</a>
-                <a href="/lab-technician-exam" className="block text-white/60 hover:text-white text-sm transition-colors">Lab Technician Govt Exam</a>
-                <a href="/dmlt-exam" className="block text-white/60 hover:text-white text-sm transition-colors">DMLT Medical Lab Course</a>
+                <button onClick={() => navigate("/mlt-exam")} className="block text-white/60 hover:text-white text-sm transition-colors text-left w-full">Medical Lab Technician Exam</button>
+                <button onClick={() => navigate("/lab-technician-exam")} className="block text-white/60 hover:text-white text-sm transition-colors text-left w-full">Lab Technician Govt Exam</button>
+                <button onClick={() => navigate("/dmlt-exam")} className="block text-white/60 hover:text-white text-sm transition-colors text-left w-full">DMLT Medical Lab Course</button>
               </div>
             </div>
             <div>
               <h3 className="text-white font-semibold mb-3">Policies</h3>
               <div className="space-y-2">
-                <a href="/shipping-policy" className="block text-white/60 hover:text-white text-sm transition-colors">Shipping Policy</a>
-                <a href="/refund-policy" className="block text-white/60 hover:text-white text-sm transition-colors">Refund Policy</a>
+                <button onClick={() => navigate("/shipping-policy")} className="block text-white/60 hover:text-white text-sm transition-colors text-left w-full">Shipping Policy</button>
+                <button onClick={() => navigate("/refund-policy")} className="block text-white/60 hover:text-white text-sm transition-colors text-left w-full">Refund Policy</button>
               </div>
             </div>
           </div>
