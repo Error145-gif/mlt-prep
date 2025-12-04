@@ -139,15 +139,17 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen relative overflow-x-hidden">
-      {/* Lab Background Image - Lighter */}
+      {/* Lab Background Image - Lighter - Optimized for mobile */}
       <div 
         className="fixed inset-0 z-0 opacity-20"
         style={{
-          backgroundImage: 'url(https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=1920&q=80&auto=format&fit=crop)',
+          backgroundImage: isMobile 
+            ? 'url(https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=800&q=60&auto=format&fit=crop&fm=webp)' 
+            : 'url(https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=1920&q=75&auto=format&fit=crop&fm=webp)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
-          backgroundAttachment: 'fixed'
+          backgroundAttachment: isMobile ? 'scroll' : 'fixed'
         }}
       />
 
@@ -231,6 +233,8 @@ export default function Landing() {
               src="/logo.png"
               alt="MLT Logo"
               loading="eager"
+              width="64"
+              height="64"
               className="h-12 w-12 sm:h-16 sm:w-16 object-contain"
               onError={(e) => {
                 e.currentTarget.src = "/favicon.png";
