@@ -1,8 +1,16 @@
 {
-  "rewrites": [
+  "routes": [
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "src": "/favicon.ico",
+      "dest": "/assets/favicon.ico"
+    },
+    {
+      "src": "/favicon.png",
+      "dest": "/assets/favicon-16x16.png"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "dest": "/assets/apple-touch-icon.png"
     }
   ]
 }
