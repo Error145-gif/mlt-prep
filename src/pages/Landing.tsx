@@ -117,23 +117,23 @@ export default function Landing() {
   const features = [
     {
       icon: Brain,
-      title: "AI-Powered Questions",
-      description: "Practice with AI-generated MCQs tailored to MLT exam patterns",
+      title: "AI-Powered Medical Lab Questions",
+      description: "Practice with AI-generated Medical Lab MCQs tailored to MLT Exam and Lab Technician Exam patterns",
     },
     {
       icon: BookOpen,
-      title: "Previous Year Questions",
-      description: "Access comprehensive PYQ sets organized by exam and year",
+      title: "Medical Lab PYQs",
+      description: "Access comprehensive Medical Lab PYQs and MLT Previous Year Questions organized by exam and year",
     },
     {
       icon: Award,
-      title: "Mock Tests",
-      description: "Take full-length mock tests to simulate real exam conditions",
+      title: "MLT Mock Tests",
+      description: "Take full-length MLT Mock Tests and Lab Technician Govt Exam practice tests to simulate real exam conditions",
     },
     {
       icon: TrendingUp,
-      title: "Track Progress",
-      description: "Monitor your performance with detailed analytics and rankings",
+      title: "Track Medical Lab Tech Progress",
+      description: "Monitor your Medical Lab Technician Exam performance with detailed analytics and rankings",
     },
   ];
 
@@ -317,11 +317,11 @@ export default function Landing() {
             >
               <Sparkles className="h-3 w-3 sm:h-4 sm:w-4" />
             </motion.div>
-            <span>AI-Powered MLT Learning</span>
+            <span>AI-Powered Medical Lab Technology Learning</span>
           </motion.div>
           
           <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold text-white tracking-tight drop-shadow-2xl">
-            MLT Exam Preparation with
+            Medical Lab Technician Exam Preparation with
             <br />
             <span className="bg-gradient-to-r from-yellow-300 via-pink-300 to-purple-300 bg-clip-text text-transparent">
               AI-Powered Smart Learning
@@ -329,17 +329,17 @@ export default function Landing() {
           </h1>
           
           <p className="text-base sm:text-xl text-white/90 max-w-2xl mx-auto lg:mx-0 drop-shadow-lg mb-4">
-            DMLT, BMLT, Lab Technician Govt Exam Mock Tests and PYQs at one place.
+            DMLT, BMLT, Medical Lab Technician Govt Exam Mock Tests, MLT PYQs, and Medical Lab MCQs at one place.
           </p>
           
           <div className="flex flex-wrap justify-center lg:justify-start gap-2 text-sm sm:text-base text-white/80 font-medium">
             <span>MLT Mock Tests</span>
             <span>•</span>
-            <span>Lab Technician Exam Preparation</span>
+            <span>Medical Lab Technician Exam Preparation</span>
             <span>•</span>
-            <span>DMLT/BMLT PYQs</span>
+            <span>DMLT/BMLT Medical Lab Course PYQs</span>
             <span>•</span>
-            <span>AI-based MLT Questions</span>
+            <span>AI-based Medical Lab MCQs</span>
           </div>
           
             <div className="flex items-center justify-center lg:justify-start gap-3 sm:gap-4 pt-4">
@@ -412,8 +412,8 @@ export default function Landing() {
           viewport={{ once: true }}
           className="text-center mb-8 sm:mb-12"
         >
-          <h2 className="text-2xl sm:text-4xl font-bold text-white drop-shadow-lg mb-2 sm:mb-4">Everything You Need to Succeed</h2>
-          <p className="text-white/90 text-base sm:text-lg drop-shadow-md">Powerful features designed for effective learning</p>
+          <h2 className="text-2xl sm:text-4xl font-bold text-white drop-shadow-lg mb-2 sm:mb-4">Everything You Need to Succeed in Medical Lab Technician Exam</h2>
+          <p className="text-white/90 text-base sm:text-lg drop-shadow-md">Powerful features designed for effective Medical Lab Technology learning and Paramedical Exam preparation</p>
         </motion.div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
@@ -464,9 +464,9 @@ export default function Landing() {
           viewport={{ once: true }}
           className="glass-card border border-white/20 backdrop-blur-xl bg-gradient-to-br from-blue-500/20 to-purple-600/20 p-8 sm:p-12 rounded-3xl text-center"
         >
-          <h2 className="text-2xl sm:text-4xl font-bold text-white mb-3 sm:mb-4">Ready to Start Your Journey?</h2>
+          <h2 className="text-2xl sm:text-4xl font-bold text-white mb-3 sm:mb-4">Ready to Start Your Medical Lab Technician Journey?</h2>
           <p className="text-white/70 text-base sm:text-lg mb-6 sm:mb-8 max-w-2xl mx-auto">
-            Join thousands of students mastering Medical Lab Technology with our comprehensive platform
+            Join thousands of Medical Lab Tech students mastering DMLT, BMLT, and Lab Technician Govt Exam preparation with our comprehensive MLT Test platform
           </p>
           <Button
             onClick={() => navigate("/auth")}
@@ -489,16 +489,18 @@ export default function Landing() {
           className="glass-card border border-white/20 backdrop-blur-xl bg-white/10 p-6 sm:p-8 rounded-2xl"
         >
           <p className="text-white/90 text-base sm:text-lg leading-relaxed mb-4">
-            MLT Prep is India's trusted platform for Medical Lab Technician exam preparation. Practice AI-generated MLT MCQs, solve Previous Year Questions (PYQs), and crack DMLT, BMLT, AIIMS, ESIC, RRB, State Govt Lab Technician exams.
+            MLT Prep is India's trusted platform for Medical Lab Technician Exam preparation and Lab Technician Govt Exam success. Practice AI-generated Medical Lab MCQs, solve MLT PYQs and Medical Lab PYQs, and crack DMLT, BMLT, Medical Lab Course exams including AIIMS, ESIC, RRB, and State Govt Lab Technician exams with our comprehensive MLT Mock Tests.
           </p>
           <div className="flex flex-wrap gap-2 text-sm text-white/70">
             <span className="px-3 py-1 bg-white/10 rounded-full">MLT Exam</span>
-            <span className="px-3 py-1 bg-white/10 rounded-full">Lab Technician</span>
-            <span className="px-3 py-1 bg-white/10 rounded-full">DMLT Exam</span>
-            <span className="px-3 py-1 bg-white/10 rounded-full">BMLT Exam</span>
-            <span className="px-3 py-1 bg-white/10 rounded-full">MLT Govt Jobs</span>
-            <span className="px-3 py-1 bg-white/10 rounded-full">MLT PYQs</span>
-            <span className="px-3 py-1 bg-white/10 rounded-full">MLT MCQs</span>
+            <span className="px-3 py-1 bg-white/10 rounded-full">Medical Lab Technician</span>
+            <span className="px-3 py-1 bg-white/10 rounded-full">DMLT Medical Lab Course</span>
+            <span className="px-3 py-1 bg-white/10 rounded-full">BMLT Medical Lab Course</span>
+            <span className="px-3 py-1 bg-white/10 rounded-full">Lab Technician Govt Exam</span>
+            <span className="px-3 py-1 bg-white/10 rounded-full">Medical Lab PYQs</span>
+            <span className="px-3 py-1 bg-white/10 rounded-full">Medical Lab MCQs</span>
+            <span className="px-3 py-1 bg-white/10 rounded-full">MLT Mock Tests</span>
+            <span className="px-3 py-1 bg-white/10 rounded-full">Paramedical Exam</span>
           </div>
         </motion.div>
       </section>
@@ -510,7 +512,7 @@ export default function Landing() {
             <div>
               <h3 className="text-white font-semibold mb-3">MLT Prep</h3>
               <p className="text-white/60 text-sm">
-                Comprehensive Medical Lab Technology education platform for government and technical exam preparation.
+                Comprehensive Medical Lab Technology and Medical Lab Technician education platform for Lab Technician Govt Exam, MLT Govt Exam, and Paramedical Exam preparation.
               </p>
             </div>
             <div>
@@ -522,11 +524,11 @@ export default function Landing() {
               </div>
             </div>
             <div>
-              <h3 className="text-white font-semibold mb-3">Exam Preparation</h3>
+              <h3 className="text-white font-semibold mb-3">Medical Lab Exam Preparation</h3>
               <div className="space-y-2">
-                <a href="/mlt-exam" className="block text-white/60 hover:text-white text-sm transition-colors">MLT Exam</a>
-                <a href="/lab-technician-exam" className="block text-white/60 hover:text-white text-sm transition-colors">Lab Technician Exam</a>
-                <a href="/dmlt-exam" className="block text-white/60 hover:text-white text-sm transition-colors">DMLT Exam</a>
+                <a href="/mlt-exam" className="block text-white/60 hover:text-white text-sm transition-colors">Medical Lab Technician Exam</a>
+                <a href="/lab-technician-exam" className="block text-white/60 hover:text-white text-sm transition-colors">Lab Technician Govt Exam</a>
+                <a href="/dmlt-exam" className="block text-white/60 hover:text-white text-sm transition-colors">DMLT Medical Lab Course</a>
               </div>
             </div>
             <div>
