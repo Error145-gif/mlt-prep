@@ -41,46 +41,6 @@ export default function DMLTExam() {
       />
 
       <div className="relative z-10 max-w-4xl mx-auto space-y-8">
-        {/* Navigation Buttons */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex flex-wrap gap-3"
-        >
-          <Button
-            onClick={() => navigate("/")}
-            variant="outline"
-            className="glass-card border-white/20 backdrop-blur-xl bg-white/10 text-white hover:bg-white/20"
-          >
-            <Home className="h-4 w-4 mr-2" />
-            Home
-          </Button>
-          <Button
-            onClick={() => navigate("/auth")}
-            variant="outline"
-            className="glass-card border-white/20 backdrop-blur-xl bg-white/10 text-white hover:bg-white/20"
-          >
-            <BookOpen className="h-4 w-4 mr-2" />
-            Mock Tests
-          </Button>
-          <Button
-            onClick={() => navigate("/auth")}
-            variant="outline"
-            className="glass-card border-white/20 backdrop-blur-xl bg-white/10 text-white hover:bg-white/20"
-          >
-            <FileText className="h-4 w-4 mr-2" />
-            PYQ Sets
-          </Button>
-          <Button
-            onClick={() => navigate("/auth")}
-            variant="outline"
-            className="glass-card border-white/20 backdrop-blur-xl bg-white/10 text-white hover:bg-white/20"
-          >
-            <Brain className="h-4 w-4 mr-2" />
-            AI Questions
-          </Button>
-        </motion.div>
-
         {/* Main Content */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
