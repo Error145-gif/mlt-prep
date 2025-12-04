@@ -56,7 +56,7 @@ export default function LabTechnicianExam() {
             Home
           </Button>
           <Button
-            onClick={() => navigate("/tests/mock")}
+            onClick={() => navigate("/auth")}
             variant="outline"
             className="glass-card border-white/20 backdrop-blur-xl bg-white/10 text-white hover:bg-white/20"
           >
@@ -64,7 +64,7 @@ export default function LabTechnicianExam() {
             Mock Tests
           </Button>
           <Button
-            onClick={() => navigate("/tests/pyq")}
+            onClick={() => navigate("/auth")}
             variant="outline"
             className="glass-card border-white/20 backdrop-blur-xl bg-white/10 text-white hover:bg-white/20"
           >
@@ -72,7 +72,7 @@ export default function LabTechnicianExam() {
             PYQ Sets
           </Button>
           <Button
-            onClick={() => navigate("/tests/ai")}
+            onClick={() => navigate("/auth")}
             variant="outline"
             className="glass-card border-white/20 backdrop-blur-xl bg-white/10 text-white hover:bg-white/20"
           >

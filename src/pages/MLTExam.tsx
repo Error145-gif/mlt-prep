@@ -56,7 +56,7 @@ export default function MLTExam() {
             Home
           </Button>
           <Button
-            onClick={() => navigate("/mock-tests")}
+            onClick={() => navigate("/auth")}
             variant="outline"
             className="glass-card border-white/20 backdrop-blur-xl bg-white/10 text-white hover:bg-white/20"
           >
@@ -64,7 +64,7 @@ export default function MLTExam() {
             Mock Tests
           </Button>
           <Button
-            onClick={() => navigate("/pyq-sets")}
+            onClick={() => navigate("/auth")}
             variant="outline"
             className="glass-card border-white/20 backdrop-blur-xl bg-white/10 text-white hover:bg-white/20"
           >
