@@ -247,9 +247,11 @@ const schema = defineSchema(
       planName: v.optional(v.string()), // Plan name for the payment
       duration: v.optional(v.number()), // Duration in days
       paymentId: v.optional(v.string()), // Cashfree payment ID after success
+      errorMessage: v.optional(v.string()), // Error message for failed payments
     })
       .index("by_user", ["userId"])
-      .index("by_subscription", ["subscriptionId"]),
+      .index("by_subscription", ["subscriptionId"])
+      .index("by_status", ["status"]), // Add index for querying by status (e.g. failed)
 
     // User Progress & Analytics
     userProgress: defineTable({

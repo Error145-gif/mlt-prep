@@ -90,7 +90,39 @@ export const createSubscription = internalMutation({
       console.log("Payment record already exists for order:", args.orderId);
     }
 
-    console.log("=== Cashfree Subscription Creation Complete ===");
+    console.log("=== Cashfree Subscription Creation Complete === ");
     return subscriptionId;
+  },
+});
+
+export const logPaymentFailure = internalMutation({
+  args: {
+    userId: v.optional(v.string()),
+    orderId: v.string(),
+    amount: v.number(),
+    planName: v.string(),
+    error: v.string(),
+    paymentId: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    console.log("Logging payment failure:", args);
+    
+    // Try to find user if userId is provided
+    let userId = args.userId;
+    
+    // If we have a valid user ID format, use it, otherwise we might need to look it up or store as null if not found
+    // For now assuming userId passed is valid ID string if present
+    
+    await ctx.db.insert("payments", {
+      userId: userId as any, // Might be null if user not logged in or found
+      amount: args.amount,
+      currency: "INR",
+      status: "failed",
+      paymentMethod: "cashfree",
+      orderId: args.orderId,
+      planName: args.planName,
+      errorMessage: args.error,
+      paymentId: args.paymentId,
+    });
   },
 });

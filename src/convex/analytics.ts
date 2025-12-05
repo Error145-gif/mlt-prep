@@ -12,7 +12,7 @@ export const getDashboardStats = query({
     const allSubscriptions = await ctx.db.query("subscriptions").collect();
 
     // Fetch recent data
-    const recentPayments = await ctx.db.query("payments").order("desc").take(5);
+    const recentPayments = await ctx.db.query("payments").order("desc").take(10);
     const recentQuestions = await ctx.db.query("questions").order("desc").take(5);
     
     const recentContent = recentQuestions.map(q => ({
@@ -27,6 +27,46 @@ export const getDashboardStats = query({
     const approvedQuestions = allQuestions.filter((q) => q.status === "approved").length;
     const pendingQuestions = allQuestions.filter((q) => q.status === "pending" || !q.status).length; // Treat undefined as pending or handle accordingly
     
+    // Get recent payment errors
+    const paymentErrors = await ctx.db
+      .query("payments")
+      .withIndex("by_status", (q) => q.eq("status", "failed"))
+      .order("desc")
+      .take(10);
+
+    // Get recent unlocks (active subscriptions sorted by creation time)
+    // Since we don't have an index on creation time for subscriptions specifically combined with status,
+    // we'll filter the recent subscriptions.
+    const recentSubscriptions = await ctx.db
+      .query("subscriptions")
+      .withIndex("by_status", (q) => q.eq("status", "active"))
+      .order("desc")
+      .take(10);
+
+    // Enrich recent subscriptions with user data
+    const recentUnlocks = await Promise.all(
+      recentSubscriptions.map(async (sub) => {
+        const user = await ctx.db.get(sub.userId);
+        return {
+          ...sub,
+          userName: user?.name || "Unknown User",
+          userEmail: user?.email || "No Email",
+        };
+      })
+    );
+
+    // Enrich payment errors with user data
+    const enrichedPaymentErrors = await Promise.all(
+      paymentErrors.map(async (payment) => {
+        const user = payment.userId ? await ctx.db.get(payment.userId) : null;
+        return {
+          ...payment,
+          userName: user?.name || "Unknown User",
+          userEmail: user?.email || "No Email",
+        };
+      })
+    );
+
     const stats = {
       totalUsers: allUsers.length,
       activeUsers: allUsers.filter((u) => {
@@ -45,6 +85,8 @@ export const getDashboardStats = query({
         .reduce((acc, curr) => acc + (curr.amount || 0), 0),
       recentPayments,
       recentContent,
+      recentUnlocks,
+      paymentErrors: enrichedPaymentErrors,
 
       // Added fields for AdminDashboard compatibility
       activeSubscriptions: allSubscriptions.filter(s => s.status === "active").length,

@@ -211,10 +211,35 @@ export const verifyPayment = action({
         return { success: true, status: "PAID" };
       } else {
         console.warn(`Order status is ${orderData.order_status}, not PAID`);
+        
+        // Log failure
+        await ctx.runMutation(internal.cashfreeInternal.logPaymentFailure, {
+          userId: args.userId,
+          orderId: args.orderId,
+          amount: args.amount,
+          planName: args.planName,
+          error: `Payment status: ${orderData.order_status}`,
+          paymentId: (orderData as any).cf_payment_id,
+        });
+
         return { success: false, status: orderData.order_status };
       }
     } catch (error: any) {
       console.error("Payment verification error:", error);
+      
+      // Log exception
+      try {
+        await ctx.runMutation(internal.cashfreeInternal.logPaymentFailure, {
+          userId: args.userId,
+          orderId: args.orderId,
+          amount: args.amount,
+          planName: args.planName,
+          error: error.message || "Unknown verification error",
+        });
+      } catch (logError) {
+        console.error("Failed to log payment failure:", logError);
+      }
+
       throw new Error(`Payment verification failed: ${error.message}`);
     }
   },

@@ -4,7 +4,7 @@ import { api } from "@/convex/_generated/api";
 import { Navigate, useNavigate } from "react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, FileText, TrendingUp, Menu, X, Loader2, CreditCard, AlertCircle, LogOut } from "lucide-react";
+import { Users, FileText, TrendingUp, Menu, X, Loader2, CreditCard, AlertCircle, LogOut, CheckCircle, Lock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { useAuthActions } from "@convex-dev/auth/react";
@@ -252,6 +252,87 @@ export default function AdminDashboard() {
               </Card>
             </motion.div>
           ))}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Payment Errors Section */}
+          <Card className="glass-card border-red-500/30 backdrop-blur-xl bg-red-500/10">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <AlertCircle className="h-5 w-5 text-red-400" />
+                Payment Errors & Failures
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {!stats?.paymentErrors || stats.paymentErrors.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-8 text-white/60">
+                  <CheckCircle className="h-12 w-12 mb-2 text-green-400/50" />
+                  <p>No payment errors detected</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {stats.paymentErrors.map((error: any) => (
+                    <div
+                      key={error._id}
+                      className="flex items-start justify-between p-4 border border-red-500/20 rounded-lg bg-red-500/5"
+                    >
+                      <div>
+                        <p className="font-medium text-white">{error.userName}</p>
+                        <p className="text-sm text-white/70">{error.userEmail}</p>
+                        <p className="text-xs text-red-300 mt-1">Error: {error.errorMessage || "Unknown error"}</p>
+                        <p className="text-xs text-white/50 mt-1">Order: {error.orderId}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-white">₹{error.amount}</p>
+                        <p className="text-xs text-white/60">
+                          {new Date(error._creationTime).toLocaleDateString()}
+                        </p>
+                        <p className="text-xs text-white/60">
+                          {new Date(error._creationTime).toLocaleTimeString()}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Recent Unlocks / Active Subscriptions */}
+          <Card className="glass-card border-green-500/30 backdrop-blur-xl bg-green-500/10">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Lock className="h-5 w-5 text-green-400" />
+                Recent Unlocks (Active Subscriptions)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {!stats?.recentUnlocks || stats.recentUnlocks.length === 0 ? (
+                <p className="text-white/80 text-center py-8">No active subscriptions yet</p>
+              ) : (
+                <div className="space-y-4">
+                  {stats.recentUnlocks.map((sub: any) => (
+                    <div
+                      key={sub._id}
+                      className="flex items-center justify-between p-4 border border-green-500/20 rounded-lg bg-green-500/5"
+                    >
+                      <div>
+                        <p className="font-medium text-white">{sub.userName}</p>
+                        <p className="text-sm text-white/70">{sub.userEmail}</p>
+                        <p className="text-xs text-green-300 mt-1">{sub.planName}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-white">₹{sub.amount}</p>
+                        <p className="text-xs text-white/60">
+                          Expires: {new Date(sub.endDate).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
 
         {/* Recent Content */}
