@@ -125,6 +125,14 @@ createRoot(document.getElementById("root")!).render(
               />
               {/* Student Routes */}
               <Route
+                path="/tests"
+                element={
+                  <ProtectedRoute>
+                    <Navigate to="/student" replace />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path="/tests/mock"
                 element={
                   <ProtectedRoute>

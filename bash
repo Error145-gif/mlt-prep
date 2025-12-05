@@ -1,1 +1,1 @@
-npx convex run debug:checkData
+grep -r "fetch(" src/
