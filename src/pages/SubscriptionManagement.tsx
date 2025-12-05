@@ -164,24 +164,42 @@ export default function SubscriptionManagement() {
                     className="bg-slate-800 border-slate-700 text-white"
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="plan">Plan Name</Label>
+                  <Select 
+                    value={manualForm.planName} 
+                    onValueChange={(val) => {
+                      // Auto-fill amount and duration based on plan
+                      let amount = "99";
+                      let duration = "30";
+                      if (val === "Monthly Plan") {
+                        amount = "99";
+                        duration = "30";
+                      } else if (val === "4 Month Plan") {
+                        amount = "399";
+                        duration = "120";
+                      } else if (val === "Yearly Plan") {
+                        amount = "599";
+                        duration = "365";
+                      } else if (val === "7-Day Free Trial") {
+                        amount = "0";
+                        duration = "7";
+                      }
+                      setManualForm({...manualForm, planName: val, amount, duration});
+                    }}
+                  >
+                    <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                      <SelectValue placeholder="Select plan" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-slate-800 border-slate-700 text-white">
+                      <SelectItem value="Monthly Plan">Monthly Plan (₹99)</SelectItem>
+                      <SelectItem value="4 Month Plan">4 Month Plan (₹399)</SelectItem>
+                      <SelectItem value="Yearly Plan">Yearly Plan (₹599)</SelectItem>
+                      <SelectItem value="7-Day Free Trial">7-Day Free Trial</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="plan">Plan Name</Label>
-                    <Select 
-                      value={manualForm.planName} 
-                      onValueChange={(val) => setManualForm({...manualForm, planName: val})}
-                    >
-                      <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-                        <SelectValue placeholder="Select plan" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-slate-800 border-slate-700 text-white">
-                        <SelectItem value="Pro Plan">Pro Plan</SelectItem>
-                        <SelectItem value="Basic Plan">Basic Plan</SelectItem>
-                        <SelectItem value="Premium Plan">Premium Plan</SelectItem>
-                        <SelectItem value="7-Day Free Trial">7-Day Free Trial</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="amount">Amount (₹)</Label>
                     <Input 
@@ -192,24 +210,20 @@ export default function SubscriptionManagement() {
                       className="bg-slate-800 border-slate-700 text-white"
                     />
                   </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="duration">Duration (Days)</Label>
+                    <Input 
+                      id="duration" 
+                      type="number"
+                      value={manualForm.duration}
+                      onChange={(e) => setManualForm({...manualForm, duration: e.target.value})}
+                      placeholder="Enter days"
+                      className="bg-slate-800 border-slate-700 text-white"
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="duration">Duration (Days)</Label>
-                  <Select 
-                    value={manualForm.duration} 
-                    onValueChange={(val) => setManualForm({...manualForm, duration: val})}
-                  >
-                    <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-                      <SelectValue placeholder="Select duration" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-slate-700 text-white">
-                      <SelectItem value="7">7 Days</SelectItem>
-                      <SelectItem value="30">30 Days (1 Month)</SelectItem>
-                      <SelectItem value="90">90 Days (3 Months)</SelectItem>
-                      <SelectItem value="180">180 Days (6 Months)</SelectItem>
-                      <SelectItem value="365">365 Days (1 Year)</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="text-xs text-white/60 bg-blue-500/10 border border-blue-500/30 rounded p-2">
+                  💡 Tip: You can manually adjust days to extend existing subscriptions. For example, add 30 days to extend by 1 month.
                 </div>
               </div>
               <DialogFooter>
@@ -286,7 +300,7 @@ export default function SubscriptionManagement() {
                               setManualForm({
                                 email: sub.userEmail,
                                 planName: sub.planName,
-                                duration: "365",
+                                duration: Math.ceil((sub.endDate - Date.now()) / (24 * 60 * 60 * 1000)).toString(),
                                 amount: sub.amount.toString()
                               });
                               setIsManualOpen(true);

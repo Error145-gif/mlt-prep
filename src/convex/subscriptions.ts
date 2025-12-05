@@ -205,17 +205,29 @@ export const manualActivateSubscription = mutation({
       throw new Error(`User not found with email: ${email}`);
     }
 
-    const startDate = Date.now();
-    const endDate = startDate + args.duration * 24 * 60 * 60 * 1000;
-
     // Check for existing subscription (active or otherwise)
     const existingSub = await ctx.db
       .query("subscriptions")
       .withIndex("by_user", (q) => q.eq("userId", user._id))
       .first();
 
-    if (existingSub) {
-      // Update existing subscription to the new plan
+    let startDate = Date.now();
+    let endDate = startDate + args.duration * 24 * 60 * 60 * 1000;
+
+    if (existingSub && existingSub.status === "active") {
+      // If subscription is active, extend from current end date
+      startDate = existingSub.startDate;
+      endDate = existingSub.endDate + args.duration * 24 * 60 * 60 * 1000;
+      
+      // Update existing subscription by extending it
+      await ctx.db.patch(existingSub._id, {
+        planName: args.planName,
+        status: "active",
+        endDate,
+        amount: existingSub.amount + args.amount, // Add to total amount paid
+      });
+    } else if (existingSub) {
+      // If subscription exists but is not active, reactivate with new dates
       await ctx.db.patch(existingSub._id, {
         planName: args.planName,
         status: "active",
