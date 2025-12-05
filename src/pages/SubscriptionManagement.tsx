@@ -10,17 +10,58 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
 import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useMutation } from "convex/react";
+import { toast } from "sonner";
+import { Plus, Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function SubscriptionManagement() {
   const { isLoading, isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("all");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  
+  // Manual activation state
+  const [isManualOpen, setIsManualOpen] = useState(false);
+  const [manualForm, setManualForm] = useState({
+    email: "",
+    planName: "Pro Plan",
+    duration: "365",
+    amount: "999"
+  });
+  
+  const manualActivate = useMutation(api.subscriptions.manualActivateSubscription);
+
   const subscriptions = useQuery(
     api.subscriptions.getAllSubscriptions,
     activeTab === "all" ? {} : { status: activeTab }
   );
   const payments = useQuery(api.subscriptions.getPaymentHistory, {});
+
+  const handleManualActivate = async () => {
+    if (!manualForm.email) {
+      toast.error("Please enter a user email");
+      return;
+    }
+
+    try {
+      await manualActivate({
+        email: manualForm.email,
+        planName: manualForm.planName,
+        duration: parseInt(manualForm.duration),
+        amount: parseInt(manualForm.amount)
+      });
+      toast.success(`Subscription activated for ${manualForm.email}`);
+      setIsManualOpen(false);
+      setManualForm({ email: "", planName: "Pro Plan", duration: "365", amount: "999" });
+    } catch (error: any) {
+      toast.error(error.message || "Failed to activate subscription");
+    }
+  };
 
   if (isLoading) {
     return (
@@ -77,7 +118,7 @@ export default function SubscriptionManagement() {
         animate={{ opacity: 1, y: 0 }}
         className="max-w-7xl mx-auto space-y-6 relative z-10"
       >
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -87,6 +128,83 @@ export default function SubscriptionManagement() {
             </button>
             <h1 className="text-3xl font-bold tracking-tight text-white">Subscription & Payments</h1>
           </div>
+
+          <Dialog open={isManualOpen} onOpenChange={setIsManualOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-green-500 hover:bg-green-600 text-white border-none">
+                <Plus className="h-4 w-4 mr-2" />
+                Manual Activation
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="bg-slate-900 border-slate-700 text-white">
+              <DialogHeader>
+                <DialogTitle>Manually Activate Subscription</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">User Email</Label>
+                  <Input 
+                    id="email" 
+                    placeholder="user@example.com" 
+                    value={manualForm.email}
+                    onChange={(e) => setManualForm({...manualForm, email: e.target.value})}
+                    className="bg-slate-800 border-slate-700 text-white"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="plan">Plan Name</Label>
+                    <Select 
+                      value={manualForm.planName} 
+                      onValueChange={(val) => setManualForm({...manualForm, planName: val})}
+                    >
+                      <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                        <SelectValue placeholder="Select plan" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-slate-800 border-slate-700 text-white">
+                        <SelectItem value="Pro Plan">Pro Plan</SelectItem>
+                        <SelectItem value="Basic Plan">Basic Plan</SelectItem>
+                        <SelectItem value="Premium Plan">Premium Plan</SelectItem>
+                        <SelectItem value="7-Day Free Trial">7-Day Free Trial</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="amount">Amount (₹)</Label>
+                    <Input 
+                      id="amount" 
+                      type="number"
+                      value={manualForm.amount}
+                      onChange={(e) => setManualForm({...manualForm, amount: e.target.value})}
+                      className="bg-slate-800 border-slate-700 text-white"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="duration">Duration (Days)</Label>
+                  <Select 
+                    value={manualForm.duration} 
+                    onValueChange={(val) => setManualForm({...manualForm, duration: val})}
+                  >
+                    <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                      <SelectValue placeholder="Select duration" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-slate-800 border-slate-700 text-white">
+                      <SelectItem value="7">7 Days</SelectItem>
+                      <SelectItem value="30">30 Days (1 Month)</SelectItem>
+                      <SelectItem value="90">90 Days (3 Months)</SelectItem>
+                      <SelectItem value="180">180 Days (6 Months)</SelectItem>
+                      <SelectItem value="365">365 Days (1 Year)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsManualOpen(false)} className="border-slate-700 text-white hover:bg-slate-800 hover:text-white">Cancel</Button>
+                <Button onClick={handleManualActivate} className="bg-green-500 hover:bg-green-600 text-white">Activate</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
 
         {/* Mobile Navigation Menu */}
@@ -145,8 +263,24 @@ export default function SubscriptionManagement() {
                           {getStatusBadge(sub.status)}
                           <p className="text-sm text-white/60">₹{sub.amount}</p>
                           <p className="text-xs text-white/40">
-                            {new Date(sub.endDate).toLocaleDateString()}
+                            Expires: {new Date(sub.endDate).toLocaleDateString()}
                           </p>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-6 text-xs text-blue-300 hover:text-blue-200 hover:bg-blue-500/20"
+                            onClick={() => {
+                              setManualForm({
+                                email: sub.userEmail,
+                                planName: sub.planName,
+                                duration: "365",
+                                amount: sub.amount.toString()
+                              });
+                              setIsManualOpen(true);
+                            }}
+                          >
+                            Edit
+                          </Button>
                         </div>
                       </div>
                     ))}
