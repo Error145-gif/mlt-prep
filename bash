@@ -1,1 +1,1 @@
-grep -r "fetch(" src/
+vercel --prod
