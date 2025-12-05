@@ -259,6 +259,53 @@ export const manualActivateSubscription = mutation({
       errorMessage: "Manual activation by admin",
     });
 
-    return { success: true };
+    // Return detailed info for verification
+    return { 
+      success: true, 
+      userId: user._id,
+      email: user.email,
+      subscriptionActive: true,
+      endDate,
+      amount: args.amount
+    };
+  },
+});
+
+// Debug query to check user subscription status
+export const debugUserSubscription = query({
+  args: {
+    email: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const admin = await getCurrentUser(ctx);
+    if (!admin || admin.role !== "admin") {
+      throw new Error("Unauthorized");
+    }
+
+    const email = args.email.trim().toLowerCase();
+    const user = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", email))
+      .first();
+
+    if (!user) {
+      return { error: "User not found" };
+    }
+
+    const subscription = await ctx.db
+      .query("subscriptions")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .first();
+
+    return {
+      user: {
+        _id: user._id,
+        email: user.email,
+        name: user.name,
+      },
+      subscription: subscription || null,
+      currentTime: Date.now(),
+      isExpired: subscription ? subscription.endDate < Date.now() : null,
+    };
   },
 });

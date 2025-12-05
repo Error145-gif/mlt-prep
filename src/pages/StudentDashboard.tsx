@@ -161,7 +161,7 @@ export default function StudentDashboard() {
         )}
 
         {/* Subscription Status Card */}
-        {subscriptionAccess && subscriptionAccess.hasAccess && subscriptionAccess.subscription && (
+        {subscriptionAccess?.subscription && subscriptionAccess.subscription.status === "active" && (
           <SubscriptionStatus subscription={subscriptionAccess.subscription} />
         )}
 

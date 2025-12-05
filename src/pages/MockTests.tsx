@@ -17,6 +17,13 @@ export default function MockTests() {
   const navigate = useNavigate();
   const mockTests = useQuery(api.student.getMockTests, {});
   const canAccessMock = useQuery(api.student.canAccessTestType, { testType: "mock" });
+  
+  // Debug: Log access status
+  useEffect(() => {
+    if (canAccessMock) {
+      console.log("Mock Test Access Status:", canAccessMock);
+    }
+  }, [canAccessMock]);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {

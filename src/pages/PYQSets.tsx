@@ -18,6 +18,13 @@ export default function PYQSets() {
   const pyqSets = useQuery(api.student.getPYQSets);
   const canAccessPYQ = useQuery(api.student.canAccessTestType, { testType: "pyq" });
   const [selectedSet, setSelectedSet] = useState<any>(null);
+  
+  // Debug: Log access status
+  useEffect(() => {
+    if (canAccessPYQ) {
+      console.log("PYQ Test Access Status:", canAccessPYQ);
+    }
+  }, [canAccessPYQ]);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
