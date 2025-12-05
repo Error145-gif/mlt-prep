@@ -11,7 +11,7 @@ http.route({
   path: "/api/session",
   method: "GET",
   handler: httpAction(async (_ctx, _request) => {
-    return new Response(JSON.stringify({ status: "ok" }), {
+    return new Response(JSON.stringify({ ok: true }), {
       status: 200,
       headers: {
         "Content-Type": "application/json",
@@ -27,7 +27,7 @@ http.route({
   path: "/api/session",
   method: "POST",
   handler: httpAction(async (_ctx, _request) => {
-    return new Response(JSON.stringify({ status: "ok" }), {
+    return new Response(JSON.stringify({ ok: true }), {
       status: 200,
       headers: {
         "Content-Type": "application/json",
