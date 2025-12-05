@@ -38,9 +38,14 @@ export default function SubscriptionManagement() {
 
   const subscriptions = useQuery(
     api.subscriptions.getAllSubscriptions,
-    activeTab === "all" ? {} : { status: activeTab }
+    isAuthenticated && user?.role === "admin" 
+      ? (activeTab === "all" ? {} : { status: activeTab })
+      : "skip"
   );
-  const payments = useQuery(api.subscriptions.getPaymentHistory, {});
+  const payments = useQuery(
+    api.subscriptions.getPaymentHistory, 
+    isAuthenticated && user?.role === "admin" ? {} : "skip"
+  );
 
   const handleManualActivate = async () => {
     if (!manualForm.email) {
