@@ -1,24 +1,23 @@
 {
-  "routes": [
+  "rewrites": [
     {
-      "src": "/favicon.ico",
-      "dest": "/assets/favicon.ico"
+      "source": "/api/session",
+      "destination": "/api/session.js"
     },
     {
-      "src": "/favicon.png",
-      "dest": "/assets/favicon-16x16.png"
-    },
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
+  "headers": [
     {
-      "src": "/apple-touch-icon.png",
-      "dest": "/assets/apple-touch-icon.png"
-    },
-    {
-      "src": "/api/session",
-      "dest": "/api/session.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
+      ]
     }
   ]
 }
