@@ -49,17 +49,25 @@ export default function SubscriptionManagement() {
     }
 
     try {
-      await manualActivate({
+      const promise = manualActivate({
         email: manualForm.email,
         planName: manualForm.planName,
         duration: parseInt(manualForm.duration),
         amount: parseInt(manualForm.amount)
       });
-      toast.success(`Subscription activated for ${manualForm.email}`);
-      setIsManualOpen(false);
-      setManualForm({ email: "", planName: "Pro Plan", duration: "365", amount: "999" });
+
+      toast.promise(promise, {
+        loading: 'Activating subscription...',
+        success: () => {
+          setIsManualOpen(false);
+          setManualForm({ email: "", planName: "Pro Plan", duration: "365", amount: "999" });
+          return `Subscription activated for ${manualForm.email}`;
+        },
+        error: (err) => err.message || "Failed to activate subscription"
+      });
     } catch (error: any) {
-      toast.error(error.message || "Failed to activate subscription");
+      // Error handled by toast.promise
+      console.error(error);
     }
   };
 

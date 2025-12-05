@@ -185,13 +185,24 @@ export const manualActivateSubscription = mutation({
       throw new Error("Unauthorized");
     }
 
-    const user = await ctx.db
+    const email = args.email.trim();
+    
+    // Try exact match first
+    let user = await ctx.db
       .query("users")
-      .withIndex("email", (q) => q.eq("email", args.email))
+      .withIndex("email", (q) => q.eq("email", email))
       .first();
 
+    // If not found, try lowercase match as fallback
     if (!user) {
-      throw new Error("User not found with this email");
+       user = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", email.toLowerCase()))
+      .first();
+    }
+
+    if (!user) {
+      throw new Error(`User not found with email: ${email}`);
     }
 
     const startDate = Date.now();
