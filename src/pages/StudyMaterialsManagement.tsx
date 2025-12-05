@@ -43,7 +43,7 @@ export default function StudyMaterialsManagement() {
   }
 
   if (user?.role !== "admin") {
-    return <Navigate to="/dashboard" />;
+    return <Navigate to="/student" />;
   }
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
