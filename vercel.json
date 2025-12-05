@@ -11,6 +11,10 @@
     {
       "src": "/apple-touch-icon.png",
       "dest": "/assets/apple-touch-icon.png"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }
