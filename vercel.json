@@ -5,7 +5,19 @@
       "destination": "/api/session.json"
     },
     {
-      "source": "/((?!api).*)",
+      "source": "/favicon.ico",
+      "destination": "/assets/favicon.ico"
+    },
+    {
+      "source": "/icon.png",
+      "destination": "/favicon.png"
+    },
+    {
+      "source": "/logo.png",
+      "destination": "/logo.png"
+    },
+    {
+      "source": "/((?!api|assets|favicon|icon|logo).*)",
       "destination": "/index.html"
     }
   ],
