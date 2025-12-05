@@ -1,2 +1,4 @@
-// Check current state of questions in database
-npx convex run debug:checkData
+const existingSubscription = await ctx.db
+  .query("subscriptions")
+  .withIndex("by_user", (q) => q.eq("userId", user._id))
+  .first();

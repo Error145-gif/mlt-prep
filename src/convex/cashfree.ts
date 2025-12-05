@@ -143,7 +143,7 @@ export const createOrder = action({
 export const verifyPayment = action({
   args: {
     orderId: v.string(),
-    userId: v.string(),
+    userId: v.optional(v.string()),
     planName: v.string(),
     amount: v.number(),
     duration: v.number(),
@@ -166,6 +166,8 @@ export const verifyPayment = action({
         ? `https://api.cashfree.com/pg/orders/${args.orderId}`
         : `https://sandbox.cashfree.com/pg/orders/${args.orderId}`;
 
+      console.log(`Verifying payment for order: ${args.orderId}`);
+
       const response = await fetch(apiUrl, {
         method: "GET",
         headers: {
@@ -178,25 +180,37 @@ export const verifyPayment = action({
       if (!response.ok) {
         const errorData = await response.text();
         console.error("Cashfree verification failed:", errorData);
-        throw new Error("Failed to verify payment");
+        throw new Error("Failed to verify payment with gateway");
       }
 
       const orderData = await response.json();
       console.log("Cashfree order status:", orderData.order_status);
+      console.log("Order details:", JSON.stringify(orderData));
 
       if (orderData.order_status === "PAID") {
+        // Use userId from order details if available, otherwise fallback to args
+        const userId = orderData.customer_details?.customer_id || args.userId;
+        
+        if (!userId) {
+          throw new Error("User ID not found in order details");
+        }
+
+        console.log(`Activating subscription for user: ${userId}`);
+
         // Activate subscription using cashfreeInternal
         await ctx.runMutation(internal.cashfreeInternal.createSubscription, {
-          userId: args.userId,
+          userId: userId,
           planName: args.planName,
           amount: args.amount,
           duration: args.duration,
           paymentId: orderData.cf_payment_id || args.orderId,
           orderId: args.orderId,
         } as any);
+        
         console.log("Payment verified and subscription activated:", args.orderId);
         return { success: true, status: "PAID" };
       } else {
+        console.warn(`Order status is ${orderData.order_status}, not PAID`);
         return { success: false, status: orderData.order_status };
       }
     } catch (error: any) {

@@ -3,12 +3,13 @@ import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { CheckCircle, XCircle, Loader2, RefreshCw } from "lucide-react";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
+import { toast } from "sonner";
 
 export default function PaymentStatus() {
   const [searchParams] = useSearchParams();
@@ -20,40 +21,49 @@ export default function PaymentStatus() {
   const status = searchParams.get("status");
   const gateway = searchParams.get("gateway");
   const orderId = searchParams.get("order_id");
+  const planName = searchParams.get("planName");
   
   const verifyCashfreePayment = useAction(api.cashfree.verifyPayment);
 
-  useEffect(() => {
-    const verifyPayment = async () => {
-      if (gateway === "cashfree" && orderId && user?._id) {
-        try {
-          const result = await verifyCashfreePayment({
-            orderId: orderId,
-            userId: user._id,
-            planName: searchParams.get("planName") || "Subscription",
-            amount: parseFloat(searchParams.get("amount") || "0"),
-            duration: parseInt(searchParams.get("duration") || "30"),
-          });
-          
-          if (result.success) {
-            setPaymentStatus("success");
-          } else {
-            setPaymentStatus("failed");
-          }
-        } catch (error) {
-          console.error("Payment verification error:", error);
+  const verifyPayment = async () => {
+    if (gateway === "cashfree" && orderId) {
+      setPaymentStatus("verifying");
+      try {
+        console.log("Verifying payment for order:", orderId);
+        const result = await verifyCashfreePayment({
+          orderId: orderId,
+          userId: user?._id, // Optional now, backend will use order's customer_id
+          planName: planName || "Subscription",
+          amount: parseFloat(searchParams.get("amount") || "0"),
+          duration: parseInt(searchParams.get("duration") || "30"),
+        });
+        
+        if (result.success) {
+          setPaymentStatus("success");
+          toast.success("Payment verified successfully!");
+        } else {
           setPaymentStatus("failed");
+          toast.error(`Payment verification failed: ${result.status}`);
         }
-      } else if (status) {
-        setPaymentStatus(status === "success" ? "success" : "failed");
+      } catch (error) {
+        console.error("Payment verification error:", error);
+        setPaymentStatus("failed");
+        toast.error("Could not verify payment. Please try again.");
       }
-    };
-
-    verifyPayment();
-  }, [status, gateway, orderId, user]);
+    } else if (status) {
+      setPaymentStatus(status === "success" ? "success" : "failed");
+    }
+  };
 
   useEffect(() => {
-    if (paymentStatus !== "verifying") {
+    // Only auto-verify if we haven't verified yet
+    if (paymentStatus === "verifying") {
+      verifyPayment();
+    }
+  }, [status, gateway, orderId]); // Removed user dependency to allow verification without immediate auth sync
+
+  useEffect(() => {
+    if (paymentStatus === "success") {
       const timer = setTimeout(() => {
         navigate("/student");
       }, 5000);
@@ -174,36 +184,46 @@ export default function PaymentStatus() {
                 </>
               ) : isSuccess ? (
                 <>
-                  <p className="text-white/90">Your subscription has been activated successfully!</p>
-                  <p className="text-white/70 text-sm">Redirecting to dashboard in 5 seconds...</p>
+                  <p className="text-white/90 font-medium text-lg">Your subscription is now active!</p>
+                  <p className="text-white/80">Plan: {planName}</p>
+                  <p className="text-white/70 text-sm mt-4">Redirecting to dashboard in 5 seconds...</p>
                 </>
               ) : (
                 <>
-                  <p className="text-white/90">Your payment could not be processed.</p>
-                  <p className="text-white/70 text-sm">Please try again or contact support.</p>
+                  <p className="text-white/90">Your payment could not be verified.</p>
+                  <p className="text-white/70 text-sm">If money was deducted, it will be refunded automatically or contact support.</p>
                 </>
               )}
             </div>
 
-            {paymentStatus !== "verifying" && (
-              <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3">
+              {paymentStatus === "failed" && (
                 <Button
-                  onClick={() => navigate("/student")}
-                  className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                  onClick={verifyPayment}
+                  className="w-full bg-white/20 hover:bg-white/30 text-white"
                 >
-                  Go to Dashboard
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Check Status Again
                 </Button>
-                {!isSuccess && (
-                  <Button
-                    onClick={() => navigate("/subscription")}
-                    variant="outline"
-                    className="w-full border-white/20 text-white hover:bg-white/10"
-                  >
-                    Try Again
-                  </Button>
-                )}
-              </div>
-            )}
+              )}
+              
+              <Button
+                onClick={() => navigate("/student")}
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+              >
+                Go to Dashboard
+              </Button>
+              
+              {!isSuccess && paymentStatus !== "verifying" && (
+                <Button
+                  onClick={() => navigate("/subscription")}
+                  variant="outline"
+                  className="w-full border-white/20 text-white hover:bg-white/10"
+                >
+                  Try Again
+                </Button>
+              )}
+            </div>
           </CardContent>
         </Card>
       </motion.div>
