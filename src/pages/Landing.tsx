@@ -144,12 +144,13 @@ export default function Landing() {
         className="fixed inset-0 z-0 opacity-20"
         style={{
           backgroundImage: isMobile 
-            ? 'url(https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=800&q=60&auto=format&fit=crop&fm=webp)' 
-            : 'url(https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=1920&q=75&auto=format&fit=crop&fm=webp)',
+            ? 'url(https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=800&q=50&auto=format&fit=crop&fm=webp)' 
+            : 'url(https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=1920&q=60&auto=format&fit=crop&fm=webp)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
-          backgroundAttachment: isMobile ? 'scroll' : 'fixed'
+          backgroundAttachment: isMobile ? 'scroll' : 'fixed',
+          willChange: 'transform'
         }}
       />
 
@@ -233,6 +234,7 @@ export default function Landing() {
               src="/logo.png"
               alt="MLT Logo"
               loading="eager"
+              fetchpriority="high"
               width="64"
               height="64"
               className="h-12 w-12 sm:h-16 sm:w-16 object-contain"
@@ -388,7 +390,9 @@ export default function Landing() {
                 src="https://harmless-tapir-303.convex.cloud/api/storage/95eceda1-7789-4d29-bf58-640afb9f4499"
                 alt="MLT Mascot"
                 loading="lazy"
+                decoding="async"
                 className="w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 drop-shadow-2xl"
+                style={{ contentVisibility: 'auto' }}
                 animate={isMobile ? {} : {
                   scale: [1, 1.05, 1],
                 }}
