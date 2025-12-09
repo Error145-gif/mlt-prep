@@ -750,14 +750,16 @@ export default function TestStart() {
             questionNumber={currentQuestionIndex + 1}
             questionText={currentQuestion.question}
             options={currentQuestion.options}
-            selectedAnswer={answers[currentQuestion._id] || ""}
-            onAnswerChange={(answer) => handleAnswerChange(currentQuestion._id, answer)}
+            selectedAnswer={currentAnswer?.answer || ""}
+            onAnswerChange={handleAnswerChange}
             onSaveAndNext={handleSaveAndNext}
             onMarkForReview={handleMarkForReview}
             onClearResponse={handleClearResponse}
             isLastQuestion={currentQuestionIndex === questions.length - 1}
             imageUrl={currentQuestion.imageUrl}
             questionId={currentQuestion._id}
+            onSubmitTest={handleSubmitTest}
+            showSubmitButton={true}
           />
         </div>
 
@@ -771,21 +773,6 @@ export default function TestStart() {
           onClose={() => setShowQuestionPalette(false)}
         />
       </div>
-
-      {/* Mobile-Only Sticky Submit Button */}
-      <motion.div
-        initial={{ y: 100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.5 }}
-        className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-gray-900/95 to-gray-900/80 backdrop-blur-lg border-t border-white/20 md:hidden z-30"
-      >
-        <Button
-          onClick={handleSubmitTest}
-          className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-4 text-lg shadow-2xl"
-        >
-          ✅ Submit Test
-        </Button>
-      </motion.div>
 
       <AlertDialog open={showExitDialog} onOpenChange={setShowExitDialog}>
         <AlertDialogContent className="z-[100]">

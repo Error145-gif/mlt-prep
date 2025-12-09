@@ -37,6 +37,8 @@ interface QuestionCardProps {
   isLastQuestion: boolean;
   imageUrl?: string;
   questionId: string | Id<"questions">;
+  onSubmitTest?: () => void;
+  showSubmitButton?: boolean;
 }
 
 export function QuestionCard({
@@ -51,6 +53,8 @@ export function QuestionCard({
   isLastQuestion,
   imageUrl,
   questionId,
+  onSubmitTest,
+  showSubmitButton = false,
 }: QuestionCardProps) {
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
   const [reportIssueType, setReportIssueType] = useState("wrong_answer");
@@ -204,29 +208,41 @@ export function QuestionCard({
           </RadioGroup>
         </div>
 
-        <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 pt-6 border-t border-gray-200">
-          <Button
-            variant="outline"
-            onClick={onMarkForReview}
-            className="bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-300 shadow-sm hover:shadow-md transition-all font-medium px-6 w-full sm:w-auto"
-          >
-            Mark for Review & Next
-          </Button>
-          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+        <div className="flex flex-col gap-3 pt-6 border-t border-gray-200">
+          <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
             <Button
               variant="outline"
-              onClick={onClearResponse}
-              className="bg-red-50 hover:bg-red-100 text-red-700 border-red-300 shadow-sm hover:shadow-md transition-all font-medium px-6 w-full sm:w-auto"
+              onClick={onMarkForReview}
+              className="bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-300 shadow-sm hover:shadow-md transition-all font-medium px-6 w-full sm:w-auto"
             >
-              Clear Response
+              Mark for Review & Next
             </Button>
-            <Button
-              onClick={onSaveAndNext}
-              className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-md hover:shadow-lg transition-all font-medium px-8 w-full sm:w-auto"
-            >
-              {isLastQuestion ? "Save" : "Save & Next"}
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+              <Button
+                variant="outline"
+                onClick={onClearResponse}
+                className="bg-red-50 hover:bg-red-100 text-red-700 border-red-300 shadow-sm hover:shadow-md transition-all font-medium px-6 w-full sm:w-auto"
+              >
+                Clear Response
+              </Button>
+              <Button
+                onClick={onSaveAndNext}
+                className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-md hover:shadow-lg transition-all font-medium px-8 w-full sm:w-auto"
+              >
+                {isLastQuestion ? "Save" : "Save & Next"}
+              </Button>
+            </div>
           </div>
+          
+          {/* Mobile-only Submit Test button */}
+          {showSubmitButton && onSubmitTest && (
+            <Button
+              onClick={onSubmitTest}
+              className="md:hidden w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-4 text-lg shadow-lg"
+            >
+              ✅ Submit Test
+            </Button>
+          )}
         </div>
       </Card>
 
