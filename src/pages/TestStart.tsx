@@ -714,7 +714,7 @@ export default function TestStart() {
           </Button>
         </div>
 
-        <div className="flex-1 p-4 md:p-8 overflow-y-auto">
+        <div className="flex-1 p-4 md:p-8 overflow-y-auto pb-24 md:pb-8">
           {/* Test Controls */}
           <div className="mb-6 flex flex-wrap gap-3 justify-center md:justify-start">
             {testType === "mock" && (
@@ -771,6 +771,21 @@ export default function TestStart() {
           onClose={() => setShowQuestionPalette(false)}
         />
       </div>
+
+      {/* Mobile-Only Sticky Submit Button */}
+      <motion.div
+        initial={{ y: 100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.5 }}
+        className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-gray-900/95 to-gray-900/80 backdrop-blur-lg border-t border-white/20 md:hidden z-30"
+      >
+        <Button
+          onClick={handleSubmitTest}
+          className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-4 text-lg shadow-2xl"
+        >
+          ✅ Submit Test
+        </Button>
+      </motion.div>
 
       <AlertDialog open={showExitDialog} onOpenChange={setShowExitDialog}>
         <AlertDialogContent className="z-[100]">
