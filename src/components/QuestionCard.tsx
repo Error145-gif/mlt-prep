@@ -36,7 +36,7 @@ interface QuestionCardProps {
   onClearResponse: () => void;
   isLastQuestion: boolean;
   imageUrl?: string;
-  questionId?: string | Id<"questions">;
+  questionId: string | Id<"questions">;
 }
 
 export function QuestionCard({
@@ -58,18 +58,19 @@ export function QuestionCard({
   const reportQuestion = useMutation(api.questions.reportQuestion);
 
   const handleReportSubmit = async () => {
-    if (!questionId) {
-      toast.error("Cannot report this question (ID missing)");
-      return;
-    }
     if (!reportDescription.trim()) {
       toast.error("Please provide a description of the error");
       return;
     }
 
     try {
+      // Ensure questionId is properly typed as Id<"questions">
+      const qId = typeof questionId === "string" && questionId.startsWith("j") 
+        ? questionId as Id<"questions">
+        : questionId as Id<"questions">;
+      
       await reportQuestion({
-        questionId: questionId as Id<"questions">,
+        questionId: qId,
         issueType: reportIssueType,
         description: reportDescription,
       });

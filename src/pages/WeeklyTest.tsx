@@ -201,6 +201,7 @@ export default function WeeklyTest() {
             }}
             isLastQuestion={currentQuestionIndex === totalQuestions - 1}
             imageUrl={currentQuestion.imageUrl}
+            questionId={currentQuestion._id}
           />
 
           <div className="flex items-center justify-between mt-6">
