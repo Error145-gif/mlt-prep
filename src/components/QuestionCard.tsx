@@ -1,5 +1,5 @@
-// @ts-nocheck
 import { motion } from "framer-motion";
+import { Id } from "@/convex/_generated/dataModel";
 import { Card } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
@@ -36,7 +36,7 @@ interface QuestionCardProps {
   onClearResponse: () => void;
   isLastQuestion: boolean;
   imageUrl?: string;
-  questionId?: string;
+  questionId?: string | Id<"questions">;
 }
 
 export function QuestionCard({
@@ -68,10 +68,8 @@ export function QuestionCard({
     }
 
     try {
-      // @ts-ignore
       await reportQuestion({
-        // @ts-ignore
-        questionId: questionId,
+        questionId: questionId as Id<"questions">,
         issueType: reportIssueType,
         description: reportDescription,
       });
