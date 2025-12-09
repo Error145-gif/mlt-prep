@@ -26,11 +26,28 @@ import { Check, X, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 
 export default function ReportedErrors() {
-  const reports = useQuery(api.questions.getReportedQuestions) || [];
+  const reports = useQuery(api.questions.getReportedQuestions);
   const resolveReport = useMutation(api.questions.resolveReportedQuestion);
   const [selectedReport, setSelectedReport] = useState<any>(null);
   const [resolutionNote, setResolutionNote] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  // Show loading state
+  if (reports === undefined) {
+    return (
+      <div className="flex min-h-screen bg-gray-50">
+        <AdminSidebar />
+        <div className="flex-1 p-8 ml-64 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading reports...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const pendingReports = reports || [];
 
   const handleResolve = async (status: "resolved" | "dismissed") => {
     if (!selectedReport) return;
@@ -78,7 +95,7 @@ export default function ReportedErrors() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {reports.length === 0 ? (
+                {pendingReports.length === 0 ? (
                   <div className="text-center py-12 text-gray-500">
                     No pending reports found
                   </div>
@@ -95,7 +112,7 @@ export default function ReportedErrors() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {reports.map((report: any) => (
+                      {pendingReports.map((report: any) => (
                         <TableRow key={report._id}>
                           <TableCell>
                             {format(report._creationTime, "MMM d, yyyy")}
