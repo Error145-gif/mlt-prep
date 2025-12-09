@@ -58,6 +58,9 @@ export function QuestionCard({
   const reportQuestion = useMutation(api.questions.reportQuestion);
 
   const handleReportSubmit = async () => {
+    // Debug: Log the questionId to see what we're receiving
+    console.log("QuestionCard questionId:", questionId, "Type:", typeof questionId);
+    
     if (!reportDescription.trim()) {
       toast.error("Please provide a description of the error");
       return;
@@ -69,6 +72,8 @@ export function QuestionCard({
         ? questionId as Id<"questions">
         : questionId as Id<"questions">;
       
+      console.log("Submitting report with qId:", qId);
+      
       await reportQuestion({
         questionId: qId,
         issueType: reportIssueType,
@@ -78,9 +83,9 @@ export function QuestionCard({
       setIsReportDialogOpen(false);
       setReportDescription("");
       setReportIssueType("wrong_answer");
-    } catch (error) {
-      toast.error("Failed to submit report");
-      console.error(error);
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to submit report");
+      console.error("Report submission error:", error);
     }
   };
 
