@@ -365,6 +365,10 @@ createRoot(document.getElementById("root")!).render(
                 path="/admin/reported-errors"
                 element={<ReportedErrors />}
               />
+              <Route
+                path="/admin/reported-errors"
+                element={<ReportedErrors />}
+              />
 
               <Route path="*" element={<NotFound />} />
             </Routes>

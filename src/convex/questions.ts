@@ -1304,56 +1304,67 @@ export const reportQuestion = mutation({
     description: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Unauthorized");
+    const user = await getCurrentUser(ctx);
+    if (!user) {
+      throw new Error("Not authenticated");
+    }
 
-    await ctx.db.insert("reportedQuestions", {
+    const reportId = await ctx.db.insert("reportedQuestions", {
       questionId: args.questionId,
-      userId,
+      userId: user._id,
       issueType: args.issueType,
       description: args.description,
       status: "pending",
     });
+
+    return reportId;
   },
 });
 
-// Get reported questions (Admin only)
+// Get all reported questions (admin only)
 export const getReportedQuestions = query({
   args: {},
   handler: async (ctx) => {
     const user = await getCurrentUser(ctx);
-    if (!user || user.role !== "admin") return [];
+    if (!user || user.role !== "admin") {
+      throw new Error("Admin access required");
+    }
 
     const reports = await ctx.db
       .query("reportedQuestions")
       .withIndex("by_status", (q) => q.eq("status", "pending"))
+      .order("desc")
       .collect();
 
-    // Enrich with question and user details
-    return await Promise.all(
+    // Enrich with user and question details
+    const enrichedReports = await Promise.all(
       reports.map(async (report) => {
+        const reportUser = await ctx.db.get(report.userId);
         const question = await ctx.db.get(report.questionId);
-        const reportedUser = await ctx.db.get(report.userId);
         return {
           ...report,
-          question,
-          user: reportedUser,
+          user: reportUser,
+          question: question,
         };
       })
     );
+
+    return enrichedReports;
   },
 });
 
-// Resolve reported question (Admin only)
+// Resolve a reported question (admin only)
 export const resolveReportedQuestion = mutation({
   args: {
     reportId: v.id("reportedQuestions"),
-    status: v.union(v.literal("resolved"), v.literal("dismissed")),
+    status: v.string(),
     adminNote: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
-    if (!user || user.role !== "admin") throw new Error("Unauthorized");
+    if (!user || user.role !== "admin") {
+      throw new Error("Admin access required");
+    }
 
     await ctx.db.patch(args.reportId, {
       status: args.status,
@@ -1361,6 +1372,8 @@ export const resolveReportedQuestion = mutation({
       resolvedBy: user._id,
       resolvedAt: Date.now(),
     });
+
+    return args.reportId;
   },
 });
 

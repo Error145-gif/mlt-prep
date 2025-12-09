@@ -749,13 +749,15 @@ export default function TestStart() {
           <QuestionCard
             questionNumber={currentQuestionIndex + 1}
             questionText={currentQuestion.question}
-            options={currentQuestion.options || []}
-            selectedAnswer={currentAnswer?.answer}
-            onAnswerChange={handleAnswerChange}
+            options={currentQuestion.options}
+            selectedAnswer={answers[currentQuestion._id] || ""}
+            onAnswerChange={(answer) => handleAnswerChange(currentQuestion._id, answer)}
             onSaveAndNext={handleSaveAndNext}
             onMarkForReview={handleMarkForReview}
             onClearResponse={handleClearResponse}
             isLastQuestion={currentQuestionIndex === questions.length - 1}
+            imageUrl={currentQuestion.imageUrl}
+            questionId={currentQuestion._id}
           />
         </div>
 
