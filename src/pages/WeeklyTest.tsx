@@ -18,6 +18,7 @@ export default function WeeklyTest() {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [startTime] = useState(Date.now());
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState(60 * 60); // 60 minutes in seconds
 
   const currentTest = useQuery(api.weeklyTests.getCurrentWeeklyTest);
   const questions = useQuery(
@@ -29,6 +30,24 @@ export default function WeeklyTest() {
     currentTest?._id ? { weeklyTestId: currentTest._id } : "skip"
   );
   const submitAttempt = useMutation(api.weeklyTests.submitWeeklyTestAttempt);
+
+  // Timer countdown effect - runs for ALL users
+  useEffect(() => {
+    if (!questions || (questions as any).error || hasAttempted) return;
+
+    const timer = setInterval(() => {
+      setTimeRemaining((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          handleSubmit();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [questions, hasAttempted]);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -122,6 +141,13 @@ export default function WeeklyTest() {
   const currentQuestion = (questions as any)[currentQuestionIndex];
   const totalQuestions = (questions as any).length;
 
+  // Format timer display
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
   const handleAnswer = (answer: string) => {
     setAnswers({ ...answers, [currentQuestion._id]: answer });
   };
@@ -175,9 +201,19 @@ export default function WeeklyTest() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-white">{currentTest.title}</CardTitle>
-                <div className="flex items-center gap-2 text-white">
-                  <Clock className="h-5 w-5" />
-                  <span>Question {currentQuestionIndex + 1} / {totalQuestions}</span>
+                <div className="flex items-center gap-4">
+                  {/* Timer - visible to ALL users */}
+                  <div className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
+                    timeRemaining < 300 ? 'bg-red-500/30 border-2 border-red-500' : 'bg-white/10'
+                  }`}>
+                    <Clock className={`h-5 w-5 ${timeRemaining < 300 ? 'text-red-300' : 'text-white'}`} />
+                    <span className={`font-bold text-lg ${timeRemaining < 300 ? 'text-red-300' : 'text-white'}`}>
+                      {formatTime(timeRemaining)}
+                    </span>
+                  </div>
+                  <div className="text-white">
+                    Question {currentQuestionIndex + 1} / {totalQuestions}
+                  </div>
                 </div>
               </div>
             </CardHeader>
