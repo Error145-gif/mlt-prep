@@ -1,12 +1,13 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, XCircle } from "lucide-react";
+import { CheckCircle, XCircle, Lock } from "lucide-react";
 
 interface QuestionReviewProps {
   questions: any[];
+  isFreeTrialUser?: boolean;
 }
 
-export default function QuestionReview({ questions }: QuestionReviewProps) {
+export default function QuestionReview({ questions, isFreeTrialUser = false }: QuestionReviewProps) {
   return (
     <Card className="p-6 bg-white shadow-lg">
       <h3 className="text-2xl font-bold text-gray-900 mb-6">📝 Detailed Question Review</h3>
@@ -20,6 +21,9 @@ export default function QuestionReview({ questions }: QuestionReviewProps) {
             if (!text) return "";
             return text.trim().toLowerCase().replace(/\s+/g, ' ');
           };
+
+          // Determine if explanation should be locked (show first 2, lock rest for free trial)
+          const shouldLockExplanation = isFreeTrialUser && index >= 2;
           
           return (
             <div
@@ -105,10 +109,26 @@ export default function QuestionReview({ questions }: QuestionReviewProps) {
                 </div>
               )}
 
+              {/* Explanation - Locked for free trial after first 2 questions */}
               {q.explanation && (
-                <div className="mt-4 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-lg">
-                  <p className="text-sm font-bold text-blue-900 mb-2">💡 Explanation:</p>
-                  <p className="text-sm text-blue-800 leading-relaxed">{q.explanation}</p>
+                <div className="mt-4 relative">
+                  {!shouldLockExplanation ? (
+                    <div className="p-4 bg-blue-50 border-l-4 border-blue-500 rounded-lg">
+                      <p className="text-sm font-bold text-blue-900 mb-2">💡 Explanation:</p>
+                      <p className="text-sm text-blue-800 leading-relaxed">{q.explanation}</p>
+                    </div>
+                  ) : (
+                    <div className="p-4 bg-gray-100 border-l-4 border-gray-400 rounded-lg relative">
+                      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-lg flex flex-col items-center justify-center">
+                        <Lock className="h-8 w-8 text-white mb-2" />
+                        <p className="text-white font-semibold text-sm">🔒 Detailed explanations available with Full Access</p>
+                      </div>
+                      <div className="opacity-20">
+                        <p className="text-sm font-bold text-blue-900 mb-2">💡 Explanation:</p>
+                        <p className="text-sm text-blue-800">Hidden content...</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

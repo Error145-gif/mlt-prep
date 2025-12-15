@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Id } from "@/convex/_generated/dataModel";
+import { Lock } from "lucide-react";
 
 // New Components
 import TestResultHeader from "@/components/test-results/TestResultHeader";
@@ -37,6 +38,7 @@ export default function TestResults() {
   );
 
   const userProfile = useQuery(api.users.getUserProfile);
+  const subscriptionAccess = useQuery(api.student.checkSubscriptionAccess);
 
   // Enhanced loading state
   if (isLoading || !testResults) {
@@ -52,6 +54,10 @@ export default function TestResults() {
       </div>
     );
   }
+
+  // Determine user type - PAID has highest priority
+  const isPaidUser = subscriptionAccess?.hasAccess && subscriptionAccess?.isPaid;
+  const isFreeTrialUser = !isPaidUser && subscriptionAccess?.reason === "free_trial";
 
   const { session, result, questions, rank, totalCandidates } = testResults;
   const score = result?.score || 0;
@@ -140,7 +146,26 @@ export default function TestResults() {
         {/* Animated Accuracy Circle */}
         <AccuracyChart score={score} motivation={motivation} />
 
-        {/* Performance Stats Grid */}
+        {/* FREE TRIAL CONVERSION MESSAGE - Show after accuracy */}
+        {isFreeTrialUser && score < 70 && (
+          <Card className="p-6 bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-xl border-2 border-orange-600">
+            <div className="space-y-4">
+              <h3 className="text-2xl font-bold">⚠️ Your score is below the safe exam range.</h3>
+              <p className="text-lg">
+                Trial access shows level, not full preparation.<br />
+                Unlock complete practice, explanations, and AI guidance.
+              </p>
+              <Button 
+                onClick={() => navigate("/subscription-plans")}
+                className="bg-white text-red-600 hover:bg-white/90 font-semibold text-lg px-8 py-3"
+              >
+                Upgrade Now – Unlock Full Access
+              </Button>
+            </div>
+          </Card>
+        )}
+
+        {/* Performance Stats Grid - Always visible */}
         <StatsGrid 
           correctAnswers={correctAnswers} 
           incorrectAnswers={incorrectAnswers} 
@@ -151,13 +176,22 @@ export default function TestResults() {
           totalCandidates={totalCandidates} 
         />
 
-        {/* Rank & Speed Analytics */}
-        <RankAnalytics 
-          rank={rank} 
-          totalCandidates={totalCandidates} 
-          avgTimePerQuestion={avgTimePerQuestion} 
-          speedPercentile={speedPercentile} 
-        />
+        {/* Rank & Speed Analytics - Modified for free trial */}
+        <div className="relative">
+          <RankAnalytics 
+            rank={rank} 
+            totalCandidates={totalCandidates} 
+            avgTimePerQuestion={avgTimePerQuestion} 
+            speedPercentile={speedPercentile} 
+          />
+          {isFreeTrialUser && (
+            <div className="mt-4 p-4 bg-orange-100 border-2 border-orange-400 rounded-lg">
+              <p className="text-orange-900 font-semibold text-center">
+                🔒 Full leaderboard available with Premium
+              </p>
+            </div>
+          )}
+        </div>
 
         {/* Color Legend */}
         <Card className="p-4 bg-white shadow-md">
@@ -177,40 +211,63 @@ export default function TestResults() {
           </div>
         </Card>
 
-        {/* Detailed Question Review */}
-        <QuestionReview questions={questions} />
+        {/* Detailed Question Review - Pass user type to component */}
+        <QuestionReview questions={questions} isFreeTrialUser={isFreeTrialUser} />
 
-        {/* AI Suggestion Box */}
-        <Card className="p-6 bg-gradient-to-r from-purple-50 to-pink-50 border-purple-300 shadow-lg">
-          <h3 className="text-xl font-bold text-purple-900 mb-3">💡 AI Suggestion</h3>
-          <p className="text-gray-800 mb-2">
-            {incorrectAnswers > totalQuestions * 0.3 
-              ? "Focus on improving your weak areas based on your wrong answers."
-              : "Great job! Keep practicing to maintain consistency."}
-          </p>
-          <p className="text-gray-700">
-            {session.testType === "pyq" 
-              ? "Try taking more PYQ sets this week to build exam confidence."
-              : session.testType === "ai"
-              ? "AI questions help you think critically — keep solving them!"
-              : "Mock tests simulate real exams — practice regularly for best results."}
-          </p>
-        </Card>
+        {/* AI Suggestion Box - Locked for free trial */}
+        {!isFreeTrialUser ? (
+          <Card className="p-6 bg-gradient-to-r from-purple-50 to-pink-50 border-purple-300 shadow-lg">
+            <h3 className="text-xl font-bold text-purple-900 mb-3">💡 AI Suggestion</h3>
+            <p className="text-gray-800 mb-2">
+              {incorrectAnswers > totalQuestions * 0.3 
+                ? "Focus on improving your weak areas based on your wrong answers."
+                : "Great job! Keep practicing to maintain consistency."}
+            </p>
+            <p className="text-gray-700">
+              {session.testType === "pyq" 
+                ? "Try taking more PYQ sets this week to build exam confidence."
+                : session.testType === "ai"
+                ? "AI questions help you think critically — keep solving them!"
+                : "Mock tests simulate real exams — practice regularly for best results."}
+            </p>
+          </Card>
+        ) : (
+          <Card className="p-6 bg-gray-100 border-2 border-gray-400 shadow-lg relative">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center">
+              <Lock className="h-12 w-12 text-white mb-2" />
+              <p className="text-white font-semibold text-lg">🔒 AI-based performance analysis unlocked after upgrade</p>
+            </div>
+            <div className="opacity-20">
+              <h3 className="text-xl font-bold text-purple-900 mb-3">💡 AI Suggestion</h3>
+              <p className="text-gray-800">Hidden content...</p>
+            </div>
+          </Card>
+        )}
 
-        {/* Action Buttons */}
+        {/* Action Buttons - Modified for free trial */}
         <div className="flex flex-col sm:flex-row justify-center gap-4 pb-8">
-          <Button
-            onClick={() => {
-              const testType = session.testType;
-              if (testType === "mock") navigate("/tests/mock");
-              else if (testType === "pyq") navigate("/tests/pyq");
-              else if (testType === "ai") navigate("/tests/ai");
-              else navigate("/dashboard");
-            }}
-            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-10 py-4 text-lg font-semibold shadow-lg"
-          >
-            🔁 Retake Test
-          </Button>
+          {!isFreeTrialUser ? (
+            <Button
+              onClick={() => {
+                const testType = session.testType;
+                if (testType === "mock") navigate("/tests/mock");
+                else if (testType === "pyq") navigate("/tests/pyq");
+                else if (testType === "ai") navigate("/tests/ai");
+                else navigate("/dashboard");
+              }}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-10 py-4 text-lg font-semibold shadow-lg"
+            >
+              🔁 Retake Test
+            </Button>
+          ) : (
+            <Button
+              disabled
+              className="bg-gray-400 text-gray-700 px-10 py-4 text-lg font-semibold cursor-not-allowed relative"
+            >
+              <Lock className="h-5 w-5 mr-2" />
+              🔒 Retake test available with Full Access
+            </Button>
+          )}
           <Button
             onClick={() => navigate("/dashboard")}
             variant="outline"
