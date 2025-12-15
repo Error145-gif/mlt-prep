@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
@@ -6,6 +6,7 @@ import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
 import { Sparkles, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
  
 import DashboardHeader from "@/components/DashboardHeader";
 import PerformanceScore from "@/components/PerformanceScore";
@@ -34,7 +35,14 @@ export default function StudentDashboard() {
     }
   }, [isAuthenticated, isLoading, navigate]);
 
-  // Show loading only during initial auth check
+  // Memoize user type to avoid recalculation
+  const { isFreeTrialUser } = useMemo(() => {
+    const isPaid = subscriptionAccess?.hasAccess && subscriptionAccess?.isPaid;
+    const isTrial = !isPaid && subscriptionAccess?.reason === "free_trial";
+    return { isFreeTrialUser: isTrial };
+  }, [subscriptionAccess]);
+
+  // Show minimal loading only during initial auth check
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
@@ -47,10 +55,6 @@ export default function StudentDashboard() {
   if (!isAuthenticated) {
     return null;
   }
-
-  // Determine if user is PAID or FREE_TRIAL
-  const isPaidUser = subscriptionAccess?.hasAccess && subscriptionAccess?.isPaid;
-  const isFreeTrialUser = !isPaidUser && subscriptionAccess?.reason === "free_trial";
 
   // Safe stats with proper null checks
   const displayStats = stats ? {
@@ -69,25 +73,7 @@ export default function StudentDashboard() {
     totalStudyTime: stats.totalStudyTime ?? 0,
     avgQuestionsPerTest: stats.avgQuestionsPerTest ?? 0,
     aiInsights: stats.aiInsights ?? []
-  } : {
-    totalTests: 0,
-    totalQuestionsAttempted: 0,
-    avgTimePerQuestion: 0,
-    overallAccuracy: 0,
-    performanceScore: 0,
-    consistencyStreak: 0,
-    mockTests: { avgScore: 0 },
-    pyqTests: { avgScore: 0 },
-    aiTests: { avgScore: 0 },
-    strongestSubject: "N/A",
-    weakestSubject: "N/A",
-    improvementRate: 0,
-    totalStudyTime: 0,
-    avgQuestionsPerTest: 0,
-    aiInsights: []
-  };
-
-  const isLoadingData = !stats || !subscriptionAccess || !userProfile;
+  } : null;
 
   const profileCompletion = userProfile ? 
     (userProfile.name ? 25 : 0) + 
@@ -101,13 +87,13 @@ export default function StudentDashboard() {
     <div className="min-h-screen relative overflow-hidden">
       <StudentNav />
 
-      {/* Animated Background */}
+      {/* Animated Background - Always visible */}
       <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
         <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-400/30 rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-500/30 rounded-full blur-3xl" />
       </div>
 
-      {/* Lab Background Image */}
+      {/* Lab Background Image - Always visible */}
       <div 
         className="fixed inset-0 z-0 opacity-10"
         style={{
@@ -119,8 +105,8 @@ export default function StudentDashboard() {
         }}
       />
 
-      {/* FREE TRIAL BANNER - Only show for free trial users */}
-      {isFreeTrialUser && (
+      {/* FREE TRIAL BANNER - Show immediately if subscription data available */}
+      {subscriptionAccess && isFreeTrialUser && (
         <div className="fixed top-16 left-0 right-0 z-50 bg-gradient-to-r from-orange-500 to-red-500 text-white py-3 px-4 shadow-lg">
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
             <div className="flex items-center gap-2">
@@ -141,23 +127,31 @@ export default function StudentDashboard() {
       )}
 
       {/* Profile Completion Gate Overlay */}
-      {isProfileIncomplete && (
+      {userProfile && isProfileIncomplete && (
         <ProfileCompletionOverlay profileCompletion={profileCompletion} userProfile={userProfile} />
       )}
 
-      {/* Main Dashboard Content - Add top padding if free trial banner is showing */}
+      {/* Main Dashboard Content - Render immediately with progressive loading */}
       <div className={`relative z-10 max-w-7xl mx-auto space-y-6 transition-all duration-500 ${isFreeTrialUser ? 'pt-24' : ''} ${isProfileIncomplete ? 'blur-sm pointer-events-none' : ''}`}>
-        {isLoadingData && (
+        
+        {/* Header - Show immediately with skeleton if needed */}
+        {userProfile && subscriptionAccess ? (
+          <DashboardHeader userProfile={userProfile} subscriptionAccess={subscriptionAccess} />
+        ) : (
           <div className="glass-card border-white/30 backdrop-blur-xl bg-white/20 p-6 rounded-xl">
-            <div className="text-white text-center">Loading your dashboard data...</div>
+            <Skeleton className="h-8 w-64 bg-white/20" />
           </div>
         )}
-        {/* Header */}
-        <DashboardHeader userProfile={userProfile} subscriptionAccess={subscriptionAccess} />
 
-        {/* Performance Score - PROMINENT DISPLAY */}
+        {/* Performance Score - Show skeleton while loading */}
         <div className="relative">
-          <PerformanceScore performanceScore={displayStats.performanceScore || 0} consistencyStreak={displayStats.consistencyStreak || 0} />
+          {displayStats ? (
+            <PerformanceScore performanceScore={displayStats.performanceScore || 0} consistencyStreak={displayStats.consistencyStreak || 0} />
+          ) : (
+            <div className="glass-card border-white/30 backdrop-blur-xl bg-white/20 p-6 rounded-xl">
+              <Skeleton className="h-32 w-full bg-white/20" />
+            </div>
+          )}
           {isFreeTrialUser && (
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center">
               <Lock className="h-12 w-12 text-white mb-2" />
@@ -167,8 +161,8 @@ export default function StudentDashboard() {
           )}
         </div>
 
-        {/* AI Insights Card - LOCKED for free trial */}
-        {displayStats.aiInsights && displayStats.aiInsights.length > 0 && (
+        {/* AI Insights Card - Show skeleton while loading */}
+        {displayStats?.aiInsights && displayStats.aiInsights.length > 0 ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -204,20 +198,40 @@ export default function StudentDashboard() {
               </div>
             )}
           </motion.div>
-        )}
+        ) : !displayStats ? (
+          <div className="glass-card border-white/30 backdrop-blur-xl bg-white/20 p-6 rounded-xl">
+            <Skeleton className="h-24 w-full bg-white/20" />
+          </div>
+        ) : null}
 
         {/* Subscription Status Card */}
         {subscriptionAccess?.subscription && subscriptionAccess.subscription.status === "active" && (
           <SubscriptionStatus subscription={subscriptionAccess.subscription} />
         )}
 
-        {/* User Overview Grid - Show limited info for free trial */}
-        <DashboardStatsGrid stats={displayStats} isFreeTrialUser={isFreeTrialUser} />
+        {/* User Overview Grid - Show skeleton while loading */}
+        {displayStats ? (
+          <DashboardStatsGrid stats={displayStats} isFreeTrialUser={isFreeTrialUser} />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="glass-card border-white/30 backdrop-blur-xl bg-white/20 p-5 rounded-xl">
+                <Skeleton className="h-24 w-full bg-white/20" />
+              </div>
+            ))}
+          </div>
+        )}
 
-        {/* Performance Breakdown - LOCKED for free trial */}
+        {/* Performance Breakdown - Show skeleton while loading */}
         <div className="relative">
-          <PerformanceBreakdown stats={displayStats} />
-          {isFreeTrialUser && (
+          {displayStats ? (
+            <PerformanceBreakdown stats={displayStats} />
+          ) : (
+            <div className="glass-card border-white/30 backdrop-blur-xl bg-white/20 p-6 rounded-xl">
+              <Skeleton className="h-48 w-full bg-white/20" />
+            </div>
+          )}
+          {isFreeTrialUser && displayStats && (
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center">
               <Lock className="h-12 w-12 text-white mb-2" />
               <p className="text-white font-semibold text-lg">🔒 Available with Full Access</p>
@@ -225,10 +239,16 @@ export default function StudentDashboard() {
           )}
         </div>
 
-        {/* Engagement Metrics - LOCKED for free trial */}
+        {/* Engagement Metrics - Show skeleton while loading */}
         <div className="relative">
-          <EngagementMetrics stats={displayStats} />
-          {isFreeTrialUser && (
+          {displayStats ? (
+            <EngagementMetrics stats={displayStats} />
+          ) : (
+            <div className="glass-card border-white/30 backdrop-blur-xl bg-white/20 p-6 rounded-xl">
+              <Skeleton className="h-32 w-full bg-white/20" />
+            </div>
+          )}
+          {isFreeTrialUser && displayStats && (
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center">
               <Lock className="h-12 w-12 text-white mb-2" />
               <p className="text-white font-semibold text-lg">🔒 Available with Full Access</p>
@@ -236,7 +256,7 @@ export default function StudentDashboard() {
           )}
         </div>
 
-        {/* Weekly Free Test Section - Always visible with disclaimer for free trial */}
+        {/* Weekly Free Test Section - Always visible */}
         <div className="relative">
           <WeeklyTestCard />
           {isFreeTrialUser && (
@@ -248,10 +268,10 @@ export default function StudentDashboard() {
           )}
         </div>
 
-        {/* Quick Actions */}
+        {/* Quick Actions - Always visible */}
         <QuickActions />
 
-        {/* Test Results History with Pagination */}
+        {/* Test Results History - Always visible */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
