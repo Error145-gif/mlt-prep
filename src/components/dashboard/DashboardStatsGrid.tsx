@@ -1,70 +1,65 @@
 import { motion } from "framer-motion";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, Target, Clock, Award } from "lucide-react";
+import { Target, TrendingUp, TrendingDown } from "lucide-react";
 
 interface DashboardStatsGridProps {
   stats: {
+    strongestSubject: string;
+    weakestSubject: string;
+    overallAccuracy: number;
     totalTests: number;
     totalQuestionsAttempted: number;
     avgTimePerQuestion: number;
-    overallAccuracy: number;
   };
+  isFreeTrialUser?: boolean;
 }
 
-export default function DashboardStatsGrid({ stats }: DashboardStatsGridProps) {
+export default function DashboardStatsGrid({ stats, isFreeTrialUser = false }: DashboardStatsGridProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-        <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-white/90">Total Tests</CardTitle>
-            <FileText className="h-4 w-4 text-blue-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-white">{stats.totalTests || 0}</div>
-            <p className="text-xs text-white/80 mt-1">Tests completed</p>
-          </CardContent>
-        </Card>
-      </motion.div>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.4 }}
+      className="grid grid-cols-1 md:grid-cols-3 gap-4"
+    >
+      {/* Strongest Subject - Always visible */}
+      <div className="glass-card border border-green-500/50 backdrop-blur-xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 p-5 rounded-xl">
+        <div className="flex items-center gap-2 mb-2">
+          <TrendingUp className="h-5 w-5 text-green-400" />
+          <h3 className="text-white font-semibold">Strongest Subject</h3>
+        </div>
+        <p className="text-3xl font-bold text-white">{stats.strongestSubject}</p>
+        <p className="text-white/70 text-sm mt-1">Keep up the great work!</p>
+      </div>
 
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-        <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-white/90">Questions Attempted</CardTitle>
-            <Target className="h-4 w-4 text-purple-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-white">{stats.totalQuestionsAttempted || 0}</div>
-            <p className="text-xs text-white/80 mt-1">Total questions</p>
-          </CardContent>
-        </Card>
-      </motion.div>
+      {/* Needs Improvement - Always visible with disclaimer for free trial */}
+      <div className="glass-card border border-red-500/50 backdrop-blur-xl bg-gradient-to-br from-red-500/20 to-orange-500/20 p-5 rounded-xl">
+        <div className="flex items-center gap-2 mb-2">
+          <TrendingDown className="h-5 w-5 text-red-400" />
+          <h3 className="text-white font-semibold">Needs Improvement</h3>
+        </div>
+        <p className="text-3xl font-bold text-white">{stats.weakestSubject}</p>
+        {isFreeTrialUser ? (
+          <p className="text-orange-300 text-sm mt-1 font-medium">Fix weak areas with Premium access</p>
+        ) : (
+          <p className="text-white/70 text-sm mt-1">Focus here for better results</p>
+        )}
+      </div>
 
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-        <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-white/90">Avg Time/Question</CardTitle>
-            <Clock className="h-4 w-4 text-orange-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-white">{stats.avgTimePerQuestion || 0}s</div>
-            <p className="text-xs text-white/80 mt-1">Per question</p>
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-        <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-white/90">Overall Accuracy</CardTitle>
-            <Award className="h-4 w-4 text-green-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-white">{stats.overallAccuracy || 0}%</div>
-            <p className="text-xs text-white/80 mt-1">Correct answers</p>
-          </CardContent>
-        </Card>
-      </motion.div>
-    </div>
+      {/* Exam Readiness - Show score only for free trial */}
+      <div className="glass-card border border-blue-500/50 backdrop-blur-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 p-5 rounded-xl">
+        <div className="flex items-center gap-2 mb-2">
+          <Target className="h-5 w-5 text-blue-400" />
+          <h3 className="text-white font-semibold">Exam Readiness</h3>
+        </div>
+        <p className="text-3xl font-bold text-white">{stats.overallAccuracy}%</p>
+        {isFreeTrialUser ? (
+          <p className="text-red-300 text-sm mt-1 font-medium">❌ Not Exam Ready – Trial access cannot improve this score</p>
+        ) : (
+          <p className="text-white/70 text-sm mt-1">
+            {stats.overallAccuracy >= 80 ? "You're exam ready! 🎯" : "Keep practicing to improve"}
+          </p>
+        )}
+      </div>
+    </motion.div>
   );
 }

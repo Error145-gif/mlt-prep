@@ -4,7 +4,8 @@ import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
 import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Lock } from "lucide-react";
+import { Button } from "@/components/ui/button";
  
 import DashboardHeader from "@/components/DashboardHeader";
 import PerformanceScore from "@/components/PerformanceScore";
@@ -46,6 +47,10 @@ export default function StudentDashboard() {
   if (!isAuthenticated) {
     return null;
   }
+
+  // Determine if user is PAID or FREE_TRIAL
+  const isPaidUser = subscriptionAccess?.hasAccess && subscriptionAccess?.isPaid;
+  const isFreeTrialUser = !isPaidUser && subscriptionAccess?.reason === "free_trial";
 
   // Safe stats with proper null checks
   const displayStats = stats ? {
@@ -114,13 +119,34 @@ export default function StudentDashboard() {
         }}
       />
 
+      {/* FREE TRIAL BANNER - Only show for free trial users */}
+      {isFreeTrialUser && (
+        <div className="fixed top-16 left-0 right-0 z-50 bg-gradient-to-r from-orange-500 to-red-500 text-white py-3 px-4 shadow-lg">
+          <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <span className="text-xl">⚠️</span>
+              <div>
+                <p className="font-semibold">Trial Access: Limited</p>
+                <p className="text-sm text-white/90">You are using a 7-day trial with restricted features. Unlock full preparation with Premium.</p>
+              </div>
+            </div>
+            <Button 
+              onClick={() => navigate("/subscription-plans")}
+              className="bg-white text-red-600 hover:bg-white/90 font-semibold whitespace-nowrap"
+            >
+              Upgrade Now – Get Full Access
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Profile Completion Gate Overlay */}
       {isProfileIncomplete && (
         <ProfileCompletionOverlay profileCompletion={profileCompletion} userProfile={userProfile} />
       )}
 
-      {/* Main Dashboard Content - Blurred when profile incomplete, show loading skeleton if data not ready */}
-      <div className={`relative z-10 max-w-7xl mx-auto space-y-6 transition-all duration-500 ${isProfileIncomplete ? 'blur-sm pointer-events-none' : ''}`}>
+      {/* Main Dashboard Content - Add top padding if free trial banner is showing */}
+      <div className={`relative z-10 max-w-7xl mx-auto space-y-6 transition-all duration-500 ${isFreeTrialUser ? 'pt-24' : ''} ${isProfileIncomplete ? 'blur-sm pointer-events-none' : ''}`}>
         {isLoadingData && (
           <div className="glass-card border-white/30 backdrop-blur-xl bg-white/20 p-6 rounded-xl">
             <div className="text-white text-center">Loading your dashboard data...</div>
@@ -130,33 +156,53 @@ export default function StudentDashboard() {
         <DashboardHeader userProfile={userProfile} subscriptionAccess={subscriptionAccess} />
 
         {/* Performance Score - PROMINENT DISPLAY */}
-        <PerformanceScore performanceScore={displayStats.performanceScore || 0} consistencyStreak={displayStats.consistencyStreak || 0} />
+        <div className="relative">
+          <PerformanceScore performanceScore={displayStats.performanceScore || 0} consistencyStreak={displayStats.consistencyStreak || 0} />
+          {isFreeTrialUser && (
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center">
+              <Lock className="h-12 w-12 text-white mb-2" />
+              <p className="text-white font-semibold text-lg">🔒 Available with Full Access</p>
+              <p className="text-white/80 text-sm mt-2">❌ Not Exam Ready – Trial access cannot improve this score</p>
+            </div>
+          )}
+        </div>
 
-        {/* AI Insights Card */}
+        {/* AI Insights Card - LOCKED for free trial */}
         {displayStats.aiInsights && displayStats.aiInsights.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="glass-card border border-purple-500/50 backdrop-blur-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 p-5 rounded-xl"
+            className="glass-card border border-purple-500/50 backdrop-blur-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 p-5 rounded-xl relative"
           >
-            <div className="flex items-center gap-2 mb-3">
-              <Sparkles className="h-5 w-5 text-yellow-400" />
-              <h3 className="text-white font-semibold text-lg">Smart Insights</h3>
-            </div>
-            <div className="space-y-2">
-              {displayStats.aiInsights.map((insight: string, index: number) => (
-                <motion.p
-                  key={index}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.3 + index * 0.1 }}
-                  className="text-white/95 text-base leading-relaxed"
-                >
-                  {insight}
-                </motion.p>
-              ))}
-            </div>
+            {!isFreeTrialUser ? (
+              <>
+                <div className="flex items-center gap-2 mb-3">
+                  <Sparkles className="h-5 w-5 text-yellow-400" />
+                  <h3 className="text-white font-semibold text-lg">Smart Insights</h3>
+                </div>
+                <div className="space-y-2">
+                  {displayStats.aiInsights.map((insight: string, index: number) => (
+                    <motion.p
+                      key={index}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.3 + index * 0.1 }}
+                      className="text-white/95 text-base leading-relaxed"
+                    >
+                      {insight}
+                    </motion.p>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div className="relative min-h-[150px] flex items-center justify-center">
+                <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center">
+                  <Lock className="h-12 w-12 text-white mb-2" />
+                  <p className="text-white font-semibold text-lg">🔒 Available with Full Access</p>
+                </div>
+              </div>
+            )}
           </motion.div>
         )}
 
@@ -165,17 +211,42 @@ export default function StudentDashboard() {
           <SubscriptionStatus subscription={subscriptionAccess.subscription} />
         )}
 
-        {/* User Overview Grid */}
-        <DashboardStatsGrid stats={displayStats} />
+        {/* User Overview Grid - Show limited info for free trial */}
+        <DashboardStatsGrid stats={displayStats} isFreeTrialUser={isFreeTrialUser} />
 
-        {/* Performance Breakdown */}
-        <PerformanceBreakdown stats={displayStats} />
+        {/* Performance Breakdown - LOCKED for free trial */}
+        <div className="relative">
+          <PerformanceBreakdown stats={displayStats} />
+          {isFreeTrialUser && (
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center">
+              <Lock className="h-12 w-12 text-white mb-2" />
+              <p className="text-white font-semibold text-lg">🔒 Available with Full Access</p>
+            </div>
+          )}
+        </div>
 
-        {/* Engagement Metrics */}
-        <EngagementMetrics stats={displayStats} />
+        {/* Engagement Metrics - LOCKED for free trial */}
+        <div className="relative">
+          <EngagementMetrics stats={displayStats} />
+          {isFreeTrialUser && (
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center">
+              <Lock className="h-12 w-12 text-white mb-2" />
+              <p className="text-white font-semibold text-lg">🔒 Available with Full Access</p>
+            </div>
+          )}
+        </div>
 
-        {/* Weekly Free Test Section */}
-        <WeeklyTestCard />
+        {/* Weekly Free Test Section - Always visible with disclaimer for free trial */}
+        <div className="relative">
+          <WeeklyTestCard />
+          {isFreeTrialUser && (
+            <div className="mt-2 text-center">
+              <p className="text-white/90 text-sm bg-orange-500/20 backdrop-blur-sm rounded-lg py-2 px-4 border border-orange-500/30">
+                Free mock shows exam level. Full practice requires upgrade.
+              </p>
+            </div>
+          )}
+        </div>
 
         {/* Quick Actions */}
         <QuickActions />
