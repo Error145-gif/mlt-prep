@@ -1,7 +1,2 @@
-// In canAccessTestType:
-if (subscription && subscription.endDate >= Date.now()) {
-  const isPaid = subscription.amount > 0;
-  if (isPaid) {
-    return { canAccess: true, reason: "paid_subscription" };
-  }
-}
+const isPaidUser = subscriptionAccess?.hasAccess && subscriptionAccess?.isPaid;
+const isFreeTrialUser = !isPaidUser && subscriptionAccess?.reason === "free_trial";

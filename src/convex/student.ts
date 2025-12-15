@@ -952,7 +952,7 @@ export const checkSubscriptionAccess = query({
   handler: async (ctx) => {
     const user = await getCurrentUser(ctx);
     if (!user) {
-      return { hasAccess: false, reason: "not_authenticated" };
+      return { hasAccess: false, reason: "not_authenticated", isPaid: false };
     }
 
     // Check for active subscription
@@ -962,12 +962,25 @@ export const checkSubscriptionAccess = query({
       .filter((q) => q.eq(q.field("status"), "active"))
       .first();
 
+    console.log("=== Subscription Access Check ===");
+    console.log("User ID:", user._id);
+    console.log("User Email:", user.email);
+    console.log("Subscription found:", !!subscription);
+    if (subscription) {
+      console.log("Subscription amount:", subscription.amount);
+      console.log("Subscription end date:", new Date(subscription.endDate).toISOString());
+      console.log("Current time:", new Date(Date.now()).toISOString());
+      console.log("Is expired:", subscription.endDate < Date.now());
+    }
+
     if (subscription) {
       if (subscription.endDate < Date.now()) {
-        return { hasAccess: false, reason: "expired" };
+        console.log("Result: EXPIRED");
+        return { hasAccess: false, reason: "expired", isPaid: false };
       }
       // Distinguish between paid subscription and free trial
       const isPaid = subscription.amount > 0;
+      console.log("Result: ACTIVE SUBSCRIPTION, isPaid:", isPaid);
       return { hasAccess: true, subscription, isPaid };
     }
 
@@ -982,14 +995,17 @@ export const checkSubscriptionAccess = query({
     const pyqTestsCompleted = completedTests.filter((t) => t.testType === "pyq").length;
     const aiTestsCompleted = completedTests.filter((t) => t.testType === "ai").length;
 
+    console.log("Completed tests - Mock:", mockTestsCompleted, "PYQ:", pyqTestsCompleted, "AI:", aiTestsCompleted);
+
     // Allow one free test of each type
     const hasFreeMockAccess = mockTestsCompleted < 1;
     const hasFreePYQAccess = pyqTestsCompleted < 1;
     const hasFreeAIAccess = aiTestsCompleted < 1;
 
     if (hasFreeMockAccess || hasFreePYQAccess || hasFreeAIAccess) {
+      console.log("Result: FREE TRIAL");
       return {
-        hasAccess: false, // Changed to false - free trial is NOT full access
+        hasAccess: false, // Free trial is NOT full access
         reason: "free_trial",
         isPaid: false,
         freeTrialRemaining: {
@@ -1000,7 +1016,8 @@ export const checkSubscriptionAccess = query({
       };
     }
 
-    return { hasAccess: false, reason: "no_subscription" };
+    console.log("Result: NO SUBSCRIPTION");
+    return { hasAccess: false, reason: "no_subscription", isPaid: false };
   },
 });
 
