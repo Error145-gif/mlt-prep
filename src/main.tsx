@@ -178,6 +178,14 @@ createRoot(document.getElementById("root")!).render(
                   }
                 />
                 <Route
+                  path="/subscription-plans"
+                  element={
+                    <ProtectedRoute>
+                      <SubscriptionPlans />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
                   path="/profile"
                   element={
                     <ProtectedRoute>
