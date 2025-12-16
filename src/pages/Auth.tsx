@@ -9,7 +9,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/hooks/use-auth";
 import { ArrowRight, Loader2, Mail, Microscope, TestTube, Dna } from "lucide-react";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
 import { useMutation } from "convex/react";
@@ -32,26 +32,25 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
   const [isCreatingAccount, setIsCreatingAccount] = useState(false);
   const autoCompleteRegistration = useMutation(api.authHelpers.autoCompleteRegistration);
 
+  // Optimized redirect logic - only run once when auth state changes
   useEffect(() => {
-    if (!authLoading && isAuthenticated && user !== undefined && user !== null) {
-      // Auto-complete registration for new Gmail users
+    if (!authLoading && isAuthenticated && user) {
+      // Auto-complete registration for new Gmail users (non-blocking)
       if (isCreatingAccount && user.email?.endsWith("@gmail.com")) {
         autoCompleteRegistration().catch(console.error);
       }
       
-      if (user?.role === "admin") {
-        navigate("/admin", { replace: true });
-      } else {
-        const redirect = redirectAfterAuth || "/student";
-        navigate(redirect, { replace: true });
-      }
+      // Immediate redirect without waiting
+      const redirect = user?.role === "admin" ? "/admin" : (redirectAfterAuth || "/student");
+      navigate(redirect, { replace: true });
     }
-  }, [authLoading, isAuthenticated, user, navigate, redirectAfterAuth, isCreatingAccount, autoCompleteRegistration]);
+  }, [authLoading, isAuthenticated, user?.role, user?._id]); // Minimal dependencies
 
-  const handleEmailSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleEmailSubmit = useCallback(async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
     setError(null);
+    
     try {
       const formData = new FormData(event.currentTarget);
       const email = (formData.get("email") as string).toLowerCase().trim();
@@ -63,32 +62,34 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
         return;
       }
 
-      // Check if user exists (for login flow)
+      // Check if user exists (for login flow) - optimized
       if (!isCreatingAccount) {
-        // For existing users trying to login
-        const checkUser = await fetch(`${import.meta.env.VITE_CONVEX_URL}/api/query`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            path: "users:getUserByEmail",
-            args: { email },
-          }),
-        });
-        
-        if (checkUser.ok) {
-          const userData = await checkUser.json();
-          // Check if user exists in the response
-          if (!userData || !userData.value || !userData.value.exists) {
-            setError("No account found with this email. Please create an account first.");
-            setIsLoading(false);
-            return;
+        try {
+          const checkUser = await fetch(`${import.meta.env.VITE_CONVEX_URL}/api/query`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              path: "users:getUserByEmail",
+              args: { email },
+            }),
+          });
+          
+          if (checkUser.ok) {
+            const userData = await checkUser.json();
+            if (!userData?.value?.exists) {
+              setError("No account found with this email. Please create an account first.");
+              setIsLoading(false);
+              return;
+            }
           }
+        } catch (err) {
+          // Continue if check fails - don't block login
+          console.warn("User check failed:", err);
         }
       }
 
       await signIn("email-otp", formData);
       setStep({ email });
-      setIsLoading(false);
     } catch (error) {
       console.error("Email sign-in error:", error);
       setError(
@@ -96,52 +97,42 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
           ? error.message
           : "Failed to send verification code. Please try again.",
       );
+    } finally {
       setIsLoading(false);
     }
-  };
+  }, [isCreatingAccount, signIn]);
 
-  const handleOtpSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleOtpSubmit = useCallback(async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
     setError(null);
+    
     try {
       const formData = new FormData(event.currentTarget);
       await signIn("email-otp", formData);
-      
-      // If creating account, mark as registered
-      if (isCreatingAccount) {
-        // The completeRegistration will be called after successful auth redirect
-        // This is handled by the auth system automatically
-      }
+      // Redirect will be handled by useEffect
     } catch (error) {
       console.error("OTP verification error:", error);
       setError("The verification code you entered is incorrect.");
-      setIsLoading(false);
       setOtp("");
+    } finally {
+      setIsLoading(false);
     }
-  };
+  }, [signIn]);
 
-  // Guest login disabled for Gmail-only authentication
-  // const handleGuestLogin = async () => {
-  //   setIsLoading(true);
-  //   setError(null);
-  //   try {
-  //     await signIn("anonymous");
-  //   } catch (error) {
-  //     console.error("Guest login error:", error);
-  //     setError(`Failed to sign in as guest: ${error instanceof Error ? error.message : 'Unknown error'}`);
-  //     setIsLoading(false);
-  //   }
-  // };
+  // Show minimal loading screen
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#5B21B6] via-[#7C3AED] to-[#A855F7]">
+        <Loader2 className="h-8 w-8 animate-spin text-white" />
+      </div>
+    );
+  }
 
-  const handleCreateAccount = () => {
-    setIsCreatingAccount(true);
-  };
-
-  const handleBackToSignIn = () => {
-    setIsCreatingAccount(false);
-    setError(null);
-  };
+  // Don't render if already authenticated (prevents flash)
+  if (isAuthenticated) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-[#5B21B6] via-[#7C3AED] to-[#A855F7] flex items-center justify-center p-4">
@@ -154,37 +145,40 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
         }}
       />
       
-      {/* Animated Background Elements */}
+      {/* Animated Background Elements - Simplified for performance */}
       <div className="absolute inset-0 overflow-hidden">
-        {/* Floating DNA Strands */}
-        <motion.div
-          animate={isMobile ? {} : { y: [0, -20, 0], rotate: [0, 5, 0] }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-20 left-10 opacity-20"
-        >
-          <Dna className="w-24 h-24 text-white" />
-        </motion.div>
-        
-        <motion.div
-          animate={isMobile ? {} : { y: [0, 20, 0], rotate: [0, -5, 0] }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute bottom-32 right-16 opacity-20"
-        >
-          <Microscope className="w-32 h-32 text-white" />
-        </motion.div>
+        {!isMobile && (
+          <>
+            <motion.div
+              animate={{ y: [0, -20, 0], rotate: [0, 5, 0] }}
+              transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute top-20 left-10 opacity-20"
+            >
+              <Dna className="w-24 h-24 text-white" />
+            </motion.div>
+            
+            <motion.div
+              animate={{ y: [0, 20, 0], rotate: [0, -5, 0] }}
+              transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute bottom-32 right-16 opacity-20"
+            >
+              <Microscope className="w-32 h-32 text-white" />
+            </motion.div>
 
-        <motion.div
-          animate={isMobile ? {} : { y: [0, -15, 0], x: [0, 10, 0] }}
-          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-1/3 right-20 opacity-20"
-        >
-          <TestTube className="w-20 h-20 text-white" />
-        </motion.div>
+            <motion.div
+              animate={{ y: [0, -15, 0], x: [0, 10, 0] }}
+              transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute top-1/3 right-20 opacity-20"
+            >
+              <TestTube className="w-20 h-20 text-white" />
+            </motion.div>
+          </>
+        )}
 
         {/* Glowing Orbs */}
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-purple-400/30 rounded-full blur-xl md:blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-cyan-400/20 rounded-full blur-xl md:blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-violet-500/20 rounded-full blur-xl md:blur-3xl" />
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-purple-400/30 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-cyan-400/20 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-violet-500/20 rounded-full blur-3xl" />
       </div>
 
       {/* Home Button */}
@@ -204,7 +198,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.3 }}
         className="relative z-10 w-full max-w-md"
       >
         {/* Logo Section */}
@@ -212,7 +206,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.6 }}
+            transition={{ delay: 0.1, duration: 0.4 }}
             className="flex justify-center mb-4"
           >
             <img
@@ -226,7 +220,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.4, duration: 0.6 }}
+            transition={{ delay: 0.2, duration: 0.4 }}
             className="text-white text-sm font-light tracking-wide"
             style={{ fontFamily: "'Inter', sans-serif" }}
           >
@@ -238,7 +232,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.6 }}
+          transition={{ delay: 0.2, duration: 0.4 }}
           className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl p-8 shadow-2xl"
           style={{
             boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37), 0 0 60px rgba(124, 58, 237, 0.3)',
@@ -328,7 +322,10 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
 
                 <Button
                   type="button"
-                  onClick={isCreatingAccount ? handleBackToSignIn : handleCreateAccount}
+                  onClick={() => {
+                    setIsCreatingAccount(!isCreatingAccount);
+                    setError(null);
+                  }}
                   variant="outline"
                   className="w-full h-12 bg-transparent border-2 border-white/30 hover:bg-white/10 hover:border-white/50 text-white rounded-2xl text-base font-semibold transition-all"
                   style={{ fontFamily: "'Poppins', sans-serif" }}
@@ -435,7 +432,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.6, duration: 0.6 }}
+          transition={{ delay: 0.4, duration: 0.4 }}
           className="text-center text-white text-xs mt-6"
           style={{ fontFamily: "'Inter', sans-serif" }}
         >
@@ -448,7 +445,11 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
 
 export default function AuthPage(props: AuthProps) {
   return (
-    <Suspense>
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#5B21B6] via-[#7C3AED] to-[#A855F7]">
+        <Loader2 className="h-8 w-8 animate-spin text-white" />
+      </div>
+    }>
       <Auth {...props} />
     </Suspense>
   );

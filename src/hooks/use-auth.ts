@@ -1,26 +1,25 @@
 import { api } from "@/convex/_generated/api";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useConvexAuth, useQuery } from "convex/react";
-
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 
 export function useAuth() {
   const { isLoading: isAuthLoading, isAuthenticated } = useConvexAuth();
-  // Skip querying currentUser until we know the auth state to prevent runtime crashes
+  
+  // Only query user data if authenticated, skip otherwise
   const user = useQuery(
     api.users.currentUser,
     isAuthenticated ? {} : "skip"
   ) as any;
+  
   const { signIn, signOut } = useAuthActions();
 
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Consider loading complete once auth state resolves (don't wait on `user`)
-  useEffect(() => {
-    if (!isAuthLoading) {
-      setIsLoading(false);
-    }
-  }, [isAuthLoading]);
+  // Memoize the loading state to prevent unnecessary re-renders
+  const isLoading = useMemo(() => {
+    // Auth is loading if convex auth is loading
+    // OR if authenticated but user data hasn't loaded yet
+    return isAuthLoading || (isAuthenticated && user === undefined);
+  }, [isAuthLoading, isAuthenticated, user]);
 
   return {
     isLoading,

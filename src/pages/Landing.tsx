@@ -71,37 +71,25 @@ export default function Landing() {
   const { isAuthenticated, user } = useAuth();
   const makeAdmin = useMutation(api.users.makeCurrentUserAdmin);
 
-  // Auto-activate admin for authorized emails
+  // Auto-activate admin for authorized emails - optimized to run only once
   useEffect(() => {
     const autoActivateAdmin = async () => {
-      if (isAuthenticated && user) {
-        console.log("Current user:", user.email, "Role:", user.role);
-        
+      if (isAuthenticated && user && user.role !== "admin") {
         const allowedEmails = ["ak6722909@gmail.com", "historyindia145@gmail.com"];
         if (allowedEmails.includes(user.email?.toLowerCase().trim() || "")) {
-          if (user.role !== "admin") {
-            console.log("Attempting to activate admin for:", user.email);
-            try {
-              await makeAdmin({});
-              toast.success("Admin access activated automatically!");
-              console.log("Admin activation successful!");
-              // Force a small delay to ensure the role update propagates
-              setTimeout(() => {
-                window.location.reload();
-              }, 1000);
-            } catch (error: any) {
-              console.error("Auto-activation failed:", error);
-              toast.error("Failed to activate admin access. Please try manually.");
-            }
-          } else {
-            console.log("User is already admin");
+          try {
+            await makeAdmin({});
+            toast.success("Admin access activated!");
+            setTimeout(() => window.location.reload(), 800);
+          } catch (error: any) {
+            console.error("Auto-activation failed:", error);
           }
         }
       }
     };
 
     autoActivateAdmin();
-  }, [isAuthenticated, user, makeAdmin]);
+  }, [isAuthenticated, user?._id, user?.role]); // Only run when these specific values change
 
   const handleMakeAdmin = async () => {
     try {
