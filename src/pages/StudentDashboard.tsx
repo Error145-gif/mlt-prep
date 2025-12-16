@@ -211,7 +211,13 @@ export default function StudentDashboard() {
         )}
 
         {/* User Overview Grid - Show skeleton while loading */}
-        {displayStats ? (
+        {isFreeTrialUser ? (
+          <div className="glass-card border-white/30 backdrop-blur-xl bg-white/20 p-6 rounded-xl min-h-[200px] flex flex-col items-center justify-center">
+            <Lock className="h-12 w-12 text-white mb-2" />
+            <p className="text-white font-semibold text-lg">🔒 Performance Overview</p>
+            <p className="text-white/80 text-sm mt-2">Available with Full Access</p>
+          </div>
+        ) : displayStats ? (
           <DashboardStatsGrid stats={displayStats} isFreeTrialUser={isFreeTrialUser} />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
