@@ -432,3 +432,51 @@ export const publishWeeklyLeaderboard = internalMutation({
     });
   },
 });
+
+// Admin: Manually release leaderboard
+export const releaseLeaderboard = mutation({
+  args: { weeklyTestId: v.id("weeklyTests") },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user || user.role !== "admin") {
+      throw new Error("Unauthorized");
+    }
+
+    const test = await ctx.db.get(args.weeklyTestId);
+    if (!test) {
+      throw new Error("Test not found");
+    }
+
+    if (test.leaderboardPublishedAt) {
+      throw new Error("Leaderboard already published");
+    }
+
+    // Get all attempts
+    const attempts = await ctx.db
+      .query("weeklyTestAttempts")
+      .withIndex("by_weekly_test", (q) => q.eq("weeklyTestId", args.weeklyTestId))
+      .collect();
+
+    // Sort by score (desc), then by avgTimePerQuestion (asc)
+    const sorted = attempts.sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      return a.avgTimePerQuestion - b.avgTimePerQuestion;
+    });
+
+    // Update ranks for all attempts
+    for (let i = 0; i < sorted.length; i++) {
+      const attempt = sorted[i];
+      await ctx.db.patch(attempt._id, {
+        rank: i + 1,
+      });
+    }
+
+    // Mark leaderboard as published
+    await ctx.db.patch(args.weeklyTestId, {
+      leaderboardPublishedAt: Date.now(),
+      status: "completed",
+    });
+
+    return { success: true, totalAttempts: sorted.length };
+  },
+});

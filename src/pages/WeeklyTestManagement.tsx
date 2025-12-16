@@ -25,6 +25,7 @@ export default function WeeklyTestManagement() {
   const createTest = useMutation(api.weeklyTests.createWeeklyTest);
   const updateStatus = useMutation(api.weeklyTests.updateWeeklyTestStatus);
   const deleteTest = useMutation(api.weeklyTests.deleteWeeklyTest);
+  const releaseLeaderboard = useMutation(api.weeklyTests.releaseLeaderboard);
 
   if (isLoading) {
     return (
@@ -64,6 +65,15 @@ export default function WeeklyTestManagement() {
       setScheduledDate("");
     } catch (error: any) {
       toast.error(error.message || "Failed to create test");
+    }
+  };
+
+  const handleReleaseLeaderboard = async (weeklyTestId: any) => {
+    try {
+      const result = await releaseLeaderboard({ weeklyTestId });
+      toast.success(`Leaderboard released! ${result.totalAttempts} participants ranked.`);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to release leaderboard");
     }
   };
 
@@ -187,13 +197,22 @@ export default function WeeklyTestManagement() {
                     </p>
                   )}
                 </div>
-                <div className="flex gap-4">
+                <div className="flex flex-wrap gap-2">
                   {test.status === "scheduled" && (
                     <Button
                       onClick={() => updateStatus({ weeklyTestId: test._id, status: "active" })}
                       className="bg-gradient-to-r from-green-500 to-emerald-600"
                     >
                       Activate Test
+                    </Button>
+                  )}
+                  {test.status === "active" && !test.leaderboardPublishedAt && test.totalAttempts > 0 && (
+                    <Button
+                      onClick={() => handleReleaseLeaderboard(test._id)}
+                      className="bg-gradient-to-r from-blue-500 to-cyan-600"
+                    >
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Release Leaderboard
                     </Button>
                   )}
                   <Button
