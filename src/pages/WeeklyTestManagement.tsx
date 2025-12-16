@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Users, Trophy, Lock, Unlock, Calendar, Plus } from "lucide-react";
+import { Loader2, Users, Trophy, Lock, Unlock, Calendar, Plus, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import AdminSidebar from "@/components/AdminSidebar";
@@ -40,6 +40,7 @@ export default function WeeklyTestManagement() {
 
   const releaseLeaderboard = useMutation(api.weeklyTests.releaseLeaderboard);
   const createWeeklyTest = useMutation(api.weeklyTests.createWeeklyTest);
+  const deleteWeeklyTest = useMutation(api.weeklyTests.deleteWeeklyTest);
 
   if (isLoading) {
     return (
@@ -66,6 +67,22 @@ export default function WeeklyTestManagement() {
       toast.success("Leaderboard released to paid users!");
     } catch (error: any) {
       toast.error(error.message || "Failed to release leaderboard");
+    }
+  };
+
+  const handleDeleteTest = async (testId: string) => {
+    if (!confirm("Are you sure you want to delete this test? This action cannot be undone.")) {
+      return;
+    }
+
+    try {
+      await deleteWeeklyTest({ weeklyTestId: testId as any });
+      toast.success("Test deleted successfully!");
+      if (selectedTestId === testId) {
+        setSelectedTestId(null);
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Failed to delete test");
     }
   };
 
@@ -177,26 +194,41 @@ export default function WeeklyTestManagement() {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {allTests?.map((test: any) => (
-                <button
+                <div
                   key={test._id}
-                  onClick={() => setSelectedTestId(test._id)}
-                  className={`p-4 rounded-lg border-2 transition-all text-left ${
+                  className={`p-4 rounded-lg border-2 transition-all relative ${
                     selectedTestId === test._id
                       ? "border-yellow-400 bg-yellow-500/20"
-                      : "border-white/20 bg-white/5 hover:bg-white/10"
+                      : "border-white/20 bg-white/5"
                   }`}
                 >
-                  <div className="flex items-center gap-2 mb-2">
-                    <Calendar className="h-4 w-4 text-white" />
-                    <span className="text-white font-semibold">{test.title}</span>
-                  </div>
-                  <p className="text-white/70 text-sm">
-                    Status: <span className="font-medium">{test.status}</span>
-                  </p>
-                  <p className="text-white/70 text-sm">
-                    Attempts: <span className="font-medium">{test.totalAttempts || 0}</span>
-                  </p>
-                </button>
+                  <button
+                    onClick={() => setSelectedTestId(test._id)}
+                    className="w-full text-left"
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <Calendar className="h-4 w-4 text-white" />
+                      <span className="text-white font-semibold">{test.title}</span>
+                    </div>
+                    <p className="text-white/70 text-sm">
+                      Status: <span className="font-medium">{test.status}</span>
+                    </p>
+                    <p className="text-white/70 text-sm">
+                      Attempts: <span className="font-medium">{test.totalAttempts || 0}</span>
+                    </p>
+                  </button>
+                  <Button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteTest(test._id);
+                    }}
+                    variant="ghost"
+                    size="sm"
+                    className="absolute top-2 right-2 text-red-400 hover:text-red-300 hover:bg-red-500/20"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
               ))}
             </div>
           </CardContent>
