@@ -480,3 +480,107 @@ export const releaseLeaderboard = mutation({
     return { success: true, totalAttempts: sorted.length };
   },
 });
+
+// ADMIN: Get weekly test statistics
+export const getWeeklyTestStats = query({
+  args: { weeklyTestId: v.id("weeklyTests") },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user || user.role !== "admin") {
+      throw new Error("Unauthorized");
+    }
+
+    const test = await ctx.db.get(args.weeklyTestId);
+    if (!test) {
+      throw new Error("Test not found");
+    }
+
+    // Get all attempts
+    const attempts = await ctx.db
+      .query("weeklyTestAttempts")
+      .withIndex("by_weekly_test", (q) => q.eq("weeklyTestId", args.weeklyTestId))
+      .collect();
+
+    // Get user details and categorize
+    let paidUserCount = 0;
+    let freeUserCount = 0;
+
+    for (const attempt of attempts) {
+      const attemptUser = await ctx.db.get(attempt.userId);
+      if (!attemptUser) continue;
+
+      // Check if user has active subscription
+      const subscription = await ctx.db
+        .query("subscriptions")
+        .withIndex("by_user", (q) => q.eq("userId", attemptUser._id))
+        .filter((q) => q.eq(q.field("status"), "active"))
+        .first();
+
+      if (subscription && subscription.endDate > Date.now()) {
+        paidUserCount++;
+      } else {
+        freeUserCount++;
+      }
+    }
+
+    return {
+      totalAttempts: attempts.length,
+      paidUserCount,
+      freeUserCount,
+      isLeaderboardReleased: !!test.leaderboardPublishedAt,
+      test,
+    };
+  },
+});
+
+// ADMIN: Get full leaderboard (always visible to admin)
+export const getAdminWeeklyLeaderboard = query({
+  args: { weeklyTestId: v.id("weeklyTests") },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user || user.role !== "admin") {
+      throw new Error("Unauthorized");
+    }
+
+    const test = await ctx.db.get(args.weeklyTestId);
+    if (!test) return [];
+
+    // Get all attempts
+    const attempts = await ctx.db
+      .query("weeklyTestAttempts")
+      .withIndex("by_weekly_test", (q) => q.eq("weeklyTestId", args.weeklyTestId))
+      .collect();
+
+    // Sort by score (desc), then by avgTimePerQuestion (asc)
+    const sorted = attempts.sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      return a.avgTimePerQuestion - b.avgTimePerQuestion;
+    });
+
+    // Enrich with user details and subscription status
+    const enriched = await Promise.all(
+      sorted.map(async (attempt, index) => {
+        const attemptUser = await ctx.db.get(attempt.userId);
+        
+        // Check subscription status
+        const subscription = await ctx.db
+          .query("subscriptions")
+          .withIndex("by_user", (q) => q.eq("userId", attempt.userId))
+          .filter((q) => q.eq(q.field("status"), "active"))
+          .first();
+
+        const isPaid = subscription && subscription.endDate > Date.now();
+
+        return {
+          ...attempt,
+          userName: attemptUser?.name || "Anonymous",
+          userEmail: attemptUser?.email,
+          rank: index + 1,
+          userType: isPaid ? "PAID" : "FREE",
+        };
+      })
+    );
+
+    return enriched;
+  },
+});

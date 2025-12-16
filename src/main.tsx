@@ -128,6 +128,111 @@ createRoot(document.getElementById("root")!).render(
                     </AdminRoute>
                   }
                 />
+                <Route
+                  path="/admin/users"
+                  element={
+                    <AdminRoute>
+                      <UserAnalytics />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/admin/questions"
+                  element={
+                    <AdminRoute>
+                      <QuestionManagement />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/admin/weekly-tests"
+                  element={
+                    <AdminRoute>
+                      <WeeklyTestManagement />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/admin/content"
+                  element={
+                    <AdminRoute>
+                      <ContentManagement />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/admin/study-materials"
+                  element={
+                    <AdminRoute>
+                      <StudyMaterialsManagement />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/admin/analytics"
+                  element={
+                    <AdminRoute>
+                      <UserAnalytics />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/admin/subscriptions"
+                  element={
+                    <AdminRoute>
+                      <SubscriptionManagement />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/admin/coupons"
+                  element={
+                    <AdminRoute>
+                      <CouponManagement />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/admin/notifications"
+                  element={
+                    <AdminRoute>
+                      <NotificationCenter />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/admin/feedback"
+                  element={
+                    <AdminRoute>
+                      <AdminFeedback />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/admin/image-questions"
+                  element={
+                    <AdminRoute>
+                      <ImageQuestionManagement />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/admin/reported-errors"
+                  element={
+                    <AdminRoute>
+                      <ReportedErrors />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/admin/sections"
+                  element={
+                    <AdminRoute>
+                      <SectionsManagement />
+                    </AdminRoute>
+                  }
+                />
+
                 {/* Student Routes */}
                 <Route
                   path="/tests"
@@ -288,96 +393,6 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="/mlt-exam" element={<MLTExam />} />
                 <Route path="/lab-technician-exam" element={<LabTechnicianExam />} />
                 <Route path="/dmlt-exam" element={<DMLTExam />} />
-
-                {/* Admin Routes */}
-                <Route
-                  path="/admin/weekly-tests"
-                  element={
-                    <AdminRoute>
-                      <WeeklyTestManagement />
-                    </AdminRoute>
-                  }
-                />
-                <Route
-                  path="/admin/content"
-                  element={
-                    <AdminRoute>
-                      <ContentManagement />
-                    </AdminRoute>
-                  }
-                />
-                <Route
-                  path="/admin/questions"
-                  element={
-                    <AdminRoute>
-                      <QuestionManagement />
-                    </AdminRoute>
-                  }
-                />
-                <Route
-                  path="/admin/analytics"
-                  element={
-                    <AdminRoute>
-                      <UserAnalytics />
-                    </AdminRoute>
-                  }
-                />
-                <Route
-                  path="/admin/subscriptions"
-                  element={
-                    <AdminRoute>
-                      <SubscriptionManagement />
-                    </AdminRoute>
-                  }
-                />
-                <Route
-                  path="/admin/feedback"
-                  element={
-                    <AdminRoute>
-                      <AdminFeedback />
-                    </AdminRoute>
-                  }
-                />
-                <Route
-                  path="/admin/notifications"
-                  element={
-                    <AdminRoute>
-                      <NotificationCenter />
-                    </AdminRoute>
-                  }
-                />
-                <Route
-                  path="/admin/coupons"
-                  element={
-                    <AdminRoute>
-                      <CouponManagement />
-                    </AdminRoute>
-                  }
-                />
-                <Route
-                  path="/admin/study-materials"
-                  element={
-                    <AdminRoute>
-                      <StudyMaterialsManagement />
-                    </AdminRoute>
-                  }
-                />
-                <Route
-                  path="/admin/sections"
-                  element={
-                    <AdminRoute>
-                      <SectionsManagement />
-                    </AdminRoute>
-                  }
-                />
-                <Route
-                  path="/admin/image-questions"
-                  element={<ImageQuestionManagement />}
-                />
-                <Route
-                  path="/admin/reported-errors"
-                  element={<ReportedErrors />}
-                />
 
                 <Route path="*" element={<NotFound />} />
               </Routes>

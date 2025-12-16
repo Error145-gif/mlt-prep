@@ -1,30 +1,36 @@
-import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { Navigate, useNavigate } from "react-router";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/use-auth";
+import { Navigate } from "react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { Loader2, Plus, Trash2, CheckCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Loader2, Users, Trophy, Lock, Unlock, Calendar } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
+import AdminSidebar from "@/components/AdminSidebar";
+import { useState } from "react";
 
 export default function WeeklyTestManagement() {
   const { isLoading, isAuthenticated, user } = useAuth();
-  const navigate = useNavigate();
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [scheduledDate, setScheduledDate] = useState("");
+  const [selectedTestId, setSelectedTestId] = useState<string | null>(null);
 
-  const weeklyTests = useQuery(api.weeklyTests.getAllWeeklyTests);
-  const createTest = useMutation(api.weeklyTests.createWeeklyTest);
-  const updateStatus = useMutation(api.weeklyTests.updateWeeklyTestStatus);
-  const deleteTest = useMutation(api.weeklyTests.deleteWeeklyTest);
+  const allTests = useQuery(
+    api.weeklyTests.getAllWeeklyTests,
+    isAuthenticated && user?.role === "admin" ? {} : "skip"
+  );
+
+  const currentTest = useQuery(api.weeklyTests.getCurrentWeeklyTest);
+
+  const testStats = useQuery(
+    api.weeklyTests.getWeeklyTestStats,
+    selectedTestId ? { weeklyTestId: selectedTestId as any } : "skip"
+  );
+
+  const adminLeaderboard = useQuery(
+    api.weeklyTests.getAdminWeeklyLeaderboard,
+    selectedTestId ? { weeklyTestId: selectedTestId as any } : "skip"
+  );
+
   const releaseLeaderboard = useMutation(api.weeklyTests.releaseLeaderboard);
 
   if (isLoading) {
@@ -39,195 +45,232 @@ export default function WeeklyTestManagement() {
     return <Navigate to="/auth" />;
   }
 
-  const handleCreateTest = async () => {
-    if (!title || !scheduledDate) {
-      toast.error("Please fill in all required fields");
-      return;
-    }
+  // Auto-select current test
+  if (!selectedTestId && currentTest) {
+    setSelectedTestId(currentTest._id);
+  }
 
-    const date = new Date(scheduledDate);
-    if (date.getDay() !== 0) {
-      toast.error("Weekly tests must be scheduled on Sunday");
-      return;
-    }
+  const handleReleaseLeaderboard = async () => {
+    if (!selectedTestId) return;
 
     try {
-      await createTest({
-        title,
-        description: description || undefined,
-        scheduledDate: date.getTime(),
-      });
-      
-      toast.success("Weekly test created successfully with 100 random questions!");
-      setShowCreateForm(false);
-      setTitle("");
-      setDescription("");
-      setScheduledDate("");
-    } catch (error: any) {
-      toast.error(error.message || "Failed to create test");
-    }
-  };
-
-  const handleReleaseLeaderboard = async (weeklyTestId: any) => {
-    try {
-      const result = await releaseLeaderboard({ weeklyTestId });
-      toast.success(`Leaderboard released! ${result.totalAttempts} participants ranked.`);
+      await releaseLeaderboard({ weeklyTestId: selectedTestId as any });
+      toast.success("Leaderboard released to paid users!");
     } catch (error: any) {
       toast.error(error.message || "Failed to release leaderboard");
     }
   };
 
   return (
-    <div className="min-h-screen p-6 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-white">Weekly Test Management</h1>
-            <p className="text-white/70 mt-1">Manage Sunday free mock tests</p>
-          </div>
-          <Button
-            onClick={() => navigate("/admin")}
-            variant="outline"
-            className="bg-white/10 border-white/30 text-white"
-          >
-            Back to Dashboard
-          </Button>
+    <div className="min-h-screen p-6 relative">
+      <AdminSidebar />
+      
+      {/* Animated gradient background */}
+      <div className="fixed inset-0 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500" />
+      
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="max-w-7xl mx-auto space-y-6 relative z-10 ml-0 lg:ml-64"
+      >
+        <div>
+          <h1 className="text-3xl font-bold text-white">Weekly Test Management</h1>
+          <p className="text-white/70 mt-1">Manage Sunday Free Mock Tests & Leaderboards</p>
         </div>
 
-        {!showCreateForm && (
-          <Button
-            onClick={() => setShowCreateForm(true)}
-            className="bg-gradient-to-r from-green-500 to-emerald-600"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Create New Weekly Test
-          </Button>
-        )}
-
-        {showCreateForm && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
-              <CardHeader>
-                <CardTitle className="text-white">Create Weekly Test</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label className="text-white">Title</Label>
-                  <Input
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="e.g., Weekly Free Mock Test - Week 1"
-                    className="bg-white/10 border-white/30 text-white"
-                  />
-                </div>
-                <div>
-                  <Label className="text-white">Description (Optional)</Label>
-                  <Textarea
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Test description..."
-                    className="bg-white/10 border-white/30 text-white"
-                  />
-                </div>
-                <div>
-                  <Label className="text-white">Scheduled Date (Sunday only)</Label>
-                  <Input
-                    type="date"
-                    value={scheduledDate}
-                    onChange={(e) => setScheduledDate(e.target.value)}
-                    className="bg-white/10 border-white/30 text-white"
-                  />
-                </div>
-                <div className="flex gap-4">
-                  <Button onClick={handleCreateTest} className="bg-gradient-to-r from-green-500 to-emerald-600">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create Test (Auto-select 100 Questions)
-                  </Button>
-                  <Button onClick={() => setShowCreateForm(false)} variant="outline" className="bg-white/10 border-white/30 text-white">
-                    Cancel
-                  </Button>
-                </div>
-                <p className="text-white/70 text-sm mt-2">
-                  ℹ️ The system will automatically select 100 random approved questions for this test.
-                </p>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
-
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {weeklyTests?.map((test: any) => (
-            <Card key={test._id} className="relative overflow-hidden">
-              <div className="absolute top-2 right-2 flex gap-2">
-                <Badge
-                  className={
-                    test.status === "active"
-                      ? "bg-green-500/20 text-green-300 border-green-500/30"
-                      : test.status === "completed"
-                      ? "bg-blue-500/20 text-blue-300 border-blue-500/30"
-                      : "bg-yellow-500/20 text-yellow-300 border-yellow-500/30"
-                  }
+        {/* Test Selection */}
+        <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
+          <CardHeader>
+            <CardTitle className="text-white">Select Weekly Test</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {allTests?.map((test: any) => (
+                <button
+                  key={test._id}
+                  onClick={() => setSelectedTestId(test._id)}
+                  className={`p-4 rounded-lg border-2 transition-all text-left ${
+                    selectedTestId === test._id
+                      ? "border-yellow-400 bg-yellow-500/20"
+                      : "border-white/20 bg-white/5 hover:bg-white/10"
+                  }`}
                 >
-                  {test.status}
-                </Badge>
-              </div>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-white">{test.title}</CardTitle>
-                    <p className="text-white/70 text-sm mt-1">
-                      {test.scheduledDate ? new Date(test.scheduledDate).toLocaleDateString("en-US", {
-                        weekday: "long",
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      }) : "Date not scheduled"}
-                    </p>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Calendar className="h-4 w-4 text-white" />
+                    <span className="text-white font-semibold">{test.title}</span>
                   </div>
-                </div>
+                  <p className="text-white/70 text-sm">
+                    Status: <span className="font-medium">{test.status}</span>
+                  </p>
+                  <p className="text-white/70 text-sm">
+                    Attempts: <span className="font-medium">{test.totalAttempts || 0}</span>
+                  </p>
+                </button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Test Statistics */}
+        {testStats && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm text-white/90">Total Attempts</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="text-white/90">
-                  <p>Questions: {test.questions?.length || 0}</p>
-                  <p>Total Attempts: {test.totalAttempts}</p>
-                  {test.leaderboardPublishedAt && (
-                    <p className="flex items-center gap-2 text-green-300">
-                      <CheckCircle className="h-4 w-4" />
-                      Leaderboard Published
-                    </p>
-                  )}
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {test.status === "scheduled" && (
-                    <Button
-                      onClick={() => updateStatus({ weeklyTestId: test._id, status: "active" })}
-                      className="bg-gradient-to-r from-green-500 to-emerald-600"
-                    >
-                      Activate Test
-                    </Button>
-                  )}
-                  {test.status === "active" && !test.leaderboardPublishedAt && test.totalAttempts > 0 && (
-                    <Button
-                      onClick={() => handleReleaseLeaderboard(test._id)}
-                      className="bg-gradient-to-r from-blue-500 to-cyan-600"
-                    >
-                      <CheckCircle className="h-4 w-4 mr-2" />
-                      Release Leaderboard
-                    </Button>
-                  )}
-                  <Button
-                    onClick={() => deleteTest({ weeklyTestId: test._id })}
-                    variant="destructive"
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete
-                  </Button>
+              <CardContent>
+                <div className="flex items-center gap-2">
+                  <Users className="h-5 w-5 text-blue-400" />
+                  <span className="text-3xl font-bold text-white">{testStats.totalAttempts}</span>
                 </div>
               </CardContent>
             </Card>
-          ))}
-        </div>
-      </div>
+
+            <Card className="glass-card border-white/30 backdrop-blur-xl bg-green-500/20">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm text-white/90">Paid Users</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-2">
+                  <Trophy className="h-5 w-5 text-green-400" />
+                  <span className="text-3xl font-bold text-white">{testStats.paidUserCount}</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="glass-card border-white/30 backdrop-blur-xl bg-orange-500/20">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm text-white/90">Free Users</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-2">
+                  <Users className="h-5 w-5 text-orange-400" />
+                  <span className="text-3xl font-bold text-white">{testStats.freeUserCount}</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="glass-card border-white/30 backdrop-blur-xl bg-purple-500/20">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm text-white/90">Leaderboard Status</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-2">
+                  {testStats.isLeaderboardReleased ? (
+                    <>
+                      <Unlock className="h-5 w-5 text-green-400" />
+                      <span className="text-lg font-bold text-green-400">Released</span>
+                    </>
+                  ) : (
+                    <>
+                      <Lock className="h-5 w-5 text-red-400" />
+                      <span className="text-lg font-bold text-red-400">Locked</span>
+                    </>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Release Leaderboard Button */}
+        {testStats && !testStats.isLeaderboardReleased && (
+          <Card className="glass-card border-yellow-500/50 backdrop-blur-xl bg-yellow-500/10">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-white font-bold text-lg mb-2">Release Leaderboard (This Week)</h3>
+                  <p className="text-white/80 text-sm">
+                    This will unlock the leaderboard for all PAID users. FREE users will remain locked.
+                  </p>
+                </div>
+                <Button
+                  onClick={handleReleaseLeaderboard}
+                  className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold"
+                >
+                  <Unlock className="h-4 w-4 mr-2" />
+                  Release Leaderboard
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Admin Leaderboard View */}
+        {adminLeaderboard && adminLeaderboard.length > 0 && (
+          <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Trophy className="h-6 w-6 text-yellow-400" />
+                Admin Leaderboard View (Always Visible)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {adminLeaderboard.map((entry: any, index: number) => (
+                  <motion.div
+                    key={entry._id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className={`p-4 rounded-lg backdrop-blur-sm border ${
+                      entry.rank === 1
+                        ? "bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border-yellow-500/50"
+                        : entry.rank === 2
+                        ? "bg-gradient-to-r from-gray-400/20 to-gray-500/20 border-gray-400/50"
+                        : entry.rank === 3
+                        ? "bg-gradient-to-r from-orange-600/20 to-orange-700/20 border-orange-600/50"
+                        : "bg-white/5 border-white/10"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div
+                          className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${
+                            entry.rank === 1
+                              ? "bg-gradient-to-br from-yellow-400 to-yellow-600 text-white"
+                              : entry.rank === 2
+                              ? "bg-gradient-to-br from-gray-300 to-gray-500 text-white"
+                              : entry.rank === 3
+                              ? "bg-gradient-to-br from-orange-500 to-orange-700 text-white"
+                              : "bg-white/10 text-white"
+                          }`}
+                        >
+                          {entry.rank}
+                        </div>
+                        <div>
+                          <p className="text-white font-semibold">{entry.userName}</p>
+                          <p className="text-white/60 text-sm">{entry.userEmail}</p>
+                          <span
+                            className={`text-xs font-bold px-2 py-1 rounded ${
+                              entry.userType === "PAID"
+                                ? "bg-green-500/30 text-green-300"
+                                : "bg-orange-500/30 text-orange-300"
+                            }`}
+                          >
+                            {entry.userType}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-6">
+                        <div className="text-right">
+                          <p className="text-white font-bold">{Math.round(entry.accuracy)}%</p>
+                          <p className="text-white/60 text-xs">Accuracy</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-white font-bold">{Math.round(entry.avgTimePerQuestion)}s</p>
+                          <p className="text-white/60 text-xs">Avg Time</p>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </motion.div>
     </div>
   );
 }

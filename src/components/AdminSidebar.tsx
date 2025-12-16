@@ -48,6 +48,7 @@ export default function AdminSidebar() {
     { path: "/admin", icon: LayoutDashboard, label: "Dashboard" },
     { path: "/admin/users", icon: Users, label: "Users" },
     { path: "/admin/questions", icon: FileQuestion, label: "Questions" },
+    { path: "/admin/weekly-tests", icon: Trophy, label: "Weekly Tests" },
     { path: "/admin/image-questions", icon: ImageIcon, label: "Image Questions" },
     { path: "/admin/reported-errors", icon: AlertTriangle, label: "Reported Errors" },
     { path: "/admin/study-materials", icon: BookOpen, label: "Study Materials" },
