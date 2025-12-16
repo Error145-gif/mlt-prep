@@ -37,8 +37,10 @@ export default function StudentDashboard() {
 
   // Memoize user type to avoid recalculation
   const { isFreeTrialUser } = useMemo(() => {
+    // A user is considered "free trial" if they are NOT a paid subscriber
+    // This includes: free_trial, no_subscription, expired, or not_authenticated
     const isPaid = subscriptionAccess?.hasAccess && subscriptionAccess?.isPaid;
-    const isTrial = !isPaid && subscriptionAccess?.reason === "free_trial";
+    const isTrial = !isPaid; // Anyone who is NOT paid is treated as free trial
     return { isFreeTrialUser: isTrial };
   }, [subscriptionAccess]);
 
