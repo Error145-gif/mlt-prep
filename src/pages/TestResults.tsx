@@ -44,6 +44,14 @@ export default function TestResults() {
   // Treat anyone who is not a paid user as a free trial user for restriction purposes
   const isFreeTrialUser = !isPaidUser;
 
+  if (!testResults) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
   const { session, result, questions, rank, totalCandidates } = testResults;
   const score = result?.score || 0;
   const correctAnswers = result?.correctAnswers || 0;
