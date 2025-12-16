@@ -176,22 +176,34 @@ export default function TestResults() {
           totalCandidates={totalCandidates} 
         />
 
-        {/* Rank & Speed Analytics - Modified for free trial */}
-        <div className="relative">
+        {/* Rank & Speed Analytics - Locked for free trial */}
+        {!isFreeTrialUser ? (
           <RankAnalytics 
             rank={rank} 
             totalCandidates={totalCandidates} 
             avgTimePerQuestion={avgTimePerQuestion} 
             speedPercentile={speedPercentile} 
           />
-          {isFreeTrialUser && (
-            <div className="mt-4 p-4 bg-orange-100 border-2 border-orange-400 rounded-lg">
-              <p className="text-orange-900 font-semibold text-center">
-                🔒 Full leaderboard available with Premium
-              </p>
+        ) : (
+          <Card className="p-6 bg-gray-100 border-2 border-gray-400 shadow-lg relative">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center z-10">
+              <Lock className="h-12 w-12 text-white mb-2" />
+              <p className="text-white font-semibold text-lg text-center px-4">🔒 Rank & Speed Analytics available with Full Access</p>
             </div>
-          )}
-        </div>
+            <div className="opacity-20">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-6 bg-white shadow-lg rounded-lg">
+                  <h3 className="text-lg font-bold text-gray-900 mb-4">🏆 Leaderboard Position</h3>
+                  <p className="text-gray-700">Hidden content...</p>
+                </div>
+                <div className="p-6 bg-white shadow-lg rounded-lg">
+                  <h3 className="text-lg font-bold text-gray-900 mb-4">⏱️ Time Analytics</h3>
+                  <p className="text-gray-700">Hidden content...</p>
+                </div>
+              </div>
+            </div>
+          </Card>
+        )}
 
         {/* Color Legend */}
         <Card className="p-4 bg-white shadow-md">
