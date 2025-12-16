@@ -67,13 +67,13 @@ export default function MockTests() {
     
     if (!isFirstTest && !hasPaidSubscription) {
       toast.error("This test is locked! Subscribe to unlock all tests.");
-      setTimeout(() => navigate("/subscription"), 1000);
+      setTimeout(() => navigate("/subscription-plans"), 1000);
       return;
     }
     
     if (isFirstTest && canAccessMock?.reason === "free_trial_used") {
       toast.error("Your free trial is used. Please subscribe to continue.");
-      setTimeout(() => navigate("/subscription"), 500);
+      setTimeout(() => navigate("/subscription-plans"), 500);
       return;
     }
     
@@ -171,7 +171,7 @@ export default function MockTests() {
                       <Button
                         onClick={() => {
                           toast.error("This test is locked! Subscribe to unlock all tests.");
-                          setTimeout(() => navigate("/subscription"), 1000);
+                          setTimeout(() => navigate("/subscription-plans"), 1000);
                         }}
                         className="w-full bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700"
                       >
