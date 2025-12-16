@@ -1,4 +1,3 @@
-
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router";
@@ -234,7 +233,7 @@ export default function Landing() {
               src="/logo.png"
               alt="MLT Logo"
               loading="eager"
-              fetchpriority="high"
+              fetchPriority="high"
               width="64"
               height="64"
               className="h-12 w-12 sm:h-16 sm:w-16 object-contain"

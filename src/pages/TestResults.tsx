@@ -1,4 +1,3 @@
-
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
@@ -40,24 +39,10 @@ export default function TestResults() {
   const userProfile = useQuery(api.users.getUserProfile);
   const subscriptionAccess = useQuery(api.student.checkSubscriptionAccess);
 
-  // Enhanced loading state
-  if (isLoading || !testResults) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50">
-        <div className="text-center space-y-4">
-          <div className="relative">
-            <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
-          </div>
-          <div className="text-gray-900 text-xl font-medium">Loading results...</div>
-          <div className="text-gray-600 text-sm">Calculating your score and rank</div>
-        </div>
-      </div>
-    );
-  }
-
   // Determine user type - PAID has highest priority
   const isPaidUser = subscriptionAccess?.hasAccess && subscriptionAccess?.isPaid;
-  const isFreeTrialUser = !isPaidUser && subscriptionAccess?.reason === "free_trial";
+  // Treat anyone who is not a paid user as a free trial user for restriction purposes
+  const isFreeTrialUser = !isPaidUser;
 
   const { session, result, questions, rank, totalCandidates } = testResults;
   const score = result?.score || 0;
