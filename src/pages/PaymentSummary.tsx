@@ -155,6 +155,12 @@ export default function PaymentSummary() {
     }
   };
 
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode("");
+    toast.success("Coupon removed");
+  };
+
   const handleRazorpayPayment = async () => {
     if (!user?._id) {
       toast.error("User not found");
@@ -425,6 +431,49 @@ export default function PaymentSummary() {
                 <p className="text-white/70 text-sm text-center">
                   No hidden charges • One-time payment • Secure checkout
                 </p>
+              </div>
+
+              {/* Coupon Code Section */}
+              <div className="space-y-3 bg-white/5 rounded-xl p-4">
+                <div className="flex items-center gap-2 text-white font-semibold mb-3">
+                  <Tag className="h-5 w-5" />
+                  <span>Have a Coupon Code?</span>
+                </div>
+                {!appliedCoupon ? (
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Enter coupon code"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                      className="bg-white/10 border-white/30 text-white placeholder:text-white/50"
+                    />
+                    <Button
+                      onClick={handleApplyCoupon}
+                      disabled={!couponCode}
+                      className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
+                    >
+                      Apply
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between bg-green-500/20 border border-green-500/30 rounded-lg p-3">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="h-5 w-5 text-green-300" />
+                      <span className="text-white font-semibold">{couponCode}</span>
+                      <span className="text-green-300 text-sm">
+                        (₹{discount.toFixed(2)} off)
+                      </span>
+                    </div>
+                    <Button
+                      onClick={handleRemoveCoupon}
+                      variant="ghost"
+                      size="sm"
+                      className="text-white/80 hover:text-white hover:bg-white/10"
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                )}
               </div>
 
               {/* Your Information */}
