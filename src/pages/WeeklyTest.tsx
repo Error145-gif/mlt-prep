@@ -65,8 +65,40 @@ export default function WeeklyTest() {
 
   const isReady = currentTest && (currentTest.status === "active" || (currentTest.status === "scheduled" && (currentTest.scheduledDate || 0) <= Date.now()));
 
+  // Handle SCHEDULED status - show clear message
+  if (currentTest && currentTest.status === "scheduled") {
+    const scheduledDate = currentTest.scheduledDate ? new Date(currentTest.scheduledDate) : null;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
+        <StudentNav />
+        <div className="max-w-2xl mx-auto p-6 pt-24">
+          <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Clock className="h-6 w-6" />
+                🕒 Sunday Free Test
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-white/90 space-y-4">
+              <p className="text-lg">This test will be active on Sunday.</p>
+              {scheduledDate && (
+                <p className="text-xl font-semibold">
+                  Available on: {scheduledDate.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
+                </p>
+              )}
+              <p className="text-white/70">Please come back on Sunday to attempt the test.</p>
+              <Button onClick={() => navigate("/student")} className="mt-6">
+                Back to Dashboard
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // Handle no test or inactive test
   if (!currentTest || !isReady) {
-    const nextTestDate = currentTest?.scheduledDate ? new Date(currentTest.scheduledDate) : null;
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
         <StudentNav />
@@ -79,15 +111,7 @@ export default function WeeklyTest() {
               </CardTitle>
             </CardHeader>
             <CardContent className="text-white/90">
-              {nextTestDate ? (
-                <>
-                  <p className="mb-4">The next weekly free test will be available on:</p>
-                  <p className="text-2xl font-bold">{nextTestDate.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</p>
-                  <p className="mt-4 text-white/70">Check back on Sunday to participate!</p>
-                </>
-              ) : (
-                <p>No weekly test scheduled at the moment. Check back soon!</p>
-              )}
+              <p>No weekly test available at the moment. Check back soon!</p>
               <Button onClick={() => navigate("/student")} className="mt-6">
                 Back to Dashboard
               </Button>

@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trophy, Lock } from "lucide-react";
+import { Trophy, Lock, Clock } from "lucide-react";
 import { useNavigate } from "react-router";
 
 interface WeeklyTestCardProps {
@@ -10,6 +10,12 @@ interface WeeklyTestCardProps {
 
 export default function WeeklyTestCard({ isFreeTrialUser = false }: WeeklyTestCardProps) {
   const navigate = useNavigate();
+  const { useQuery } = require("convex/react");
+  const { api } = require("@/convex/_generated/api");
+  
+  const currentTest = useQuery(api.weeklyTests.getCurrentWeeklyTest);
+  const isScheduled = currentTest?.status === "scheduled";
+  const isActive = currentTest?.status === "active";
 
   return (
     <motion.div
@@ -32,13 +38,23 @@ export default function WeeklyTestCard({ isFreeTrialUser = false }: WeeklyTestCa
               🎯 100 Lab Technician questions • Available every Sunday • Free for all users
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button
-                onClick={() => navigate("/weekly-test")}
-                className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold shadow-lg shadow-yellow-500/50"
-              >
-                <Trophy className="h-4 w-4 mr-2" />
-                Play Sunday Mock
-              </Button>
+              {isScheduled ? (
+                <div className="flex items-center gap-2 px-4 py-2 bg-black/20 rounded-md border border-white/10">
+                  <Clock className="h-4 w-4 text-yellow-400" />
+                  <span className="text-white/90 text-sm font-medium">
+                    🕒 Test available on Sunday
+                  </span>
+                </div>
+              ) : (
+                <Button
+                  onClick={() => navigate("/weekly-test")}
+                  disabled={!isActive && !currentTest}
+                  className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold shadow-lg shadow-yellow-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Trophy className="h-4 w-4 mr-2" />
+                  Play Sunday Mock
+                </Button>
+              )}
               
               {!isFreeTrialUser ? (
                 <Button
