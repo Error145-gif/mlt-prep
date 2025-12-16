@@ -147,58 +147,57 @@ export default function StudentDashboard() {
 
         {/* Performance Score - Show skeleton while loading */}
         <div className="relative">
-          {displayStats ? (
+          {isFreeTrialUser ? (
+            <div className="glass-card border-white/30 backdrop-blur-xl bg-white/20 p-6 rounded-xl min-h-[150px] flex flex-col items-center justify-center">
+              <Lock className="h-12 w-12 text-white mb-2" />
+              <p className="text-white font-semibold text-lg">🔒 Available with Full Access</p>
+              <p className="text-white/80 text-sm mt-2">❌ Not Exam Ready – Trial access cannot improve this score</p>
+            </div>
+          ) : displayStats ? (
             <PerformanceScore performanceScore={displayStats.performanceScore || 0} consistencyStreak={displayStats.consistencyStreak || 0} />
           ) : (
             <div className="glass-card border-white/30 backdrop-blur-xl bg-white/20 p-6 rounded-xl">
               <Skeleton className="h-32 w-full bg-white/20" />
             </div>
           )}
-          {isFreeTrialUser && (
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center">
-              <Lock className="h-12 w-12 text-white mb-2" />
-              <p className="text-white font-semibold text-lg">🔒 Available with Full Access</p>
-              <p className="text-white/80 text-sm mt-2">❌ Not Exam Ready – Trial access cannot improve this score</p>
-            </div>
-          )}
         </div>
 
         {/* AI Insights Card - Show skeleton while loading */}
-        {displayStats?.aiInsights && displayStats.aiInsights.length > 0 ? (
+        {isFreeTrialUser ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="glass-card border border-purple-500/50 backdrop-blur-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 p-5 rounded-xl relative"
+            className="glass-card border border-purple-500/50 backdrop-blur-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 p-5 rounded-xl min-h-[150px] flex flex-col items-center justify-center"
           >
-            {!isFreeTrialUser ? (
-              <>
-                <div className="flex items-center gap-2 mb-3">
-                  <Sparkles className="h-5 w-5 text-yellow-400" />
-                  <h3 className="text-white font-semibold text-lg">Smart Insights</h3>
-                </div>
-                <div className="space-y-2">
-                  {displayStats.aiInsights.map((insight: string, index: number) => (
-                    <motion.p
-                      key={index}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.3 + index * 0.1 }}
-                      className="text-white/95 text-base leading-relaxed"
-                    >
-                      {insight}
-                    </motion.p>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <div className="relative min-h-[150px] flex items-center justify-center">
-                <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center">
-                  <Lock className="h-12 w-12 text-white mb-2" />
-                  <p className="text-white font-semibold text-lg">🔒 Available with Full Access</p>
-                </div>
-              </div>
-            )}
+            <Lock className="h-12 w-12 text-white mb-2" />
+            <p className="text-white font-semibold text-lg">🔒 Smart Insights</p>
+            <p className="text-white/80 text-sm mt-2">Available with Full Access</p>
+          </motion.div>
+        ) : displayStats?.aiInsights && displayStats.aiInsights.length > 0 ? (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="glass-card border border-purple-500/50 backdrop-blur-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 p-5 rounded-xl"
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <Sparkles className="h-5 w-5 text-yellow-400" />
+              <h3 className="text-white font-semibold text-lg">Smart Insights</h3>
+            </div>
+            <div className="space-y-2">
+              {displayStats.aiInsights.map((insight: string, index: number) => (
+                <motion.p
+                  key={index}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 + index * 0.1 }}
+                  className="text-white/95 text-base leading-relaxed"
+                >
+                  {insight}
+                </motion.p>
+              ))}
+            </div>
           </motion.div>
         ) : !displayStats ? (
           <div className="glass-card border-white/30 backdrop-blur-xl bg-white/20 p-6 rounded-xl">
@@ -226,34 +225,34 @@ export default function StudentDashboard() {
 
         {/* Performance Breakdown - Show skeleton while loading */}
         <div className="relative">
-          {displayStats ? (
+          {isFreeTrialUser ? (
+            <div className="glass-card border-white/30 backdrop-blur-xl bg-white/20 p-6 rounded-xl min-h-[200px] flex flex-col items-center justify-center">
+              <Lock className="h-12 w-12 text-white mb-2" />
+              <p className="text-white font-semibold text-lg">🔒 Performance Breakdown</p>
+              <p className="text-white/80 text-sm mt-2">Available with Full Access</p>
+            </div>
+          ) : displayStats ? (
             <PerformanceBreakdown stats={displayStats} />
           ) : (
             <div className="glass-card border-white/30 backdrop-blur-xl bg-white/20 p-6 rounded-xl">
               <Skeleton className="h-48 w-full bg-white/20" />
             </div>
           )}
-          {isFreeTrialUser && displayStats && (
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center">
-              <Lock className="h-12 w-12 text-white mb-2" />
-              <p className="text-white font-semibold text-lg">🔒 Available with Full Access</p>
-            </div>
-          )}
         </div>
 
         {/* Engagement Metrics - Show skeleton while loading */}
         <div className="relative">
-          {displayStats ? (
+          {isFreeTrialUser ? (
+            <div className="glass-card border-white/30 backdrop-blur-xl bg-white/20 p-6 rounded-xl min-h-[150px] flex flex-col items-center justify-center">
+              <Lock className="h-12 w-12 text-white mb-2" />
+              <p className="text-white font-semibold text-lg">🔒 Engagement Metrics</p>
+              <p className="text-white/80 text-sm mt-2">Available with Full Access</p>
+            </div>
+          ) : displayStats ? (
             <EngagementMetrics stats={displayStats} />
           ) : (
             <div className="glass-card border-white/30 backdrop-blur-xl bg-white/20 p-6 rounded-xl">
               <Skeleton className="h-32 w-full bg-white/20" />
-            </div>
-          )}
-          {isFreeTrialUser && displayStats && (
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center">
-              <Lock className="h-12 w-12 text-white mb-2" />
-              <p className="text-white font-semibold text-lg">🔒 Available with Full Access</p>
             </div>
           )}
         </div>
