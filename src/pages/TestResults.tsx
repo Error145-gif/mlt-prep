@@ -189,6 +189,7 @@ export default function TestResults() {
           totalMarks={totalMarks} 
           rank={rank} 
           totalCandidates={totalCandidates} 
+          isFreeTrialUser={isFreeTrialUser}
         />
 
         {/* Rank & Speed Analytics - Locked for free trial */}
