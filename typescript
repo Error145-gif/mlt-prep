@@ -1,2 +1,1 @@
-const isPaidUser = subscriptionAccess?.hasAccess && subscriptionAccess?.isPaid;
 const isFreeTrialUser = !isPaidUser && subscriptionAccess?.reason === "free_trial";

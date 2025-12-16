@@ -30,7 +30,7 @@ export default function WeeklyLeaderboard() {
 
   // Determine user type
   const isPaidUser = subscriptionAccess?.hasAccess && subscriptionAccess?.isPaid;
-  const isFreeTrialUser = !isPaidUser && subscriptionAccess?.reason === "free_trial";
+  const isFreeTrialUser = !isPaidUser; // Anyone who is NOT a paid subscriber is treated as free trial
 
   if (!currentTest) {
     return (
