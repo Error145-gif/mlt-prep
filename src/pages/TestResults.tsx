@@ -147,19 +147,34 @@ export default function TestResults() {
         <AccuracyChart score={score} motivation={motivation} />
 
         {/* FREE TRIAL CONVERSION MESSAGE - Show after accuracy */}
-        {isFreeTrialUser && score < 70 && (
+        {isFreeTrialUser && (
           <Card className="p-6 bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-xl border-2 border-orange-600">
-            <div className="space-y-4">
-              <h3 className="text-2xl font-bold">⚠️ Your score is below the safe exam range.</h3>
-              <p className="text-lg">
-                Trial access shows level, not full preparation.<br />
-                Unlock complete practice, explanations, and AI guidance.
+            <div className="space-y-4 text-center md:text-left">
+              <h3 className="text-2xl font-bold">Your performance is recorded.</h3>
+              <p className="text-lg font-medium opacity-90">
+                Exact rank & comparison are locked.
               </p>
+              
+              <div className="bg-white/10 p-4 rounded-lg backdrop-blur-sm border border-white/20 my-4">
+                <p className="font-semibold mb-2">Upgrade now to:</p>
+                <ul className="space-y-1 text-sm md:text-base">
+                  <li className="flex items-center gap-2">
+                    <span className="text-green-300">✓</span> Check your exact rank
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="text-green-300">✓</span> Compare with toppers
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="text-green-300">✓</span> Access detailed insights
+                  </li>
+                </ul>
+              </div>
+
               <Button 
                 onClick={() => navigate("/subscription-plans")}
-                className="bg-white text-red-600 hover:bg-white/90 font-semibold text-lg px-8 py-3"
+                className="w-full md:w-auto bg-white text-red-600 hover:bg-white/90 font-bold text-lg px-8 py-6 shadow-lg"
               >
-                Upgrade Now – Unlock Full Access
+                Upgrade Now – Check Your Rank
               </Button>
             </div>
           </Card>

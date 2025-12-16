@@ -109,20 +109,21 @@ export default function StudentDashboard() {
 
       {/* FREE TRIAL BANNER - Show immediately if subscription data available */}
       {subscriptionAccess && isFreeTrialUser && (
-        <div className="fixed top-16 left-0 right-0 z-50 bg-gradient-to-r from-orange-500 to-red-500 text-white py-3 px-4 shadow-lg">
-          <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
+        <div className="fixed top-16 left-0 right-0 z-50 bg-gradient-to-r from-orange-500 to-red-500 text-white py-2 px-4 shadow-lg">
+          <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <span className="text-xl">⚠️</span>
+              <span className="text-lg">🔒</span>
               <div>
-                <p className="font-semibold">Trial Access: Limited</p>
-                <p className="text-sm text-white/90">You are using a 7-day trial with restricted features. Unlock full preparation with Premium.</p>
+                <p className="font-semibold text-sm md:text-base">Trial Mode — Limited Access</p>
+                <p className="text-xs md:text-sm text-white/90">Unlock full preparation with Premium</p>
               </div>
             </div>
             <Button 
               onClick={() => navigate("/subscription-plans")}
-              className="bg-white text-red-600 hover:bg-white/90 font-semibold whitespace-nowrap"
+              size="sm"
+              className="bg-white text-red-600 hover:bg-white/90 font-semibold whitespace-nowrap text-sm"
             >
-              Upgrade Now – Get Full Access
+              Upgrade Now
             </Button>
           </div>
         </div>
@@ -265,7 +266,7 @@ export default function StudentDashboard() {
 
         {/* Weekly Free Test Section - Always visible */}
         <div className="relative">
-          <WeeklyTestCard />
+          <WeeklyTestCard isFreeTrialUser={isFreeTrialUser} />
           {isFreeTrialUser && (
             <div className="mt-2 text-center">
               <p className="text-white/90 text-sm bg-orange-500/20 backdrop-blur-sm rounded-lg py-2 px-4 border border-orange-500/30">
