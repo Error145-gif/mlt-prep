@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Trophy, Lock, Clock } from "lucide-react";
 import { useNavigate } from "react-router";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 interface WeeklyTestCardProps {
   isFreeTrialUser?: boolean;
@@ -10,8 +12,6 @@ interface WeeklyTestCardProps {
 
 export default function WeeklyTestCard({ isFreeTrialUser = false }: WeeklyTestCardProps) {
   const navigate = useNavigate();
-  const { useQuery } = require("convex/react");
-  const { api } = require("@/convex/_generated/api");
   
   const currentTest = useQuery(api.weeklyTests.getCurrentWeeklyTest);
   const isScheduled = currentTest?.status === "scheduled";
