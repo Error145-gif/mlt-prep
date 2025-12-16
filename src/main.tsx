@@ -38,19 +38,19 @@ const ShippingPolicy = lazy(() => import("./pages/ShippingPolicy.tsx"));
 const TermsAndConditions = lazy(() => import("./pages/TermsAndConditions.tsx"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy.tsx"));
 const RefundPolicy = lazy(() => import("./pages/RefundPolicy.tsx"));
-const PaymentStatus = lazy(() => import("./pages/PaymentStatus"));
-const PaymentSummary = lazy(() => import("./pages/PaymentSummary"));
+const PaymentStatus = lazy(() => import("./pages/PaymentStatus.tsx"));
+const PaymentSummary = lazy(() => import("./pages/PaymentSummary.tsx"));
 const StudyMaterialsManagement = lazy(() => import("./pages/StudyMaterialsManagement.tsx"));
 const FreeLibrary = lazy(() => import("./pages/FreeLibrary.tsx"));
 const SectionsManagement = lazy(() => import("./pages/SectionsManagement.tsx"));
-const MLTExam = lazy(() => import("./pages/MLTExam"));
-const LabTechnicianExam = lazy(() => import("./pages/LabTechnicianExam"));
-const DMLTExam = lazy(() => import("./pages/DMLTExam"));
-const WeeklyTest = lazy(() => import("./pages/WeeklyTest"));
-const WeeklyLeaderboard = lazy(() => import("./pages/WeeklyLeaderboard"));
-const ImageQuestionManagement = lazy(() => import("./pages/ImageQuestionManagement"));
-const ReportedErrors = lazy(() => import("./pages/ReportedErrors"));
-const WeeklyTestManagement = lazy(() => import("./pages/WeeklyTestManagement"));
+const MLTExam = lazy(() => import("./pages/MLTExam.tsx"));
+const LabTechnicianExam = lazy(() => import("./pages/LabTechnicianExam.tsx"));
+const DMLTExam = lazy(() => import("./pages/DMLTExam.tsx"));
+const WeeklyTest = lazy(() => import("./pages/WeeklyTest.tsx"));
+const WeeklyLeaderboard = lazy(() => import("./pages/WeeklyLeaderboard.tsx"));
+const ImageQuestionManagement = lazy(() => import("./pages/ImageQuestionManagement.tsx"));
+const ReportedErrors = lazy(() => import("./pages/ReportedErrors.tsx"));
+const WeeklyTestManagement = lazy(() => import("./pages/WeeklyTestManagement.tsx"));
 
 // Loading component
 const LoadingFallback = () => (
