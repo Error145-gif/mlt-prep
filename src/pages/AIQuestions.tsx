@@ -53,13 +53,13 @@ export default function AIQuestions() {
     
     if (!isFirstTest && !hasPaidSubscription) {
       toast.error("This test is locked! Subscribe to unlock all tests.");
-      setTimeout(() => navigate("/subscription"), 1000);
+      setTimeout(() => navigate("/subscription-plans"), 1000);
       return;
     }
     
     if (isFirstTest && canAccessAI?.reason === "free_trial_used") {
       toast.error("Your free trial is used. Please subscribe to continue.");
-      setTimeout(() => navigate("/subscription"), 500);
+      setTimeout(() => navigate("/subscription-plans"), 500);
       return;
     }
     
