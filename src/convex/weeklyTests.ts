@@ -584,3 +584,124 @@ export const getAdminWeeklyLeaderboard = query({
     return enriched;
   },
 });
+
+// ADMIN: Get all weekly tests with enhanced statistics
+export const getAllWeeklyTestsWithStats = query({
+  args: {},
+  handler: async (ctx) => {
+    const user = await getCurrentUser(ctx);
+    if (!user || user.role !== "admin") {
+      throw new Error("Unauthorized");
+    }
+
+    const tests = await ctx.db
+      .query("weeklyTests")
+      .order("desc")
+      .collect();
+
+    // Enrich each test with detailed statistics
+    const enrichedTests = await Promise.all(
+      tests.map(async (test) => {
+        const attempts = await ctx.db
+          .query("weeklyTestAttempts")
+          .withIndex("by_weekly_test", (q) => q.eq("weeklyTestId", test._id))
+          .collect();
+
+        let paidCount = 0;
+        let freeCount = 0;
+
+        for (const attempt of attempts) {
+          const attemptUser = await ctx.db.get(attempt.userId);
+          if (!attemptUser) continue;
+
+          const subscription = await ctx.db
+            .query("subscriptions")
+            .withIndex("by_user", (q) => q.eq("userId", attemptUser._id))
+            .filter((q) => q.eq(q.field("status"), "active"))
+            .first();
+
+          if (subscription && subscription.endDate > Date.now()) {
+            paidCount++;
+          } else {
+            freeCount++;
+          }
+        }
+
+        return {
+          ...test,
+          totalAttempts: attempts.length,
+          totalSubmissions: attempts.length,
+          paidUsersCount: paidCount,
+          freeUsersCount: freeCount,
+        };
+      })
+    );
+
+    return enrichedTests;
+  },
+});
+
+// ADMIN: Toggle leaderboard release status
+export const toggleLeaderboardRelease = mutation({
+  args: { 
+    weeklyTestId: v.id("weeklyTests"),
+    shouldRelease: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user || user.role !== "admin") {
+      throw new Error("Unauthorized");
+    }
+
+    const test = await ctx.db.get(args.weeklyTestId);
+    if (!test) {
+      throw new Error("Test not found");
+    }
+
+    if (args.shouldRelease && !test.leaderboardPublishedAt) {
+      // Release leaderboard - calculate ranks
+      const attempts = await ctx.db
+        .query("weeklyTestAttempts")
+        .withIndex("by_weekly_test", (q) => q.eq("weeklyTestId", args.weeklyTestId))
+        .collect();
+
+      const sorted = attempts.sort((a, b) => {
+        if (b.score !== a.score) return b.score - a.score;
+        return a.avgTimePerQuestion - b.avgTimePerQuestion;
+      });
+
+      for (let i = 0; i < sorted.length; i++) {
+        await ctx.db.patch(sorted[i]._id, { rank: i + 1 });
+      }
+
+      await ctx.db.patch(args.weeklyTestId, {
+        leaderboardPublishedAt: Date.now(),
+      });
+    } else if (!args.shouldRelease && test.leaderboardPublishedAt) {
+      // Hide leaderboard
+      await ctx.db.patch(args.weeklyTestId, {
+        leaderboardPublishedAt: undefined,
+      });
+    }
+
+    return { success: true };
+  },
+});
+
+// ADMIN: Archive weekly test
+export const archiveWeeklyTest = mutation({
+  args: { weeklyTestId: v.id("weeklyTests") },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user || user.role !== "admin") {
+      throw new Error("Unauthorized");
+    }
+
+    await ctx.db.patch(args.weeklyTestId, {
+      status: "archived",
+      isActive: false,
+    });
+
+    return { success: true };
+  },
+});

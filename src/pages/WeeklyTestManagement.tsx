@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Users, Trophy, Lock, Unlock, Calendar, Plus, X } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Loader2, Trophy, Lock, Unlock, Calendar, Plus, X, Archive, Eye } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import AdminSidebar from "@/components/AdminSidebar";
@@ -20,17 +21,11 @@ export default function WeeklyTestManagement() {
   const [newTestTitle, setNewTestTitle] = useState("");
   const [newTestDescription, setNewTestDescription] = useState("");
   const [newTestDate, setNewTestDate] = useState("");
+  const [showArchivedTests, setShowArchivedTests] = useState(false);
 
   const allTests = useQuery(
-    api.weeklyTests.getAllWeeklyTests,
+    api.weeklyTests.getAllWeeklyTestsWithStats,
     isAuthenticated && user?.role === "admin" ? {} : "skip"
-  );
-
-  const currentTest = useQuery(api.weeklyTests.getCurrentWeeklyTest);
-
-  const testStats = useQuery(
-    api.weeklyTests.getWeeklyTestStats,
-    selectedTestId ? { weeklyTestId: selectedTestId as any } : "skip"
   );
 
   const adminLeaderboard = useQuery(
@@ -38,9 +33,10 @@ export default function WeeklyTestManagement() {
     selectedTestId ? { weeklyTestId: selectedTestId as any } : "skip"
   );
 
-  const releaseLeaderboard = useMutation(api.weeklyTests.releaseLeaderboard);
   const createWeeklyTest = useMutation(api.weeklyTests.createWeeklyTest);
   const deleteWeeklyTest = useMutation(api.weeklyTests.deleteWeeklyTest);
+  const toggleLeaderboard = useMutation(api.weeklyTests.toggleLeaderboardRelease);
+  const archiveTest = useMutation(api.weeklyTests.archiveWeeklyTest);
 
   if (isLoading) {
     return (
@@ -54,24 +50,36 @@ export default function WeeklyTestManagement() {
     return <Navigate to="/auth" />;
   }
 
-  // Auto-select current test
-  if (!selectedTestId && currentTest) {
-    setSelectedTestId(currentTest._id);
-  }
+  const handleToggleLeaderboard = async (testId: string, currentStatus: boolean) => {
+    try {
+      await toggleLeaderboard({ 
+        weeklyTestId: testId as any, 
+        shouldRelease: !currentStatus 
+      });
+      toast.success(!currentStatus ? "Leaderboard released to paid users!" : "Leaderboard hidden from users");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to toggle leaderboard");
+    }
+  };
 
-  const handleReleaseLeaderboard = async () => {
-    if (!selectedTestId) return;
+  const handleArchiveTest = async (testId: string) => {
+    if (!confirm("Archive this test? It will be hidden from users but remain viewable by admins.")) {
+      return;
+    }
 
     try {
-      await releaseLeaderboard({ weeklyTestId: selectedTestId as any });
-      toast.success("Leaderboard released to paid users!");
+      await archiveTest({ weeklyTestId: testId as any });
+      toast.success("Test archived successfully!");
+      if (selectedTestId === testId) {
+        setSelectedTestId(null);
+      }
     } catch (error: any) {
-      toast.error(error.message || "Failed to release leaderboard");
+      toast.error(error.message || "Failed to archive test");
     }
   };
 
   const handleDeleteTest = async (testId: string) => {
-    if (!confirm("Are you sure you want to delete this test? This action cannot be undone.")) {
+    if (!confirm("Permanently delete this test? This action cannot be undone.")) {
       return;
     }
 
@@ -114,11 +122,32 @@ export default function WeeklyTestManagement() {
     }
   };
 
+  const getStatusBadge = (status: string) => {
+    const badges: Record<string, { bg: string; text: string }> = {
+      draft: { bg: "bg-gray-500/20", text: "text-gray-300" },
+      scheduled: { bg: "bg-blue-500/20", text: "text-blue-300" },
+      active: { bg: "bg-green-500/20", text: "text-green-300" },
+      completed: { bg: "bg-purple-500/20", text: "text-purple-300" },
+      archived: { bg: "bg-orange-500/20", text: "text-orange-300" },
+    };
+    const badge = badges[status] || badges.draft;
+    return (
+      <span className={`px-2 py-1 rounded text-xs font-bold ${badge.bg} ${badge.text}`}>
+        {status.toUpperCase()}
+      </span>
+    );
+  };
+
+  const filteredTests = allTests?.filter((test: any) => 
+    showArchivedTests ? test.status === "archived" : test.status !== "archived"
+  );
+
+  const selectedTest = allTests?.find((t: any) => t._id === selectedTestId);
+
   return (
     <div className="min-h-screen p-6 relative">
       <AdminSidebar />
       
-      {/* Animated gradient background */}
       <div className="fixed inset-0 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500" />
       
       <motion.div
@@ -131,16 +160,25 @@ export default function WeeklyTestManagement() {
             <h1 className="text-3xl font-bold text-white">Weekly Test Management</h1>
             <p className="text-white/70 mt-1">Manage Sunday Free Mock Tests & Leaderboards</p>
           </div>
-          <Button
-            onClick={() => setShowCreateForm(!showCreateForm)}
-            className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Create New Test
-          </Button>
+          <div className="flex gap-3">
+            <Button
+              onClick={() => setShowArchivedTests(!showArchivedTests)}
+              variant="outline"
+              className="bg-white/10 border-white/30 text-white"
+            >
+              <Eye className="h-4 w-4 mr-2" />
+              {showArchivedTests ? "Show Active" : "Show Archived"}
+            </Button>
+            <Button
+              onClick={() => setShowCreateForm(!showCreateForm)}
+              className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Create New Week Test
+            </Button>
+          </div>
         </div>
 
-        {/* Create Test Form */}
         {showCreateForm && (
           <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
             <CardHeader>
@@ -186,209 +224,165 @@ export default function WeeklyTestManagement() {
           </Card>
         )}
 
-        {/* Test Selection */}
+        {/* Test List */}
         <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
           <CardHeader>
-            <CardTitle className="text-white">Select Weekly Test</CardTitle>
+            <CardTitle className="text-white">Weekly Tests</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {allTests?.map((test: any) => (
+            <div className="space-y-3">
+              {filteredTests?.map((test: any) => (
                 <div
                   key={test._id}
-                  className={`p-4 rounded-lg border-2 transition-all relative ${
+                  className={`p-4 rounded-lg border-2 transition-all relative cursor-pointer ${
                     selectedTestId === test._id
                       ? "border-yellow-400 bg-yellow-500/20"
-                      : "border-white/20 bg-white/5"
+                      : "border-white/20 bg-white/5 hover:bg-white/10"
                   }`}
+                  onClick={() => setSelectedTestId(test._id)}
                 >
-                  <button
-                    onClick={() => setSelectedTestId(test._id)}
-                    className="w-full text-left"
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <Calendar className="h-4 w-4 text-white" />
-                      <span className="text-white font-semibold">{test.title}</span>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <Calendar className="h-4 w-4 text-white" />
+                        <span className="text-white font-semibold">{test.title}</span>
+                        {getStatusBadge(test.status || "draft")}
+                      </div>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                        <div className="text-white/70">
+                          <span className="font-medium">Attempts:</span> {test.totalAttempts || 0}
+                        </div>
+                        <div className="text-white/70">
+                          <span className="font-medium">Submissions:</span> {test.totalSubmissions || 0}
+                        </div>
+                        <div className="text-green-300">
+                          <span className="font-medium">Paid:</span> {test.paidUsersCount || 0}
+                        </div>
+                        <div className="text-orange-300">
+                          <span className="font-medium">Free:</span> {test.freeUsersCount || 0}
+                        </div>
+                      </div>
                     </div>
-                    <p className="text-white/70 text-sm">
-                      Status: <span className="font-medium">{test.status}</span>
-                    </p>
-                    <p className="text-white/70 text-sm">
-                      Attempts: <span className="font-medium">{test.totalAttempts || 0}</span>
-                    </p>
-                  </button>
-                  <Button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteTest(test._id);
-                    }}
-                    variant="ghost"
-                    size="sm"
-                    className="absolute top-2 right-2 text-red-400 hover:text-red-300 hover:bg-red-500/20"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
+                    <div className="flex gap-2">
+                      {test.status !== "archived" && (
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleArchiveTest(test._id);
+                          }}
+                          variant="ghost"
+                          size="sm"
+                          className="text-orange-400 hover:text-orange-300 hover:bg-orange-500/20"
+                        >
+                          <Archive className="h-4 w-4" />
+                        </Button>
+                      )}
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteTest(test._id);
+                        }}
+                        variant="ghost"
+                        size="sm"
+                        className="text-red-400 hover:text-red-300 hover:bg-red-500/20"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
           </CardContent>
         </Card>
 
-        {/* Test Statistics */}
-        {testStats && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-white/90">Total Attempts</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-blue-400" />
-                  <span className="text-3xl font-bold text-white">{testStats.totalAttempts}</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="glass-card border-white/30 backdrop-blur-xl bg-green-500/20">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-white/90">Paid Users</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-2">
-                  <Trophy className="h-5 w-5 text-green-400" />
-                  <span className="text-3xl font-bold text-white">{testStats.paidUserCount}</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="glass-card border-white/30 backdrop-blur-xl bg-orange-500/20">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-white/90">Free Users</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-orange-400" />
-                  <span className="text-3xl font-bold text-white">{testStats.freeUserCount}</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="glass-card border-white/30 backdrop-blur-xl bg-purple-500/20">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-white/90">Leaderboard Status</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-2">
-                  {testStats.isLeaderboardReleased ? (
-                    <>
-                      <Unlock className="h-5 w-5 text-green-400" />
-                      <span className="text-lg font-bold text-green-400">Released</span>
-                    </>
+        {/* Leaderboard Release Control */}
+        {selectedTest && (
+          <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center justify-between">
+                <span>Leaderboard Release Control</span>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-normal text-white/70">
+                    {selectedTest.leaderboardPublishedAt ? "Released to Paid Users" : "Hidden from All Users"}
+                  </span>
+                  <Switch
+                    checked={!!selectedTest.leaderboardPublishedAt}
+                    onCheckedChange={() => handleToggleLeaderboard(selectedTest._id, !!selectedTest.leaderboardPublishedAt)}
+                  />
+                  {selectedTest.leaderboardPublishedAt ? (
+                    <Unlock className="h-5 w-5 text-green-400" />
                   ) : (
-                    <>
-                      <Lock className="h-5 w-5 text-red-400" />
-                      <span className="text-lg font-bold text-red-400">Locked</span>
-                    </>
+                    <Lock className="h-5 w-5 text-red-400" />
                   )}
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {/* Release Leaderboard Button */}
-        {testStats && !testStats.isLeaderboardReleased && (
-          <Card className="glass-card border-yellow-500/50 backdrop-blur-xl bg-yellow-500/10">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-white font-bold text-lg mb-2">Release Leaderboard (This Week)</h3>
-                  <p className="text-white/80 text-sm">
-                    This will unlock the leaderboard for all PAID users. FREE users will remain locked.
-                  </p>
-                </div>
-                <Button
-                  onClick={handleReleaseLeaderboard}
-                  className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold"
-                >
-                  <Unlock className="h-4 w-4 mr-2" />
-                  Release Leaderboard
-                </Button>
-              </div>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-white/80 text-sm">
+                Toggle ON to release leaderboard to PAID users only. Toggle OFF to hide from all users.
+              </p>
             </CardContent>
           </Card>
         )}
 
-        {/* Admin Leaderboard Preview (Always Visible) */}
+        {/* Admin Leaderboard Preview */}
         {adminLeaderboard && adminLeaderboard.length > 0 && (
           <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
                 <Trophy className="h-6 w-6 text-yellow-400" />
-                Admin Leaderboard Preview (Always Visible)
+                Leaderboard Preview (Admin Only - Always Visible)
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {adminLeaderboard.map((entry: any, index: number) => (
-                  <motion.div
-                    key={entry._id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    className={`p-4 rounded-lg backdrop-blur-sm border ${
-                      entry.rank === 1
-                        ? "bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border-yellow-500/50"
-                        : entry.rank === 2
-                        ? "bg-gradient-to-r from-gray-400/20 to-gray-500/20 border-gray-400/50"
-                        : entry.rank === 3
-                        ? "bg-gradient-to-r from-orange-600/20 to-orange-700/20 border-orange-600/50"
-                        : "bg-white/5 border-white/10"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div
-                          className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${
-                            entry.rank === 1
-                              ? "bg-gradient-to-br from-yellow-400 to-yellow-600 text-white"
-                              : entry.rank === 2
-                              ? "bg-gradient-to-br from-gray-300 to-gray-500 text-white"
-                              : entry.rank === 3
-                              ? "bg-gradient-to-br from-orange-500 to-orange-700 text-white"
-                              : "bg-white/10 text-white"
-                          }`}
-                        >
-                          {entry.rank}
-                        </div>
-                        <div>
-                          <p className="text-white font-semibold">{entry.userName}</p>
-                          <p className="text-white/60 text-sm">{entry.userEmail}</p>
-                          <span
-                            className={`text-xs font-bold px-2 py-1 rounded ${
-                              entry.userType === "PAID"
-                                ? "bg-green-500/30 text-green-300"
-                                : "bg-orange-500/30 text-orange-300"
-                            }`}
-                          >
+              <div className="overflow-x-auto">
+                <table className="w-full text-white">
+                  <thead>
+                    <tr className="border-b border-white/20">
+                      <th className="text-left p-3">Rank</th>
+                      <th className="text-left p-3">User</th>
+                      <th className="text-left p-3">Score</th>
+                      <th className="text-left p-3">Accuracy</th>
+                      <th className="text-left p-3">Avg Time</th>
+                      <th className="text-left p-3">Type</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {adminLeaderboard.map((entry: any) => (
+                      <tr key={entry._id} className="border-b border-white/10 hover:bg-white/5">
+                        <td className="p-3">
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
+                            entry.rank === 1 ? "bg-gradient-to-br from-yellow-400 to-yellow-600" :
+                            entry.rank === 2 ? "bg-gradient-to-br from-gray-300 to-gray-500" :
+                            entry.rank === 3 ? "bg-gradient-to-br from-orange-500 to-orange-700" :
+                            "bg-white/10"
+                          }`}>
+                            {entry.rank}
+                          </div>
+                        </td>
+                        <td className="p-3">
+                          <div>
+                            <p className="font-semibold">{entry.userName}</p>
+                            <p className="text-xs text-white/60">{entry.userEmail}</p>
+                          </div>
+                        </td>
+                        <td className="p-3 font-bold">{Math.round(entry.score)}%</td>
+                        <td className="p-3">{Math.round(entry.accuracy)}%</td>
+                        <td className="p-3">{Math.round(entry.avgTimePerQuestion)}s</td>
+                        <td className="p-3">
+                          <span className={`px-2 py-1 rounded text-xs font-bold ${
+                            entry.userType === "PAID" 
+                              ? "bg-green-500/30 text-green-300" 
+                              : "bg-orange-500/30 text-orange-300"
+                          }`}>
                             {entry.userType}
                           </span>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-6">
-                        <div className="text-right">
-                          <p className="text-white font-bold">{Math.round(entry.accuracy)}%</p>
-                          <p className="text-white/60 text-xs">Accuracy</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-white font-bold">{Math.round(entry.avgTimePerQuestion)}s</p>
-                          <p className="text-white/60 text-xs">Avg Time</p>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </CardContent>
           </Card>
