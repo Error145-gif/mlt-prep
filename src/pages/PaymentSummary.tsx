@@ -7,17 +7,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { User, Mail, MapPin, BookOpen, CheckCircle, Tag } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { User, Mail, MapPin, BookOpen, CheckCircle, Tag, Lock, Zap } from "lucide-react";
+import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Menu, X } from "lucide-react";
 
 export default function PaymentSummary() {
   const { isAuthenticated, isLoading, user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const userProfile = useQuery(api.users.getUserProfile);
   
   const [couponCode, setCouponCode] = useState("");
@@ -48,14 +46,14 @@ export default function PaymentSummary() {
 
   if (isLoading || !userProfile) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-600 via-blue-600 to-pink-600">
         <div className="text-white text-xl">Loading...</div>
       </div>
     );
   }
 
   if (!planName || !basePrice) {
-    navigate("/subscription");
+    navigate("/subscription-plans");
     return null;
   }
 
@@ -64,7 +62,7 @@ export default function PaymentSummary() {
   if (!isProfileComplete) {
     return (
       <div className="min-h-screen p-6 lg:p-8 relative overflow-hidden">
-        <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
+        <div className="fixed inset-0 -z-10 bg-gradient-to-br from-purple-600 via-blue-600 to-pink-600">
           <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-400/30 rounded-full blur-3xl" />
           <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-500/30 rounded-full blur-3xl" />
         </div>
@@ -115,7 +113,7 @@ export default function PaymentSummary() {
                     Complete Profile Now
                   </Button>
                   <Button
-                    onClick={() => navigate("/subscription")}
+                    onClick={() => navigate("/subscription-plans")}
                     variant="outline"
                     className="w-full border-white/20 text-white hover:bg-white/10"
                   >
@@ -299,7 +297,6 @@ export default function PaymentSummary() {
         returnUrl: `${window.location.origin}/payment-status?gateway=cashfree&order_id=${order.orderId}&planName=${encodeURIComponent(planName || "")}&amount=${finalAmount}&duration=${duration}`,
       };
 
-      // Cashfree SDK v3 expects lowercase mode: "production" or "sandbox"
       const cashfreeMode = (order.environment || "PRODUCTION").toLowerCase();
       console.log("Opening Cashfree checkout with options:", checkoutOptions);
       console.log("Using Cashfree mode:", cashfreeMode);
@@ -353,200 +350,142 @@ export default function PaymentSummary() {
 
   return (
     <div className="min-h-screen p-6 lg:p-8 relative overflow-hidden">
-      {/* Hamburger Menu Button - Mobile Only */}
-      <button
-        onClick={() => setIsMenuOpen(!isMenuOpen)}
-        className="fixed top-6 right-6 z-50 md:hidden bg-white/20 backdrop-blur-sm p-2 rounded-lg hover:bg-white/30 transition-all"
-      >
-        {isMenuOpen ? (
-          <X className="h-6 w-6 text-white" />
-        ) : (
-          <Menu className="h-6 w-6 text-white" />
-        )}
-      </button>
-
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {isMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, x: 300 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 300 }}
-            transition={{ duration: 0.3 }}
-            className="fixed top-0 right-0 h-screen w-64 bg-gradient-to-br from-blue-600 to-purple-700 z-40 md:hidden shadow-2xl p-6 space-y-4"
-          >
-            <div className="mt-12 space-y-3">
-              <button
-                onClick={() => {
-                  navigate("/dashboard");
-                  setIsMenuOpen(false);
-                }}
-                className="w-full text-left px-4 py-3 text-white hover:bg-white/20 rounded-lg transition-all"
-              >
-                📊 Dashboard
-              </button>
-              <button
-                onClick={() => {
-                  navigate("/tests/mock");
-                  setIsMenuOpen(false);
-                }}
-                className="w-full text-left px-4 py-3 text-white hover:bg-white/20 rounded-lg transition-all"
-              >
-                🧩 Mock Tests
-              </button>
-              <button
-                onClick={() => {
-                  navigate("/tests/pyq");
-                  setIsMenuOpen(false);
-                }}
-                className="w-full text-left px-4 py-3 text-white hover:bg-white/20 rounded-lg transition-all"
-              >
-                📚 PYQ Sets
-              </button>
-              <button
-                onClick={() => {
-                  navigate("/tests/ai");
-                  setIsMenuOpen(false);
-                }}
-                className="w-full text-left px-4 py-3 text-white hover:bg-white/20 rounded-lg transition-all"
-              >
-                🤖 AI Questions
-              </button>
-              <button
-                onClick={() => {
-                  navigate("/profile");
-                  setIsMenuOpen(false);
-                }}
-                className="w-full text-left px-4 py-3 text-white hover:bg-white/20 rounded-lg transition-all"
-              >
-                👤 Profile
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
+      <div className="fixed inset-0 -z-10 bg-gradient-to-br from-purple-600 via-blue-600 to-pink-600">
         <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-400/30 rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-500/30 rounded-full blur-3xl" />
       </div>
 
-      <div className="relative z-10 max-w-4xl mx-auto space-y-6">
+      <div className="relative z-10 max-w-2xl mx-auto space-y-6">
+        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
+          className="text-center space-y-2"
         >
-          <h1 className="text-3xl font-bold text-white">Payment Summary</h1>
-          <p className="text-white/70 mt-1">Review your subscription details</p>
+          <h1 className="text-4xl font-bold text-white">Payment Summary</h1>
+          <p className="text-white/80 text-lg">Review your subscription details</p>
         </motion.div>
 
+        {/* Success Message */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-white/20 backdrop-blur-xl border border-white/30 rounded-2xl p-6"
+        >
+          <div className="flex items-center gap-3 justify-center">
+            <CheckCircle className="h-6 w-6 text-green-300" />
+            <div className="text-center">
+              <p className="text-white font-bold text-lg">You're almost ready to upgrade</p>
+              <p className="text-white/80 text-sm">You're unlocking full MLT exam preparation with verified tests and analytics.</p>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Payment Details Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
+          <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/10">
             <CardHeader>
               <CardTitle className="text-white text-2xl">Payment Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="space-y-4 bg-white/5 p-6 rounded-lg">
-                <div className="space-y-4 bg-white/5 p-6 rounded-lg">
+              {/* Selected Plan */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 text-white">
+                  <CheckCircle className="h-5 w-5 text-green-300" />
+                  <span className="font-semibold">Selected Plan</span>
+                  <Badge className="bg-white/20 text-white border-white/30 ml-auto">
+                    {planName}
+                  </Badge>
+                </div>
+
+                <div className="space-y-3 text-white/90">
                   <div className="flex justify-between items-center">
-                    <span className="text-white/70">Selected Plan</span>
-                    <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30">
-                      {planName}
-                    </Badge>
+                    <span>Duration</span>
+                    <span className="font-semibold">{duration} days</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-white/70">Duration</span>
-                    <span className="text-white font-medium">{duration} days</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-white/70">Base Amount</span>
-                    <span className="text-white font-medium">₹{basePrice}</span>
+                    <span>Base Amount</span>
+                    <span className="font-semibold">₹{basePrice}</span>
                   </div>
                   {appliedCoupon && (
-                    <div className="flex justify-between items-center text-green-400">
+                    <div className="flex justify-between items-center text-green-300">
                       <span>Discount Applied</span>
-                      <span>- ₹{discount.toFixed(2)}</span>
+                      <span className="font-semibold">- ₹{discount.toFixed(2)}</span>
                     </div>
                   )}
-                  <div className="border-t border-white/20 pt-4 flex justify-between items-center">
-                    <span className="text-white font-semibold text-lg">Total Amount</span>
-                    <span className="text-white font-bold text-2xl">₹{finalAmount.toFixed(2)}</span>
+                  <div className="border-t border-white/20 pt-3 flex justify-between items-center">
+                    <span className="text-lg font-bold text-white">Total Amount</span>
+                    <span className="text-3xl font-bold text-white">₹{finalAmount.toFixed(2)}</span>
                   </div>
                 </div>
 
-                <div className="space-y-3 bg-white/5 p-6 rounded-lg">
-                  <h3 className="text-white font-medium flex items-center gap-2">
-                    <Tag className="h-4 w-4" />
-                    Have a Coupon Code?
-                  </h3>
-                  <div className="flex gap-2">
-                    <Input
-                      value={couponCode}
-                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                      placeholder="Enter coupon code"
-                      className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
-                      disabled={!!appliedCoupon}
-                    />
-                    <Button
-                      onClick={handleApplyCoupon}
-                      disabled={!couponCode || !!appliedCoupon}
-                      variant="outline"
-                      className="border-white/20 text-white hover:bg-white/10"
-                    >
-                      Apply
-                    </Button>
-                  </div>
-                </div>
+                <p className="text-white/70 text-sm text-center">
+                  No hidden charges • One-time payment • Secure checkout
+                </p>
+              </div>
 
-                <div className="space-y-4 bg-white/5 p-6 rounded-lg">
-                  <h3 className="text-white font-medium flex items-center gap-2">
+              {/* Your Information */}
+              <div className="space-y-3 bg-white/5 rounded-xl p-4">
+                <div className="flex items-center gap-2 text-white font-semibold mb-3">
+                  <User className="h-5 w-5" />
+                  <span>Your Information</span>
+                </div>
+                <div className="space-y-2 text-white/80 text-sm">
+                  <div className="flex items-center gap-2">
                     <User className="h-4 w-4" />
-                    Your Information
-                  </h3>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center gap-2 text-white/70">
-                      <User className="h-4 w-4" />
-                      <span>{userProfile.name}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-white/70">
-                      <Mail className="h-4 w-4" />
-                      <span>{userProfile.email}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-white/70">
-                      <MapPin className="h-4 w-4" />
-                      <span>{userProfile.state}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-white/70">
-                      <BookOpen className="h-4 w-4" />
-                      <span>{userProfile.examPreparation}</span>
-                    </div>
+                    <span>{userProfile.name}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-4 w-4" />
+                    <span>{userProfile.email}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4" />
+                    <span>{userProfile.state}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <BookOpen className="h-4 w-4" />
+                    <span>{userProfile.examPreparation}</span>
                   </div>
                 </div>
+              </div>
 
-                <div className="flex flex-col gap-3">
-                  <Button
-                    onClick={handleCashfreePayment}
-                    className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
-                  >
-                    Pay with Cashfree
-                  </Button>
-                  <Button
-                    onClick={handleRazorpayPayment}
-                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
-                  >
-                    Pay with Razorpay
-                  </Button>
-                  <Button
-                    onClick={() => navigate("/subscription")}
-                    variant="outline"
-                    className="w-full border-white/20 text-white hover:bg-white/10"
-                  >
-                    Back to Plans
-                  </Button>
+              {/* Security Info */}
+              <div className="space-y-2 text-white/80 text-sm">
+                <div className="flex items-center gap-2">
+                  <Lock className="h-4 w-4" />
+                  <span>Secure Payment • UPI / Cards / Netbanking supported</span>
                 </div>
+                <div className="flex items-center gap-2">
+                  <Zap className="h-4 w-4" />
+                  <span>Instant access after payment</span>
+                </div>
+              </div>
+
+              {/* Payment Buttons */}
+              <div className="space-y-3 pt-4">
+                <Button
+                  onClick={handleCashfreePayment}
+                  className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-6 text-lg"
+                >
+                  Pay Securely with Cashfree
+                </Button>
+                <Button
+                  onClick={handleRazorpayPayment}
+                  className="w-full bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white font-semibold py-6 text-lg"
+                >
+                  Pay Securely with Razorpay
+                </Button>
+                <Button
+                  onClick={() => navigate("/subscription-plans")}
+                  variant="outline"
+                  className="w-full border-white/30 text-white hover:bg-white/10 py-6 text-lg"
+                >
+                  Back to Plans
+                </Button>
               </div>
             </CardContent>
           </Card>
