@@ -5,7 +5,7 @@ import { useNavigate } from "react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, BookOpen, Brain, Library, BarChart3, Sparkles, Menu, X } from "lucide-react";
+import { Check, Star, Target, Trophy, Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
@@ -31,9 +31,7 @@ export default function SubscriptionPlans() {
     );
   }
 
-  const hasAnySubscription = subscriptionAccess?.subscription?.status === "active";
   const hasPaidSubscription = subscriptionAccess?.hasAccess && subscriptionAccess?.isPaid;
-  const hasFreeTrial = subscriptionAccess?.reason === "free_trial" && hasAnySubscription;
 
   const handleSubscribe = (_planId: string, amount: number, planName: string, duration: number) => {
     if (hasPaidSubscription) {
@@ -46,103 +44,87 @@ export default function SubscriptionPlans() {
 
   const plans = [
     {
-      id: "trial",
-      name: "Free Trial",
-      price: 0,
-      duration: 7,
-      durationText: "7 days",
-      icon: Sparkles,
-      badge: hasFreeTrial ? "Active" : "Auto-Activated",
-      features: [
-        { text: "First Mock Test (Free)", icon: BookOpen },
-        { text: "First PYQ Set (Free)", icon: BookOpen },
-        { text: "First AI Test (Free)", icon: Brain },
-        { text: "Basic Analytics", icon: BarChart3 },
-      ],
-      action: () => {
-        toast.info("Free trial is automatically activated when you register!");
-        navigate("/dashboard");
-      },
-      buttonText: hasFreeTrial ? "Active - Go to Dashboard" : "Already Activated",
-      disabled: true,
-    },
-    {
       id: "monthly",
-      name: "Monthly",
+      name: "Monthly Starter",
+      subtitle: "Start Now • Upgrade Anytime",
       price: 99,
       duration: 30,
-      durationText: "month",
-      icon: BookOpen,
-      badge: "Popular Choice",
+      icon: Target,
+      description: "Unlock full access for one month and experience real exam preparation.",
       features: [
-        { text: "Unlimited Mock Tests", icon: BookOpen },
-        { text: "All PYQ Sets", icon: BookOpen },
-        { text: "All AI-Based Question Sets", icon: Brain },
-        { text: "Advanced Analytics", icon: BarChart3 },
+        "Unlimited Mock Tests",
+        "All PYQ Sets with explanations",
+        "AI-based practice questions",
+        "Rank & leaderboard access",
+        "Full performance analysis",
       ],
-      action: () => handleSubscribe("monthly", 99, "Monthly Plan", 30),
-      buttonText: hasPaidSubscription ? "Already Subscribed" : "Subscribe Now",
-      disabled: hasPaidSubscription,
+      bestFor: "Students who want to test full access before long plans",
+      targetAudience: [
+        "Students who want to test full access before long plans",
+      ],
+      buttonText: "Start for ₹99",
+      highlighted: false,
     },
     {
       id: "4months",
-      name: "4 Months",
+      name: "4-Month Plan",
+      subtitle: "One complete exam preparation cycle without interruptions.",
       price: 399,
       originalPrice: 496,
-      savings: "Save ₹97",
       duration: 120,
-      durationText: "4 months",
-      icon: Library,
-      badge: "Most Popular",
-      popular: true,
+      icon: Star,
+      badge: "Best Value • Most Chosen",
+      description: "One complete exam preparation cycle without interruptions.",
       features: [
-        { text: "Everything in Monthly Plan", icon: Check },
-        { text: "Library Access (Coming Soon)", icon: Library },
-        { text: "Extended Validity (4 Months)", icon: Check },
+        "Everything in Monthly Starter",
+        "Extended access for 4 months",
+        "Consistent practice & progress tracking",
+        "No renewal stress",
+        "Library Access (Coming Soon)",
       ],
-      action: () => handleSubscribe("4months", 399, "4 Months Plan", 120),
-      buttonText: hasPaidSubscription ? "Already Subscribed" : "Subscribe Now",
-      disabled: hasPaidSubscription,
+      bestFor: "Serious aspirants",
+      targetAudience: [
+        "Upcoming exam candidates",
+        "Students preparing with discipline",
+      ],
+      buttonText: "Subscribe for 4 Months – ₹399",
+      priceSubtext: "₹399 every 4 months",
+      highlighted: true,
     },
     {
       id: "yearly",
-      name: "Yearly",
+      name: "Yearly Plan",
+      subtitle: "Best for Long-Term Preparation",
       price: 599,
       originalPrice: 1188,
-      savings: "Save ₹589",
       duration: 365,
-      durationText: "year",
-      icon: Library,
-      badge: "Best Value",
+      icon: Trophy,
+      description: "Prepare once. Stay ready all year. No renewal stress for a full year.",
       features: [
-        { text: "Everything in 4-Month Plan", icon: Check },
-        { text: "1 Year Full Access to All Content", icon: Check },
+        "Everything in 4-Month Plan",
+        "Full access for 1 year",
+        "Ideal for repeaters & long-term goals",
+        "Library Access (Coming Soon)",
       ],
-      action: () => handleSubscribe("yearly", 599, "Yearly Plan", 365),
-      buttonText: hasPaidSubscription ? "Already Subscribed" : "Subscribe Now",
-      disabled: hasPaidSubscription,
+      bestFor: "Repeat aspirants",
+      targetAudience: [
+        "Long-term government exam preparation",
+      ],
+      buttonText: "Subscribe Yearly – ₹599",
+      priceSubtext: "₹599 per year",
+      highlighted: false,
     },
   ];
 
   return (
     <div className="min-h-screen p-4 md:p-8 relative overflow-hidden">
       <StudentNav />
-      <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
-        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-400/30 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-500/30 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 w-[600px] h-[600px] bg-pink-400/25 rounded-full blur-3xl" />
+      
+      {/* Background */}
+      <div className="fixed inset-0 -z-10 bg-gradient-to-br from-purple-600 via-blue-600 to-pink-600">
+        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-purple-400/30 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-blue-500/30 rounded-full blur-3xl" />
       </div>
-
-      <div 
-        className="fixed inset-0 z-0 opacity-15"
-        style={{
-          backgroundImage: 'url(https://harmless-tapir-303.convex.cloud/api/storage/79e8f0e0-a158-4a75-93f3-29c5c9224309)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-          backgroundAttachment: 'fixed'
-        }}
-      />
 
       {/* Hamburger Menu Button */}
       <Button
@@ -202,93 +184,138 @@ export default function SubscriptionPlans() {
             >
               AI Questions
             </Button>
-            <Button
-              onClick={() => {
-                navigate("/profile");
-                setIsMenuOpen(false);
-              }}
-              variant="outline"
-              className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30"
-            >
-              Profile
-            </Button>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <div className="relative z-10 max-w-4xl mx-auto space-y-6">
-        <div className="text-center space-y-2 mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-white drop-shadow-lg">Choose Your Plan</h1>
-          <p className="text-white/90 text-sm md:text-base drop-shadow-md">
-            Your 7-day Free Trial is automatically activated! Upgrade anytime for full access.
+      <div className="relative z-10 max-w-7xl mx-auto space-y-8 pt-20">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center space-y-3"
+        >
+          <h1 className="text-4xl md:text-5xl font-bold text-white drop-shadow-lg">
+            Choose Your Plan
+          </h1>
+          <p className="text-white/90 text-lg drop-shadow-md">
+            Upgrade anytime. No hidden charges.
           </p>
-          {hasFreeTrial && (
-            <Badge className="mt-4 bg-green-500/30 text-white border-green-400/50 backdrop-blur-xl text-sm px-4 py-2">
-              ✓ Free Trial Active - First test of each type unlocked!
-            </Badge>
-          )}
           {hasPaidSubscription && (
             <Badge className="mt-4 bg-white/90 text-purple-700 border-white backdrop-blur-xl text-sm px-4 py-2 shadow-lg">
               ✓ You have an active paid subscription
             </Badge>
           )}
-        </div>
+        </motion.div>
 
-        <div className="space-y-4">
+        {/* Plans Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {plans.map((plan, index) => (
             <motion.div
               key={plan.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
+              className={plan.highlighted ? "md:scale-105" : ""}
             >
-              <Card className={`border-2 ${plan.popular ? 'border-white/50 shadow-2xl' : 'border-white/30'} rounded-2xl overflow-hidden ${plan.disabled && plan.id !== 'trial' ? 'opacity-60' : ''} glass-card backdrop-blur-xl bg-white/20`}>
-                <CardHeader className="bg-gradient-to-r from-white/10 to-white/5 pb-4">
-                  <div className="flex items-start justify-between">
+              <Card
+                className={`h-full border-2 rounded-3xl overflow-hidden backdrop-blur-xl ${
+                  plan.highlighted
+                    ? "border-yellow-400/60 shadow-2xl bg-gradient-to-br from-purple-500/30 to-pink-500/30"
+                    : "border-white/30 bg-white/20"
+                }`}
+              >
+                {plan.badge && (
+                  <div className="bg-gradient-to-r from-yellow-400 to-orange-400 text-center py-2 px-4">
+                    <p className="text-sm font-bold text-purple-900 flex items-center justify-center gap-2">
+                      <Star className="h-4 w-4 fill-purple-900" />
+                      {plan.badge}
+                    </p>
+                  </div>
+                )}
+
+                <CardHeader className="space-y-3 pb-4">
+                  <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="p-2 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600">
                         <plan.icon className="h-6 w-6 text-white" />
                       </div>
                       <div>
-                        <CardTitle className="text-xl text-white">{plan.name}</CardTitle>
-                        {plan.badge && (
-                          <Badge className="mt-1 bg-white/20 text-white border-white/30 text-xs">
-                            {plan.badge}
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      {plan.originalPrice && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-white/60 line-through text-sm">₹{plan.originalPrice}</span>
-                          <Badge className="bg-red-500/80 text-white border-red-400/50 text-xs">{plan.savings}</Badge>
-                        </div>
-                      )}
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-3xl font-bold text-white">₹{plan.price}</span>
-                        <span className="text-white/70 text-sm">/{plan.durationText}</span>
+                        <CardTitle className="text-2xl text-white">{plan.name}</CardTitle>
+                        <p className="text-white/70 text-sm mt-1">{plan.subtitle}</p>
                       </div>
                     </div>
                   </div>
+
+                  <div className="space-y-1">
+                    {plan.originalPrice && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-white/60 line-through text-lg">₹{plan.originalPrice}</span>
+                        <Badge className="bg-red-500/80 text-white border-red-400/50 text-xs">
+                          Save ₹{plan.originalPrice - plan.price}
+                        </Badge>
+                      </div>
+                    )}
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-4xl font-bold text-white">₹{plan.price}</span>
+                    </div>
+                    {plan.priceSubtext && (
+                      <p className="text-white/70 text-sm">{plan.priceSubtext}</p>
+                    )}
+                  </div>
+
+                  <p className="text-white/90 text-sm leading-relaxed">{plan.description}</p>
                 </CardHeader>
-                <CardContent className="pt-4 space-y-4">
-                  <div className="space-y-2">
-                    {plan.features.map((feature, idx) => (
-                      <div key={idx} className="flex items-center gap-3">
-                        <div className="p-1 rounded-full bg-white/20">
-                          <feature.icon className="h-4 w-4 text-white" />
+
+                <CardContent className="space-y-6">
+                  {/* What you get */}
+                  <div className="space-y-3">
+                    <h3 className="text-white font-semibold">What you get:</h3>
+                    <div className="space-y-2">
+                      {plan.features.map((feature, idx) => (
+                        <div key={idx} className="flex items-start gap-3">
+                          <Check className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
+                          <span className="text-white/90 text-sm">{feature}</span>
                         </div>
-                        <span className="text-white/90 text-sm">{feature.text}</span>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
+
+                  {/* Best for */}
+                  {plan.bestFor && (
+                    <div className="bg-white/10 rounded-lg p-3 space-y-2">
+                      <p className="text-white/90 text-sm">
+                        <span className="font-semibold">Best for:</span> {plan.bestFor}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Who is this for */}
+                  {plan.targetAudience && (
+                    <div className="space-y-2">
+                      <h3 className="text-white font-semibold text-sm">Who is this for:</h3>
+                      <div className="space-y-1">
+                        {plan.targetAudience.map((audience, idx) => (
+                          <div key={idx} className="flex items-start gap-2">
+                            <Check className="h-4 w-4 text-purple-300 flex-shrink-0 mt-0.5" />
+                            <span className="text-white/80 text-sm">{audience}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* CTA Button */}
                   <Button
-                    onClick={plan.action}
-                    className="w-full bg-gradient-to-r from-[#3b82f6] to-[#2563eb] hover:from-[#2563eb] hover:to-[#1d4ed8] shadow-lg text-white rounded-xl py-6 text-base font-semibold"
-                    disabled={plan.disabled && plan.id !== 'trial'}
+                    onClick={() => handleSubscribe(plan.id, plan.price, plan.name, plan.duration)}
+                    className={`w-full py-6 text-base font-semibold rounded-xl shadow-lg ${
+                      plan.highlighted
+                        ? "bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
+                        : "bg-gradient-to-r from-orange-400 to-pink-400 hover:from-orange-500 hover:to-pink-500 text-purple-900"
+                    }`}
+                    disabled={hasPaidSubscription}
                   >
-                    {plan.buttonText}
+                    {hasPaidSubscription ? "Already Subscribed" : plan.buttonText}
                   </Button>
                 </CardContent>
               </Card>
@@ -296,63 +323,10 @@ export default function SubscriptionPlans() {
           ))}
         </div>
 
-        <div className="mt-12 glass-card border border-white/30 backdrop-blur-xl bg-white/20 rounded-2xl p-6">
-          <h2 className="text-xl font-bold text-white mb-4 text-center">Feature Comparison</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-white/20">
-                  <th className="text-left py-3 px-2 font-semibold text-white">Feature</th>
-                  <th className="text-center py-3 px-2 font-semibold text-white">Free Trial</th>
-                  <th className="text-center py-3 px-2 font-semibold text-white">Monthly</th>
-                  <th className="text-center py-3 px-2 font-semibold text-white">4 Months</th>
-                  <th className="text-center py-3 px-2 font-semibold text-white">Yearly</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="border-b border-white/10">
-                  <td className="py-3 px-2 text-white/90">Mock Tests</td>
-                  <td className="text-center py-3 px-2 text-white/70">First Test Only</td>
-                  <td className="text-center py-3 px-2"><Check className="h-5 w-5 text-green-600 mx-auto" /></td>
-                  <td className="text-center py-3 px-2"><Check className="h-5 w-5 text-green-600 mx-auto" /></td>
-                  <td className="text-center py-3 px-2"><Check className="h-5 w-5 text-green-600 mx-auto" /></td>
-                </tr>
-                <tr className="border-b border-white/10">
-                  <td className="py-3 px-2 text-white/90">PYQ Sets</td>
-                  <td className="text-center py-3 px-2 text-white/70">First Set Only</td>
-                  <td className="text-center py-3 px-2"><Check className="h-5 w-5 text-green-600 mx-auto" /></td>
-                  <td className="text-center py-3 px-2"><Check className="h-5 w-5 text-green-600 mx-auto" /></td>
-                  <td className="text-center py-3 px-2"><Check className="h-5 w-5 text-green-600 mx-auto" /></td>
-                </tr>
-                <tr className="border-b border-white/10">
-                  <td className="py-3 px-2 text-white/90">AI-Based Questions</td>
-                  <td className="text-center py-3 px-2 text-white/70">First Test Only</td>
-                  <td className="text-center py-3 px-2"><Check className="h-5 w-5 text-green-600 mx-auto" /></td>
-                  <td className="text-center py-3 px-2"><Check className="h-5 w-5 text-green-600 mx-auto" /></td>
-                  <td className="text-center py-3 px-2"><Check className="h-5 w-5 text-green-600 mx-auto" /></td>
-                </tr>
-                <tr className="border-b border-white/10">
-                  <td className="py-3 px-2 text-white/90">Library Access</td>
-                  <td className="text-center py-3 px-2 text-white/70 text-sm">Coming Soon</td>
-                  <td className="text-center py-3 px-2 text-white/70 text-sm">Coming Soon</td>
-                  <td className="text-center py-3 px-2 text-white/70 text-sm">Coming Soon</td>
-                  <td className="text-center py-3 px-2 text-white/70 text-sm">Coming Soon</td>
-                </tr>
-                <tr>
-                  <td className="py-3 px-2 text-white/90">Analytics</td>
-                  <td className="text-center py-3 px-2 text-white/70">Basic</td>
-                  <td className="text-center py-3 px-2 text-white/90">Advanced</td>
-                  <td className="text-center py-3 px-2 text-white/90">Advanced</td>
-                  <td className="text-center py-3 px-2 text-white/90">Advanced</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
+        {/* Bottom Note */}
         <div className="glass-card border border-white/30 backdrop-blur-xl bg-white/20 rounded-xl p-4 text-center">
           <p className="text-sm text-white">
-            <strong>Note:</strong> Free trial is automatically activated when you register. You get access to the first test of each type (Mock, PYQ, AI). Upgrade anytime for unlimited access!
+            <strong>Note:</strong> All plans include unlimited access to Mock Tests, PYQ Sets, and AI Questions. Library access will be unlocked automatically when released.
           </p>
         </div>
       </div>
