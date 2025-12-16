@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { query, mutation, internalMutation } from "./_generated/server";
+import { query, mutation, internalMutation, internalQuery } from "./_generated/server";
 import { getCurrentUser } from "./users";
 import { paginationOptsValidator } from "convex/server";
 
@@ -703,5 +703,62 @@ export const archiveWeeklyTest = mutation({
     });
 
     return { success: true };
+  },
+});
+
+// Internal: Get scheduled tests ready for activation
+export const getScheduledTestsForActivation = internalQuery({
+  args: { now: v.number() },
+  handler: async (ctx, args) => {
+    const tests = await ctx.db
+      .query("weeklyTests")
+      .withIndex("by_status", (q) => q.eq("status", "scheduled"))
+      .collect();
+    
+    // Filter tests whose scheduled time has passed
+    return tests.filter(test => 
+      test.scheduledDate && test.scheduledDate <= args.now
+    );
+  },
+});
+
+// Internal: Activate a scheduled test
+export const activateScheduledTest = internalMutation({
+  args: { weeklyTestId: v.id("weeklyTests") },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.weeklyTestId, {
+      status: "active",
+      isActive: true,
+      publishedAt: Date.now(),
+    });
+  },
+});
+
+// Internal: Get active tests ready for completion
+export const getActiveTestsForCompletion = internalQuery({
+  args: { now: v.number() },
+  handler: async (ctx, args) => {
+    const tests = await ctx.db
+      .query("weeklyTests")
+      .withIndex("by_status", (q) => q.eq("status", "active"))
+      .collect();
+    
+    // Filter tests whose end date has passed (24 hours after start)
+    return tests.filter(test => {
+      if (!test.scheduledDate) return false;
+      const endTime = test.scheduledDate + (24 * 60 * 60 * 1000); // 24 hours
+      return endTime <= args.now;
+    });
+  },
+});
+
+// Internal: Complete an active test
+export const completeActiveTest = internalMutation({
+  args: { weeklyTestId: v.id("weeklyTests") },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.weeklyTestId, {
+      status: "completed",
+      isActive: false,
+    });
   },
 });

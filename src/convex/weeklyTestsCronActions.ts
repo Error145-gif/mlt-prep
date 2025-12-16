@@ -1,70 +1,48 @@
-import { internalMutation } from "./_generated/server";
+"use node";
+
+import { internalAction } from "./_generated/server";
 import { internal } from "./_generated/api";
 
-// Auto-publish weekly tests on Sunday
-export const autoPublishWeeklyTests = internalMutation({
+// Auto-publish weekly tests on their scheduled date
+export const autoPublishWeeklyTests = internalAction({
   args: {},
-  handler: async (ctx) => {
+  handler: async (ctx): Promise<{ activated: number }> => {
     const now = Date.now();
-    const today = new Date(now);
     
-    // Only run on Sundays
-    if (today.getDay() !== 0) return;
-
-    // Find scheduled tests that should be active now
-    const scheduledTests = await ctx.db
-      .query("weeklyTests")
-      .withIndex("by_status", (q) => q.eq("status", "scheduled"))
-      .filter((q) => {
-        // Check if scheduledDate is within today
-        // Note: This logic depends on how scheduledDate is stored (number timestamp)
-        return q.eq(q.field("status"), "scheduled");
-      })
-      .collect();
-
+    // Get all scheduled tests whose time has come
+    const scheduledTests = await ctx.runQuery(internal.weeklyTests.getScheduledTestsForActivation, { now });
+    
     for (const test of scheduledTests) {
-      if (test.scheduledDate && test.scheduledDate <= now) {
-        await ctx.db.patch(test._id, {
-          status: "active",
-          isActive: true,
-          publishedAt: now,
-        });
-      }
+      // Activate the test
+      await ctx.runMutation(internal.weeklyTests.activateScheduledTest, { 
+        weeklyTestId: test._id 
+      });
+      
+      console.log(`Auto-activated weekly test: ${test.title}`);
     }
+    
+    return { activated: scheduledTests.length };
   },
 });
 
-// Auto-publish leaderboards on Monday evening
-export const autoPublishLeaderboards = internalMutation({
+// Auto-publish leaderboards for completed tests
+export const autoPublishLeaderboards = internalAction({
   args: {},
-  handler: async (ctx) => {
+  handler: async (ctx): Promise<{ completed: number }> => {
     const now = Date.now();
-    const today = new Date(now);
     
-    // Only run on Mondays
-    if (today.getDay() !== 1) return;
-
-    // Find active tests that should be completed
-    const activeTests = await ctx.db
-      .query("weeklyTests")
-      .withIndex("by_status", (q) => q.eq("status", "active"))
-      .collect();
-
+    // Get all active tests that should be completed
+    const activeTests = await ctx.runQuery(internal.weeklyTests.getActiveTestsForCompletion, { now });
+    
     for (const test of activeTests) {
-      // If end date passed (assuming duration logic or explicit end date)
-      // For now, let's assume 24h or check endDate string if parsable
-      // But simpler: check if it's been active for duration
+      // Mark test as completed
+      await ctx.runMutation(internal.weeklyTests.completeActiveTest, { 
+        weeklyTestId: test._id 
+      });
       
-      // If we use endDate string:
-      const endDate = new Date(test.endDate).getTime();
-      if (endDate <= now) {
-         // Publish leaderboard if not already
-         if (!test.leaderboardPublishedAt) {
-            await ctx.scheduler.runAfter(0, internal.weeklyTests.publishWeeklyLeaderboard, {
-              weeklyTestId: test._id,
-            });
-         }
-      }
+      console.log(`Auto-completed weekly test: ${test.title}`);
     }
+    
+    return { completed: activeTests.length };
   },
 });

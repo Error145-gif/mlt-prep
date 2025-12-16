@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Loader2, Trophy, Lock, Unlock, Calendar, Plus, X, Archive, Eye } from "lucide-react";
+import { Loader2, Trophy, Lock, Unlock, Calendar, Plus, X, Archive, Eye, Clock } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import AdminSidebar from "@/components/AdminSidebar";
@@ -183,6 +183,9 @@ export default function WeeklyTestManagement() {
           <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
             <CardHeader>
               <CardTitle className="text-white">Create New Weekly Test</CardTitle>
+              <p className="text-white/70 text-sm mt-2">
+                Test will automatically activate on the scheduled Sunday and become ACTIVE for users.
+              </p>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
@@ -211,7 +214,25 @@ export default function WeeklyTestManagement() {
                   onChange={(e) => setNewTestDate(e.target.value)}
                   className="bg-white/10 border-white/20 text-white"
                 />
+                <p className="text-white/60 text-xs mt-1">
+                  Test will automatically become ACTIVE at 12:00 AM on this Sunday
+                </p>
               </div>
+              
+              {/* Admin Preview */}
+              <div className="bg-blue-500/20 border border-blue-400/30 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Eye className="h-4 w-4 text-blue-300" />
+                  <span className="text-white font-semibold text-sm">User Preview (Before Activation)</span>
+                </div>
+                <div className="bg-white/10 rounded p-3 text-white/90 text-sm">
+                  <Clock className="h-4 w-4 inline mr-2 text-yellow-400" />
+                  🕒 Sunday Free Test<br/>
+                  This test will be active on Sunday.<br/>
+                  Please come back on Sunday to attempt the test.
+                </div>
+              </div>
+
               <div className="flex gap-4">
                 <Button onClick={handleCreateTest} className="bg-green-500 hover:bg-green-600">
                   Create Test (Auto-selects 100 Questions)

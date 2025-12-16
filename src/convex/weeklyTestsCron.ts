@@ -3,18 +3,18 @@ import { internal } from "./_generated/api";
 
 const crons = cronJobs();
 
-// Auto-publish weekly tests on Sunday at 12:00 AM
-crons.cron(
-  "auto-publish-weekly-tests",
-  "0 0 * * 0", // Every Sunday at midnight
+// Check every hour for tests that need to be activated
+crons.interval(
+  "auto-activate-weekly-tests",
+  { hours: 1 }, // Check every hour
   internal.weeklyTestsCronActions.autoPublishWeeklyTests,
   {}
 );
 
-// Auto-publish leaderboards on Monday at 6:00 PM
-crons.cron(
-  "auto-publish-leaderboards",
-  "0 18 * * 1", // Every Monday at 6 PM
+// Check every hour for tests that need to be completed
+crons.interval(
+  "auto-complete-weekly-tests",
+  { hours: 1 }, // Check every hour
   internal.weeklyTestsCronActions.autoPublishLeaderboards,
   {}
 );
