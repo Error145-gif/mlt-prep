@@ -4,7 +4,10 @@ import { useAuth } from "@/hooks/use-auth";
 import { Navigate } from "react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Users, Trophy, Lock, Unlock, Calendar } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Loader2, Users, Trophy, Lock, Unlock, Calendar, Plus } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import AdminSidebar from "@/components/AdminSidebar";
@@ -13,6 +16,10 @@ import { useState } from "react";
 export default function WeeklyTestManagement() {
   const { isLoading, isAuthenticated, user } = useAuth();
   const [selectedTestId, setSelectedTestId] = useState<string | null>(null);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [newTestTitle, setNewTestTitle] = useState("");
+  const [newTestDescription, setNewTestDescription] = useState("");
+  const [newTestDate, setNewTestDate] = useState("");
 
   const allTests = useQuery(
     api.weeklyTests.getAllWeeklyTests,
@@ -32,6 +39,7 @@ export default function WeeklyTestManagement() {
   );
 
   const releaseLeaderboard = useMutation(api.weeklyTests.releaseLeaderboard);
+  const createWeeklyTest = useMutation(api.weeklyTests.createWeeklyTest);
 
   if (isLoading) {
     return (
@@ -61,6 +69,34 @@ export default function WeeklyTestManagement() {
     }
   };
 
+  const handleCreateTest = async () => {
+    if (!newTestTitle || !newTestDate) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    const selectedDate = new Date(newTestDate);
+    if (selectedDate.getDay() !== 0) {
+      toast.error("Weekly test must be scheduled on a Sunday");
+      return;
+    }
+
+    try {
+      await createWeeklyTest({
+        title: newTestTitle,
+        description: newTestDescription,
+        scheduledDate: selectedDate.getTime(),
+      });
+      toast.success("Weekly test created successfully!");
+      setShowCreateForm(false);
+      setNewTestTitle("");
+      setNewTestDescription("");
+      setNewTestDate("");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to create test");
+    }
+  };
+
   return (
     <div className="min-h-screen p-6 relative">
       <AdminSidebar />
@@ -73,10 +109,65 @@ export default function WeeklyTestManagement() {
         animate={{ opacity: 1, y: 0 }}
         className="max-w-7xl mx-auto space-y-6 relative z-10 ml-0 lg:ml-64"
       >
-        <div>
-          <h1 className="text-3xl font-bold text-white">Weekly Test Management</h1>
-          <p className="text-white/70 mt-1">Manage Sunday Free Mock Tests & Leaderboards</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-white">Weekly Test Management</h1>
+            <p className="text-white/70 mt-1">Manage Sunday Free Mock Tests & Leaderboards</p>
+          </div>
+          <Button
+            onClick={() => setShowCreateForm(!showCreateForm)}
+            className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Create New Test
+          </Button>
         </div>
+
+        {/* Create Test Form */}
+        {showCreateForm && (
+          <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
+            <CardHeader>
+              <CardTitle className="text-white">Create New Weekly Test</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label className="text-white">Test Title *</Label>
+                <Input
+                  value={newTestTitle}
+                  onChange={(e) => setNewTestTitle(e.target.value)}
+                  placeholder="e.g., Sunday Free Mock Test - Week 1"
+                  className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                />
+              </div>
+              <div>
+                <Label className="text-white">Description</Label>
+                <Textarea
+                  value={newTestDescription}
+                  onChange={(e) => setNewTestDescription(e.target.value)}
+                  placeholder="Optional description"
+                  className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                />
+              </div>
+              <div>
+                <Label className="text-white">Schedule Date (Must be Sunday) *</Label>
+                <Input
+                  type="date"
+                  value={newTestDate}
+                  onChange={(e) => setNewTestDate(e.target.value)}
+                  className="bg-white/10 border-white/20 text-white"
+                />
+              </div>
+              <div className="flex gap-4">
+                <Button onClick={handleCreateTest} className="bg-green-500 hover:bg-green-600">
+                  Create Test (Auto-selects 100 Questions)
+                </Button>
+                <Button onClick={() => setShowCreateForm(false)} variant="outline" className="bg-white/10 border-white/30 text-white">
+                  Cancel
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Test Selection */}
         <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
@@ -196,13 +287,13 @@ export default function WeeklyTestManagement() {
           </Card>
         )}
 
-        {/* Admin Leaderboard View */}
+        {/* Admin Leaderboard Preview (Always Visible) */}
         {adminLeaderboard && adminLeaderboard.length > 0 && (
           <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
                 <Trophy className="h-6 w-6 text-yellow-400" />
-                Admin Leaderboard View (Always Visible)
+                Admin Leaderboard Preview (Always Visible)
               </CardTitle>
             </CardHeader>
             <CardContent>
