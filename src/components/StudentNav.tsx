@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { Link, useLocation, useNavigate } from "react-router";
-import { Home, BookOpen, FileText, BarChart3, Library, Menu, X, MessageSquare, User, CreditCard } from "lucide-react";
+import { Home, FileText, BookOpen, Brain, CreditCard, Library, Menu, X, MessageSquare, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useState, useEffect } from "react";
@@ -44,14 +44,18 @@ export default function StudentNav() {
     }
   }, [location.pathname]);
 
-  const navItems = [
+  // Primary navigation items (top - most visible)
+  const primaryNavItems = [
     { path: "/dashboard", icon: Home, label: "Dashboard" },
     { path: "/tests/mock", icon: FileText, label: "Mock Tests" },
     { path: "/tests/pyq", icon: BookOpen, label: "PYQ Sets" },
-    { path: "/tests/ai", icon: BarChart3, label: "AI Questions" },
-    { path: "/subscription", icon: CreditCard, label: "Subscription" },
-    { path: "/feedback", icon: MessageSquare, label: "Feedback" },
+    { path: "/tests/ai", icon: Brain, label: "AI Questions" },
+  ];
+
+  // Lower priority items (bottom - subtle)
+  const secondaryNavItems = [
     { path: "/free-library", icon: Library, label: "Library" },
+    { path: "/feedback", icon: MessageSquare, label: "Feedback" },
     { path: "/contact-us", icon: MessageSquare, label: "Contact Us" },
     { path: "/profile", icon: User, label: "Profile" },
   ];
@@ -107,8 +111,9 @@ export default function StudentNav() {
                 <NotificationBell />
               </div>
 
+              {/* Primary Navigation - Top Section */}
               <nav className="flex-1 space-y-2">
-                {navItems.map((item) => {
+                {primaryNavItems.map((item) => {
                   const isActive = location.pathname === item.path;
                   return (
                     <Link
@@ -121,10 +126,10 @@ export default function StudentNav() {
                           setIsOpen(false);
                         }
                       }}
-                      className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                      className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all font-medium ${
                         isActive
-                          ? "bg-white/20 text-white"
-                          : "text-white/70 hover:bg-white/10 hover:text-white"
+                          ? "bg-white/20 text-white shadow-lg"
+                          : "text-white/90 hover:bg-white/10 hover:text-white"
                       }`}
                     >
                       <item.icon className="h-5 w-5" />
@@ -132,12 +137,61 @@ export default function StudentNav() {
                     </Link>
                   );
                 })}
+
+                {/* Upgrade CTA - Highlighted */}
+                <Link
+                  to="/subscription"
+                  onClick={() => {
+                    const width = window.innerWidth;
+                    if (width < 1024) {
+                      setIsOpen(false);
+                    }
+                  }}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all font-semibold mt-2 ${
+                    location.pathname === "/subscription"
+                      ? "bg-gradient-to-r from-orange-500 to-pink-500 text-white shadow-lg shadow-orange-500/50"
+                      : "bg-gradient-to-r from-orange-500/80 to-pink-500/80 text-white hover:from-orange-500 hover:to-pink-500 shadow-md"
+                  }`}
+                >
+                  <CreditCard className="h-5 w-5" />
+                  <span>Upgrade</span>
+                </Link>
+
+                {/* Spacer to push secondary items to bottom */}
+                <div className="flex-1" />
+
+                {/* Secondary Navigation - Bottom Section (subtle) */}
+                <div className="space-y-1 pt-6 mt-auto border-t border-white/10">
+                  {secondaryNavItems.map((item) => {
+                    const isActive = location.pathname === item.path;
+                    return (
+                      <Link
+                        key={item.path}
+                        to={item.path}
+                        onClick={() => {
+                          const width = window.innerWidth;
+                          if (width < 1024) {
+                            setIsOpen(false);
+                          }
+                        }}
+                        className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-all text-sm ${
+                          isActive
+                            ? "bg-white/10 text-white"
+                            : "text-white/60 hover:bg-white/5 hover:text-white/80"
+                        }`}
+                      >
+                        <item.icon className="h-4 w-4" />
+                        <span>{item.label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
               </nav>
 
               <Button
                 onClick={handleSignOut}
                 variant="ghost"
-                className="w-full justify-start text-white/70 hover:text-white hover:bg-white/10"
+                className="w-full justify-start text-white/70 hover:text-white hover:bg-white/10 mt-4"
               >
                 Sign Out
               </Button>
