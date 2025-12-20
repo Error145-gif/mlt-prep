@@ -158,10 +158,10 @@ export default function ContactUs() {
                     For any queries, technical support, or feedback, please email us at:
                   </p>
                   <a 
-                    href="mailto:ak6722909@gmail.com" 
+                    href="mailto:mltprep.online@gmail.com" 
                     className="text-green-400 hover:text-green-300 underline"
                   >
-                    ak6722909@gmail.com
+                    mltprep.online@gmail.com
                   </a>
                   <p className="text-white/60 text-sm mt-2">
                     We typically respond within 24-48 hours during business days.
