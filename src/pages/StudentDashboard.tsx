@@ -37,10 +37,8 @@ export default function StudentDashboard() {
 
   // Memoize user type to avoid recalculation
   const { isFreeTrialUser } = useMemo(() => {
-    // A user is considered "free trial" if they are NOT a paid subscriber
-    // This includes: free_trial, no_subscription, expired, or not_authenticated
     const isPaid = subscriptionAccess?.hasAccess && subscriptionAccess?.isPaid;
-    const isTrial = !isPaid; // Anyone who is NOT paid is treated as free trial
+    const isTrial = !isPaid;
     return { isFreeTrialUser: isTrial };
   }, [subscriptionAccess]);
 
@@ -59,12 +57,10 @@ export default function StudentDashboard() {
     );
   }
 
-  // If not authenticated after loading, don't render
   if (!isAuthenticated) {
     return null;
   }
 
-  // Safe stats with proper null checks
   const displayStats = stats ? {
     totalTests: stats.totalTests ?? 0,
     totalQuestionsAttempted: stats.totalQuestionsAttempted ?? 0,
@@ -90,6 +86,9 @@ export default function StudentDashboard() {
     (userProfile.state ? 25 : 0) : 0;
 
   const isProfileIncomplete = profileCompletion < 100;
+  
+  // Check if this is first login (profile is completely empty)
+  const isFirstLogin = userProfile && !userProfile.name && !userProfile.avatarUrl && !userProfile.examPreparation && !userProfile.state;
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -113,7 +112,7 @@ export default function StudentDashboard() {
         }}
       />
 
-      {/* FREE TRIAL BANNER - Show immediately if subscription data available */}
+      {/* FREE TRIAL BANNER */}
       {subscriptionAccess && isFreeTrialUser && (
         <div className="fixed top-16 left-0 right-0 z-50 bg-gradient-to-r from-orange-500 to-red-500 text-white py-2 px-4 shadow-lg">
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-2">
@@ -135,12 +134,16 @@ export default function StudentDashboard() {
         </div>
       )}
 
-      {/* Profile Completion Gate Overlay */}
+      {/* First Login Modal OR Profile Completion Gate Overlay */}
       {userProfile && isProfileIncomplete && (
-        <ProfileCompletionOverlay profileCompletion={profileCompletion} userProfile={userProfile} />
+        <ProfileCompletionOverlay 
+          profileCompletion={profileCompletion} 
+          userProfile={userProfile}
+          isFirstLogin={isFirstLogin}
+        />
       )}
 
-      {/* Main Dashboard Content - Render immediately with progressive loading */}
+      {/* Main Dashboard Content */}
       <div className={`relative z-10 max-w-7xl mx-auto space-y-6 transition-all duration-500 ${isFreeTrialUser ? 'pt-24' : ''} ${isProfileIncomplete ? 'blur-sm pointer-events-none' : ''}`}>
         
         {/* Header - Show immediately with skeleton if needed */}

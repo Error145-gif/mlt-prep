@@ -1,15 +1,75 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { User, X } from "lucide-react";
 import { useNavigate } from "react-router";
 
 interface ProfileCompletionOverlayProps {
   profileCompletion: number;
   userProfile: any;
+  isFirstLogin?: boolean;
 }
 
-export default function ProfileCompletionOverlay({ profileCompletion, userProfile }: ProfileCompletionOverlayProps) {
+export default function ProfileCompletionOverlay({ profileCompletion, userProfile, isFirstLogin = false }: ProfileCompletionOverlayProps) {
   const navigate = useNavigate();
+
+  // First login modal - cannot be closed
+  if (isFirstLogin) {
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+      >
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.1 }}
+          className="relative max-w-md mx-4 p-8 rounded-2xl bg-gradient-to-br from-violet-500/20 via-purple-500/20 to-pink-500/20 backdrop-blur-xl border border-white/30 shadow-2xl"
+        >
+          <div className="relative z-10 text-center space-y-6">
+            {/* Welcome Icon */}
+            <motion.div
+              animate={{ 
+                scale: [1, 1.1, 1],
+              }}
+              transition={{ 
+                duration: 2,
+                repeat: Infinity,
+                repeatType: "reverse"
+              }}
+              className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-violet-500 to-pink-500 shadow-lg shadow-violet-500/50"
+            >
+              <span className="text-4xl">👋</span>
+            </motion.div>
+
+            {/* Title */}
+            <div>
+              <h2 className="text-2xl font-bold text-white mb-2">Welcome to MLTPrep 👋</h2>
+              <p className="text-lg text-white/90 font-semibold mb-3">
+                Complete your profile to continue
+              </p>
+              <p className="text-white/80 text-sm leading-relaxed">
+                Your profile helps us show you the right exam-level tests, PYQs, and practice based on your goal.
+              </p>
+            </div>
+
+            {/* Time indicator */}
+            <div className="flex items-center justify-center gap-2 text-white/90 text-sm bg-white/5 rounded-lg py-3 px-4 border border-white/10">
+              <span>⏱</span>
+              <span>Takes less than 1 minute</span>
+            </div>
+
+            {/* Complete Profile Button */}
+            <Button
+              onClick={() => navigate("/profile")}
+              className="w-full bg-gradient-to-r from-violet-500 via-purple-500 to-pink-500 hover:from-violet-600 hover:via-purple-600 hover:to-pink-600 text-white font-semibold py-6 rounded-xl shadow-lg shadow-violet-500/50 hover:shadow-violet-500/70 transition-all duration-300 text-base"
+            >
+              COMPLETE PROFILE →
+            </Button>
+          </div>
+        </motion.div>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div
@@ -75,25 +135,25 @@ export default function ProfileCompletionOverlay({ profileCompletion, userProfil
             <p className="text-white/70 text-xs font-semibold uppercase tracking-wide mb-2">Required Fields:</p>
             {!userProfile?.name && (
               <div className="flex items-center gap-2 text-white/80 text-sm">
-                <X className="h-4 w-4 text-red-400" />
+                <span className="text-red-400">✗</span>
                 <span>Full Name</span>
               </div>
             )}
             {!userProfile?.avatarUrl && (
               <div className="flex items-center gap-2 text-white/80 text-sm">
-                <X className="h-4 w-4 text-red-400" />
+                <span className="text-red-400">✗</span>
                 <span>Profile Avatar</span>
               </div>
             )}
             {!userProfile?.examPreparation && (
               <div className="flex items-center gap-2 text-white/80 text-sm">
-                <X className="h-4 w-4 text-red-400" />
+                <span className="text-red-400">✗</span>
                 <span>Exam Preparation</span>
               </div>
             )}
             {!userProfile?.state && (
               <div className="flex items-center gap-2 text-white/80 text-sm">
-                <X className="h-4 w-4 text-red-400" />
+                <span className="text-red-400">✗</span>
                 <span>State</span>
               </div>
             )}
@@ -104,7 +164,6 @@ export default function ProfileCompletionOverlay({ profileCompletion, userProfil
             onClick={() => navigate("/profile")}
             className="w-full bg-gradient-to-r from-violet-500 via-purple-500 to-pink-500 hover:from-violet-600 hover:via-purple-600 hover:to-pink-600 text-white font-semibold py-6 rounded-xl shadow-lg shadow-violet-500/50 hover:shadow-violet-500/70 transition-all duration-300"
           >
-            <User className="h-5 w-5 mr-2" />
             Complete Profile Now
           </Button>
         </div>
