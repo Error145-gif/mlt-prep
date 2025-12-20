@@ -4,23 +4,20 @@ import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
 import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
-import { Sparkles, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
  
 import DashboardHeader from "@/components/DashboardHeader";
-import PerformanceScore from "@/components/PerformanceScore";
-import SubscriptionStatus from "@/components/SubscriptionStatus";
 import StudentNav from "@/components/StudentNav";
-import TestResultsHistory from "@/components/TestResultsHistory";
 
-// New Components
+// New Simplified Components
 import ProfileCompletionOverlay from "@/components/dashboard/ProfileCompletionOverlay";
-import DashboardStatsGrid from "@/components/dashboard/DashboardStatsGrid";
-import PerformanceBreakdown from "@/components/dashboard/PerformanceBreakdown";
-import EngagementMetrics from "@/components/dashboard/EngagementMetrics";
+import NextStepCard from "@/components/dashboard/NextStepCard";
+import ProgressSnapshot from "@/components/dashboard/ProgressSnapshot";
 import WeeklyTestCard from "@/components/dashboard/WeeklyTestCard";
-import QuickActions from "@/components/dashboard/QuickActions";
+import SimplePracticeArea from "@/components/dashboard/SimplePracticeArea";
+import UpgradeSection from "@/components/dashboard/UpgradeSection";
+import RecentActivity from "@/components/dashboard/RecentActivity";
 
 export default function StudentDashboard() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -144,7 +141,7 @@ export default function StudentDashboard() {
       )}
 
       {/* Main Dashboard Content */}
-      <div className={`relative z-10 max-w-7xl mx-auto space-y-6 transition-all duration-500 ${isFreeTrialUser ? 'pt-24' : ''} ${isProfileIncomplete ? 'blur-sm pointer-events-none' : ''}`}>
+      <div className={`relative z-10 max-w-7xl mx-auto px-4 py-6 space-y-6 transition-all duration-500 ${isFreeTrialUser ? 'pt-24' : 'pt-20'} ${isProfileIncomplete ? 'blur-sm pointer-events-none' : ''}`}>
         
         {/* Header - Show immediately with skeleton if needed */}
         {userProfile && subscriptionAccess ? (
@@ -155,147 +152,29 @@ export default function StudentDashboard() {
           </div>
         )}
 
-        {/* Performance Score - Show skeleton while loading */}
-        <div className="relative">
-          {isFreeTrialUser ? (
-            <div className="glass-card border-white/30 backdrop-blur-xl bg-white/20 p-6 rounded-xl min-h-[150px] flex flex-col items-center justify-center">
-              <Lock className="h-12 w-12 text-white mb-2" />
-              <p className="text-white font-semibold text-lg">🔒 Available with Full Access</p>
-              <p className="text-white/80 text-sm mt-2">❌ Not Exam Ready – Trial access cannot improve this score</p>
-            </div>
-          ) : displayStats ? (
-            <PerformanceScore performanceScore={displayStats.performanceScore || 0} consistencyStreak={displayStats.consistencyStreak || 0} />
-          ) : (
-            <div className="glass-card border-white/30 backdrop-blur-xl bg-white/20 p-6 rounded-xl">
-              <Skeleton className="h-32 w-full bg-white/20" />
-            </div>
-          )}
-        </div>
+        {/* 1. YOUR NEXT STEP - Most prominent */}
+        <NextStepCard />
 
-        {/* AI Insights Card - Show skeleton while loading */}
-        {isFreeTrialUser ? (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="glass-card border border-purple-500/50 backdrop-blur-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 p-5 rounded-xl min-h-[150px] flex flex-col items-center justify-center"
-          >
-            <Lock className="h-12 w-12 text-white mb-2" />
-            <p className="text-white font-semibold text-lg">🔒 Smart Insights</p>
-            <p className="text-white/80 text-sm mt-2">Available with Full Access</p>
-          </motion.div>
-        ) : displayStats?.aiInsights && displayStats.aiInsights.length > 0 ? (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="glass-card border border-purple-500/50 backdrop-blur-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 p-5 rounded-xl"
-          >
-            <div className="flex items-center gap-2 mb-3">
-              <Sparkles className="h-5 w-5 text-yellow-400" />
-              <h3 className="text-white font-semibold text-lg">Smart Insights</h3>
-            </div>
-            <div className="space-y-2">
-              {displayStats.aiInsights.map((insight: string, index: number) => (
-                <motion.p
-                  key={index}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.3 + index * 0.1 }}
-                  className="text-white/95 text-base leading-relaxed"
-                >
-                  {insight}
-                </motion.p>
-              ))}
-            </div>
-          </motion.div>
-        ) : !displayStats ? (
-          <div className="glass-card border-white/30 backdrop-blur-xl bg-white/20 p-6 rounded-xl">
-            <Skeleton className="h-24 w-full bg-white/20" />
-          </div>
-        ) : null}
-
-        {/* Subscription Status Card */}
-        {subscriptionAccess?.subscription && subscriptionAccess.subscription.status === "active" && (
-          <SubscriptionStatus subscription={subscriptionAccess.subscription} />
-        )}
-
-        {/* User Overview Grid - Show skeleton while loading */}
-        {isFreeTrialUser ? (
-          <div className="glass-card border-white/30 backdrop-blur-xl bg-white/20 p-6 rounded-xl min-h-[200px] flex flex-col items-center justify-center">
-            <Lock className="h-12 w-12 text-white mb-2" />
-            <p className="text-white font-semibold text-lg">🔒 Performance Overview</p>
-            <p className="text-white/80 text-sm mt-2">Available with Full Access</p>
-          </div>
-        ) : displayStats ? (
-          <DashboardStatsGrid stats={displayStats} isFreeTrialUser={isFreeTrialUser} />
+        {/* 2. PROGRESS SNAPSHOT - No locks */}
+        {displayStats ? (
+          <ProgressSnapshot stats={displayStats} isFreeTrialUser={isFreeTrialUser} />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="glass-card border-white/30 backdrop-blur-xl bg-white/20 p-5 rounded-xl">
-                <Skeleton className="h-24 w-full bg-white/20" />
-              </div>
-            ))}
+          <div className="glass-card border-white/30 backdrop-blur-xl bg-white/20 p-6 rounded-xl">
+            <Skeleton className="h-48 w-full bg-white/20" />
           </div>
         )}
 
-        {/* Performance Breakdown - Show skeleton while loading */}
-        <div className="relative">
-          {isFreeTrialUser ? (
-            <div className="glass-card border-white/30 backdrop-blur-xl bg-white/20 p-6 rounded-xl min-h-[200px] flex flex-col items-center justify-center">
-              <Lock className="h-12 w-12 text-white mb-2" />
-              <p className="text-white font-semibold text-lg">🔒 Performance Breakdown</p>
-              <p className="text-white/80 text-sm mt-2">Available with Full Access</p>
-            </div>
-          ) : displayStats ? (
-            <PerformanceBreakdown stats={displayStats} />
-          ) : (
-            <div className="glass-card border-white/30 backdrop-blur-xl bg-white/20 p-6 rounded-xl">
-              <Skeleton className="h-48 w-full bg-white/20" />
-            </div>
-          )}
-        </div>
+        {/* 3. WEEKLY FREE MOCK TEST - Highlighted */}
+        <WeeklyTestCard isFreeTrialUser={isFreeTrialUser} />
 
-        {/* Engagement Metrics - Show skeleton while loading */}
-        <div className="relative">
-          {isFreeTrialUser ? (
-            <div className="glass-card border-white/30 backdrop-blur-xl bg-white/20 p-6 rounded-xl min-h-[150px] flex flex-col items-center justify-center">
-              <Lock className="h-12 w-12 text-white mb-2" />
-              <p className="text-white font-semibold text-lg">🔒 Engagement Metrics</p>
-              <p className="text-white/80 text-sm mt-2">Available with Full Access</p>
-            </div>
-          ) : displayStats ? (
-            <EngagementMetrics stats={displayStats} />
-          ) : (
-            <div className="glass-card border-white/30 backdrop-blur-xl bg-white/20 p-6 rounded-xl">
-              <Skeleton className="h-32 w-full bg-white/20" />
-            </div>
-          )}
-        </div>
+        {/* 4. PRACTICE AREA - No confusion, no locks */}
+        <SimplePracticeArea />
 
-        {/* Weekly Free Test Section - Always visible */}
-        <div className="relative">
-          <WeeklyTestCard isFreeTrialUser={isFreeTrialUser} />
-          {isFreeTrialUser && (
-            <div className="mt-2 text-center">
-              <p className="text-white/90 text-sm bg-orange-500/20 backdrop-blur-sm rounded-lg py-2 px-4 border border-orange-500/30">
-                Free mock shows exam level. Full practice requires upgrade.
-              </p>
-            </div>
-          )}
-        </div>
+        {/* 5. UPGRADE SECTION - Benefits, not locks */}
+        {isFreeTrialUser && <UpgradeSection />}
 
-        {/* Quick Actions - Always visible */}
-        <QuickActions />
-
-        {/* Test Results History - Always visible */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8 }}
-        >
-          <TestResultsHistory />
-        </motion.div>
+        {/* 6. RECENT ACTIVITY */}
+        <RecentActivity isFreeTrialUser={isFreeTrialUser} />
       </div>
     </div>
   );
