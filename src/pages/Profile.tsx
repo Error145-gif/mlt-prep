@@ -9,8 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, Mail, MapPin, BookOpen, Check, Menu, X, Upload, Camera } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { User, Mail, Globe, MapPin, BookOpen, Check, Camera, Upload } from "lucide-react";
+import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import StudentNav from "@/components/StudentNav";
@@ -28,39 +28,43 @@ const AVATAR_OPTIONS = [
   "https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka",
   "https://api.dicebear.com/7.x/avataaars/svg?seed=Luna",
   "https://api.dicebear.com/7.x/avataaars/svg?seed=Max",
-  "https://api.dicebear.com/7.x/avataaars/svg?seed=Sophie",
-  "https://api.dicebear.com/7.x/avataaars/svg?seed=Oliver",
-  "https://api.dicebear.com/7.x/avataaars/svg?seed=Emma",
-  "https://api.dicebear.com/7.x/avataaars/svg?seed=Jack",
 ];
 
 const EXAM_OPTIONS = [
-  "AIIMS MLT",
-  "ESIC MLT",
-  "RRB MLT (Railway)",
-  "JIPMER MLT",
-  "PGIMER MLT",
-  "Delhi University MLT",
-  "Mumbai University MLT",
-  "Bangalore University MLT",
-  "Chennai University MLT",
-  "Kolkata University MLT",
-  "Pune University MLT",
-  "Hyderabad University MLT",
-  "AFMC MLT",
-  "Armed Forces MLT",
-  "State Health Department MLT",
-  "NEET-based MLT Programs",
-  "DMRC MLT (Delhi Metro)",
-  "NTPC MLT",
-  "Coal India MLT",
-  "BHEL MLT",
-  "Private Hospital MLT",
-  "Medical College MLT",
-  "Nursing College MLT",
-  "Diagnostic Center MLT",
-  "Blood Bank MLT",
-  "Research Institute MLT",
+  { category: "🇮🇳 INDIA – CENTRAL / NATIONAL", exams: [
+    "AIIMS Lab Technician",
+    "PGI Chandigarh Lab Technician",
+    "DSSSB Lab Technician",
+    "RRB Lab Technician",
+    "CCRH Lab Technician",
+  ]},
+  { category: "🏥 UNIVERSITY / INSTITUTE", exams: [
+    "Baba Farid University of Health Sciences (BFUHS)",
+    "Other University / Institute Exams",
+  ]},
+  { category: "🏛 STATE LEVEL", exams: [
+    "State Level Lab Technician Exam",
+  ]},
+  { category: "🌍 INTERNATIONAL", exams: [
+    "International Lab Technician Exam (Outside India)",
+  ]},
+  { category: "🔹 GENERAL", exams: [
+    "Other MLT Exams",
+  ]},
+];
+
+const EXAM_YEARS = ["2025", "2026"];
+const EXAM_ATTEMPTS = ["First Attempt", "Repeat Attempt"];
+
+const COUNTRIES = [
+  "India",
+  "United States",
+  "United Kingdom",
+  "Canada",
+  "Australia",
+  "Singapore",
+  "UAE",
+  "Saudi Arabia",
   "Other",
 ];
 
@@ -107,9 +111,11 @@ export default function Profile() {
   const [name, setName] = useState("");
   const [selectedAvatar, setSelectedAvatar] = useState("");
   const [examPreparation, setExamPreparation] = useState("");
+  const [examYear, setExamYear] = useState("");
+  const [examAttempt, setExamAttempt] = useState("");
+  const [country, setCountry] = useState("India");
   const [state, setState] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
@@ -124,6 +130,10 @@ export default function Profile() {
       setSelectedAvatar(userProfile.avatarUrl || AVATAR_OPTIONS[0]);
       setExamPreparation(userProfile.examPreparation || "");
       setState(userProfile.state || "");
+      // Set default country if not set
+      if (!country && userProfile.state) {
+        setCountry("India");
+      }
     }
   }, [userProfile]);
 
@@ -131,13 +141,11 @@ export default function Profile() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
     if (!file.type.startsWith("image/")) {
       toast.error("Please upload an image file");
       return;
     }
 
-    // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       toast.error("Image size must be less than 5MB");
       return;
@@ -145,21 +153,14 @@ export default function Profile() {
 
     setIsUploading(true);
     try {
-      // Step 1: Get upload URL
       const postUrl = await generateUploadUrl();
-      
-      // Step 2: Upload the file
       const result = await fetch(postUrl, {
         method: "POST",
         headers: { "Content-Type": file.type },
         body: file,
       });
-      
       const { storageId } = await result.json();
-      
-      // Step 3: Save the storage ID and get the URL
       const imageUrl = await saveProfileImage({ storageId });
-      
       setSelectedAvatar(imageUrl);
       toast.success("Profile image uploaded successfully!");
     } catch (error) {
@@ -176,15 +177,33 @@ export default function Profile() {
       return;
     }
 
+    if (!examPreparation) {
+      toast.error("Please select your target exam");
+      return;
+    }
+
+    if (!country) {
+      toast.error("Please select your country");
+      return;
+    }
+
+    if (country === "India" && !state) {
+      toast.error("Please select your state");
+      return;
+    }
+
     setIsSaving(true);
     try {
       await updateProfile({
         name,
         avatarUrl: selectedAvatar,
         examPreparation: examPreparation || undefined,
-        state: state || undefined,
+        state: country === "India" ? state : undefined,
       });
-      toast.success("Profile updated successfully!");
+      toast.success("Profile saved successfully! Redirecting to dashboard...");
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 1000);
     } catch (error) {
       toast.error("Failed to update profile");
       console.error(error);
@@ -195,10 +214,11 @@ export default function Profile() {
 
   const calculateCompletion = () => {
     let completed = 0;
-    if (name) completed += 25;
-    if (selectedAvatar) completed += 25;
-    if (examPreparation) completed += 25;
-    if (state) completed += 25;
+    if (name) completed += 20;
+    if (selectedAvatar) completed += 20;
+    if (examPreparation) completed += 30;
+    if (country) completed += 15;
+    if (country !== "India" || state) completed += 15;
     return completed;
   };
 
@@ -233,89 +253,16 @@ export default function Profile() {
         <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-400/50 rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-500/50 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
         <div className="absolute top-1/2 left-1/2 w-[600px] h-[600px] bg-pink-400/40 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '0.5s' }} />
-        <div className="absolute top-1/4 right-1/3 w-[400px] h-[400px] bg-cyan-400/40 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '0.7s' }} />
       </div>
 
-      {/* Hamburger Menu Button */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className="fixed top-4 right-4 z-50 glass-card border-white/20 backdrop-blur-xl bg-white/10 text-white md:hidden"
-        onClick={() => setIsMenuOpen(!isMenuOpen)}
-      >
-        {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-      </Button>
-
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {isMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, x: 300 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 300 }}
-            className="fixed top-16 right-0 z-40 md:hidden bg-white/10 backdrop-blur-xl border-l border-white/20 w-64 h-screen p-4 space-y-3"
-          >
-            <Button
-              onClick={() => {
-                navigate("/student");
-                setIsMenuOpen(false);
-              }}
-              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
-            >
-              Dashboard
-            </Button>
-            <Button
-              onClick={() => {
-                navigate("/tests/mock");
-                setIsMenuOpen(false);
-              }}
-              variant="outline"
-              className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30"
-            >
-              Mock Tests
-            </Button>
-            <Button
-              onClick={() => {
-                navigate("/tests/pyq");
-                setIsMenuOpen(false);
-              }}
-              variant="outline"
-              className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30"
-            >
-              PYQ Sets
-            </Button>
-            <Button
-              onClick={() => {
-                navigate("/tests/ai");
-                setIsMenuOpen(false);
-              }}
-              variant="outline"
-              className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30"
-            >
-              AI Questions
-            </Button>
-            <Button
-              onClick={() => {
-                navigate("/subscription");
-                setIsMenuOpen(false);
-              }}
-              variant="outline"
-              className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30"
-            >
-              Subscription
-            </Button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-      
       <div className="relative z-10 max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h1 className="text-3xl font-bold text-white">My Profile</h1>
-          <p className="text-white/70 mt-1">Manage your personal information</p>
+          <h1 className="text-3xl font-bold text-white">Complete Your Profile</h1>
+          <p className="text-white/80 mt-1">This helps us personalize tests and practice for your exam.</p>
         </motion.div>
 
         {/* Profile Completion */}
@@ -338,7 +285,7 @@ export default function Profile() {
           </motion.div>
         )}
 
-        {/* Current Profile Card */}
+        {/* Edit Profile Form */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -346,48 +293,20 @@ export default function Profile() {
         >
           <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
             <CardHeader>
-              <CardTitle className="text-white">Current Profile</CardTitle>
-            </CardHeader>
-            <CardContent className="flex items-center gap-4">
-              <Avatar className="h-20 w-20 border-2 border-white/20">
-                <AvatarImage src={selectedAvatar} />
-                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-2xl">
-                  {name?.charAt(0)?.toUpperCase() || "U"}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <h3 className="text-xl font-bold text-white">{name || "No name set"}</h3>
-                <p className="text-white/70 flex items-center gap-2 mt-1">
-                  <Mail className="h-4 w-4" />
-                  {userProfile.email}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* Edit Profile Form */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2 }}
-        >
-          <Card className="glass-card border-white/20 backdrop-blur-xl bg-white/10">
-            <CardHeader>
-              <CardTitle className="text-white">Edit Profile</CardTitle>
+              <CardTitle className="text-white">Profile Setup</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Name Input */}
               <div className="space-y-2">
                 <Label htmlFor="name" className="text-white flex items-center gap-2">
                   <User className="h-4 w-4" />
-                  Name *
+                  Full Name *
                 </Label>
                 <Input
                   id="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Enter your name"
+                  placeholder="Enter your full name"
                   className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
                 />
                 {name && name.length < 2 && (
@@ -395,13 +314,29 @@ export default function Profile() {
                 )}
               </div>
 
-              {/* Upload Custom Image */}
+              {/* Email (Read-only) */}
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-white flex items-center gap-2">
+                  <Mail className="h-4 w-4" />
+                  Email
+                </Label>
+                <Input
+                  id="email"
+                  value={userProfile.email || ""}
+                  disabled
+                  className="bg-white/5 border-white/10 text-white/70 cursor-not-allowed"
+                />
+              </div>
+
+              {/* Avatar Selection */}
               <div className="space-y-2">
                 <Label className="text-white flex items-center gap-2">
                   <Camera className="h-4 w-4" />
-                  Upload Custom Profile Image
+                  Profile Avatar
                 </Label>
-                <div className="flex items-center gap-4">
+                
+                {/* Upload Custom Image */}
+                <div className="flex items-center gap-4 mb-4">
                   <input
                     type="file"
                     accept="image/*"
@@ -415,16 +350,13 @@ export default function Profile() {
                     className="cursor-pointer flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-lg transition-all"
                   >
                     <Upload className="h-4 w-4" />
-                    {isUploading ? "Uploading..." : "Choose Image"}
+                    {isUploading ? "Uploading..." : "Upload Custom Image"}
                   </Label>
-                  <span className="text-white/70 text-sm">Max 5MB (JPG, PNG, GIF)</span>
+                  <span className="text-white/70 text-sm">Max 5MB</span>
                 </div>
-              </div>
 
-              {/* Avatar Selection */}
-              <div className="space-y-2">
-                <Label className="text-white">Or Select Avatar</Label>
-                <div className="grid grid-cols-4 md:grid-cols-8 gap-3">
+                {/* Avatar Grid */}
+                <div className="grid grid-cols-4 md:grid-cols-6 gap-3">
                   {AVATAR_OPTIONS.map((avatar, index) => (
                     <motion.div
                       key={index}
@@ -449,51 +381,131 @@ export default function Profile() {
                 </div>
               </div>
 
-              {/* Exam Preparation */}
+              {/* Target Exam */}
               <div className="space-y-2">
                 <Label htmlFor="exam" className="text-white flex items-center gap-2">
                   <BookOpen className="h-4 w-4" />
-                  Exam Preparation
+                  Target Exam *
                 </Label>
                 <Select value={examPreparation} onValueChange={setExamPreparation}>
                   <SelectTrigger className="bg-white/20 border-white/30 text-white placeholder:text-white/60 h-12">
-                    <SelectValue placeholder="Select exam you're preparing for" />
+                    <SelectValue placeholder="Select your target exam" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-900 border-white/30 max-h-[400px]">
+                    {EXAM_OPTIONS.map((group) => (
+                      <div key={group.category}>
+                        <div className="px-2 py-2 text-xs font-semibold text-white/50 uppercase tracking-wide">
+                          {group.category}
+                        </div>
+                        {group.exams.map((exam) => (
+                          <SelectItem 
+                            key={exam} 
+                            value={exam} 
+                            className="text-white hover:bg-white/10 focus:bg-white/20 pl-6"
+                          >
+                            {exam}
+                          </SelectItem>
+                        ))}
+                      </div>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Exam Year & Attempt */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="year" className="text-white">
+                    Exam Year
+                  </Label>
+                  <Select value={examYear} onValueChange={setExamYear}>
+                    <SelectTrigger className="bg-white/20 border-white/30 text-white placeholder:text-white/60">
+                      <SelectValue placeholder="Select year" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-gray-900 border-white/30">
+                      {EXAM_YEARS.map((year) => (
+                        <SelectItem key={year} value={year} className="text-white hover:bg-white/10 focus:bg-white/20">
+                          {year}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="attempt" className="text-white">
+                    Attempt
+                  </Label>
+                  <Select value={examAttempt} onValueChange={setExamAttempt}>
+                    <SelectTrigger className="bg-white/20 border-white/30 text-white placeholder:text-white/60">
+                      <SelectValue placeholder="Select attempt" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-gray-900 border-white/30">
+                      {EXAM_ATTEMPTS.map((attempt) => (
+                        <SelectItem key={attempt} value={attempt} className="text-white hover:bg-white/10 focus:bg-white/20">
+                          {attempt}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Country Selection */}
+              <div className="space-y-2">
+                <Label htmlFor="country" className="text-white flex items-center gap-2">
+                  <Globe className="h-4 w-4" />
+                  Country *
+                </Label>
+                <p className="text-white/60 text-xs mb-2">Used to show country-specific exam content</p>
+                <Select value={country} onValueChange={setCountry}>
+                  <SelectTrigger className="bg-white/20 border-white/30 text-white placeholder:text-white/60 h-12">
+                    <SelectValue placeholder="Select your country" />
                   </SelectTrigger>
                   <SelectContent className="bg-gray-900 border-white/30">
-                    {EXAM_OPTIONS.map((exam) => (
-                      <SelectItem key={exam} value={exam} className="text-white hover:bg-white/10 focus:bg-white/20">
-                        {exam}
+                    {COUNTRIES.map((countryName) => (
+                      <SelectItem key={countryName} value={countryName} className="text-white hover:bg-white/10 focus:bg-white/20">
+                        {countryName}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
 
-              {/* State Selection */}
-              <div className="space-y-2">
-                <Label htmlFor="state" className="text-white flex items-center gap-2">
-                  <MapPin className="h-4 w-4" />
-                  State
-                </Label>
-                <Select value={state} onValueChange={setState}>
-                  <SelectTrigger className="bg-white/20 border-white/30 text-white placeholder:text-white/60 h-12">
-                    <SelectValue placeholder="Select your state" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-gray-900 border-white/30 max-h-[300px]">
-                    {INDIAN_STATES.map((stateName) => (
-                      <SelectItem key={stateName} value={stateName} className="text-white hover:bg-white/10 focus:bg-white/20">
-                        {stateName}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              {/* State Selection (Conditional) */}
+              {country === "India" && (
+                <div className="space-y-2">
+                  <Label htmlFor="state" className="text-white flex items-center gap-2">
+                    <MapPin className="h-4 w-4" />
+                    State *
+                  </Label>
+                  <p className="text-white/60 text-xs mb-2">Used to show state-level questions</p>
+                  <Select value={state} onValueChange={setState}>
+                    <SelectTrigger className="bg-white/20 border-white/30 text-white placeholder:text-white/60 h-12">
+                      <SelectValue placeholder="Select your state" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-gray-900 border-white/30 max-h-[300px]">
+                      {INDIAN_STATES.map((stateName) => (
+                        <SelectItem key={stateName} value={stateName} className="text-white hover:bg-white/10 focus:bg-white/20">
+                          {stateName}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {/* Helper Text */}
+              <div className="flex items-center gap-2 text-white/80 text-sm bg-white/5 rounded-lg py-3 px-4 border border-white/10">
+                <span>⏱</span>
+                <span>Takes less than 1 minute</span>
               </div>
 
               {/* Save Button */}
               <Button
                 onClick={handleSave}
-                disabled={isSaving || !name || name.length < 2 || isUploading}
-                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                disabled={isSaving || !name || name.length < 2 || !examPreparation || !country || (country === "India" && !state) || isUploading}
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-6 text-base"
               >
                 {isSaving ? "Saving..." : "Save Profile"}
               </Button>
