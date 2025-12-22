@@ -266,9 +266,11 @@ export default function PaymentSummary() {
     const waitForCashfree = async (): Promise<boolean> => {
       if (typeof window === 'undefined') return false;
       
+      // Check if Cashfree SDK is loaded
       if ((window as any).Cashfree) return true;
       
-      for (let i = 0; i < 50; i++) {
+      // Wait up to 10 seconds for SDK to load
+      for (let i = 0; i < 100; i++) {
         await new Promise(resolve => setTimeout(resolve, 100));
         if ((window as any).Cashfree) return true;
       }
@@ -279,9 +281,12 @@ export default function PaymentSummary() {
     const isLoaded = await waitForCashfree();
     
     if (!isLoaded) {
-      toast.error("Cashfree payment gateway not loaded. Please refresh the page.");
+      console.error("Cashfree SDK not loaded after waiting");
+      toast.error("Cashfree payment gateway not loaded. Please check your internet connection and refresh the page.");
       return;
     }
+    
+    console.log("Cashfree SDK loaded successfully");
 
     try {
       toast.loading("Initializing Cashfree payment...");
@@ -303,11 +308,16 @@ export default function PaymentSummary() {
         returnUrl: `${window.location.origin}/payment-status?gateway=cashfree&order_id=${order.orderId}&planName=${encodeURIComponent(planName || "")}&amount=${finalAmount}&duration=${duration}`,
       };
 
-      const cashfreeMode = (order.environment || "PRODUCTION").toLowerCase();
+      const cashfreeMode = order.environment === "SANDBOX" ? "sandbox" : "production";
       console.log("Opening Cashfree checkout with options:", checkoutOptions);
       console.log("Using Cashfree mode:", cashfreeMode);
 
-      const cashfree = (window as any).Cashfree({ mode: cashfreeMode });
+      // Initialize Cashfree with proper configuration
+      const cashfree = await (window as any).Cashfree.init({ mode: cashfreeMode });
+      
+      if (!cashfree) {
+        throw new Error("Failed to initialize Cashfree SDK");
+      }
 
       cashfree.checkout(checkoutOptions).then(async (result: any) => {
         console.log("Cashfree checkout result:", result);
