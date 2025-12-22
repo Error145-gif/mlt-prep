@@ -263,10 +263,43 @@ export default function PaymentSummary() {
       return;
     }
 
-    // Check if Cashfree SDK is loaded
-    if (typeof window === 'undefined' || !(window as any).Cashfree) {
-      console.error("Cashfree SDK not available on window object");
-      toast.error("Cashfree payment gateway is not available. Please use Razorpay for payment.", {
+    // Robust Cashfree SDK loader
+    const loadCashfreeSdk = async (): Promise<boolean> => {
+      if ((window as any).Cashfree) return true;
+
+      console.log("Cashfree SDK not found immediately, waiting...");
+      
+      // Wait up to 5 seconds
+      for (let i = 0; i < 50; i++) {
+        if ((window as any).Cashfree) {
+          console.log(`Cashfree SDK loaded after ${i * 100}ms`);
+          return true;
+        }
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+
+      // If still not found, try dynamic injection
+      console.log("Cashfree SDK not found, attempting dynamic injection...");
+      return new Promise((resolve) => {
+        const script = document.createElement('script');
+        script.src = "https://sdk.cashfree.com/js/v3/cashfree.js";
+        script.onload = () => {
+          console.log("Cashfree SDK injected and loaded");
+          resolve(true);
+        };
+        script.onerror = () => {
+          console.error("Failed to inject Cashfree SDK");
+          resolve(false);
+        };
+        document.body.appendChild(script);
+      });
+    };
+
+    const isSdkLoaded = await loadCashfreeSdk();
+
+    if (!isSdkLoaded) {
+      console.error("Cashfree SDK failed to load");
+      toast.error("Unable to load Cashfree payment gateway. Please check your internet connection or try Razorpay.", {
         duration: 5000,
       });
       return;
