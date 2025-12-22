@@ -20,8 +20,8 @@ export const createOrder = action({
     const clientSecret = process.env.CASHFREE_CLIENT_SECRET;
     const environment = (process.env.CASHFREE_ENVIRONMENT || "sandbox").toLowerCase();
     
-    // Force sandbox for test credentials, otherwise use production
-    const actualEnvironment = clientId?.startsWith("TEST") ? "sandbox" : "production";
+    // Use environment variable to determine mode, default to sandbox for safety
+    const actualEnvironment = environment === "production" ? "production" : "sandbox";
     
     if (!clientId || !clientSecret) {
       console.error("Cashfree credentials missing:", { 
@@ -153,8 +153,8 @@ export const verifyPayment = action({
     const clientSecret = process.env.CASHFREE_CLIENT_SECRET;
     const environment = (process.env.CASHFREE_ENVIRONMENT || "sandbox").toLowerCase();
     
-    // Force sandbox for test credentials
-    const actualEnvironment = clientId?.startsWith("TEST") ? "sandbox" : environment;
+    // Use environment variable to determine mode, default to sandbox for safety
+    const actualEnvironment = environment === "production" ? "production" : "sandbox";
     
     if (!clientId || !clientSecret) {
       console.error("Cashfree credentials missing");
