@@ -546,16 +546,16 @@ export default function PaymentSummary() {
               {/* Payment Buttons */}
               <div className="space-y-3 pt-4">
                 <Button
-                  onClick={handleCashfreePayment}
-                  className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-6 text-lg"
-                >
-                  Pay Securely with Cashfree
-                </Button>
-                <Button
                   onClick={handleRazorpayPayment}
                   className="w-full bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white font-semibold py-6 text-lg"
                 >
                   Pay Securely with Razorpay
+                </Button>
+                <Button
+                  onClick={handleCashfreePayment}
+                  className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-6 text-lg"
+                >
+                  Pay Securely with Cashfree
                 </Button>
                 <Button
                   onClick={() => navigate("/subscription-plans")}
