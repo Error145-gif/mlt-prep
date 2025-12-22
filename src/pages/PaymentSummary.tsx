@@ -263,43 +263,16 @@ export default function PaymentSummary() {
       return;
     }
 
-    const waitForCashfree = async (): Promise<boolean> => {
-      if (typeof window === 'undefined') return false;
-      
-      // Check if Cashfree SDK is already loaded
-      if ((window as any).Cashfree) {
-        console.log("Cashfree SDK already loaded");
-        return true;
-      }
-      
-      console.log("Waiting for Cashfree SDK to load...");
-      
-      // Wait up to 15 seconds for SDK to load (increased timeout)
-      for (let i = 0; i < 150; i++) {
-        await new Promise(resolve => setTimeout(resolve, 100));
-        if ((window as any).Cashfree) {
-          console.log(`Cashfree SDK loaded after ${(i + 1) * 100}ms`);
-          return true;
-        }
-      }
-      
-      console.error("Cashfree SDK failed to load after 15 seconds");
-      return false;
-    };
-
-    const isLoaded = await waitForCashfree();
-    
-    if (!isLoaded) {
-      console.error("Cashfree SDK not loaded. Possible causes:");
-      console.error("1. Script blocked by ad blocker or browser extension");
-      console.error("2. Network issue preventing SDK download");
-      console.error("3. CORS or CSP policy blocking the script");
-      
-      toast.error("Unable to load Cashfree payment gateway. Please disable ad blockers, check your browser settings, or try using Razorpay instead.");
+    // Check if Cashfree SDK is loaded
+    if (typeof window === 'undefined' || !(window as any).Cashfree) {
+      console.error("Cashfree SDK not available on window object");
+      toast.error("Cashfree payment gateway is not available. Please use Razorpay for payment.", {
+        duration: 5000,
+      });
       return;
     }
     
-    console.log("Cashfree SDK loaded successfully, proceeding with payment");
+    console.log("Cashfree SDK detected, proceeding with payment");
 
     try {
       toast.loading("Initializing Cashfree payment...");

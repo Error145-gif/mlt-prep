@@ -22,9 +22,9 @@
 
   <title>MLT prep</title>
 
-  <!-- Payment Gateway SDKs - Load early for better availability -->
-  <script src="https://checkout.razorpay.com/v1/checkout.js" defer crossorigin="anonymous"></script>
-  <script src="https://sdk.cashfree.com/js/v3/cashfree.js" defer crossorigin="anonymous"></script>
+  <!-- Payment Gateway SDKs - Load synchronously for immediate availability -->
+  <script src="https://checkout.razorpay.com/v1/checkout.js" crossorigin="anonymous"></script>
+  <script src="https://sdk.cashfree.com/js/v3/cashfree.js" crossorigin="anonymous"></script>
 
   <!-- Preconnect to external domains for faster loading -->
   <link rel="preconnect" href="https://images.unsplash.com" crossorigin>
