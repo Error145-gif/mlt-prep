@@ -20,8 +20,17 @@ export const createOrder = action({
     const clientSecret = process.env.CASHFREE_CLIENT_SECRET;
     const environment = (process.env.CASHFREE_ENVIRONMENT || "sandbox").toLowerCase();
     
-    // Use environment variable to determine mode, default to sandbox for safety
-    const actualEnvironment = environment === "production" ? "production" : "sandbox";
+    // Detect production credentials automatically
+    const isProductionCredential = clientId?.startsWith("10965313") || clientSecret?.includes("_prod_");
+    
+    // Use environment variable to determine mode, with automatic production detection
+    const actualEnvironment = (environment === "production" || isProductionCredential) ? "production" : "sandbox";
+    
+    console.log("Cashfree environment detection:", {
+      envVar: environment,
+      isProductionCredential,
+      finalEnvironment: actualEnvironment
+    });
     
     if (!clientId || !clientSecret) {
       console.error("Cashfree credentials missing:", { 
@@ -153,8 +162,11 @@ export const verifyPayment = action({
     const clientSecret = process.env.CASHFREE_CLIENT_SECRET;
     const environment = (process.env.CASHFREE_ENVIRONMENT || "sandbox").toLowerCase();
     
-    // Use environment variable to determine mode, default to sandbox for safety
-    const actualEnvironment = environment === "production" ? "production" : "sandbox";
+    // Detect production credentials automatically
+    const isProductionCredential = clientId?.startsWith("10965313") || clientSecret?.includes("_prod_");
+    
+    // Use environment variable to determine mode, with automatic production detection
+    const actualEnvironment = (environment === "production" || isProductionCredential) ? "production" : "sandbox";
     
     if (!clientId || !clientSecret) {
       console.error("Cashfree credentials missing");
