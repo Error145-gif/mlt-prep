@@ -332,7 +332,7 @@ export default function PaymentSummary() {
       console.log("Using Cashfree mode:", cashfreeMode);
 
       // Initialize Cashfree with proper configuration
-      const cashfree = await (window as any).Cashfree.init({ mode: cashfreeMode });
+      const cashfree = new (window as any).Cashfree({ mode: cashfreeMode });
       
       if (!cashfree) {
         throw new Error("Failed to initialize Cashfree SDK");
