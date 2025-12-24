@@ -58,6 +58,11 @@ const emailOtp = Email({
         // Throw a more descriptive error
         throw new Error(`Email provider error: ${errorData.message || JSON.stringify(errorData)}`);
       }
+      
+      // Log success
+      const data = await response.json().catch(() => ({})); 
+      console.log("OTP Email sent successfully to:", email);
+
     } catch (error) {
       console.error("Failed to send OTP email via Resend:", error);
       // Ensure the error message is propagated
