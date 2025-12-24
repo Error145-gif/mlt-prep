@@ -60,7 +60,6 @@ const emailOtp = Email({
       }
       
       // Log success
-      const data = await response.json().catch(() => ({})); 
       console.log("OTP Email sent successfully to:", email);
 
     } catch (error) {
