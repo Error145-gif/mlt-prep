@@ -15,6 +15,7 @@ import { motion } from "framer-motion";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { toast } from "sonner";
 
 interface AuthProps {
   redirectAfterAuth?: string;
@@ -24,7 +25,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
   const { isLoading: authLoading, isAuthenticated, user, signIn } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const [step, setStep] = useState<"signIn" | "signUp" | "forgotPassword" | { email: string, mode: "otp" }>("signIn");
+  const [step, setStep] = useState<"signIn" | "signUp" | "forgotPassword" | { email: string, mode: "otp" } | { email: string, code: string, mode: "setPassword" }>("signIn");
   const [otp, setOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -117,16 +118,43 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
     
     try {
       const formData = new FormData(event.currentTarget);
-      await signIn("email-otp", formData);
-      // Redirect will be handled by useEffect
+      const email = formData.get("email") as string;
+      const code = formData.get("code") as string;
+      
+      // Move to password setting step instead of signing in directly
+      setStep({ email, code, mode: "setPassword" });
+      setIsLoading(false);
     } catch (error) {
       console.error("OTP verification error:", error);
       setError("The verification code you entered is incorrect.");
       setOtp("");
+      setIsLoading(false);
+    }
+  }, []);
+
+  const handlePasswordReset = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const formData = new FormData(event.currentTarget);
+      formData.set("flow", "reset-verification");
+      
+      await signIn("password", formData);
+      toast.success("Password set successfully! You can now login.");
+      setStep("signIn");
+    } catch (error) {
+      console.error("Password reset error:", error);
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Failed to set password. Please try again."
+      );
     } finally {
       setIsLoading(false);
     }
-  }, [signIn]);
+  };
 
   // Show minimal loading screen
   if (authLoading) {
@@ -246,7 +274,76 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
             boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37), 0 0 60px rgba(124, 58, 237, 0.3)',
           }}
         >
-          {typeof step === "object" && step.mode === "otp" ? (
+          {typeof step === "object" && step.mode === "setPassword" ? (
+            <div className="space-y-6">
+              <div className="text-center">
+                <h2 className="text-3xl font-bold text-white mb-2" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                  Set Your Password
+                </h2>
+                <p className="text-white text-sm">Create a new password for {step.email}</p>
+              </div>
+
+              <form onSubmit={handlePasswordReset} className="space-y-6">
+                <input type="hidden" name="email" value={step.email} />
+                <input type="hidden" name="code" value={step.code} />
+
+                <div className="space-y-4">
+                  <div className="relative group">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/60 group-focus-within:text-white transition-colors" />
+                    <Input
+                      name="newPassword"
+                      placeholder="Enter new password"
+                      type="password"
+                      className="pl-12 h-12 bg-white/10 border-white/30 rounded-2xl text-white placeholder:text-white/60 focus:bg-white/20 focus:border-white/50 transition-all shadow-inner"
+                      style={{ fontFamily: "'Inter', sans-serif" }}
+                      disabled={isLoading}
+                      required
+                      minLength={8}
+                    />
+                  </div>
+                </div>
+
+                {error && (
+                  <motion.p 
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-sm text-red-300 bg-red-500/20 p-3 rounded-xl border border-red-400/30 text-center"
+                  >
+                    {error}
+                  </motion.p>
+                )}
+
+                <Button
+                  type="submit"
+                  className="w-full h-12 bg-gradient-to-r from-[#7C3AED] to-[#22D3EE] hover:shadow-[0_0_30px_rgba(124,58,237,0.6)] text-white rounded-2xl text-base font-semibold transition-all duration-300 border-0"
+                  disabled={isLoading}
+                  style={{ fontFamily: "'Poppins', sans-serif" }}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      Setting Password...
+                    </>
+                  ) : (
+                    <>
+                      Set Password
+                      <ArrowRight className="ml-2 h-5 w-5" />
+                    </>
+                  )}
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setStep("signIn")}
+                  disabled={isLoading}
+                  className="w-full h-12 bg-transparent border-2 border-white/30 hover:bg-white/10 hover:border-white/50 text-white rounded-2xl transition-all"
+                >
+                  Back to Login
+                </Button>
+              </form>
+            </div>
+          ) : typeof step === "object" && step.mode === "otp" ? (
             <div className="space-y-6">
               <div className="text-center">
                 <h2 className="text-3xl font-bold text-white mb-2" style={{ fontFamily: "'Poppins', sans-serif" }}>
