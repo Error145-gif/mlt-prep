@@ -109,7 +109,10 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       const formData = new FormData(event.currentTarget);
       const email = (formData.get("email") as string).toLowerCase().trim();
       
-      await signIn("email-otp", formData);
+      // Use the password provider's reset flow to generate a token compatible with reset-verification
+      formData.set("flow", "reset");
+      await signIn("password", formData);
+      
       setStep({ email, mode: "otp" });
     } catch (error) {
       console.error("OTP request error:", error);

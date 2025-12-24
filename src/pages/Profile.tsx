@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User, Mail, Globe, MapPin, BookOpen, Check, Camera, Upload, Lock, KeyRound } from "lucide-react";
 import { motion } from "framer-motion";
@@ -122,6 +123,8 @@ export default function Profile() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isSettingPassword, setIsSettingPassword] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -237,17 +240,35 @@ export default function Profile() {
     
     setIsSettingPassword(true);
     try {
-      // Use signUp flow to add/update password credential for the authenticated user
-      // This attaches the password to the existing account
-      await signIn("password", { 
-        flow: "signUp", 
-        email: userProfile.email, 
-        password: newPassword 
-      });
-      
-      toast.success("Password set successfully! You can now login with email and password.");
-      setNewPassword("");
-      setConfirmPassword("");
+      if (!otpSent) {
+        // Step 1: Send OTP using reset flow
+        await signIn("password", { 
+          flow: "reset", 
+          email: userProfile.email 
+        });
+        setOtpSent(true);
+        toast.success("Verification code sent to your email");
+      } else {
+        // Step 2: Verify OTP and set password
+        if (otp.length !== 6) {
+          toast.error("Please enter the 6-digit verification code");
+          setIsSettingPassword(false);
+          return;
+        }
+
+        await signIn("password", { 
+          flow: "reset-verification", 
+          email: userProfile.email,
+          code: otp,
+          password: newPassword 
+        });
+        
+        toast.success("Password set successfully! You can now login with email and password.");
+        setNewPassword("");
+        setConfirmPassword("");
+        setOtp("");
+        setOtpSent(false);
+      }
     } catch (error) {
       console.error("Failed to set password:", error);
       toast.error("Failed to set password. " + (error instanceof Error ? error.message : "Please try again."));
@@ -560,6 +581,7 @@ export default function Profile() {
                         onChange={(e) => setNewPassword(e.target.value)}
                         placeholder="Enter new password"
                         className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                        disabled={otpSent}
                       />
                     </div>
                     <div className="space-y-2">
@@ -571,25 +593,66 @@ export default function Profile() {
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="Confirm new password"
                         className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                        disabled={otpSent}
                       />
                     </div>
                   </div>
+
+                  {otpSent && (
+                    <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
+                      <Label className="text-white text-sm">Verification Code</Label>
+                      <p className="text-white/60 text-xs">Please enter the code sent to {userProfile.email}</p>
+                      <div className="flex justify-start">
+                        <InputOTP
+                          value={otp}
+                          onChange={setOtp}
+                          maxLength={6}
+                        >
+                          <InputOTPGroup className="gap-2">
+                            {Array.from({ length: 6 }).map((_, index) => (
+                              <InputOTPSlot 
+                                key={index} 
+                                index={index}
+                                className="bg-white/10 border border-white/20 text-white w-10 h-10 rounded-lg"
+                              />
+                            ))}
+                          </InputOTPGroup>
+                        </InputOTP>
+                      </div>
+                    </div>
+                  )}
                   
-                  <Button
-                    type="button"
-                    onClick={handleSetPassword}
-                    disabled={isSettingPassword || !newPassword || !confirmPassword}
-                    className="w-full md:w-auto bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white"
-                  >
-                    {isSettingPassword ? (
-                      <>Setting Password...</>
-                    ) : (
-                      <>
-                        <KeyRound className="h-4 w-4 mr-2" />
-                        Set Password
-                      </>
+                  <div className="flex gap-3">
+                    <Button
+                      type="button"
+                      onClick={handleSetPassword}
+                      disabled={isSettingPassword || !newPassword || !confirmPassword || (otpSent && otp.length !== 6)}
+                      className="w-full md:w-auto bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white"
+                    >
+                      {isSettingPassword ? (
+                        <>{otpSent ? "Verifying..." : "Sending Code..."}</>
+                      ) : (
+                        <>
+                          <KeyRound className="h-4 w-4 mr-2" />
+                          {otpSent ? "Verify & Set Password" : "Set Password"}
+                        </>
+                      )}
+                    </Button>
+                    
+                    {otpSent && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setOtpSent(false);
+                          setOtp("");
+                        }}
+                        className="bg-transparent border-white/20 text-white hover:bg-white/10"
+                      >
+                        Cancel
+                      </Button>
                     )}
-                  </Button>
+                  </div>
                 </div>
               </div>
 
