@@ -8,5 +8,5 @@ import { emailOtp } from "./auth/emailOtp";
 
 
 export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
-  providers: [Google, Password, emailOtp, Anonymous],
+  providers: [Google, Password({ reset: emailOtp }), emailOtp, Anonymous],
 });

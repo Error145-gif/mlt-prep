@@ -229,6 +229,11 @@ export default function Profile() {
       toast.error("Passwords do not match");
       return;
     }
+
+    if (!userProfile?.email) {
+      toast.error("User email not found");
+      return;
+    }
     
     setIsSettingPassword(true);
     try {
@@ -236,7 +241,7 @@ export default function Profile() {
       // This attaches the password to the existing account
       await signIn("password", { 
         flow: "signUp", 
-        email: userProfile?.email, 
+        email: userProfile.email, 
         password: newPassword 
       });
       
