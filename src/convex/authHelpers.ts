@@ -16,56 +16,67 @@ export const autoCompleteRegistration = mutation({
       return null;
     }
 
-    // Mark as registered if not already registered (for ALL users, not just Gmail)
+    const updates: any = {};
+    let needsUpdate = false;
+
+    // Check identity provider to set hasPassword
+    const identity = await ctx.auth.getUserIdentity();
+    if (identity && identity.provider === "password" && !user.hasPassword) {
+      updates.hasPassword = true;
+      needsUpdate = true;
+    }
+
+    // Mark as registered if not already registered
     if (!user.isRegistered) {
-      try {
-        // Ensure user has default role set
-        const updates: any = {
-          isRegistered: true,
-          registrationCompleted: true,
-        };
-        
-        if (!user.role) {
-          updates.role = "user";
-        }
-
-        await ctx.db.patch(userId, updates);
-
-        // Automatically create 7-day free trial subscription for new users
-        const existingSubscription = await ctx.db
-          .query("subscriptions")
-          .withIndex("by_user", (q) => q.eq("userId", userId))
-          .first();
-
-        if (!existingSubscription) {
-          const startDate = Date.now();
-          const endDate = startDate + 7 * 24 * 60 * 60 * 1000; // 7 days
-
-          await ctx.db.insert("subscriptions", {
-            userId: userId,
-            planName: "7-Day Free Trial",
-            status: "active",
-            startDate,
-            endDate,
-            amount: 0,
-          });
-
-          console.log(`Auto-activated 7-day free trial for user: ${userId}`);
-        }
-
-        // Send welcome email (non-blocking)
-        if (!user.welcomeEmailSent && user.email) {
-          const { internal } = await import("./_generated/api");
-          await ctx.scheduler.runAfter(0, internal.emails.sendWelcomeEmail, {
-            email: user.email,
-            name: user.name || "there",
-            userId: userId,
-          });
-        }
-      } catch (error) {
-        console.error("Error completing registration:", error);
-        return userId;
+      updates.isRegistered = true;
+      updates.registrationCompleted = true;
+      
+      if (!user.role) {
+        updates.role = "user";
       }
+      needsUpdate = true;
+
+      // Automatically create 7-day free trial subscription for new users
+      const existingSubscription = await ctx.db
+        .query("subscriptions")
+        .withIndex("by_user", (q) => q.eq("userId", userId))
+        .first();
+
+      if (!existingSubscription) {
+        const startDate = Date.now();
+        const endDate = startDate + 7 * 24 * 60 * 60 * 1000; // 7 days
+
+        await ctx.db.insert("subscriptions", {
+          userId: userId,
+          planName: "7-Day Free Trial",
+          status: "active",
+          startDate,
+          endDate,
+          amount: 0,
+        });
+
+        console.log(`Auto-activated 7-day free trial for user: ${userId}`);
+      }
+    }
+
+    // Send welcome email (ONLY for new users, within 10 mins of creation)
+    // This prevents sending emails to old users logging in
+    const isNewUser = (Date.now() - user._creationTime) < 10 * 60 * 1000;
+    
+    if (!user.welcomeEmailSent && user.email && isNewUser) {
+      const { internal } = await import("./_generated/api");
+      await ctx.scheduler.runAfter(0, internal.emails.sendWelcomeEmail, {
+        email: user.email,
+        name: user.name || "there",
+        userId: userId,
+      });
+      // We don't set welcomeEmailSent here, it's set in the email action/callback
+      // But to be safe against double scheduling in short time, we could.
+      // For now, relying on the email action to mark it.
+    }
+
+    if (needsUpdate) {
+      await ctx.db.patch(userId, updates);
     }
 
     return userId;

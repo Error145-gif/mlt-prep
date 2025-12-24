@@ -35,10 +35,9 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
   // Optimized redirect logic - only run once when auth state changes
   useEffect(() => {
     if (!authLoading && isAuthenticated && user) {
-      // Auto-complete registration for new Gmail users (non-blocking)
-      if (step === "signUp" && user.email?.endsWith("@gmail.com")) {
-        autoCompleteRegistration().catch(console.error);
-      }
+      // Auto-complete registration for ALL users (handles welcome email logic internally)
+      // This ensures welcome email is sent for Google signups too
+      autoCompleteRegistration().catch(console.error);
       
       // Immediate redirect without waiting
       const redirect = user?.role === "admin" ? "/admin" : (redirectAfterAuth || "/student");

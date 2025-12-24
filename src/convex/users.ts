@@ -75,6 +75,7 @@ export const getUserProfile = query({
       avatarUrl: user.avatarUrl,
       examPreparation: user.examPreparation,
       state: user.state,
+      hasPassword: user.hasPassword,
     };
   },
 });
@@ -102,6 +103,15 @@ export const updateUserProfile = mutation({
     await ctx.db.patch(userId, updates);
 
     return userId;
+  },
+});
+
+export const updatePasswordStatus = mutation({
+  args: { hasPassword: v.boolean() },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return null;
+    await ctx.db.patch(userId, { hasPassword: args.hasPassword });
   },
 });
 
