@@ -101,7 +101,7 @@ const INDIAN_STATES = [
 ];
 
 export default function Profile() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, signIn } = useAuth();
   const navigate = useNavigate();
   const userProfile = useQuery(api.users.getUserProfile);
   const updateProfile = useMutation(api.users.updateUserProfile);
@@ -117,6 +117,11 @@ export default function Profile() {
   const [state, setState] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  
+  // Password management state
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isSettingPassword, setIsSettingPassword] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -209,6 +214,40 @@ export default function Profile() {
       console.error(error);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleSetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (newPassword.length < 8) {
+      toast.error("Password must be at least 8 characters");
+      return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+    
+    setIsSettingPassword(true);
+    try {
+      // Use signUp flow to add/update password credential for the authenticated user
+      // This attaches the password to the existing account
+      await signIn("password", { 
+        flow: "signUp", 
+        email: userProfile?.email, 
+        password: newPassword 
+      });
+      
+      toast.success("Password set successfully! You can now login with email and password.");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (error) {
+      console.error("Failed to set password:", error);
+      toast.error("Failed to set password. " + (error instanceof Error ? error.message : "Please try again."));
+    } finally {
+      setIsSettingPassword(false);
     }
   };
 
@@ -495,39 +534,57 @@ export default function Profile() {
                 </div>
               )}
 
-              {/* Password Management Section - Add after Country/State selection */}
+              {/* Password Management Section */}
               <div className="space-y-2 border-t border-white/20 pt-6">
                 <Label className="text-white flex items-center gap-2">
                   <Lock className="h-4 w-4" />
-                  Password Management
+                  Set Password
                 </Label>
+                <p className="text-white/60 text-xs mb-4">
+                  Set a password to login with your email address.
+                </p>
                 
-                <div className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-500/30 rounded-lg p-4 space-y-3">
-                  <div className="flex items-start gap-3">
-                    <KeyRound className="h-5 w-5 text-blue-400 mt-0.5 flex-shrink-0" />
-                    <div className="space-y-2 flex-1">
-                      <p className="text-white font-semibold text-sm">Set or Change Your Password</p>
-                      <p className="text-white/80 text-xs leading-relaxed">
-                        To set a password for email/password login, use the <span className="font-semibold text-cyan-300">"Forgot Password"</span> option on the login page. You'll receive a 6-digit OTP code via email to verify your identity and create your password.
-                      </p>
+                <div className="bg-white/5 border border-white/10 rounded-xl p-6 space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="newPassword" className="text-white text-sm">New Password</Label>
+                      <Input
+                        id="newPassword"
+                        type="password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="Enter new password"
+                        className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="confirmPassword" className="text-white text-sm">Confirm Password</Label>
+                      <Input
+                        id="confirmPassword"
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="Confirm new password"
+                        className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                      />
                     </div>
                   </div>
                   
                   <Button
                     type="button"
-                    onClick={() => {
-                      toast.info("Redirecting to login page...");
-                      setTimeout(() => navigate("/auth"), 800);
-                    }}
-                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white"
+                    onClick={handleSetPassword}
+                    disabled={isSettingPassword || !newPassword || !confirmPassword}
+                    className="w-full md:w-auto bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white"
                   >
-                    <Lock className="h-4 w-4 mr-2" />
-                    Go to Login Page to Set Password
+                    {isSettingPassword ? (
+                      <>Setting Password...</>
+                    ) : (
+                      <>
+                        <KeyRound className="h-4 w-4 mr-2" />
+                        Set Password
+                      </>
+                    )}
                   </Button>
-                  
-                  <p className="text-white/60 text-xs text-center">
-                    💡 This ensures secure password setup via email verification
-                  </p>
                 </div>
               </div>
 
