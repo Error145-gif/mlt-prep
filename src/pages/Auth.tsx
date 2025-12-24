@@ -116,7 +116,12 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       setStep({ email, mode: "otp" });
     } catch (error) {
       console.error("OTP request error:", error);
-      setError("Failed to send verification code. Please try again.");
+      // Show the actual error message from the backend to help debugging
+      setError(
+        error instanceof Error 
+          ? error.message 
+          : "Failed to send verification code. Please try again."
+      );
     } finally {
       setIsLoading(false);
     }
