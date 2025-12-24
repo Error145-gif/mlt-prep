@@ -68,6 +68,8 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       // Ensure flow parameter is set correctly for Password provider
       if (step === "signUp") {
         formData.set("flow", "signUp");
+      } else {
+        formData.set("flow", "signIn");
       }
       
       await signIn("password", formData);
@@ -473,9 +475,6 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                         minLength={8}
                       />
                     </div>
-                    {step === "signUp" && (
-                      <input type="hidden" name="flow" value="signUp" />
-                    )}
                   </div>
 
                   {error && (
