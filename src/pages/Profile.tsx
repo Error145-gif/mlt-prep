@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, Mail, Globe, MapPin, BookOpen, Check, Camera, Upload, Lock, Eye, EyeOff } from "lucide-react";
+import { User, Mail, Globe, MapPin, BookOpen, Check, Camera, Upload, Lock, KeyRound } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -117,11 +117,6 @@ export default function Profile() {
   const [state, setState] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [showPasswordSection, setShowPasswordSection] = useState(false);
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [isSettingPassword, setIsSettingPassword] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -173,33 +168,6 @@ export default function Profile() {
       console.error(error);
     } finally {
       setIsUploading(false);
-    }
-  };
-
-  const handleSetPassword = async () => {
-    if (!newPassword || newPassword.length < 8) {
-      toast.error("Password must be at least 8 characters long");
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      toast.error("Passwords do not match");
-      return;
-    }
-
-    setIsSettingPassword(true);
-    try {
-      // For now, show success message and guide user to use forgot password flow
-      toast.success("To set your password, please use the 'Forgot Password' option on the login page");
-      toast.info("You'll receive an OTP via email to verify and set your new password");
-      setShowPasswordSection(false);
-      setNewPassword("");
-      setConfirmPassword("");
-    } catch (error) {
-      toast.error("Failed to set password");
-      console.error(error);
-    } finally {
-      setIsSettingPassword(false);
     }
   };
 
@@ -529,90 +497,38 @@ export default function Profile() {
 
               {/* Password Management Section - Add after Country/State selection */}
               <div className="space-y-2 border-t border-white/20 pt-6">
-                <div className="flex items-center justify-between">
-                  <Label className="text-white flex items-center gap-2">
-                    <Lock className="h-4 w-4" />
-                    Password Management
-                  </Label>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowPasswordSection(!showPasswordSection)}
-                    className="bg-white/10 border-white/30 text-white hover:bg-white/20"
-                  >
-                    {showPasswordSection ? "Hide" : "Set Password"}
-                  </Button>
-                </div>
+                <Label className="text-white flex items-center gap-2">
+                  <Lock className="h-4 w-4" />
+                  Password Management
+                </Label>
                 
-                <p className="text-white/60 text-xs">
-                  Set a password to login with email and password. If you forget it, use "Forgot Password" on the login page to receive an OTP via email.
-                </p>
-
-                {showPasswordSection && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="space-y-4 mt-4"
-                  >
-                    <div className="space-y-2">
-                      <Label htmlFor="newPassword" className="text-white">
-                        New Password
-                      </Label>
-                      <div className="relative">
-                        <Input
-                          id="newPassword"
-                          type={showPassword ? "text" : "password"}
-                          value={newPassword}
-                          onChange={(e) => setNewPassword(e.target.value)}
-                          placeholder="Enter new password (min 8 characters)"
-                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50 pr-10"
-                          minLength={8}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 hover:text-white"
-                        >
-                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="confirmPassword" className="text-white">
-                        Confirm Password
-                      </Label>
-                      <Input
-                        id="confirmPassword"
-                        type={showPassword ? "text" : "password"}
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        placeholder="Confirm new password"
-                        className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
-                        minLength={8}
-                      />
-                    </div>
-
-                    <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 text-sm text-white/80">
-                      <p className="font-semibold mb-1">📧 Password Reset via Email OTP</p>
-                      <p className="text-xs">
-                        To set or change your password, use the "Forgot Password" option on the login page. 
-                        You'll receive a 6-digit OTP code via email to verify your identity and set a new password.
+                <div className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-500/30 rounded-lg p-4 space-y-3">
+                  <div className="flex items-start gap-3">
+                    <KeyRound className="h-5 w-5 text-blue-400 mt-0.5 flex-shrink-0" />
+                    <div className="space-y-2 flex-1">
+                      <p className="text-white font-semibold text-sm">Set or Change Your Password</p>
+                      <p className="text-white/80 text-xs leading-relaxed">
+                        To set a password for email/password login, use the <span className="font-semibold text-cyan-300">"Forgot Password"</span> option on the login page. You'll receive a 6-digit OTP code via email to verify your identity and create your password.
                       </p>
                     </div>
-
-                    <Button
-                      type="button"
-                      onClick={handleSetPassword}
-                      disabled={isSettingPassword || !newPassword || !confirmPassword || newPassword !== confirmPassword}
-                      className="w-full bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700"
-                    >
-                      {isSettingPassword ? "Setting Password..." : "Set Password"}
-                    </Button>
-                  </motion.div>
-                )}
+                  </div>
+                  
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      toast.info("Redirecting to login page...");
+                      setTimeout(() => navigate("/auth"), 800);
+                    }}
+                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white"
+                  >
+                    <Lock className="h-4 w-4 mr-2" />
+                    Go to Login Page to Set Password
+                  </Button>
+                  
+                  <p className="text-white/60 text-xs text-center">
+                    💡 This ensures secure password setup via email verification
+                  </p>
+                </div>
               </div>
 
               {/* Helper Text */}
