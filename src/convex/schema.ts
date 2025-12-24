@@ -89,6 +89,7 @@ const schema = defineSchema(
       registrationCompleted: v.optional(v.boolean()),
       phone: v.optional(v.string()),
       tokenIdentifier: v.optional(v.string()),
+      welcomeEmailSent: v.optional(v.boolean()),
     })
       .index("email", ["email"])
       .index("by_token", ["tokenIdentifier"]),

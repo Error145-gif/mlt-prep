@@ -19,6 +19,7 @@ import type * as content from "../content.js";
 import type * as coupons from "../coupons.js";
 import type * as debug from "../debug.js";
 import type * as debugPYQ from "../debugPYQ.js";
+import type * as emails from "../emails.js";
 import type * as feedback from "../feedback.js";
 import type * as http from "../http.js";
 import type * as invoices from "../invoices.js";
@@ -58,6 +59,7 @@ declare const fullApi: ApiFromModules<{
   coupons: typeof coupons;
   debug: typeof debug;
   debugPYQ: typeof debugPYQ;
+  emails: typeof emails;
   feedback: typeof feedback;
   http: typeof http;
   invoices: typeof invoices;

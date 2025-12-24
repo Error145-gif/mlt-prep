@@ -1,5 +1,6 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { mutation } from "./_generated/server";
+import { mutation, internalMutation } from "./_generated/server";
+import { v } from "convex/values";
 
 // Auto-register user after successful OTP verification during account creation
 export const autoCompleteRegistration = mutation({
@@ -51,6 +52,16 @@ export const autoCompleteRegistration = mutation({
 
           console.log(`Auto-activated 7-day free trial for user: ${userId}`);
         }
+
+        // Send welcome email (non-blocking)
+        if (!user.welcomeEmailSent) {
+          const { internal } = await import("./_generated/api");
+          await ctx.scheduler.runAfter(0, internal.emails.sendWelcomeEmail, {
+            email: user.email,
+            name: user.name || "there",
+            userId: userId,
+          });
+        }
       } catch (error) {
         console.error("Error completing registration:", error);
         return userId;
@@ -58,5 +69,17 @@ export const autoCompleteRegistration = mutation({
     }
 
     return userId;
+  },
+});
+
+// Internal mutation to mark welcome email as sent
+export const markWelcomeEmailSent = internalMutation({
+  args: {
+    userId: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.userId, {
+      welcomeEmailSent: true,
+    });
   },
 });
