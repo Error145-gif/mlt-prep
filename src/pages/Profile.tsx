@@ -224,11 +224,6 @@ export default function Profile() {
   const handleSetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (newPassword.length < 8) {
-      toast.error("Password must be at least 8 characters");
-      return;
-    }
-    
     if (newPassword !== confirmPassword) {
       toast.error("Passwords do not match");
       return;

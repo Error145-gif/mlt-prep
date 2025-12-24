@@ -159,12 +159,6 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
     
     try {
       const formData = new FormData(event.currentTarget);
-      const password = formData.get("password") as string;
-      
-      if (password.length < 8) {
-        throw new Error("Password must be at least 8 characters long");
-      }
-
       formData.set("flow", "reset-verification");
       
       await signIn("password", formData);
@@ -174,15 +168,11 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       console.error("Password reset error:", error);
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
       
-      if (errorMessage.includes("Invalid password") || errorMessage.includes("validateDefaultPasswordRequirements")) {
-        setError("Password must be at least 8 characters long.");
-      } else {
-        setError(
-          error instanceof Error
-            ? error.message
-            : "Failed to set password. Please try again."
-        );
-      }
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Failed to set password. Please try again."
+      );
     } finally {
       setIsLoading(false);
     }
@@ -324,19 +314,15 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/60 group-focus-within:text-white transition-colors" />
                     <Input
                       name="password"
-                      placeholder="Enter new password"
-                      type="password"
-                      className="pl-12 h-12 bg-white/10 border-white/30 rounded-2xl text-white placeholder:text-white/60 focus:bg-white/20 focus:border-white/50 transition-all shadow-inner"
-                      style={{ fontFamily: "'Inter', sans-serif" }}
-                      disabled={isLoading}
-                      required
-                      minLength={8}
-                      autoComplete="new-password"
+                        placeholder="Enter new password"
+                        type="password"
+                        className="pl-12 h-12 bg-white/10 border-white/30 rounded-2xl text-white placeholder:text-white/60 focus:bg-white/20 focus:border-white/50 transition-all shadow-inner"
+                        style={{ fontFamily: "'Inter', sans-serif" }}
+                        disabled={isLoading}
+                        required
+                        autoComplete="new-password"
                     />
                   </div>
-                  <p className="text-xs text-white/70 pl-1">
-                    Password must be at least 8 characters long
-                  </p>
                 </div>
 
                 {error && (
@@ -605,7 +591,6 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                         style={{ fontFamily: "'Inter', sans-serif" }}
                         disabled={isLoading}
                         required
-                        minLength={8}
                       />
                     </div>
                   </div>
