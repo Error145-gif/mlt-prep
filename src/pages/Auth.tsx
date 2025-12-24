@@ -64,7 +64,12 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
     
     try {
       const formData = new FormData(event.currentTarget);
-      const flow = step === "signUp" ? "signUp" : "signIn";
+      
+      // Ensure flow parameter is set correctly for Password provider
+      if (step === "signUp") {
+        formData.set("flow", "signUp");
+      }
+      
       await signIn("password", formData);
       
       // For sign-up, complete registration after successful auth
