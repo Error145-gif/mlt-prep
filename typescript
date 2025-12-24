@@ -1,1 +1,1 @@
-const isFreeTrialUser = !isPaidUser && subscriptionAccess?.reason === "free_trial";
+if (user.email?.endsWith("@gmail.com") && !user.isRegistered) {

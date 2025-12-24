@@ -66,6 +66,12 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       const formData = new FormData(event.currentTarget);
       const flow = step === "signUp" ? "signUp" : "signIn";
       await signIn("password", formData);
+      
+      // For sign-up, complete registration after successful auth
+      if (step === "signUp") {
+        await autoCompleteRegistration().catch(console.error);
+      }
+      
       // Redirect handled by useEffect
     } catch (error) {
       console.error("Password sign-in error:", error);

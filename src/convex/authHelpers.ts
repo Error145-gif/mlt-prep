@@ -16,8 +16,8 @@ export const autoCompleteRegistration = mutation({
       return null;
     }
 
-    // Only mark as registered if Gmail and not already registered
-    if (user.email?.endsWith("@gmail.com") && !user.isRegistered) {
+    // Mark as registered if not already registered (for ALL users, not just Gmail)
+    if (!user.isRegistered) {
       try {
         // Ensure user has default role set
         const updates: any = {
@@ -54,7 +54,7 @@ export const autoCompleteRegistration = mutation({
         }
 
         // Send welcome email (non-blocking)
-        if (!user.welcomeEmailSent) {
+        if (!user.welcomeEmailSent && user.email) {
           const { internal } = await import("./_generated/api");
           await ctx.scheduler.runAfter(0, internal.emails.sendWelcomeEmail, {
             email: user.email,
