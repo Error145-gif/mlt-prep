@@ -1,1 +1,2 @@
-npx convex deploy
+pnpm list @convex-dev/auth
+pnpm outdated @convex-dev/auth
