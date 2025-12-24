@@ -116,12 +116,17 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       setStep({ email, mode: "otp" });
     } catch (error) {
       console.error("OTP request error:", error);
-      // Show the actual error message from the backend to help debugging
-      setError(
-        error instanceof Error 
-          ? error.message 
-          : "Failed to send verification code. Please try again."
-      );
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      
+      if (errorMessage.includes("InvalidAccountId")) {
+        setError("No password set for this email. Please sign in with Google or create a new account.");
+      } else {
+        setError(
+          error instanceof Error 
+            ? error.message 
+            : "Failed to send verification code. Please try again."
+        );
+      }
     } finally {
       setIsLoading(false);
     }

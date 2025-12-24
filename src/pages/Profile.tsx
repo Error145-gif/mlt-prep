@@ -241,13 +241,32 @@ export default function Profile() {
     setIsSettingPassword(true);
     try {
       if (!otpSent) {
-        // Step 1: Send OTP using reset flow
-        await signIn("password", { 
-          flow: "reset", 
-          email: userProfile.email 
-        });
-        setOtpSent(true);
-        toast.success("Verification code sent to your email");
+        // Step 1: Try to send OTP using reset flow
+        try {
+          await signIn("password", { 
+            flow: "reset", 
+            email: userProfile.email 
+          });
+          setOtpSent(true);
+          toast.success("Verification code sent to your email");
+        } catch (err) {
+          const errMsg = err instanceof Error ? err.message : String(err);
+          // If account doesn't exist (e.g. Google user), create password directly
+          if (errMsg.includes("InvalidAccountId")) {
+            await signIn("password", {
+              flow: "signUp",
+              email: userProfile.email,
+              password: newPassword,
+            });
+            toast.success("Password set successfully! You can now login with email/password.");
+            setNewPassword("");
+            setConfirmPassword("");
+            setOtp("");
+            setOtpSent(false);
+            return;
+          }
+          throw err;
+        }
       } else {
         // Step 2: Verify OTP and set password
         if (otp.length !== 6) {
