@@ -314,12 +314,13 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/60 group-focus-within:text-white transition-colors" />
                     <Input
                       name="password"
-                        placeholder="Enter new password"
+                        placeholder="Enter new password (minimum 6 characters)"
                         type="password"
                         className="pl-12 h-12 bg-white/10 border-white/30 rounded-2xl text-white placeholder:text-white/60 focus:bg-white/20 focus:border-white/50 transition-all shadow-inner"
                         style={{ fontFamily: "'Inter', sans-serif" }}
                         disabled={isLoading}
                         required
+                        minLength={6}
                         autoComplete="new-password"
                     />
                   </div>

@@ -71,5 +71,18 @@ const emailOtp = Email({
 });
 
 export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
-  providers: [Google, Password({ reset: emailOtp }), emailOtp, Anonymous],
+  providers: [
+    Google, 
+    Password({ 
+      reset: emailOtp,
+      profile(params) {
+        return {
+          email: params.email as string,
+          name: (params.email as string)?.split('@')[0],
+        };
+      },
+    }), 
+    emailOtp, 
+    Anonymous
+  ],
 });
