@@ -291,7 +291,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                   <div className="relative group">
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/60 group-focus-within:text-white transition-colors" />
                     <Input
-                      name="newPassword"
+                      name="password"
                       placeholder="Enter new password"
                       type="password"
                       className="pl-12 h-12 bg-white/10 border-white/30 rounded-2xl text-white placeholder:text-white/60 focus:bg-white/20 focus:border-white/50 transition-all shadow-inner"
