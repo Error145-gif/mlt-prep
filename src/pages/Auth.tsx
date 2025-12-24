@@ -83,11 +83,19 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       // Redirect handled by useEffect
     } catch (error) {
       console.error("Password sign-in error:", error);
-      setError(
-        error instanceof Error
-          ? error.message
-          : "Invalid email or password. Please try again."
-      );
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      
+      if (errorMessage.includes("InvalidAccountId")) {
+        setError("Account not found. Please sign up first.");
+      } else if (errorMessage.includes("Invalid password")) {
+        setError("Invalid password. Please check your credentials.");
+      } else {
+        setError(
+          error instanceof Error
+            ? error.message
+            : "Invalid email or password. Please try again."
+        );
+      }
       setIsLoading(false);
     }
   };
@@ -139,6 +147,12 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
     
     try {
       const formData = new FormData(event.currentTarget);
+      const password = formData.get("password") as string;
+      
+      if (password.length < 8) {
+        throw new Error("Password must be at least 8 characters long");
+      }
+
       formData.set("flow", "reset-verification");
       
       await signIn("password", formData);
@@ -146,11 +160,17 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       setStep("signIn");
     } catch (error) {
       console.error("Password reset error:", error);
-      setError(
-        error instanceof Error
-          ? error.message
-          : "Failed to set password. Please try again."
-      );
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      
+      if (errorMessage.includes("Invalid password") || errorMessage.includes("validateDefaultPasswordRequirements")) {
+        setError("Password must be at least 8 characters long.");
+      } else {
+        setError(
+          error instanceof Error
+            ? error.message
+            : "Failed to set password. Please try again."
+        );
+      }
     } finally {
       setIsLoading(false);
     }
@@ -299,8 +319,12 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                       disabled={isLoading}
                       required
                       minLength={8}
+                      autoComplete="new-password"
                     />
                   </div>
+                  <p className="text-xs text-white/70 pl-1">
+                    Password must be at least 8 characters long
+                  </p>
                 </div>
 
                 {error && (
