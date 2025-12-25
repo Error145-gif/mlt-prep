@@ -137,6 +137,14 @@ createRoot(document.getElementById("root")!).render(
                   }
                 />
                 <Route
+                  path="/user-analytics"
+                  element={
+                    <ProtectedRoute>
+                      <UserAnalytics />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
                   path="/admin/questions"
                   element={
                     <AdminRoute>

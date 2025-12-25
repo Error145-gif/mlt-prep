@@ -1,7 +1,8 @@
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Clock, CheckCircle2, XCircle } from "lucide-react";
+import { Clock, CheckCircle2, XCircle, ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "react-router";
 
 interface RecentActivityProps {
   isFreeTrialUser?: boolean;
@@ -9,10 +10,12 @@ interface RecentActivityProps {
     score: number;
     type: string;
     date: number;
+    sessionId?: string;
   }>;
 }
 
 export default function RecentActivity({ isFreeTrialUser = false, recentTests = [] }: RecentActivityProps) {
+  const navigate = useNavigate();
   // Reverse the array to show newest first (input is chronological for charts)
   const displayTests = [...recentTests].reverse();
 
@@ -35,7 +38,8 @@ export default function RecentActivity({ isFreeTrialUser = false, recentTests = 
               {displayTests.slice(0, 5).map((test, index) => (
                 <div 
                   key={index}
-                  className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
+                  className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors cursor-pointer group"
+                  onClick={() => test.sessionId && navigate(`/test-results?sessionId=${test.sessionId}`)}
                 >
                   <div className="flex items-center gap-3">
                     <div className={`p-2 rounded-full ${test.score >= 50 ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}`}>
@@ -52,6 +56,7 @@ export default function RecentActivity({ isFreeTrialUser = false, recentTests = 
                     <Badge variant={test.score >= 50 ? "default" : "destructive"} className={test.score >= 50 ? "bg-green-500 hover:bg-green-600" : ""}>
                       {test.score}%
                     </Badge>
+                    <ArrowRight className="h-4 w-4 text-white/50 group-hover:text-white transition-colors" />
                   </div>
                 </div>
               ))}

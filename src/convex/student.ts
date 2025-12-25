@@ -208,6 +208,7 @@ export const getStudentDashboardStats = query({
         score: Math.round(r.score),
         type: r.testType,
         date: r._creationTime,
+        sessionId: r.sessionId,
       })),
       subscriptionStatus: subscription?.status || "inactive",
       subscriptionEndDate: subscription?.endDate,
