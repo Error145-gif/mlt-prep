@@ -10,10 +10,10 @@ export const sendWelcomeEmail = internalAction({
   },
   handler: async (ctx, args) => {
     console.log(`[WELCOME EMAIL] Starting send process for: ${args.email}`);
-    console.log(`[WELCOME EMAIL] User ID: ${args.userId}, Name: ${args.name}`);
     
-    if (!process.env.RESEND_API_KEY) {
-      console.error("[WELCOME EMAIL] RESEND_API_KEY is missing in environment variables");
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) {
+      console.error("[WELCOME EMAIL] ❌ RESEND_API_KEY is missing in environment variables");
       return { success: false, error: "Missing API Key" };
     }
     
@@ -26,7 +26,7 @@ export const sendWelcomeEmail = internalAction({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${process.env.RESEND_API_KEY}`,
+          "Authorization": `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
           from: "MLT Prep <no-reply@mltprep.online>",
@@ -66,7 +66,7 @@ export const sendWelcomeEmail = internalAction({
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error("[WELCOME EMAIL] Resend API error:", JSON.stringify(errorData));
+        console.error("[WELCOME EMAIL] ❌ Resend API error:", JSON.stringify(errorData));
         throw new Error(`Failed to send welcome email: ${JSON.stringify(errorData)}`);
       }
 

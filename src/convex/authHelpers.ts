@@ -59,15 +59,14 @@ export const autoCompleteRegistration = mutation({
       }
     }
 
-    // Send welcome email to ALL new users (check if email was already sent)
-    // This runs on EVERY login/registration to catch new users
+    // Send welcome email to ALL users who haven't received it yet
+    // Removed time window restriction to ensure delivery
     if (!user.welcomeEmailSent && user.email) {
       console.log(`[WELCOME EMAIL] 🚀 Triggering for user: ${userId}, email: ${user.email}`);
-      console.log(`[WELCOME EMAIL] User created: ${new Date(user._creationTime).toISOString()}, Minutes ago: ${Math.floor((Date.now() - user._creationTime) / 1000 / 60)}`);
       
       const { internal } = await import("./_generated/api");
       
-      // Schedule email immediately (runAfter 0 = run ASAP)
+      // Schedule email immediately
       await ctx.scheduler.runAfter(0, internal.emails.sendWelcomeEmail, {
         email: user.email,
         name: user.name || "there",
