@@ -81,19 +81,27 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       
       // Redirect handled by useEffect
     } catch (error) {
-      console.error("Password sign-in error:", error);
+      console.error("Password authentication error:", error);
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
       
-      if (errorMessage.includes("InvalidAccountId")) {
-        setError("Account not found. Please sign up first.");
-      } else if (errorMessage.includes("Invalid password")) {
-        setError("Invalid password. Please check your credentials.");
+      if (step === "signIn") {
+        // Sign-in specific errors
+        if (errorMessage.includes("InvalidAccountId") || errorMessage.includes("Account not found")) {
+          setError("No account found with this email. Please sign up first.");
+        } else if (errorMessage.includes("Invalid password") || errorMessage.includes("Invalid credentials")) {
+          setError("Invalid email or password. Please check your credentials.");
+        } else {
+          setError("Login failed. Please check your credentials or sign up if you don't have an account.");
+        }
       } else {
-        setError(
-          error instanceof Error
-            ? error.message
-            : "Invalid email or password. Please try again."
-        );
+        // Sign-up specific errors
+        if (errorMessage.includes("Account with this email already exists")) {
+          setError("An account with this email already exists. Please sign in instead.");
+        } else if (errorMessage.includes("Password")) {
+          setError("Password must be at least 6 characters long.");
+        } else {
+          setError(errorMessage || "Failed to create account. Please try again.");
+        }
       }
       setIsLoading(false);
     }
