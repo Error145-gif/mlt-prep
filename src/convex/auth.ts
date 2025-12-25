@@ -14,6 +14,10 @@ const emailOtp = Email({
     return generateRandomString(6, alphabet("0-9"));
   },
   async sendVerificationRequest({ identifier: email, token }) {
+    if (!email || typeof email !== "string") {
+      throw new Error("Email is required for verification");
+    }
+
     if (!process.env.RESEND_API_KEY) {
       console.error("RESEND_API_KEY is missing");
       throw new Error("Server configuration error: RESEND_API_KEY is missing. Please check your environment variables.");

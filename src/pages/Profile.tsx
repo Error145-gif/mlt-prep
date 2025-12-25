@@ -240,21 +240,35 @@ export default function Profile() {
       }
       
       const formData = new FormData();
-      formData.append("flow", "reset-verification");
-      formData.append("newPassword", password);
-      
-      if (otpSent && otp) {
+      formData.append("email", userProfile.email || "");
+
+      if (!otpSent) {
+        // Step 1: Send OTP
+        formData.append("flow", "reset");
+        await signIn("password", formData);
+        setOtpSent(true);
+        toast.success(`Verification code sent to ${userProfile.email}`);
+      } else {
+        // Step 2: Verify & Update
+        if (!otp || otp.length !== 6) {
+          toast.error("Please enter the 6-digit verification code");
+          setIsSettingPassword(false);
+          return;
+        }
+
+        formData.append("flow", "reset-verification");
+        formData.append("newPassword", password);
         formData.append("code", otp);
+        
+        await signIn("password", formData);
+        
+        await updatePasswordStatus({ hasPassword: true });
+        toast.success("Password updated successfully!");
+        setNewPassword("");
+        setConfirmPassword("");
+        setOtp("");
+        setOtpSent(false);
       }
-      
-      await signIn("password", formData);
-      
-      await updatePasswordStatus({ hasPassword: true });
-      toast.success("Password updated successfully!");
-      setNewPassword("");
-      setConfirmPassword("");
-      setOtp("");
-      setOtpSent(false);
     } catch (error) {
       console.error("Failed to set password:", error);
       toast.error("Failed to set password. " + (error instanceof Error ? error.message : "Please try again."));
