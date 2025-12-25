@@ -169,6 +169,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       }
       
       formData.set("flow", "reset-verification");
+      formData.set("newPassword", password);
       
       await signIn("password", formData);
       toast.success("Password set successfully! You can now login.");
