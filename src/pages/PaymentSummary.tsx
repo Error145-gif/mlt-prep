@@ -21,7 +21,7 @@ export default function PaymentSummary() {
   const [couponCode, setCouponCode] = useState("");
   const validateCoupon = useQuery(
     api.coupons.validateCoupon,
-    couponCode ? { code: couponCode } : "skip"
+    couponCode ? { code: couponCode, userId: user?._id } : "skip"
   );
   const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
 

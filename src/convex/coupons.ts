@@ -6,6 +6,7 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 export const validateCoupon = query({
   args: {
     code: v.string(),
+    userId: v.optional(v.id("users")),
   },
   handler: async (ctx, args) => {
     const coupon = await ctx.db
@@ -27,6 +28,19 @@ export const validateCoupon = query({
 
     if (coupon.usageLimit && coupon.usageCount >= coupon.usageLimit) {
       return { valid: false, message: "This coupon has reached its usage limit" };
+    }
+
+    // Check if user has already used this coupon
+    if (args.userId) {
+      const previousUsage = await ctx.db
+        .query("couponUsage")
+        .withIndex("by_coupon", (q) => q.eq("couponId", coupon._id))
+        .filter((q) => q.eq(q.field("userId"), args.userId))
+        .first();
+
+      if (previousUsage) {
+        return { valid: false, message: "You have already used this coupon" };
+      }
     }
 
     return {
