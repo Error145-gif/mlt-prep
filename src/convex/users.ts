@@ -279,3 +279,39 @@ export const saveProfileImage = mutation({
     return imageUrl;
   },
 });
+
+// Ensure password account exists for the user (to fix InvalidAccountId during reset/set password)
+export const ensurePasswordAccount = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Not authenticated");
+    }
+
+    const user = await ctx.db.get(userId);
+    if (!user || !user.email) {
+      throw new Error("User not found or has no email");
+    }
+
+    // Check if password account already exists
+    const existingAccount = await ctx.db
+      .query("authAccounts")
+      .withIndex("userIdAndProvider", (q) => 
+        q.eq("userId", userId).eq("provider", "password")
+      )
+      .unique();
+
+    if (existingAccount) {
+      return;
+    }
+
+    // Create a placeholder account so that reset flow can update it
+    await ctx.db.insert("authAccounts", {
+      userId,
+      provider: "password",
+      providerAccountId: user.email,
+      secret: "placeholder", 
+    });
+  },
+});

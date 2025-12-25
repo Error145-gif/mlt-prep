@@ -109,6 +109,7 @@ export default function Profile() {
   const generateUploadUrl = useMutation(api.users.generateUploadUrl);
   const saveProfileImage = useMutation(api.users.saveProfileImage);
   const updatePasswordStatus = useMutation(api.users.updatePasswordStatus);
+  const ensurePasswordAccount = useMutation(api.users.ensurePasswordAccount);
 
   const [name, setName] = useState("");
   const [selectedAvatar, setSelectedAvatar] = useState("");
@@ -244,6 +245,12 @@ export default function Profile() {
 
       if (!otpSent) {
         // Step 1: Send OTP
+        
+        // Ensure account exists before sending OTP (fixes InvalidAccountId for Google users)
+        if (!userProfile.hasPassword) {
+          await ensurePasswordAccount();
+        }
+
         formData.append("flow", "reset");
         await signIn("password", formData);
         setOtpSent(true);
