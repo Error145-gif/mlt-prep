@@ -51,6 +51,7 @@ const WeeklyLeaderboard = lazy(() => import("./pages/WeeklyLeaderboard.tsx"));
 const ImageQuestionManagement = lazy(() => import("./pages/ImageQuestionManagement.tsx"));
 const ReportedErrors = lazy(() => import("./pages/ReportedErrors.tsx"));
 const WeeklyTestManagement = lazy(() => import("./pages/WeeklyTestManagement.tsx"));
+const OverallAnalytics = lazy(() => import("./pages/OverallAnalytics.tsx"));
 
 // Loading component
 const LoadingFallback = () => (
@@ -141,6 +142,14 @@ createRoot(document.getElementById("root")!).render(
                   element={
                     <ProtectedRoute>
                       <UserAnalytics />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/overall-analytics"
+                  element={
+                    <ProtectedRoute>
+                      <OverallAnalytics />
                     </ProtectedRoute>
                   }
                 />

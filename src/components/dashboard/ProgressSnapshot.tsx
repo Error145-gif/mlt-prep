@@ -65,10 +65,11 @@ export default function ProgressSnapshot({ stats, isFreeTrialUser }: ProgressSna
                   View your comprehensive performance analytics.
                 </p>
                 <Button
-                  onClick={() => navigate("/user-analytics")}
-                  className="bg-white text-purple-700 hover:bg-white/90 font-semibold w-full sm:w-auto"
+                  onClick={() => navigate("/overall-analytics")}
+                  variant="outline"
+                  className="w-full border-2 border-purple-300 text-purple-700 hover:bg-purple-50 font-semibold"
                 >
-                  View Detailed Analysis →
+                  📊 View Detailed Analysis →
                 </Button>
               </>
             )}
