@@ -9,12 +9,15 @@ export const sendWelcomeEmail = internalAction({
     userId: v.id("users"),
   },
   handler: async (ctx, args) => {
-    console.log(`Attempting to send welcome email to ${args.email}`);
+    console.log(`[WELCOME EMAIL] Starting send process for: ${args.email}`);
+    console.log(`[WELCOME EMAIL] User ID: ${args.userId}, Name: ${args.name}`);
     
     if (!process.env.RESEND_API_KEY) {
-      console.error("RESEND_API_KEY is missing in environment variables");
+      console.error("[WELCOME EMAIL] RESEND_API_KEY is missing in environment variables");
       return { success: false, error: "Missing API Key" };
     }
+    
+    console.log("[WELCOME EMAIL] API Key found, proceeding with email send...");
 
     try {
       const dashboardLink = "https://mltprep.online/student";
@@ -57,12 +60,12 @@ export const sendWelcomeEmail = internalAction({
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error("Resend API error:", JSON.stringify(errorData));
+        console.error("[WELCOME EMAIL] Resend API error:", JSON.stringify(errorData));
         throw new Error(`Failed to send welcome email: ${JSON.stringify(errorData)}`);
       }
 
       const result = await response.json();
-      console.log("Welcome email sent successfully:", result);
+      console.log("[WELCOME EMAIL] ✅ Email sent successfully! Email ID:", result.id);
 
       // Mark welcome email as sent
       const { internal } = await import("./_generated/api");
@@ -72,9 +75,7 @@ export const sendWelcomeEmail = internalAction({
 
       return { success: true, emailId: result.id };
     } catch (error) {
-      console.error("Error sending welcome email:", error);
-      // We don't throw here to prevent retries if it's a permanent error, 
-      // but for now let's log it.
+      console.error("[WELCOME EMAIL] ❌ Error sending email:", error);
       return { success: false, error: String(error) };
     }
   },

@@ -59,20 +59,21 @@ export const autoCompleteRegistration = mutation({
       }
     }
 
-    // Send welcome email (ONLY for new users, within 10 mins of creation)
+    // Send welcome email to ALL new users (within 10 mins of creation)
     // This prevents sending emails to old users logging in
     const isNewUser = (Date.now() - user._creationTime) < 10 * 60 * 1000;
     
     if (!user.welcomeEmailSent && user.email && isNewUser) {
+      console.log(`Scheduling welcome email for user: ${userId}, email: ${user.email}`);
       const { internal } = await import("./_generated/api");
       await ctx.scheduler.runAfter(0, internal.emails.sendWelcomeEmail, {
         email: user.email,
         name: user.name || "there",
         userId: userId,
       });
-      // We don't set welcomeEmailSent here, it's set in the email action/callback
-      // But to be safe against double scheduling in short time, we could.
-      // For now, relying on the email action to mark it.
+      console.log(`Welcome email scheduled successfully for: ${user.email}`);
+    } else {
+      console.log(`Welcome email NOT scheduled. Reasons: welcomeEmailSent=${user.welcomeEmailSent}, hasEmail=${!!user.email}, isNewUser=${isNewUser}`);
     }
 
     if (needsUpdate) {
