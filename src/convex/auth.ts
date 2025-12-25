@@ -137,7 +137,7 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
         name: (args.profile.name as string) || "User",
         image: args.profile.picture as string | undefined,
         role: "user",
-        welcomeEmailSent: true, // Mark as sent immediately to prevent duplicates
+        welcomeEmailSent: false, // Initialize as false, will be set to true after successful email
         isRegistered: true, 
         registrationCompleted: true,
         // tokenIdentifier is optional and not available in args, so we omit it
