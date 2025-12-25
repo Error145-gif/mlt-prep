@@ -9,18 +9,23 @@ export const sendWelcomeEmail = internalAction({
     userId: v.id("users"),
   },
   handler: async (ctx, args) => {
-    console.log(`[WELCOME EMAIL] Starting send process for: ${args.email}`);
+    console.log("----------- WELCOME EMAIL START -----------");
+    console.log(`[WELCOME EMAIL] Triggered for user: ${args.userId}`);
+    console.log(`[WELCOME EMAIL] Target email: ${args.email}`);
     
     const apiKey = process.env.RESEND_API_KEY;
     if (!apiKey) {
       console.error("[WELCOME EMAIL] ❌ RESEND_API_KEY is missing in environment variables");
+      console.log("----------- WELCOME EMAIL END (Error) -----------");
       return { success: false, error: "Missing API Key" };
     }
     
-    console.log("[WELCOME EMAIL] API Key found, proceeding with email send...");
+    console.log(`[WELCOME EMAIL] API Key present (length: ${apiKey.length})`);
 
     try {
       const dashboardLink = "https://mltprep.online/student";
+      
+      console.log("[WELCOME EMAIL] Preparing to call Resend API...");
       
       const response = await fetch("https://api.resend.com/emails", {
         method: "POST",
@@ -64,24 +69,30 @@ export const sendWelcomeEmail = internalAction({
         }),
       });
 
+      console.log(`[WELCOME EMAIL] Resend API Status: ${response.status}`);
+
       if (!response.ok) {
         const errorData = await response.json();
-        console.error("[WELCOME EMAIL] ❌ Resend API error:", JSON.stringify(errorData));
+        console.error("[WELCOME EMAIL] ❌ Resend API ERROR Body:", JSON.stringify(errorData));
+        console.log("----------- WELCOME EMAIL END (API Error) -----------");
         throw new Error(`Failed to send welcome email: ${JSON.stringify(errorData)}`);
       }
 
       const result = await response.json();
-      console.log("[WELCOME EMAIL] ✅ Email sent successfully! Email ID:", result.id);
+      console.log("[WELCOME EMAIL] ✅ Resend API SUCCESS! Email ID:", result.id);
 
-      // Mark welcome email as sent
+      // Mark welcome email as sent (redundant but safe)
       const { internal } = await import("./_generated/api");
       await ctx.runMutation(internal.authHelpers.markWelcomeEmailSent, {
         userId: args.userId,
       });
+      console.log("[WELCOME EMAIL] ✅ Marked user as sent in DB (Confirmation)");
 
+      console.log("----------- WELCOME EMAIL END (Success) -----------");
       return { success: true, emailId: result.id };
     } catch (error) {
-      console.error("[WELCOME EMAIL] ❌ Error sending email:", error);
+      console.error("[WELCOME EMAIL] ❌ EXCEPTION during send:", error);
+      console.log("----------- WELCOME EMAIL END (Exception) -----------");
       return { success: false, error: String(error) };
     }
   },

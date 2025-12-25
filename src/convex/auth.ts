@@ -6,6 +6,7 @@ import { Password } from "@convex-dev/auth/providers/Password";
 import Google from "@auth/core/providers/google";
 import { Email } from "@convex-dev/auth/providers/Email";
 import { alphabet, generateRandomString } from "oslo/crypto";
+import { internal } from "./_generated/api";
 
 const emailOtp = Email({
   id: "email-otp",
@@ -98,4 +99,71 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
     emailOtp, 
     Anonymous
   ],
+  callbacks: {
+    async createOrUpdateUser(ctx, args) {
+      console.log("----------- AUTH CALLBACK START -----------");
+      console.log("[AUTH] createOrUpdateUser triggered");
+      console.log("[AUTH] Profile email:", args.profile.email);
+      
+      // 1. Check if user already exists (linked via authAccounts)
+      if (args.existingUserId) {
+        console.log("[AUTH] User already exists (linked):", args.existingUserId);
+        console.log("----------- AUTH CALLBACK END (Existing Linked) -----------");
+        return args.existingUserId;
+      }
+
+      // 2. Check if user exists by email (Account Linking)
+      // This prevents duplicate accounts if user signs in with Google but already has email/pass
+      if (args.profile.email) {
+        // Use filter to avoid type issues with withIndex in this context
+        const userByEmail = await ctx.db
+          .query("users")
+          .filter((q) => q.eq(q.field("email"), args.profile.email as string))
+          .first();
+
+        if (userByEmail) {
+           console.log("[AUTH] User found by email, linking:", userByEmail._id);
+           console.log("----------- AUTH CALLBACK END (Existing Email) -----------");
+           // We return the existing user ID. convex-auth will link the new provider identity to this user.
+           return userByEmail._id;
+        }
+      }
+
+      // 3. Create NEW user
+      console.log("[AUTH] Creating NEW user for:", args.profile.email);
+      
+      const newUserId = await ctx.db.insert("users", {
+        email: args.profile.email as string | undefined,
+        name: (args.profile.name as string) || "User",
+        image: args.profile.picture as string | undefined,
+        role: "user",
+        welcomeEmailSent: true, // Mark as sent immediately to prevent duplicates
+        isRegistered: true, 
+        registrationCompleted: true,
+        // tokenIdentifier is optional and not available in args, so we omit it
+      });
+      
+      console.log("[AUTH] New user created:", newUserId);
+
+      // 4. Schedule Welcome Email
+      if (args.profile.email) {
+        console.log("[AUTH] Scheduling welcome email for:", args.profile.email);
+        try {
+          await ctx.scheduler.runAfter(0, internal.emails.sendWelcomeEmail, {
+            email: args.profile.email as string,
+            name: (args.profile.name as string) || "User",
+            userId: newUserId,
+          });
+          console.log("[AUTH] Welcome email scheduled successfully");
+        } catch (err) {
+          console.error("[AUTH] Failed to schedule welcome email:", err);
+        }
+      } else {
+        console.log("[AUTH] No email in profile, skipping welcome email");
+      }
+
+      console.log("----------- AUTH CALLBACK END (New User) -----------");
+      return newUserId;
+    },
+  },
 });
