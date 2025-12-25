@@ -48,8 +48,8 @@ export default function TestResults() {
 
   if (!testResults) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen flex items-center justify-center bg-[#7C3AED]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
       </div>
     );
   }
@@ -125,7 +125,7 @@ export default function TestResults() {
   const speedPercentile = avgTimePerQuestion < 25 ? 75 : avgTimePerQuestion < 35 ? 50 : 25;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+    <div className="min-h-screen bg-[#F3E8FF]">
       
       {/* Header with User Info */}
       <TestResultHeader 
@@ -158,8 +158,6 @@ export default function TestResults() {
           {isPaidUser ? (
             <DetailedAnalysis 
               questions={questions} 
-              timeSpent={timeSpent} 
-              totalQuestions={totalQuestions} 
             />
           ) : (
             <LockedAnalysis />

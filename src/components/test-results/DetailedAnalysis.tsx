@@ -2,15 +2,15 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { 
-  Clock, 
   AlertCircle, 
   CheckCircle2, 
   Crown,
   TrendingUp,
   ChevronRight,
+  ChevronDown,
   XCircle
 } from "lucide-react";
-import { useNavigate } from "react-router";
+import { useState } from "react";
 
 interface Question {
   _id: string;
@@ -25,12 +25,17 @@ interface Question {
 
 interface DetailedAnalysisProps {
   questions: Question[];
-  timeSpent: number; // in seconds
-  totalQuestions: number;
 }
 
-export default function DetailedAnalysis({ questions, timeSpent, totalQuestions }: DetailedAnalysisProps) {
-  const navigate = useNavigate();
+export default function DetailedAnalysis({ questions }: DetailedAnalysisProps) {
+  const [expandedExplanations, setExpandedExplanations] = useState<Record<string, boolean>>({});
+
+  const toggleExplanation = (id: string) => {
+    setExpandedExplanations(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  };
 
   // --- Data Processing ---
   const incorrectQuestions = questions.filter(q => q.userAnswer && !q.isCorrect);
@@ -47,9 +52,6 @@ export default function DetailedAnalysis({ questions, timeSpent, totalQuestions 
   const weakestTopic = sortedTopics[0];
   const marksLost = incorrectQuestions.length;
 
-  // Time Analysis
-  const avgTimePerQuestion = totalQuestions > 0 ? Math.round(timeSpent / totalQuestions) : 0;
-  
   // Topic Performance
   const topicStats: Record<string, { total: number; correct: number }> = {};
   questions.forEach(q => {
@@ -66,7 +68,7 @@ export default function DetailedAnalysis({ questions, timeSpent, totalQuestions 
   })).sort((a, b) => a.accuracy - b.accuracy); // Weakest first
 
   return (
-    <Card className="overflow-hidden border-0 shadow-2xl bg-white rounded-2xl">
+    <Card className="overflow-hidden border-0 shadow-2xl bg-gradient-to-br from-purple-50 to-indigo-50 backdrop-blur-sm rounded-2xl">
       {/* Header */}
       <div className="bg-gradient-to-r from-[#8B5CF6] to-[#6366F1] p-6 text-white">
         <div className="flex justify-between items-start">
@@ -100,29 +102,44 @@ export default function DetailedAnalysis({ questions, timeSpent, totalQuestions 
             </div>
 
             <div className="space-y-3">
-              {incorrectQuestions.slice(0, 3).map((q, idx) => (
-                <div key={idx} className="bg-white rounded-lg p-4 shadow-sm border border-red-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="flex-1 space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Badge variant="secondary" className="bg-purple-100 text-purple-700 hover:bg-purple-200">
-                        {q.topic || "General"}
-                      </Badge>
-                      <span className="text-xs text-gray-500 line-clamp-1">{q.subtopic}</span>
+              {incorrectQuestions.slice(0, 5).map((q, idx) => (
+                <div key={idx} className="bg-white rounded-lg p-4 shadow-sm border border-red-100 transition-all">
+                  <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                    <div className="flex-1 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="bg-purple-100 text-purple-700 hover:bg-purple-200">
+                          {q.topic || "General"}
+                        </Badge>
+                        <span className="text-xs text-gray-500 line-clamp-1">{q.subtopic}</span>
+                      </div>
+                      <p className="text-gray-900 font-medium">{q.question}</p>
+                      <p className="text-xs text-gray-500">
+                        Your Answer: <span className="text-red-500 line-through mr-2">{q.userAnswer}</span>
+                        Correct Answer: <span className="text-green-600 font-medium">{q.correctAnswer}</span>
+                      </p>
                     </div>
-                    <p className="text-gray-900 font-medium line-clamp-1">{q.question}</p>
-                    <p className="text-xs text-gray-500">
-                      Your Answer: <span className="text-red-500 line-through mr-2">{q.userAnswer}</span>
-                      Correct Answer: <span className="text-green-600 font-medium">{q.correctAnswer}</span>
-                    </p>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="text-purple-600 hover:text-purple-700 hover:bg-purple-50 shrink-0"
+                      onClick={() => toggleExplanation(q._id)}
+                    >
+                      {expandedExplanations[q._id] ? "Hide Explanation" : "View Explanation"} 
+                      {expandedExplanations[q._id] ? <ChevronDown className="h-4 w-4 ml-1" /> : <ChevronRight className="h-4 w-4 ml-1" />}
+                    </Button>
                   </div>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="text-purple-600 hover:text-purple-700 hover:bg-purple-50 shrink-0"
-                    onClick={() => navigate("/practice")}
-                  >
-                    View Explanation <ChevronRight className="h-4 w-4 ml-1" />
-                  </Button>
+                  
+                  {/* Inline Explanation */}
+                  {expandedExplanations[q._id] && (
+                    <div className="mt-4 pt-4 border-t border-gray-100 animate-in fade-in slide-in-from-top-2 duration-300">
+                      <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                        <p className="text-sm font-bold text-blue-900 mb-1">💡 Explanation:</p>
+                        <p className="text-sm text-blue-800 leading-relaxed">
+                          {q.explanation || "No detailed explanation available for this question."}
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
               {incorrectQuestions.length === 0 && (
@@ -130,47 +147,6 @@ export default function DetailedAnalysis({ questions, timeSpent, totalQuestions 
                   No mistakes found! Excellent work.
                 </div>
               )}
-            </div>
-          </div>
-        </div>
-
-        {/* Time Analysis Section */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 text-gray-900 font-bold text-lg">
-            <Clock className="h-5 w-5 text-orange-500" />
-            <h3>Time Analysis</h3>
-          </div>
-          <div className="bg-orange-50 border border-orange-100 rounded-xl p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Left: Avg Time */}
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-orange-100 rounded-full">
-                  <Clock className="h-6 w-6 text-orange-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Average time per question</p>
-                  <p className="text-2xl font-bold text-gray-900">{avgTimePerQuestion} seconds</p>
-                  <p className="text-xs text-orange-600 mt-1">
-                    {avgTimePerQuestion > 60 ? "Slower than average" : "Good pace"}
-                  </p>
-                </div>
-              </div>
-              
-              {/* Right: Fast/Slow info */}
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-green-100 rounded-full">
-                  <CheckCircle2 className="h-6 w-6 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Accuracy Speed</p>
-                  <p className="text-lg font-bold text-gray-900">
-                    {avgTimePerQuestion < 45 ? "Fast & Accurate" : "Steady Pace"}
-                  </p>
-                  <p className="text-xs text-green-600 mt-1">
-                    {avgTimePerQuestion < 45 ? "Great job maintaining speed!" : "Focus on accuracy first."}
-                  </p>
-                </div>
-              </div>
             </div>
           </div>
         </div>
