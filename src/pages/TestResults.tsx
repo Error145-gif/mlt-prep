@@ -14,6 +14,8 @@ import AccuracyChart from "@/components/test-results/AccuracyChart";
 import StatsGrid from "@/components/test-results/StatsGrid";
 import RankAnalytics from "@/components/test-results/RankAnalytics";
 import QuestionReview from "@/components/test-results/QuestionReview";
+import DetailedAnalysis from "@/components/test-results/DetailedAnalysis";
+import LockedAnalysis from "@/components/test-results/LockedAnalysis";
 
 export default function TestResults() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -135,43 +137,9 @@ export default function TestResults() {
         totalQuestions={totalQuestions} 
       />
 
-      <div className="max-w-6xl mx-auto p-6 space-y-6">
+      <div className="max-w-6xl mx-auto p-6 space-y-8">
         {/* Animated Accuracy Circle */}
         <AccuracyChart score={score} motivation={motivation} />
-
-        {/* FREE TRIAL CONVERSION MESSAGE - Show after accuracy */}
-        {isFreeTrialUser && (
-          <Card className="p-6 bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-xl border-2 border-orange-600">
-            <div className="space-y-4 text-center md:text-left">
-              <h3 className="text-2xl font-bold">Your performance is recorded.</h3>
-              <p className="text-lg font-medium opacity-90">
-                Exact rank & comparison are locked.
-              </p>
-              
-              <div className="bg-white/10 p-4 rounded-lg backdrop-blur-sm border border-white/20 my-4">
-                <p className="font-semibold mb-2">Upgrade now to:</p>
-                <ul className="space-y-1 text-sm md:text-base">
-                  <li className="flex items-center gap-2">
-                    <span className="text-green-300">✓</span> Check your exact rank
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-green-300">✓</span> Compare with toppers
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-green-300">✓</span> Access detailed insights
-                  </li>
-                </ul>
-              </div>
-
-              <Button 
-                onClick={() => navigate("/subscription-plans")}
-                className="w-full md:w-auto bg-white text-red-600 hover:bg-white/90 font-bold text-lg px-8 py-6 shadow-lg"
-              >
-                Upgrade Now – Check Your Rank
-              </Button>
-            </div>
-          </Card>
-        )}
 
         {/* Performance Stats Grid - Always visible */}
         <StatsGrid 
@@ -184,6 +152,24 @@ export default function TestResults() {
           totalCandidates={totalCandidates} 
           isFreeTrialUser={isFreeTrialUser}
         />
+
+        {/* DETAILED ANALYSIS SECTION */}
+        <div className="my-8">
+          {isPaidUser ? (
+            <DetailedAnalysis 
+              questions={questions} 
+              timeSpent={timeSpent} 
+              totalQuestions={totalQuestions} 
+              score={score} 
+            />
+          ) : (
+            <LockedAnalysis 
+              score={score} 
+              totalQuestions={totalQuestions} 
+              correctAnswers={correctAnswers} 
+            />
+          )}
+        </div>
 
         {/* Rank & Speed Analytics - Locked for free trial */}
         {!isFreeTrialUser ? (
