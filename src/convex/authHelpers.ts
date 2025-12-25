@@ -59,22 +59,28 @@ export const autoCompleteRegistration = mutation({
       }
     }
 
-    // Send welcome email to ALL new users (within 30 mins of creation)
-    // This prevents sending emails to old users logging in
-    const isNewUser = (Date.now() - user._creationTime) < 30 * 60 * 1000; // Extended to 30 mins
-    
-    if (!user.welcomeEmailSent && user.email && isNewUser) {
-      console.log(`[WELCOME EMAIL] Scheduling for user: ${userId}, email: ${user.email}, created: ${new Date(user._creationTime).toISOString()}`);
+    // Send welcome email to ALL new users (check if email was already sent)
+    // This runs on EVERY login/registration to catch new users
+    if (!user.welcomeEmailSent && user.email) {
+      console.log(`[WELCOME EMAIL] 🚀 Triggering for user: ${userId}, email: ${user.email}`);
+      console.log(`[WELCOME EMAIL] User created: ${new Date(user._creationTime).toISOString()}, Minutes ago: ${Math.floor((Date.now() - user._creationTime) / 1000 / 60)}`);
+      
       const { internal } = await import("./_generated/api");
+      
+      // Schedule email immediately (runAfter 0 = run ASAP)
       await ctx.scheduler.runAfter(0, internal.emails.sendWelcomeEmail, {
         email: user.email,
         name: user.name || "there",
         userId: userId,
       });
+      
       console.log(`[WELCOME EMAIL] ✅ Scheduled successfully for: ${user.email}`);
     } else {
-      const timeSinceCreation = Math.floor((Date.now() - user._creationTime) / 1000 / 60);
-      console.log(`[WELCOME EMAIL] ❌ NOT scheduled. welcomeEmailSent=${user.welcomeEmailSent}, hasEmail=${!!user.email}, isNewUser=${isNewUser}, minutesSinceCreation=${timeSinceCreation}`);
+      if (user.welcomeEmailSent) {
+        console.log(`[WELCOME EMAIL] ⏭️ Already sent to: ${user.email}`);
+      } else if (!user.email) {
+        console.log(`[WELCOME EMAIL] ❌ No email address for user: ${userId}`);
+      }
     }
 
     if (needsUpdate) {
