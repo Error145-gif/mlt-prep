@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router";
-import { TrendingUp } from "lucide-react";
+import { TrendingUp, Lock, BarChart2 } from "lucide-react";
 
 interface ProgressSnapshotProps {
   stats: {
@@ -12,7 +12,7 @@ interface ProgressSnapshotProps {
   isFreeTrialUser?: boolean;
 }
 
-export default function ProgressSnapshot({ stats }: ProgressSnapshotProps) {
+export default function ProgressSnapshot({ stats, isFreeTrialUser }: ProgressSnapshotProps) {
   const navigate = useNavigate();
 
   return (
@@ -44,16 +44,34 @@ export default function ProgressSnapshot({ stats }: ProgressSnapshotProps) {
             </div>
           </div>
           <div className="border-t border-white/20 pt-4">
-            <p className="text-white/80 text-sm mb-3">
-              Detailed topic-wise analysis is available with Premium.
-            </p>
-            <Button
-              onClick={() => navigate("/subscription-plans")}
-              variant="outline"
-              className="bg-white/10 border-white/30 text-white hover:bg-white/20"
-            >
-              View Detailed Analysis →
-            </Button>
+            {isFreeTrialUser ? (
+              <>
+                <p className="text-white/80 text-sm mb-3 flex items-center gap-2">
+                  <Lock className="h-3 w-3 text-orange-300" />
+                  Detailed topic-wise analysis is available with Premium.
+                </p>
+                <Button
+                  onClick={() => navigate("/subscription-plans")}
+                  variant="outline"
+                  className="bg-white/10 border-white/30 text-white hover:bg-white/20 w-full sm:w-auto"
+                >
+                  Upgrade for Detailed Analysis →
+                </Button>
+              </>
+            ) : (
+              <>
+                <p className="text-white/80 text-sm mb-3 flex items-center gap-2">
+                  <BarChart2 className="h-3 w-3 text-green-300" />
+                  View your comprehensive performance analytics.
+                </p>
+                <Button
+                  onClick={() => navigate("/user-analytics")}
+                  className="bg-white text-purple-700 hover:bg-white/90 font-semibold w-full sm:w-auto"
+                >
+                  View Detailed Analysis →
+                </Button>
+              </>
+            )}
           </div>
         </CardContent>
       </Card>

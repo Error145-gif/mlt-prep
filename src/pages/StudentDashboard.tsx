@@ -73,7 +73,8 @@ export default function StudentDashboard() {
     improvementRate: stats.improvementRate ?? 0,
     totalStudyTime: stats.totalStudyTime ?? 0,
     avgQuestionsPerTest: stats.avgQuestionsPerTest ?? 0,
-    aiInsights: stats.aiInsights ?? []
+    aiInsights: stats.aiInsights ?? [],
+    recentTestPerformance: stats.recentTestPerformance ?? []
   } : null;
 
   const profileCompletion = userProfile ? 
@@ -174,7 +175,10 @@ export default function StudentDashboard() {
         {isFreeTrialUser && <UpgradeSection />}
 
         {/* 6. RECENT ACTIVITY */}
-        <RecentActivity isFreeTrialUser={isFreeTrialUser} />
+        <RecentActivity 
+          isFreeTrialUser={isFreeTrialUser} 
+          recentTests={displayStats?.recentTestPerformance}
+        />
       </div>
     </div>
   );

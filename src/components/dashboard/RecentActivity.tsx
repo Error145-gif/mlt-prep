@@ -1,12 +1,21 @@
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Clock } from "lucide-react";
+import { Clock, CheckCircle2, XCircle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface RecentActivityProps {
   isFreeTrialUser?: boolean;
+  recentTests?: Array<{
+    score: number;
+    type: string;
+    date: number;
+  }>;
 }
 
-export default function RecentActivity({ isFreeTrialUser = false }: RecentActivityProps) {
+export default function RecentActivity({ isFreeTrialUser = false, recentTests = [] }: RecentActivityProps) {
+  // Reverse the array to show newest first (input is chronological for charts)
+  const displayTests = [...recentTests].reverse();
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -21,10 +30,39 @@ export default function RecentActivity({ isFreeTrialUser = false }: RecentActivi
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-white/70 text-center py-8">
-            <p className="mb-2">No tests attempted yet</p>
-            <p className="text-sm">Start your first test to see your progress here</p>
-          </div>
+          {displayTests && displayTests.length > 0 ? (
+            <div className="space-y-3">
+              {displayTests.slice(0, 5).map((test, index) => (
+                <div 
+                  key={index}
+                  className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`p-2 rounded-full ${test.score >= 50 ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}`}>
+                      {test.score >= 50 ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
+                    </div>
+                    <div>
+                      <p className="text-white font-medium capitalize">{test.type === 'pyq' ? 'PYQ Test' : test.type === 'ai' ? 'AI Practice' : 'Mock Test'}</p>
+                      <p className="text-white/60 text-xs">
+                        {new Date(test.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Badge variant={test.score >= 50 ? "default" : "destructive"} className={test.score >= 50 ? "bg-green-500 hover:bg-green-600" : ""}>
+                      {test.score}%
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-white/70 text-center py-8">
+              <p className="mb-2">No tests attempted yet</p>
+              <p className="text-sm">Start your first test to see your progress here</p>
+            </div>
+          )}
+          
           {isFreeTrialUser && (
             <div className="border-t border-white/20 pt-4 mt-4">
               <p className="text-white/80 text-sm text-center">
