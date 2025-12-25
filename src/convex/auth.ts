@@ -82,7 +82,7 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
         };
       },
       validatePasswordRequirements: (password: string) => {
-        if (password.length < 6) {
+        if (!password || password.length < 6) {
           return {
             passwordValid: false,
             errorMessage: "Password must be at least 6 characters long",
