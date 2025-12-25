@@ -160,14 +160,9 @@ export default function TestResults() {
               questions={questions} 
               timeSpent={timeSpent} 
               totalQuestions={totalQuestions} 
-              score={score} 
             />
           ) : (
-            <LockedAnalysis 
-              score={score} 
-              totalQuestions={totalQuestions} 
-              correctAnswers={correctAnswers} 
-            />
+            <LockedAnalysis />
           )}
         </div>
 
