@@ -159,6 +159,15 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
     
     try {
       const formData = new FormData(event.currentTarget);
+      const password = formData.get("password") as string;
+      
+      // Client-side validation
+      if (!password || password.length < 6) {
+        setError("Password must be at least 6 characters long");
+        setIsLoading(false);
+        return;
+      }
+      
       formData.set("flow", "reset-verification");
       
       await signIn("password", formData);
@@ -168,11 +177,15 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       console.error("Password reset error:", error);
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
       
-      setError(
-        error instanceof Error
-          ? error.message
-          : "Failed to set password. Please try again."
-      );
+      if (errorMessage.includes("validateDefaultPasswordRequirements")) {
+        setError("Password must be at least 6 characters long");
+      } else {
+        setError(
+          error instanceof Error
+            ? error.message
+            : "Failed to set password. Please try again."
+        );
+      }
     } finally {
       setIsLoading(false);
     }
@@ -310,17 +323,16 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                 <input type="hidden" name="code" value={step.code} />
 
                 <div className="space-y-4">
-                  <div className="relative group">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/60 group-focus-within:text-white transition-colors" />
-                    <Input
-                      name="password"
-                        placeholder="Enter new password (minimum 6 characters)"
+                    <div className="relative group">
+                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/60 group-focus-within:text-white transition-colors" />
+                      <Input
+                        name="password"
+                        placeholder="Enter new password"
                         type="password"
                         className="pl-12 h-12 bg-white/10 border-white/30 rounded-2xl text-white placeholder:text-white/60 focus:bg-white/20 focus:border-white/50 transition-all shadow-inner"
                         style={{ fontFamily: "'Inter', sans-serif" }}
                         disabled={isLoading}
                         required
-                        minLength={6}
                         autoComplete="new-password"
                     />
                   </div>
@@ -586,7 +598,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                       <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/60 group-focus-within:text-white transition-colors" />
                       <Input
                         name="password"
-                        placeholder="Password"
+                        placeholder="Password (minimum 6 characters)"
                         type="password"
                         className="pl-12 h-12 bg-white/10 border-white/30 rounded-2xl text-white placeholder:text-white/60 focus:bg-white/20 focus:border-white/50 transition-all shadow-inner"
                         style={{ fontFamily: "'Inter', sans-serif" }}

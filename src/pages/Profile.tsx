@@ -224,8 +224,8 @@ export default function Profile() {
   const handleSetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (newPassword.length < 6) {
-      toast.error("Password must be at least 6 characters");
+    if (!newPassword || newPassword.length < 6) {
+      toast.error("Password must be at least 6 characters long");
       return;
     }
     
