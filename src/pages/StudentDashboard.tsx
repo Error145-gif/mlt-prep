@@ -169,7 +169,7 @@ export default function StudentDashboard() {
         <WeeklyTestCard isFreeTrialUser={isFreeTrialUser} />
 
         {/* 4. PRACTICE AREA - No confusion, no locks */}
-        <SimplePracticeArea />
+        <SimplePracticeArea subscriptionAccess={subscriptionAccess} />
 
         {/* 5. UPGRADE SECTION - Benefits, not locks */}
         {isFreeTrialUser && <UpgradeSection />}
