@@ -39,6 +39,8 @@ export const autoCompleteRegistration = mutation({
       needsUpdate = true;
 
       // Automatically create 7-day free trial subscription for new users
+      // DISABLED: Users should not get automatic full access. They get limited free trials via student.ts logic.
+      /*
       const existingSubscription = await ctx.db
         .query("subscriptions")
         .withIndex("by_user", (q) => q.eq("userId", userId))
@@ -59,6 +61,7 @@ export const autoCompleteRegistration = mutation({
 
         console.log(`Auto-activated 7-day free trial for user: ${userId}`);
       }
+      */
     }
 
     // FALLBACK: Send welcome email if not sent yet
