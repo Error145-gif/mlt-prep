@@ -81,12 +81,12 @@ export const sendWelcomeEmail = internalAction({
       const result = await response.json();
       console.log("[WELCOME EMAIL] ✅ Resend API SUCCESS! Email ID:", result.id);
 
-      // Mark welcome email as sent (redundant but safe)
+      // Mark welcome email as sent with timestamp
       const { internal } = await import("./_generated/api");
       await ctx.runMutation(internal.authHelpers.markWelcomeEmailSent, {
         userId: args.userId,
       });
-      console.log("[WELCOME EMAIL] ✅ Marked user as sent in DB (Confirmation)");
+      console.log("[WELCOME EMAIL] ✅ Marked user as sent in DB with timestamp");
 
       console.log("----------- WELCOME EMAIL END (Success) -----------");
       return { success: true, emailId: result.id };

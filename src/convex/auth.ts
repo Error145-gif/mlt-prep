@@ -105,77 +105,76 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
       console.log("[AUTH] createOrUpdateUser triggered");
       console.log("[AUTH] Profile email:", args.profile.email);
       
+      let userId: any = null;
+
       // 1. Check if user already exists (linked via authAccounts)
       if (args.existingUserId) {
         console.log("[AUTH] User already exists (linked):", args.existingUserId);
-        const existingUser = await ctx.db.get(args.existingUserId);
+        userId = args.existingUserId;
         
         // Update last active time
-        if (existingUser) {
-          await ctx.db.patch(args.existingUserId, {
-            lastActive: Date.now(),
-          });
-        }
-        
-        console.log("----------- AUTH CALLBACK END (Existing Linked) -----------");
-        return args.existingUserId;
+        await ctx.db.patch(userId, {
+          lastActive: Date.now(),
+        });
       }
-
       // 2. Check if user exists by email (Account Linking Prevention)
-      if (args.profile.email) {
+      else if (args.profile.email) {
         const userByEmail = await ctx.db
           .query("users")
           .filter((q) => q.eq(q.field("email"), args.profile.email as string))
           .first();
 
         if (userByEmail) {
-           console.log("[AUTH] User found by email, linking:", userByEmail._id);
-           
-           // Update last active time
-           await ctx.db.patch(userByEmail._id, {
-             lastActive: Date.now(),
-           });
-           
-           console.log("----------- AUTH CALLBACK END (Existing Email) -----------");
-           return userByEmail._id;
-        }
-      }
-
-      // 3. Create NEW user (only happens on first signup)
-      console.log("[AUTH] Creating NEW user for:", args.profile.email);
-      
-      const newUserId = await ctx.db.insert("users", {
-        email: args.profile.email as string | undefined,
-        name: (args.profile.name as string) || "User",
-        image: args.profile.picture as string | undefined,
-        role: "user",
-        welcomeEmailSent: false,
-        isRegistered: true, 
-        registrationCompleted: true,
-        lastActive: Date.now(),
-      });
-      
-      console.log("[AUTH] New user created:", newUserId);
-
-      // 4. Schedule Welcome Email IMMEDIATELY for new users
-      if (args.profile.email) {
-        console.log("[AUTH] Scheduling welcome email for:", args.profile.email);
-        try {
-          await ctx.scheduler.runAfter(0, internal.emails.sendWelcomeEmail, {
-            email: args.profile.email as string,
-            name: (args.profile.name as string) || "User",
-            userId: newUserId,
+          console.log("[AUTH] User found by email, linking:", userByEmail._id);
+          userId = userByEmail._id;
+          
+          // Update last active time
+          await ctx.db.patch(userId, {
+            lastActive: Date.now(),
           });
-          console.log("[AUTH] ✅ Welcome email scheduled successfully");
-        } catch (err) {
-          console.error("[AUTH] ❌ Failed to schedule welcome email:", err);
+        } else {
+          // 3. Create NEW user (only happens on first signup)
+          console.log("[AUTH] Creating NEW user for:", args.profile.email);
+          
+          userId = await ctx.db.insert("users", {
+            email: args.profile.email as string | undefined,
+            name: (args.profile.name as string) || "User",
+            image: args.profile.picture as string | undefined,
+            role: "user",
+            welcomeEmailSent: false,
+            isRegistered: true, 
+            registrationCompleted: true,
+            lastActive: Date.now(),
+          });
+          
+          console.log("[AUTH] New user created:", userId);
         }
-      } else {
-        console.log("[AUTH] No email in profile, skipping welcome email");
       }
 
-      console.log("----------- AUTH CALLBACK END (New User) -----------");
-      return newUserId;
+      // 4. PERSISTENT FLAG CHECK: Send welcome email if not sent yet
+      if (userId && args.profile.email) {
+        const user = await ctx.db.get(userId);
+        
+        if (user && user.welcomeEmailSent !== true) {
+          console.log("[AUTH] Welcome email NOT sent yet. Scheduling now for:", args.profile.email);
+          
+          try {
+            await ctx.scheduler.runAfter(0, internal.emails.sendWelcomeEmail, {
+              email: args.profile.email as string,
+              name: (args.profile.name as string) || user.name || "User",
+              userId: userId,
+            });
+            console.log("[AUTH] ✅ Welcome email scheduled successfully");
+          } catch (err) {
+            console.error("[AUTH] ❌ Failed to schedule welcome email:", err);
+          }
+        } else {
+          console.log("[AUTH] Welcome email already sent. Skipping.");
+        }
+      }
+
+      console.log("----------- AUTH CALLBACK END -----------");
+      return userId;
     },
   },
 });
