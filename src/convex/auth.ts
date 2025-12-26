@@ -155,17 +155,18 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
         }
       }
 
-      // 4. PERSISTENT FLAG CHECK: Send welcome email if not sent yet
-      if (userId && args.profile.email) {
+      // 4. SEND WELCOME EMAIL ONLY FOR NEW USERS
+      // Only trigger welcome email if this was a NEW user creation (not existing user login)
+      if (userId && args.profile.email && !args.existingUserId) {
         const user = await ctx.db.get(userId);
-        console.log("[AUTH] 🔍 Checking welcome email status...");
+        console.log("[AUTH] 🔍 NEW USER DETECTED - Checking welcome email status...");
         console.log("[AUTH] User welcomeEmailSent flag:", user?.welcomeEmailSent);
         
         if (user && user.welcomeEmailSent !== true) {
           console.log("=".repeat(60));
-          console.log("📧 WELCOME EMAIL TRIGGER ACTIVATED 📧");
+          console.log("📧 WELCOME EMAIL TRIGGER ACTIVATED (NEW USER) 📧");
           console.log("=".repeat(60));
-          console.log("[AUTH] Welcome email NOT sent yet. Scheduling now for:", args.profile.email);
+          console.log("[AUTH] Scheduling welcome email for NEW user:", args.profile.email);
           
           try {
             await ctx.scheduler.runAfter(0, internal.emails.sendWelcomeEmail, {
@@ -173,13 +174,15 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
               name: (args.profile.name as string) || user.name || "User",
               userId: userId,
             });
-            console.log("[AUTH] ✅ Welcome email scheduled successfully");
+            console.log("[AUTH] ✅ Welcome email scheduled successfully for new user");
           } catch (err) {
             console.error("[AUTH] ❌ Failed to schedule welcome email:", err);
           }
         } else {
-          console.log("[AUTH] Welcome email already sent. Skipping.");
+          console.log("[AUTH] Welcome email already sent for this new user. Skipping.");
         }
+      } else if (args.existingUserId) {
+        console.log("[AUTH] Existing user login detected - skipping welcome email");
       }
 
       console.log("----------- AUTH CALLBACK END -----------");
