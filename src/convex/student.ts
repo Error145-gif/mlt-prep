@@ -638,6 +638,31 @@ export const startTest = mutation({
       throw new Error("Not authenticated");
     }
 
+    // ENFORCE SUBSCRIPTION / FREE TRIAL LIMITS
+    // 1. Check for active subscription
+    const subscription = await ctx.db
+      .query("subscriptions")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .filter((q) => q.eq(q.field("status"), "active"))
+      .first();
+
+    const hasActiveSubscription = subscription && subscription.endDate > Date.now();
+    
+    if (!hasActiveSubscription) {
+      // 2. If no subscription, check if they have already used their free trial for this test type
+      // We allow 1 free test per test type (mock, pyq, ai)
+      const completedTests = await ctx.db
+        .query("testSessions")
+        .withIndex("by_user", (q) => q.eq("userId", user._id))
+        .filter((q) => q.eq(q.field("status"), "completed"))
+        .filter((q) => q.eq(q.field("testType"), args.testType))
+        .collect();
+
+      if (completedTests.length >= 1) {
+        throw new Error(`Free trial limit reached for ${args.testType} tests. Please upgrade to Premium to continue.`);
+      }
+    }
+
     const sessionId = await ctx.db.insert("testSessions", {
       userId: user._id,
       testType: args.testType,
