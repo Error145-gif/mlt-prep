@@ -1,6 +1,9 @@
-// Admin Auto-activation
-// ...
-
-await ctx.scheduler.runAfter(0, internal.emails.sendWelcomeEmail, ...);
-subject: "Welcome to MLT Prep 🎉 Your ₹1 Plan is Ready",
-html: `...`
+// 4. SEND WELCOME EMAIL ONLY FOR NEW USERS
+// Only trigger welcome email if this was a NEW user creation (not existing user login)
+if (userId && args.profile.email && !args.existingUserId) {
+  const user = await ctx.db.get(userId);
+  console.log("[AUTH] 🔍 NEW USER DETECTED - Checking welcome email status...");
+  // ... sends welcome email only for new users
+} else if (args.existingUserId) {
+  console.log("[AUTH] Existing user login detected - skipping welcome email");
+}
