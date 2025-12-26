@@ -1080,12 +1080,8 @@ export const canAccessTestType = query({
 
     // If user has an active paid subscription, grant full access immediately
     if (subscription && subscription.endDate >= Date.now()) {
-      const isPaid = subscription.amount > 0;
-      console.log("Is paid subscription:", isPaid);
-      if (isPaid) {
-        console.log("✅ Access granted - paid subscription");
-        return { canAccess: true, reason: "paid_subscription" };
-      }
+      console.log("✅ Access granted - active subscription");
+      return { canAccess: true, reason: "paid_subscription" };
     }
 
     // Only check free trial if no paid subscription exists

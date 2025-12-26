@@ -42,7 +42,7 @@ export default function TestResults() {
   const subscriptionAccess = useQuery(api.student.checkSubscriptionAccess);
 
   // Determine user type - PAID has highest priority
-  const isPaidUser = subscriptionAccess?.hasAccess && subscriptionAccess?.isPaid;
+  const isPaidUser = subscriptionAccess?.hasAccess;
   // Treat anyone who is not a paid user as a free trial user for restriction purposes
   const isFreeTrialUser = !isPaidUser;
 

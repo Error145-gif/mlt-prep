@@ -12,7 +12,7 @@ interface DashboardHeaderProps {
 export default function DashboardHeader({ userProfile, subscriptionAccess }: DashboardHeaderProps) {
   const navigate = useNavigate();
   
-  const isPaid = subscriptionAccess?.isPaid;
+  const isPaid = subscriptionAccess?.hasAccess;
   const subscription = subscriptionAccess?.subscription;
   
   // Calculate days remaining if subscription exists

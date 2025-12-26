@@ -34,8 +34,8 @@ export default function StudentDashboard() {
 
   // Memoize user type to avoid recalculation
   const { isFreeTrialUser } = useMemo(() => {
-    const isPaid = subscriptionAccess?.hasAccess && subscriptionAccess?.isPaid;
-    const isTrial = !isPaid;
+    const hasFullAccess = subscriptionAccess?.hasAccess;
+    const isTrial = !hasFullAccess;
     return { isFreeTrialUser: isTrial };
   }, [subscriptionAccess]);
 
