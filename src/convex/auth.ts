@@ -99,11 +99,15 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
     emailOtp, 
     Anonymous
   ],
-  callbacks: {
+    callbacks: {
     async createOrUpdateUser(ctx, args) {
-      console.log("----------- AUTH CALLBACK START -----------");
+      console.log("=".repeat(60));
+      console.log("🔥 AUTH CALLBACK FIRED 🔥");
+      console.log("=".repeat(60));
       console.log("[AUTH] createOrUpdateUser triggered");
       console.log("[AUTH] Profile email:", args.profile.email);
+      console.log("[AUTH] Provider:", args.provider);
+      console.log("[AUTH] Existing user ID:", args.existingUserId);
       
       let userId: any = null;
 
@@ -154,8 +158,13 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
       // 4. PERSISTENT FLAG CHECK: Send welcome email if not sent yet
       if (userId && args.profile.email) {
         const user = await ctx.db.get(userId);
+        console.log("[AUTH] 🔍 Checking welcome email status...");
+        console.log("[AUTH] User welcomeEmailSent flag:", user?.welcomeEmailSent);
         
         if (user && user.welcomeEmailSent !== true) {
+          console.log("=".repeat(60));
+          console.log("📧 WELCOME EMAIL TRIGGER ACTIVATED 📧");
+          console.log("=".repeat(60));
           console.log("[AUTH] Welcome email NOT sent yet. Scheduling now for:", args.profile.email);
           
           try {

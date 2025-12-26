@@ -61,14 +61,22 @@ export const autoCompleteRegistration = mutation({
       }
     }
 
-    // NOTE: Welcome email is now handled in src/convex/auth.ts inside createOrUpdateUser
-    // This ensures it runs exactly once on creation.
-    // We keep this check just in case, but it shouldn't be needed for new users.
-    // If we want to retry for old users who missed it:
+    // FALLBACK: Send welcome email if not sent yet
+    // This acts as a safety net if the auth callback didn't fire
     if (!user.welcomeEmailSent && user.email) {
-       console.log(`[AUTH HELPER] User ${userId} missing welcome email. Checking if we should send...`);
-       // We can optionally trigger it here as a fallback, but let's rely on the main trigger first to avoid confusion.
-       // If the user was just created, the scheduler in auth.ts handles it.
+      console.log(`[AUTH HELPER] User ${userId} missing welcome email. Sending now as fallback...`);
+      
+      try {
+        const { internal } = await import("./_generated/api");
+        await ctx.scheduler.runAfter(0, internal.emails.sendWelcomeEmail, {
+          email: user.email,
+          name: user.name || "User",
+          userId: userId,
+        });
+        console.log(`[AUTH HELPER] ✅ Welcome email scheduled successfully (fallback)`);
+      } catch (err) {
+        console.error(`[AUTH HELPER] ❌ Failed to schedule welcome email:`, err);
+      }
     }
 
     if (needsUpdate) {

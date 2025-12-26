@@ -1,0 +1,16 @@
+print(editFile("src/convex/users.ts", """    // === NEW LOGIC: Send welcome email if not already sent ===
+    if (user.email && user.welcomeEmailSent !== true) {
+      console.log(`[USERS] completeRegistration: User ${userId} missing welcome email. Scheduling now...`);
+      try {
+        const { internal } = await import("./_generated/api");
+        await ctx.scheduler.runAfter(0, internal.emails.sendWelcomeEmail, {
+          email: user.email,
+          name: user.name || "User",
+          userId: userId,
+        });
+        console.log(`[USERS] completeRegistration: ✅ Welcome email scheduled successfully`);
+      } catch (err) {
+        console.error(`[USERS] completeRegistration: ❌ Failed to schedule welcome email:`, err);
+      }
+    }
+    // === END NEW LOGIC ===""", anchor="    return userId;", offset=0, direction="after"))
