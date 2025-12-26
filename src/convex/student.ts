@@ -532,7 +532,35 @@ export const getTestQuestions = query({
     examName: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    // Allow fetching questions even if user record is missing (for preview)
+    // Enforce authentication and subscription/trial limits
+    const user = await getCurrentUser(ctx);
+    if (!user) {
+      return [];
+    }
+
+    // Check for active subscription
+    const subscription = await ctx.db
+      .query("subscriptions")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .filter((q) => q.eq(q.field("status"), "active"))
+      .first();
+
+    const hasActiveSubscription = subscription && subscription.endDate > Date.now();
+
+    if (!hasActiveSubscription) {
+      // Check if they have already used their free trial for this test type
+      const completedTests = await ctx.db
+        .query("testSessions")
+        .withIndex("by_user", (q) => q.eq("userId", user._id))
+        .filter((q) => q.eq(q.field("status"), "completed"))
+        .filter((q) => q.eq(q.field("testType"), args.testType))
+        .collect();
+
+      if (completedTests.length >= 1) {
+        console.log(`Blocking access to ${args.testType} questions - Free trial limit reached`);
+        return [];
+      }
+    }
     
     try {
       let questions: any[] = [];
