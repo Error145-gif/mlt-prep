@@ -11,6 +11,17 @@ export const getDashboardStats = query({
     const allUsers = await ctx.db.query("users").collect();
     const allSubscriptions = await ctx.db.query("subscriptions").collect();
 
+    // Calculate new users (registered in last 7 days)
+    const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const newUsers = allUsers.filter(u => u._creationTime > sevenDaysAgo);
+    
+    // Calculate currently online users (active in last 5 minutes)
+    const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
+    const onlineUsers = allUsers.filter(u => {
+      const lastActive = u.lastActive || 0;
+      return lastActive > fiveMinutesAgo;
+    });
+
     // Fetch recent data
     const recentPayments = await ctx.db.query("payments").order("desc").take(10);
     const recentQuestions = await ctx.db.query("questions").order("desc").take(5);
@@ -69,6 +80,8 @@ export const getDashboardStats = query({
 
     const stats = {
       totalUsers: allUsers.length,
+      newUsers: newUsers.length,
+      onlineUsers: onlineUsers.length,
       activeUsers: allUsers.filter((u) => {
         const lastActive = u.lastActive || 0;
         return Date.now() - lastActive < 30 * 24 * 60 * 60 * 1000; // 30 days

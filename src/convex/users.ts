@@ -20,6 +20,24 @@ export const currentUser = query({
   },
 });
 
+// Mutation to update user activity status
+export const updateUserActivity = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      return null;
+    }
+
+    await ctx.db.patch(userId, {
+      lastActive: Date.now(),
+      isOnline: true,
+    });
+
+    return userId;
+  },
+});
+
 /**
  * Use this function internally to get the current user data. Remember to handle the null user case.
  * @param ctx

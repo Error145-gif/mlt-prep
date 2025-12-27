@@ -91,9 +91,11 @@ const schema = defineSchema(
       tokenIdentifier: v.optional(v.string()),
       welcomeEmailSent: v.optional(v.boolean()),
       hasPassword: v.optional(v.boolean()),
+      isOnline: v.optional(v.boolean()),
     })
       .index("email", ["email"])
-      .index("by_token", ["tokenIdentifier"]),
+      .index("by_token", ["tokenIdentifier"])
+      .index("by_online", ["isOnline"]),
 
     // Content Management
     content: defineTable({

@@ -45,10 +45,22 @@ export default function AdminDashboard() {
       color: "from-blue-400 to-blue-600",
     },
     {
+      title: "New Users (7 Days)",
+      value: stats?.newUsers || 0,
+      icon: Users,
+      color: "from-emerald-400 to-emerald-600",
+    },
+    {
+      title: "Currently Online",
+      value: stats?.onlineUsers || 0,
+      icon: Users,
+      color: "from-green-400 to-green-600",
+    },
+    {
       title: "Active Subscriptions",
       value: stats?.activeSubscriptions || 0,
       icon: CreditCard,
-      color: "from-green-400 to-green-600",
+      color: "from-purple-400 to-purple-600",
     },
     {
       title: "Total Revenue",
