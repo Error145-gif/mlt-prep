@@ -407,8 +407,8 @@ export default function Landing() {
           className="flex flex-col items-center"
         >
           <img
-            src="https://harmless-tapir-303.convex.cloud/api/storage/39c4275e-7220-41f1-b10f-c38ae74bf9f1"
-            alt="MLT Prep Mascot"
+            src="https://harmless-tapir-303.convex.cloud/api/storage/89ec2764-d5ea-4da5-956f-9d0c7cf46bb9"
+            alt="RBC Mascot - MLT Prep"
             loading="eager"
             fetchPriority="high"
             className="w-[70%] md:w-[40%] lg:w-[35%] h-auto object-contain"
