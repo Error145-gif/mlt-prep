@@ -287,7 +287,7 @@ export default function Landing() {
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
-            className="space-y-4 sm:space-y-6 text-center lg:text-left"
+            className="space-y-4 sm:space-y-6 order-1 lg:order-1"
           >
           <motion.div 
             className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full glass-card border border-white/30 backdrop-blur-xl bg-white/20 text-white mb-4 shadow-md text-xs sm:text-sm"
@@ -407,50 +407,39 @@ export default function Landing() {
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="flex justify-center lg:justify-end"
+            className="flex justify-center lg:justify-end order-2 lg:order-2"
           >
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
+              initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, delay: 0.3 }}
               className="relative"
             >
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                className="relative rounded-3xl overflow-hidden shadow-2xl"
-              >
-                {/* Background gradient matching the page */}
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-500/40 via-blue-500/40 to-pink-500/40 backdrop-blur-xl" />
-                
-                <img
-                  src="https://harmless-tapir-303.convex.cloud/api/storage/f1e8fe00-6b4f-4f35-8a35-c8d49f523e0e"
-                  alt="Professional Medical Lab Technicians"
-                  loading="eager"
-                  fetchPriority="high"
-                  className="w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-96 lg:w-[500px] lg:h-[500px] object-cover relative z-10 mix-blend-normal"
-                  style={{ 
-                    filter: 'drop-shadow(0 10px 30px rgba(0,0,0,0.3))'
-                  }}
-                />
-                
-                {/* Subtle overlay for depth */}
-                <div className="absolute inset-0 bg-gradient-to-t from-purple-900/30 via-transparent to-blue-500/20 pointer-events-none z-20" />
-              </motion.div>
+              <img
+                src="https://harmless-tapir-303.convex.cloud/api/storage/f1e8fe00-6b4f-4f35-8a35-c8d49f523e0e"
+                alt="Professional Medical Lab Technicians"
+                loading="eager"
+                fetchPriority="high"
+                className="w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-96 lg:w-[450px] lg:h-[450px] object-cover rounded-2xl"
+                style={{ 
+                  filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.25))'
+                }}
+              />
               
-              {/* Trust Badge Overlay */}
+              {/* Trust Badge Below Image */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6 }}
-                className="absolute -bottom-4 -right-4 glass-card border border-white/30 backdrop-blur-xl bg-white/20 px-4 py-3 rounded-2xl shadow-xl"
+                className="mt-4 glass-card border border-white/30 backdrop-blur-xl bg-white/20 px-4 py-3 rounded-2xl shadow-xl"
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center gap-2">
                   <div className="flex -space-x-2">
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 border-2 border-white" />
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-pink-600 border-2 border-white" />
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-orange-600 border-2 border-white" />
                   </div>
-                  <div className="text-left">
+                  <div className="text-center">
                     <p className="text-white font-bold text-sm">223+ Students</p>
                     <p className="text-white/70 text-xs">Preparing with us</p>
                   </div>
