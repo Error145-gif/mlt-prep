@@ -126,27 +126,11 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen relative overflow-x-hidden">
-      {/* Lab Background Image - Lighter - Optimized for mobile */}
-      <div 
-        className="fixed inset-0 z-0 opacity-20"
-        style={{
-          backgroundImage: isMobile 
-            ? 'url(https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=800&q=50&auto=format&fit=crop&fm=webp)' 
-            : 'url(https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=1920&q=60&auto=format&fit=crop&fm=webp)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-          backgroundAttachment: isMobile ? 'scroll' : 'fixed',
-          willChange: 'transform'
-        }}
-      />
-
-      {/* Animated Background Gradients - Vibrant Purple/Blue Theme */}
-      <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
-        <div className="absolute top-0 left-1/4 w-[300px] h-[300px] md:w-[500px] md:h-[500px] bg-blue-400/30 rounded-full blur-xl md:blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-[300px] h-[300px] md:w-[500px] md:h-[500px] bg-purple-500/30 rounded-full blur-xl md:blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 w-[400px] h-[400px] md:w-[600px] md:h-[600px] bg-pink-400/25 rounded-full blur-xl md:blur-3xl" />
-        <div className="absolute top-1/4 right-1/3 w-[250px] h-[250px] md:w-[400px] md:h-[400px] bg-cyan-400/25 rounded-full blur-xl md:blur-3xl" />
+      {/* Clean Gradient Background - Professional Exam Prep Look */}
+      <div className="fixed inset-0 -z-10 bg-gradient-to-br from-purple-100 via-white to-blue-50">
+        <div className="absolute top-0 left-1/4 w-[300px] h-[300px] md:w-[500px] md:h-[500px] bg-purple-200/20 rounded-full blur-xl md:blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 w-[300px] h-[300px] md:w-[500px] md:h-[500px] bg-blue-200/20 rounded-full blur-xl md:blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 w-[400px] h-[400px] md:w-[600px] md:h-[600px] bg-purple-100/15 rounded-full blur-xl md:blur-3xl" />
         
         {/* Floating Medical Icons - Hidden on mobile for performance */}
         <motion.div
@@ -214,7 +198,7 @@ export default function Landing() {
       </div>
 
       {/* Navigation */}
-      <nav className="glass-card border-b border-white/20 backdrop-blur-xl bg-white/10 sticky top-0 z-50 shadow-lg">
+      <nav className="glass-card border-b border-purple-200/30 backdrop-blur-xl bg-white/80 sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3 cursor-pointer" onClick={() => navigate("/")}>
             <img
@@ -229,7 +213,7 @@ export default function Landing() {
                 e.currentTarget.src = "/favicon.png";
               }}
             />
-            <span className="text-lg sm:text-2xl font-bold text-white drop-shadow-lg">MLT Prep</span>
+            <span className="text-lg sm:text-2xl font-bold text-purple-900 drop-shadow-sm">MLT Prep</span>
           </div>
           
           {/* Navigation */}
@@ -239,7 +223,7 @@ export default function Landing() {
                 {user?.role === "admin" && (
                   <Button
                     onClick={() => navigate("/admin")}
-                    className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-xs sm:text-sm px-2 sm:px-4 py-1 sm:py-2"
+                    className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white text-xs sm:text-sm px-2 sm:px-4 py-1 sm:py-2"
                   >
                     Admin
                   </Button>
@@ -247,7 +231,7 @@ export default function Landing() {
                 {user?.role !== "admin" && (user?.email === "ak6722909@gmail.com" || user?.email === "historyindia145@gmail.com") && (
                   <Button
                     onClick={handleMakeAdmin}
-                    className="bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-xs sm:text-sm px-2 sm:px-4 py-1 sm:py-2"
+                    className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white text-xs sm:text-sm px-2 sm:px-4 py-1 sm:py-2"
                   >
                     Activate Admin
                   </Button>
@@ -261,7 +245,7 @@ export default function Landing() {
                 <Button
                   onClick={() => signOut()}
                   variant="outline"
-                  className="bg-white/10 hover:bg-white/20 text-white border-white/30 text-xs sm:text-sm px-2 sm:px-4 py-1 sm:py-2"
+                  className="bg-white/50 hover:bg-white/70 text-purple-900 border-purple-300 text-xs sm:text-sm px-2 sm:px-4 py-1 sm:py-2"
                 >
                   <LogOut className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
                   <span className="hidden sm:inline">Sign Out</span>
@@ -270,7 +254,7 @@ export default function Landing() {
             ) : (
               <Button
                 onClick={() => navigate("/auth")}
-                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-xs sm:text-sm px-3 sm:px-4 py-1 sm:py-2"
+                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white text-xs sm:text-sm px-3 sm:px-4 py-1 sm:py-2"
               >
                 Get Started
               </Button>
@@ -290,7 +274,7 @@ export default function Landing() {
             className="space-y-4 sm:space-y-6 order-1 lg:order-1"
           >
           <motion.div 
-            className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full glass-card border border-white/30 backdrop-blur-xl bg-white/20 text-white mb-4 shadow-md text-xs sm:text-sm"
+            className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full glass-card border border-purple-300/50 backdrop-blur-xl bg-white/60 text-purple-900 mb-4 shadow-sm text-xs sm:text-sm"
             animate={isMobile ? {} : {
               boxShadow: [
                 "0 0 20px rgba(255, 255, 255, 0.3)",
@@ -313,11 +297,11 @@ export default function Landing() {
             <span>AI-Powered Medical Lab Technology Learning</span>
           </motion.div>
           
-          <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold text-white tracking-tight drop-shadow-2xl">
-            Medical Lab Technician (MLT) Exam Preparation with <span className="bg-gradient-to-r from-yellow-300 via-pink-300 to-purple-300 bg-clip-text text-transparent">AI-Powered Mock Tests & PYQs</span>
+          <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold text-gray-900 tracking-tight">
+            Medical Lab Technician (MLT) Exam Preparation with <span className="bg-gradient-to-r from-purple-600 via-blue-600 to-purple-700 bg-clip-text text-transparent">AI-Powered Mock Tests & PYQs</span>
           </h1>
           
-          <p className="text-base sm:text-xl text-white/90 max-w-2xl mx-auto lg:mx-0 drop-shadow-lg mb-4">
+          <p className="text-base sm:text-xl text-gray-700 max-w-2xl mx-auto lg:mx-0 mb-4">
             Complete Medical Lab Technician (MLT) Exam preparation for DMLT, BMLT, and Lab Technician Govt Exam with comprehensive MLT Mock Tests, Medical Lab PYQs, and AI-generated Medical Lab MCQs.
           </p>
 
@@ -329,16 +313,16 @@ export default function Landing() {
             className="flex flex-wrap justify-center lg:justify-start gap-6 py-4"
           >
             <div className="text-center">
-              <div className="text-3xl font-bold text-white">223+</div>
-              <div className="text-sm text-white/70">Active Students</div>
+              <div className="text-3xl font-bold text-purple-900">223+</div>
+              <div className="text-sm text-gray-600">Active Students</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-white">5000+</div>
-              <div className="text-sm text-white/70">Practice Questions</div>
+              <div className="text-3xl font-bold text-purple-900">5000+</div>
+              <div className="text-sm text-gray-600">Practice Questions</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-white">95%</div>
-              <div className="text-sm text-white/70">Success Rate</div>
+              <div className="text-3xl font-bold text-purple-900">95%</div>
+              <div className="text-sm text-gray-600">Success Rate</div>
             </div>
           </motion.div>
 
@@ -347,24 +331,24 @@ export default function Landing() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="glass-card border border-yellow-400/50 backdrop-blur-xl bg-gradient-to-r from-yellow-500/20 to-orange-500/20 p-4 rounded-2xl"
+            className="glass-card border border-orange-300/50 backdrop-blur-xl bg-gradient-to-r from-orange-50 to-yellow-50 p-4 rounded-2xl shadow-sm"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-white/90 text-sm font-medium">🎉 Limited Time Offer</p>
-                <p className="text-2xl font-bold text-white">₹399 for 4 Months</p>
-                <p className="text-white/70 text-xs line-through">Regular: ₹496</p>
+                <p className="text-orange-800 text-sm font-medium">🎉 Limited Time Offer</p>
+                <p className="text-2xl font-bold text-gray-900">₹399 for 4 Months</p>
+                <p className="text-gray-600 text-xs line-through">Regular: ₹496</p>
               </div>
               <div className="text-right">
                 <div className="bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full">
                   Save ₹97
                 </div>
-                <p className="text-white/80 text-xs mt-1">Most Popular</p>
+                <p className="text-gray-700 text-xs mt-1">Most Popular</p>
               </div>
             </div>
           </motion.div>
           
-          <div className="flex flex-wrap justify-center lg:justify-start gap-2 text-sm sm:text-base text-white/80 font-medium">
+          <div className="flex flex-wrap justify-center lg:justify-start gap-2 text-sm sm:text-base text-gray-600 font-medium">
             <span>Medical Lab Mock Tests</span>
             <span>•</span>
             <span>Lab Technician PYQs</span>
@@ -397,7 +381,7 @@ export default function Landing() {
             </div>
 
             {/* NEW: Trust Badge */}
-            <p className="text-white/70 text-sm text-center lg:text-left">
+            <p className="text-gray-600 text-sm text-center lg:text-left">
               ✓ No credit card required • ✓ Cancel anytime • ✓ 100% Money-back guarantee
             </p>
           </motion.div>
@@ -431,7 +415,7 @@ export default function Landing() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6 }}
-                className="mt-4 glass-card border border-white/30 backdrop-blur-xl bg-white/20 px-4 py-3 rounded-2xl shadow-xl"
+                className="mt-4 glass-card border border-purple-200/50 backdrop-blur-xl bg-white/70 px-4 py-3 rounded-2xl shadow-sm"
               >
                 <div className="flex items-center justify-center gap-2">
                   <div className="flex -space-x-2">
@@ -440,8 +424,8 @@ export default function Landing() {
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-orange-600 border-2 border-white" />
                   </div>
                   <div className="text-center">
-                    <p className="text-white font-bold text-sm">223+ Students</p>
-                    <p className="text-white/70 text-xs">Preparing with us</p>
+                    <p className="text-purple-900 font-bold text-sm">223+ Students</p>
+                    <p className="text-gray-600 text-xs">Preparing with us</p>
                   </div>
                 </div>
               </motion.div>
