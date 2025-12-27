@@ -278,13 +278,13 @@ export default function Landing() {
 
       {/* Hero Section */}
       <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-20">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Left side - Text content */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
-            className="space-y-4 sm:space-y-6 order-1 lg:order-1"
+            className="space-y-4 sm:space-y-6 order-2 lg:order-1"
           >
           <motion.div 
             className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full glass-card border border-white/30 backdrop-blur-xl bg-white/10 text-white mb-4 shadow-sm text-xs sm:text-sm"
@@ -404,20 +404,20 @@ export default function Landing() {
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="flex justify-center lg:justify-end order-2 lg:order-2"
+            className="flex justify-center lg:justify-end order-1 lg:order-2"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, delay: 0.3 }}
-              className="relative"
+              className="relative w-full max-w-[280px] sm:max-w-[320px] md:max-w-[380px] lg:max-w-[450px]"
             >
               <img
                 src="https://harmless-tapir-303.convex.cloud/api/storage/2793e9f4-2bc1-48e8-b170-09d05439d7b8"
                 alt="Professional Medical Lab Technicians"
                 loading="eager"
                 fetchPriority="high"
-                className="w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-96 lg:w-[450px] lg:h-[450px] object-contain"
+                className="w-full h-auto object-contain"
                 style={{
                   filter: 'drop-shadow(0 10px 30px rgba(0, 0, 0, 0.3))'
                 }}
