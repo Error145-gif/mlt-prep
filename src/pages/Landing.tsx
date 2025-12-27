@@ -406,7 +406,7 @@ export default function Landing() {
           transition={{ duration: 0.8, delay: 0.3 }}
           className="flex flex-col items-center"
         >
-          <img
+          <motion.img
             src="https://harmless-tapir-303.convex.cloud/api/storage/89ec2764-d5ea-4da5-956f-9d0c7cf46bb9"
             alt="RBC Mascot - MLT Prep"
             loading="eager"
@@ -414,6 +414,16 @@ export default function Landing() {
             className="w-[70%] md:w-[40%] lg:w-[35%] h-auto object-contain"
             style={{
               filter: 'drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15))'
+            }}
+            animate={isMobile ? {} : {
+              rotate: [0, -10, 10, -10, 10, 0],
+              y: [0, -10, 0],
+            }}
+            transition={{
+              duration: 3,
+              repeat: Infinity,
+              repeatDelay: 2,
+              ease: "easeInOut",
             }}
           />
           
