@@ -137,8 +137,9 @@ export default function Landing() {
           backgroundAttachment: window.innerWidth < 768 ? "scroll" : "fixed"
         }}
       >
-        {/* Gradient overlay for better text readability */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/70 via-purple-600/70 to-pink-500/70" />
+        {/* Gradient overlay with white touch for better text readability */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/60 via-purple-600/60 to-pink-500/60" />
+        <div className="absolute inset-0 bg-white/10" />
         
         <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-purple-400/30 rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-blue-500/30 rounded-full blur-3xl" />
@@ -411,15 +412,16 @@ export default function Landing() {
               transition={{ duration: 0.8, delay: 0.3 }}
               className="relative"
             >
-              <div className="relative bg-white rounded-2xl p-4 shadow-2xl">
-                <img
-                  src="https://harmless-tapir-303.convex.cloud/api/storage/f1e8fe00-6b4f-4f35-8a35-c8d49f523e0e"
-                  alt="Professional Medical Lab Technicians"
-                  loading="eager"
-                  fetchPriority="high"
-                  className="w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-96 lg:w-[450px] lg:h-[450px] object-contain rounded-xl"
-                />
-              </div>
+              <img
+                src="https://harmless-tapir-303.convex.cloud/api/storage/2793e9f4-2bc1-48e8-b170-09d05439d7b8"
+                alt="Professional Medical Lab Technicians"
+                loading="eager"
+                fetchPriority="high"
+                className="w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-96 lg:w-[450px] lg:h-[450px] object-contain"
+                style={{
+                  filter: 'drop-shadow(0 10px 30px rgba(0, 0, 0, 0.3))'
+                }}
+              />
               
               {/* Trust Badge Below Image */}
               <motion.div
