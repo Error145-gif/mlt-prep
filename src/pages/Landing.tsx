@@ -398,7 +398,7 @@ export default function Landing() {
         </motion.div>
       </section>
 
-      {/* Lab Technician Image Section */}
+      {/* RBC Mascot Image Section */}
       <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pb-10 sm:pb-20">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -407,8 +407,8 @@ export default function Landing() {
           className="flex flex-col items-center"
         >
           <img
-            src="https://harmless-tapir-303.convex.cloud/api/storage/2793e9f4-2bc1-48e8-b170-09d05439d7b8"
-            alt="Professional Medical Lab Technicians"
+            src="https://harmless-tapir-303.convex.cloud/api/storage/39c4275e-7220-41f1-b10f-c38ae74bf9f1"
+            alt="MLT Prep Mascot"
             loading="eager"
             fetchPriority="high"
             className="w-[70%] md:w-[40%] lg:w-[35%] h-auto object-contain"
