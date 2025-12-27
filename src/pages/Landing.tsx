@@ -411,16 +411,15 @@ export default function Landing() {
               transition={{ duration: 0.8, delay: 0.3 }}
               className="relative"
             >
-              <img
-                src="https://harmless-tapir-303.convex.cloud/api/storage/f1e8fe00-6b4f-4f35-8a35-c8d49f523e0e"
-                alt="Professional Medical Lab Technicians"
-                loading="eager"
-                fetchPriority="high"
-                className="w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-96 lg:w-[450px] lg:h-[450px] object-cover rounded-2xl"
-                style={{ 
-                  filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.25))'
-                }}
-              />
+              <div className="relative bg-white rounded-2xl p-4 shadow-2xl">
+                <img
+                  src="https://harmless-tapir-303.convex.cloud/api/storage/f1e8fe00-6b4f-4f35-8a35-c8d49f523e0e"
+                  alt="Professional Medical Lab Technicians"
+                  loading="eager"
+                  fetchPriority="high"
+                  className="w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-96 lg:w-[450px] lg:h-[450px] object-contain rounded-xl"
+                />
+              </div>
               
               {/* Trust Badge Below Image */}
               <motion.div
