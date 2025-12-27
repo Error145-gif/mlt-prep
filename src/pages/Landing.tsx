@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router";
 import { useAuth } from "@/hooks/use-auth";
-import { BookOpen, Brain, Award, TrendingUp, Sparkles, ArrowRight, LogOut } from "lucide-react";
+import { BookOpen, Brain, Award, TrendingUp, Sparkles, ArrowRight, LogOut, CheckCircle, X } from "lucide-react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
@@ -320,6 +320,49 @@ export default function Landing() {
           <p className="text-base sm:text-xl text-white/90 max-w-2xl mx-auto lg:mx-0 drop-shadow-lg mb-4">
             Complete Medical Lab Technician (MLT) Exam preparation for DMLT, BMLT, and Lab Technician Govt Exam with comprehensive MLT Mock Tests, Medical Lab PYQs, and AI-generated Medical Lab MCQs.
           </p>
+
+          {/* NEW: Social Proof Stats */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="flex flex-wrap justify-center lg:justify-start gap-6 py-4"
+          >
+            <div className="text-center">
+              <div className="text-3xl font-bold text-white">223+</div>
+              <div className="text-sm text-white/70">Active Students</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-white">5000+</div>
+              <div className="text-sm text-white/70">Practice Questions</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-white">95%</div>
+              <div className="text-sm text-white/70">Success Rate</div>
+            </div>
+          </motion.div>
+
+          {/* NEW: Pricing Preview */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="glass-card border border-yellow-400/50 backdrop-blur-xl bg-gradient-to-r from-yellow-500/20 to-orange-500/20 p-4 rounded-2xl"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-white/90 text-sm font-medium">🎉 Limited Time Offer</p>
+                <p className="text-2xl font-bold text-white">₹399 for 4 Months</p>
+                <p className="text-white/70 text-xs line-through">Regular: ₹496</p>
+              </div>
+              <div className="text-right">
+                <div className="bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                  Save ₹97
+                </div>
+                <p className="text-white/80 text-xs mt-1">Most Popular</p>
+              </div>
+            </div>
+          </motion.div>
           
           <div className="flex flex-wrap justify-center lg:justify-start gap-2 text-sm sm:text-base text-white/80 font-medium">
             <span>Medical Lab Mock Tests</span>
@@ -341,7 +384,7 @@ export default function Landing() {
                   size="lg"
                   className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-sm sm:text-lg px-6 sm:px-8 py-2 sm:py-3 shadow-lg hover:shadow-2xl transition-shadow"
                 >
-                  {isAuthenticated ? (user?.role === "admin" ? "Admin Panel" : "Go to Dashboard") : "Start Learning"}
+                  {isAuthenticated ? (user?.role === "admin" ? "Admin Panel" : "Go to Dashboard") : "Start Free Trial - 1 Test Per Type"}
                   <motion.div
                     animate={isMobile ? {} : { x: [0, 5, 0] }}
                     transition={{ duration: 1.5, repeat: Infinity }}
@@ -352,6 +395,11 @@ export default function Landing() {
                 </Button>
               </motion.div>
             </div>
+
+            {/* NEW: Trust Badge */}
+            <p className="text-white/70 text-sm text-center lg:text-left">
+              ✓ No credit card required • ✓ Cancel anytime • ✓ 100% Money-back guarantee
+            </p>
           </motion.div>
 
           {/* Right side - Animated Character */}
@@ -444,6 +492,107 @@ export default function Landing() {
             </motion.div>
           ))}
         </div>
+      </section>
+
+      {/* NEW: Free vs Premium Comparison Section */}
+      <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-20">
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.8 }}
+          viewport={{ once: true }}
+          className="text-center mb-8 sm:mb-12"
+        >
+          <h2 className="text-2xl sm:text-4xl font-bold text-white drop-shadow-lg mb-2 sm:mb-4">Why Upgrade to Premium?</h2>
+          <p className="text-white/90 text-base sm:text-lg drop-shadow-md">See what you're missing with the free plan</p>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+          className="glass-card border border-white/30 backdrop-blur-xl bg-white/20 rounded-3xl overflow-hidden"
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
+            {/* Free Plan */}
+            <div className="p-6 sm:p-8 border-b md:border-b-0 md:border-r border-white/20">
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold text-white mb-2">Free Plan</h3>
+                <p className="text-white/70">Limited Access</p>
+              </div>
+              <ul className="space-y-3">
+                <li className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
+                  <span className="text-white/90">1 Mock Test only</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
+                  <span className="text-white/90">1 PYQ Set only</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
+                  <span className="text-white/90">1 AI Practice only</span>
+                </li>
+                <li className="flex items-start gap-3 opacity-50">
+                  <X className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" />
+                  <span className="text-white/70 line-through">Detailed Analytics</span>
+                </li>
+                <li className="flex items-start gap-3 opacity-50">
+                  <X className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" />
+                  <span className="text-white/70 line-through">Rank & Leaderboard</span>
+                </li>
+                <li className="flex items-start gap-3 opacity-50">
+                  <X className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" />
+                  <span className="text-white/70 line-through">Weak Area Analysis</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* Premium Plan */}
+            <div className="p-6 sm:p-8 bg-gradient-to-br from-purple-500/20 to-pink-500/20">
+              <div className="text-center mb-6">
+                <div className="inline-block bg-gradient-to-r from-yellow-400 to-orange-400 text-purple-900 text-xs font-bold px-3 py-1 rounded-full mb-2">
+                  MOST POPULAR
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-2">Premium Plan</h3>
+                <p className="text-white/90">Full Access - ₹399/4 months</p>
+              </div>
+              <ul className="space-y-3">
+                <li className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
+                  <span className="text-white font-medium">Unlimited Mock Tests</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
+                  <span className="text-white font-medium">All PYQ Sets with Solutions</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
+                  <span className="text-white font-medium">Unlimited AI Practice</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
+                  <span className="text-white font-medium">Detailed Performance Analytics</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
+                  <span className="text-white font-medium">Rank & Leaderboard Access</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
+                  <span className="text-white font-medium">Topic-wise Weak Area Analysis</span>
+                </li>
+              </ul>
+              <Button
+                onClick={() => navigate("/subscription-plans")}
+                className="w-full mt-6 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold py-3"
+              >
+                Upgrade Now - Save ₹97 →
+              </Button>
+            </div>
+          </div>
+        </motion.div>
       </section>
 
       {/* CTA Section */}
