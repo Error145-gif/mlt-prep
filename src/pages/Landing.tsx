@@ -278,14 +278,12 @@ export default function Landing() {
 
       {/* Hero Section */}
       <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-20">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-          {/* Left side - Text content */}
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
-            className="space-y-4 sm:space-y-6 order-2 lg:order-1"
-          >
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="space-y-4 sm:space-y-6 text-center"
+        >
           <motion.div 
             className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full glass-card border border-white/30 backdrop-blur-xl bg-white/10 text-white mb-4 shadow-sm text-xs sm:text-sm"
             animate={isMobile ? {} : {
@@ -371,80 +369,74 @@ export default function Landing() {
             <span>Lab Technician Govt Exam Prep</span>
           </div>
           
-            <div className="flex items-center justify-center lg:justify-start gap-3 sm:gap-4 pt-4">
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Button
-                  onClick={() => navigate(isAuthenticated ? (user?.role === "admin" ? "/admin" : "/student") : "/auth")}
-                  size="lg"
-                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-sm sm:text-lg px-6 sm:px-8 py-2 sm:py-3 shadow-lg hover:shadow-2xl transition-shadow"
-                >
-                  {isAuthenticated ? (user?.role === "admin" ? "Admin Panel" : "Go to Dashboard") : "Start Free Trial - 1 Test Per Type"}
-                  <motion.div
-                    animate={isMobile ? {} : { x: [0, 5, 0] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                    className="inline-block ml-2"
-                  >
-                    <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
-                  </motion.div>
-                </Button>
-              </motion.div>
-            </div>
-
-            {/* NEW: Trust Badge */}
-            <p className="text-white/80 text-sm text-center lg:text-left">
-              ✓ No credit card required • ✓ Cancel anytime • ✓ 100% Money-back guarantee
-            </p>
-          </motion.div>
-
-          {/* Right side - Professional MLT Image */}
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="flex justify-center lg:justify-end order-1 lg:order-2"
-          >
+          <div className="flex items-center justify-center gap-3 sm:gap-4 pt-4">
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8, delay: 0.3 }}
-              className="relative w-full max-w-[280px] sm:max-w-[320px] md:max-w-[380px] lg:max-w-[450px]"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              <img
-                src="https://harmless-tapir-303.convex.cloud/api/storage/2793e9f4-2bc1-48e8-b170-09d05439d7b8"
-                alt="Professional Medical Lab Technicians"
-                loading="eager"
-                fetchPriority="high"
-                className="w-full h-auto object-contain"
-                style={{
-                  filter: 'drop-shadow(0 10px 30px rgba(0, 0, 0, 0.3))'
-                }}
-              />
-              
-              {/* Trust Badge Below Image */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6 }}
-                className="mt-4 glass-card border border-purple-200/50 backdrop-blur-xl bg-white/70 px-4 py-3 rounded-2xl shadow-sm"
+              <Button
+                onClick={() => navigate(isAuthenticated ? (user?.role === "admin" ? "/admin" : "/student") : "/auth")}
+                size="lg"
+                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-sm sm:text-lg px-6 sm:px-8 py-2 sm:py-3 shadow-lg hover:shadow-2xl transition-shadow"
               >
-                <div className="flex items-center justify-center gap-2">
-                  <div className="flex -space-x-2">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 border-2 border-white" />
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-pink-600 border-2 border-white" />
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-orange-600 border-2 border-white" />
-                  </div>
-                  <div className="text-center">
-                    <p className="text-white font-bold text-sm">223+ Students</p>
-                    <p className="text-white/70 text-xs">Preparing with us</p>
-                  </div>
-                </div>
-              </motion.div>
+                {isAuthenticated ? (user?.role === "admin" ? "Admin Panel" : "Go to Dashboard") : "Start Free Trial - 1 Test Per Type"}
+                <motion.div
+                  animate={isMobile ? {} : { x: [0, 5, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                  className="inline-block ml-2"
+                >
+                  <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
+                </motion.div>
+              </Button>
             </motion.div>
+          </div>
+
+          {/* Trust Badge */}
+          <p className="text-white/80 text-sm">
+            ✓ No credit card required • ✓ Cancel anytime • ✓ 100% Money-back guarantee
+          </p>
+        </motion.div>
+      </section>
+
+      {/* Lab Technician Image Section */}
+      <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pb-10 sm:pb-20">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.3 }}
+          className="flex flex-col items-center"
+        >
+          <img
+            src="https://harmless-tapir-303.convex.cloud/api/storage/2793e9f4-2bc1-48e8-b170-09d05439d7b8"
+            alt="Professional Medical Lab Technicians"
+            loading="eager"
+            fetchPriority="high"
+            className="w-[70%] md:w-[40%] lg:w-[35%] h-auto object-contain"
+            style={{
+              filter: 'drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15))'
+            }}
+          />
+          
+          {/* Trust Badge Below Image */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="mt-6 glass-card border border-purple-200/50 backdrop-blur-xl bg-white/70 px-6 py-3 rounded-2xl shadow-sm"
+          >
+            <div className="flex items-center justify-center gap-3">
+              <div className="flex -space-x-2">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 border-2 border-white" />
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-pink-600 border-2 border-white" />
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-orange-600 border-2 border-white" />
+              </div>
+              <div className="text-center">
+                <p className="text-white font-bold text-sm">223+ Students</p>
+                <p className="text-white/70 text-xs">Preparing with us</p>
+              </div>
+            </div>
           </motion.div>
-        </div>
+        </motion.div>
       </section>
 
       {/* Features Section */}
