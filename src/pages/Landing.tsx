@@ -417,17 +417,24 @@ export default function Landing() {
             >
               <motion.div
                 whileHover={{ scale: 1.02 }}
-                className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white/30 backdrop-blur-xl"
+                className="relative rounded-3xl overflow-hidden shadow-2xl"
               >
+                {/* Background gradient matching the page */}
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-500/40 via-blue-500/40 to-pink-500/40 backdrop-blur-xl" />
+                
                 <img
                   src="https://harmless-tapir-303.convex.cloud/api/storage/f1e8fe00-6b4f-4f35-8a35-c8d49f523e0e"
                   alt="Professional Medical Lab Technicians"
                   loading="eager"
                   fetchPriority="high"
-                  className="w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-96 lg:w-[500px] lg:h-[500px] object-cover"
+                  className="w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-96 lg:w-[500px] lg:h-[500px] object-cover relative z-10 mix-blend-normal"
+                  style={{ 
+                    filter: 'drop-shadow(0 10px 30px rgba(0,0,0,0.3))'
+                  }}
                 />
-                {/* Overlay gradient for better text visibility if needed */}
-                <div className="absolute inset-0 bg-gradient-to-t from-purple-900/20 to-transparent pointer-events-none" />
+                
+                {/* Subtle overlay for depth */}
+                <div className="absolute inset-0 bg-gradient-to-t from-purple-900/30 via-transparent to-blue-500/20 pointer-events-none z-20" />
               </motion.div>
               
               {/* Trust Badge Overlay */}
