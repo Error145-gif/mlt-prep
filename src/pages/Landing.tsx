@@ -402,7 +402,7 @@ export default function Landing() {
             </p>
           </motion.div>
 
-          {/* Right side - Animated Character */}
+          {/* Right side - Professional MLT Image */}
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
@@ -410,33 +410,45 @@ export default function Landing() {
             className="flex justify-center lg:justify-end"
           >
             <motion.div
-              animate={isMobile ? {} : {
-                y: [0, -20, 0],
-                rotate: [0, 5, -5, 0],
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, delay: 0.3 }}
               className="relative"
             >
-              <motion.img
-                src="https://harmless-tapir-303.convex.cloud/api/storage/95eceda1-7789-4d29-bf58-640afb9f4499"
-                alt="MLT Mascot"
-                loading="lazy"
-                decoding="async"
-                className="w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 drop-shadow-2xl"
-                style={{ contentVisibility: 'auto' }}
-                animate={isMobile ? {} : {
-                  scale: [1, 1.05, 1],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-              />
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white/30 backdrop-blur-xl"
+              >
+                <img
+                  src="https://harmless-tapir-303.convex.cloud/api/storage/f1e8fe00-6b4f-4f35-8a35-c8d49f523e0e"
+                  alt="Professional Medical Lab Technicians"
+                  loading="eager"
+                  fetchPriority="high"
+                  className="w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-96 lg:w-[500px] lg:h-[500px] object-cover"
+                />
+                {/* Overlay gradient for better text visibility if needed */}
+                <div className="absolute inset-0 bg-gradient-to-t from-purple-900/20 to-transparent pointer-events-none" />
+              </motion.div>
+              
+              {/* Trust Badge Overlay */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+                className="absolute -bottom-4 -right-4 glass-card border border-white/30 backdrop-blur-xl bg-white/20 px-4 py-3 rounded-2xl shadow-xl"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="flex -space-x-2">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 border-2 border-white" />
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-pink-600 border-2 border-white" />
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-orange-600 border-2 border-white" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-white font-bold text-sm">223+ Students</p>
+                    <p className="text-white/70 text-xs">Preparing with us</p>
+                  </div>
+                </div>
+              </motion.div>
             </motion.div>
           </motion.div>
         </div>
