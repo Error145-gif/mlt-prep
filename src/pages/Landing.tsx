@@ -415,16 +415,16 @@ export default function Landing() {
             style={{
               filter: 'drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15))'
             }}
-            animate={isMobile ? {} : {
+            animate={!isMobile ? {
               rotate: [0, -10, 10, -10, 10, 0],
               y: [0, -10, 0],
-            }}
-            transition={{
+            } : undefined}
+            transition={!isMobile ? {
               duration: 3,
               repeat: Infinity,
               repeatDelay: 2,
               ease: "easeInOut",
-            }}
+            } : undefined}
           />
           
           {/* Trust Badge Below Image */}
