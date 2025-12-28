@@ -337,24 +337,46 @@ export default function Landing() {
             </div>
           </motion.div>
 
-          {/* NEW: Pricing Preview */}
+          {/* ENHANCED: Pricing Preview with Urgency */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="glass-card border border-orange-300/50 backdrop-blur-xl bg-gradient-to-r from-orange-500/20 to-yellow-500/20 p-4 rounded-2xl shadow-sm"
+            className="glass-card border-2 border-orange-400/60 backdrop-blur-xl bg-gradient-to-r from-orange-500/30 to-red-500/30 p-5 rounded-2xl shadow-2xl relative overflow-hidden"
           >
+            {/* Animated Urgency Badge */}
+            <motion.div
+              className="absolute -top-1 -right-1 bg-red-600 text-white text-xs font-bold px-4 py-2 rounded-bl-xl shadow-lg"
+              animate={{
+                scale: [1, 1.05, 1],
+                boxShadow: [
+                  "0 0 0 0 rgba(220, 38, 38, 0.7)",
+                  "0 0 0 10px rgba(220, 38, 38, 0)",
+                  "0 0 0 0 rgba(220, 38, 38, 0)"
+                ]
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            >
+              ⚡ ENDING SOON
+            </motion.div>
+
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-orange-800 text-sm font-medium">🎉 Limited Time Offer</p>
-                <p className="text-2xl font-bold text-white">₹399 for 4 Months</p>
-                <p className="text-white/70 text-xs line-through">Regular: ₹496</p>
+                <p className="text-orange-200 text-sm font-bold mb-1">🔥 Limited Time Offer - Only 47 Spots Left!</p>
+                <p className="text-3xl font-bold text-white drop-shadow-lg">₹399 for 4 Months</p>
+                <p className="text-white/80 text-sm line-through">Regular: ₹496</p>
+                <p className="text-green-300 text-xs font-semibold mt-1">✓ 156 students upgraded in last 7 days</p>
               </div>
               <div className="text-right">
-                <div className="bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                <div className="bg-gradient-to-r from-red-600 to-red-700 text-white text-sm font-bold px-4 py-2 rounded-full shadow-lg mb-2 animate-pulse">
                   Save ₹97
                 </div>
-                <p className="text-white/80 text-xs mt-1">Most Popular</p>
+                <p className="text-white font-bold text-xs">⭐ Most Popular</p>
+                <p className="text-yellow-300 text-xs">₹99/month only</p>
               </div>
             </div>
           </motion.div>
@@ -391,10 +413,32 @@ export default function Landing() {
             </motion.div>
           </div>
 
-          {/* Trust Badge */}
-          <p className="text-white/80 text-sm">
-            ✓ No credit card required • ✓ Cancel anytime • ✓ 100% Money-back guarantee
-          </p>
+          {/* Enhanced Trust Badge with Urgency */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+            className="space-y-2"
+          >
+            <p className="text-white/90 text-sm font-medium">
+              ✓ No credit card required • ✓ Cancel anytime
+            </p>
+            <motion.p 
+              className="text-yellow-300 text-base font-bold"
+              animate={{
+                scale: [1, 1.02, 1],
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+              }}
+            >
+              🛡️ 100% Money-back guarantee - Risk FREE!
+            </motion.p>
+            <p className="text-white/70 text-xs">
+              ⏰ Offer expires in 48 hours • 🎯 Join 223+ students preparing smarter
+            </p>
+          </motion.div>
         </motion.div>
       </section>
 
@@ -501,7 +545,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* NEW: Free vs Premium Comparison Section */}
+      {/* ENHANCED: Free vs Premium Comparison Section with Urgency */}
       <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-20">
         <motion.div
           initial={{ opacity: 0 }}
@@ -510,8 +554,21 @@ export default function Landing() {
           viewport={{ once: true }}
           className="text-center mb-8 sm:mb-12"
         >
+          <motion.div
+            className="inline-block bg-red-600 text-white text-sm font-bold px-6 py-2 rounded-full mb-4"
+            animate={{
+              scale: [1, 1.05, 1],
+            }}
+            transition={{
+              duration: 1.5,
+              repeat: Infinity,
+            }}
+          >
+            ⚡ LIMITED TIME: Save ₹97 Today Only!
+          </motion.div>
           <h2 className="text-2xl sm:text-4xl font-bold text-white drop-shadow-lg mb-2 sm:mb-4">Why Upgrade to Premium?</h2>
           <p className="text-white/90 text-base sm:text-lg drop-shadow-md">See what you're missing with the free plan</p>
+          <p className="text-yellow-300 text-sm font-semibold mt-2">🔥 47 spots left at this price • ⏰ Offer ends in 48 hours</p>
         </motion.div>
 
         <motion.div
@@ -591,12 +648,31 @@ export default function Landing() {
                   <span className="text-white font-medium">Topic-wise Weak Area Analysis</span>
                 </li>
               </ul>
-              <Button
-                onClick={() => navigate("/subscription-plans")}
-                className="w-full mt-6 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold py-3"
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
               >
-                Upgrade Now - Save ₹97 →
-              </Button>
+                <Button
+                  onClick={() => navigate("/subscription-plans")}
+                  className="w-full mt-6 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white font-bold py-4 text-lg shadow-2xl relative overflow-hidden"
+                >
+                  <motion.span
+                    className="absolute inset-0 bg-white/20"
+                    animate={{
+                      x: ["-100%", "100%"],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
+                  />
+                  <span className="relative">🔥 Upgrade Now - Save ₹97 (Limited Time!) →</span>
+                </Button>
+              </motion.div>
+              <p className="text-white/80 text-xs text-center mt-2">
+                ⚡ Only 47 spots left • ⏰ Offer expires in 48 hours
+              </p>
             </div>
           </div>
         </motion.div>

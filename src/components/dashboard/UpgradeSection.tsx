@@ -21,18 +21,38 @@ export default function UpgradeSection() {
       transition={{ delay: 0.6 }}
     >
       <Card className="glass-card border-white/30 backdrop-blur-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 relative overflow-hidden">
-        {/* Urgency Badge */}
-        <div className="absolute top-4 right-4 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full animate-pulse">
-          Limited Offer
+        {/* Enhanced Urgency Badge */}
+        <motion.div
+          className="absolute top-4 right-4 bg-red-600 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg z-10"
+          animate={{
+            scale: [1, 1.1, 1],
+            boxShadow: [
+              "0 0 0 0 rgba(220, 38, 38, 0.7)",
+              "0 0 0 15px rgba(220, 38, 38, 0)",
+              "0 0 0 0 rgba(220, 38, 38, 0)"
+            ]
+          }}
+          transition={{
+            duration: 2,
+            repeat: Infinity,
+          }}
+        >
+          ⚡ ENDING SOON
+        </motion.div>
+        <div className="absolute top-14 right-4 bg-orange-500 text-white text-xs font-semibold px-3 py-1 rounded-full">
+          47 spots left
         </div>
 
         <CardHeader>
           <CardTitle className="text-white flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-yellow-400" />
-            Unlock Full Access - Save ₹97 Today!
+            🔥 Unlock Full Access - Save ₹97 Today!
           </CardTitle>
-          <p className="text-white/80 text-sm mt-2">
-            Join 223+ students preparing smarter with Premium
+          <p className="text-white/90 text-sm mt-2 font-semibold">
+            ⏰ Limited Time: Only 47 spots left at this price!
+          </p>
+          <p className="text-white/80 text-xs mt-1">
+            156 students upgraded in last 7 days • Join 223+ preparing smarter
           </p>
         </CardHeader>
         <CardContent>
@@ -82,15 +102,34 @@ export default function UpgradeSection() {
             </div>
           </div>
 
-          <Button
-            onClick={() => navigate("/subscription-plans")}
-            size="lg"
-            className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold shadow-lg shadow-purple-500/50"
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
           >
-            Upgrade to Premium - Save ₹97 →
-          </Button>
-          <p className="text-white/70 text-xs text-center mt-3">
-            ✓ 100% Money-back guarantee • ✓ Cancel anytime
+            <Button
+              onClick={() => navigate("/subscription-plans")}
+              size="lg"
+              className="w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white font-bold shadow-2xl shadow-red-500/50 relative overflow-hidden"
+            >
+              <motion.span
+                className="absolute inset-0 bg-white/20"
+                animate={{
+                  x: ["-100%", "100%"],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "linear",
+                }}
+              />
+              <span className="relative">🔥 Upgrade Now - Save ₹97 (Ending Soon!) →</span>
+            </Button>
+          </motion.div>
+          <p className="text-white/90 text-xs text-center mt-3 font-semibold">
+            🛡️ 100% Money-back guarantee • ✓ Cancel anytime
+          </p>
+          <p className="text-yellow-300 text-xs text-center font-bold">
+            ⚡ Offer expires in 48 hours • Only 47 spots left!
           </p>
         </CardContent>
       </Card>
