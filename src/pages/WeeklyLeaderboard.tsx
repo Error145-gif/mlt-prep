@@ -30,7 +30,9 @@ export default function WeeklyLeaderboard() {
 
   // Determine user type
   const isPaidUser = subscriptionAccess?.hasAccess && subscriptionAccess?.isPaid;
-  const isFreeTrialUser = !isPaidUser;
+  // STRICT SECURITY: If the backend attempt says it's locked, we treat it as locked regardless of client-side subscription state
+  const isAttemptLocked = userAttempt?.isLocked === true;
+  const isFreeTrialUser = !isPaidUser || isAttemptLocked;
 
   if (!currentTest) {
     return (
@@ -96,7 +98,7 @@ export default function WeeklyLeaderboard() {
                     {/* ACCURACY SECTION */}
                     <div className="bg-white/5 p-4 rounded-lg">
                       <p className="text-white/70 text-sm mb-1">Accuracy</p>
-                      {isFreeTrialUser ? (
+                      {isFreeTrialUser || userAccuracy === null ? (
                          <p className="text-white/50 text-lg font-bold flex items-center gap-2">
                            <Lock className="h-4 w-4" /> Locked
                          </p>
@@ -108,7 +110,7 @@ export default function WeeklyLeaderboard() {
                     {/* RANK SECTION */}
                     <div className="bg-white/5 p-4 rounded-lg">
                       <p className="text-white/70 text-sm mb-1">Rank</p>
-                      {isFreeTrialUser ? (
+                      {isFreeTrialUser || userRank === null ? (
                          <p className="text-white/50 text-lg font-bold flex items-center gap-2">
                            <Lock className="h-4 w-4" /> Locked
                          </p>
