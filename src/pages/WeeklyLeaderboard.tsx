@@ -61,7 +61,8 @@ export default function WeeklyLeaderboard() {
 
   // Show user's score if they attempted
   const userScore = userAttempt ? Math.round(userAttempt.score) : null;
-  const userAccuracy = userAttempt ? Math.round(userAttempt.accuracy) : null;
+  const userAccuracy = userAttempt && userAttempt.accuracy !== null ? Math.round(userAttempt.accuracy) : null;
+  const userRank = userAttempt && userAttempt.rank ? userAttempt.rank : null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
@@ -82,14 +83,43 @@ export default function WeeklyLeaderboard() {
               {userScore !== null && (
                 <div className="bg-white/10 border border-white/20 rounded-lg p-6 mb-6">
                   <h3 className="text-white text-xl font-bold mb-4">Your Performance</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-white/70 text-sm">Accuracy</p>
-                      <p className="text-white text-3xl font-bold">{userAccuracy}%</p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {/* SCORE SECTION */}
+                    <div className="bg-white/5 p-4 rounded-lg">
+                      <p className="text-white/70 text-sm mb-1">Marks Obtained</p>
+                      {isFreeTrialUser ? (
+                        <p className="text-white text-xl font-bold">
+                          You scored {userScore} out of 100
+                        </p>
+                      ) : (
+                        <p className="text-white text-3xl font-bold">{userScore} / 100</p>
+                      )}
                     </div>
-                    <div>
-                      <p className="text-white/70 text-sm">Score</p>
-                      <p className="text-white text-3xl font-bold">{userScore}%</p>
+
+                    {/* ACCURACY SECTION */}
+                    <div className="bg-white/5 p-4 rounded-lg">
+                      <p className="text-white/70 text-sm mb-1">Accuracy</p>
+                      {isFreeTrialUser ? (
+                         <p className="text-white/50 text-lg font-bold flex items-center gap-2">
+                           <Lock className="h-4 w-4" /> Locked
+                         </p>
+                      ) : (
+                         <p className="text-white text-3xl font-bold">{userAccuracy}%</p>
+                      )}
+                    </div>
+
+                    {/* RANK SECTION */}
+                    <div className="bg-white/5 p-4 rounded-lg">
+                      <p className="text-white/70 text-sm mb-1">Rank</p>
+                      {isFreeTrialUser ? (
+                         <p className="text-white/50 text-lg font-bold flex items-center gap-2">
+                           <Lock className="h-4 w-4" /> Locked
+                         </p>
+                      ) : (
+                         <p className="text-white text-3xl font-bold">
+                           {userRank ? `#${userRank}` : (isLeaderboardPublished ? "Not Ranked" : "Pending")}
+                         </p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -97,20 +127,33 @@ export default function WeeklyLeaderboard() {
 
               {/* FREE TRIAL USER - Always show lock message */}
               {isFreeTrialUser && (
-                <div className="bg-orange-500/20 border-2 border-orange-500/50 rounded-lg p-6 mb-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <Lock className="h-8 w-8 text-orange-300" />
+                <div className="bg-orange-500/20 border-2 border-orange-500/50 rounded-lg p-8 mb-6 text-center">
+                  <div className="flex flex-col items-center gap-3 mb-6">
+                    <div className="p-3 bg-orange-500/20 rounded-full">
+                      <Lock className="h-8 w-8 text-orange-300" />
+                    </div>
                     <div>
-                      <p className="text-white font-bold text-lg">🔒 Rank & leaderboard are available after upgrade.</p>
-                      <p className="text-white/90">Upgrade to check your exact rank.</p>
+                      <p className="text-white font-bold text-xl mb-2">Sunday Leaderboard is a premium feature.</p>
+                      <p className="text-white/80 text-base">Upgrade to view accuracy, rank, and top performers.</p>
                     </div>
                   </div>
-                  <Button 
-                    onClick={() => navigate("/subscription-plans")}
-                    className="bg-white text-orange-600 hover:bg-white/90 font-semibold w-full"
-                  >
-                    Upgrade Now – Check Your Rank
-                  </Button>
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                      <Button 
+                        onClick={() => navigate("/subscription-plans")}
+                        size="lg"
+                        className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold shadow-lg"
+                      >
+                        Upgrade to Premium
+                      </Button>
+                      <Button 
+                        onClick={() => navigate("/student")}
+                        variant="outline"
+                        size="lg"
+                        className="bg-white/10 border-white/30 text-white hover:bg-white/20"
+                      >
+                        Back to Dashboard
+                      </Button>
+                  </div>
                 </div>
               )}
 
@@ -119,8 +162,9 @@ export default function WeeklyLeaderboard() {
                 <>
                   {!isLeaderboardPublished ? (
                     <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-lg p-6 mb-6">
-                      <p className="text-white/90 text-center">
-                        ⏳ Leaderboard will be released by admin soon.
+                      <p className="text-white/90 text-center flex items-center justify-center gap-2">
+                        <Clock className="h-5 w-5" />
+                        Leaderboard will be released by admin soon.
                       </p>
                     </div>
                   ) : (

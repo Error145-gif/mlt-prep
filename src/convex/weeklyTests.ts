@@ -68,12 +68,34 @@ export const getUserWeeklyTestAttempt = query({
     const user = await getCurrentUser(ctx);
     if (!user) return null;
 
-    return await ctx.db
+    const attempt = await ctx.db
       .query("weeklyTestAttempts")
       .withIndex("by_user_and_test", (q) => 
         q.eq("userId", user._id).eq("weeklyTestId", args.weeklyTestId)
       )
       .first();
+
+    if (attempt) {
+      // Check subscription status
+      const subscription = await ctx.db
+        .query("subscriptions")
+        .withIndex("by_user", (q) => q.eq("userId", user._id))
+        .filter((q) => q.eq(q.field("status"), "active"))
+        .first();
+      
+      const isPaid = subscription && subscription.endDate > Date.now();
+
+      if (!isPaid) {
+        return {
+          ...attempt,
+          accuracy: null,
+          rank: null,
+          isLocked: true,
+        };
+      }
+    }
+
+    return attempt;
   },
 });
 
@@ -228,6 +250,26 @@ export const submitWeeklyTestAttempt = mutation({
     await ctx.db.patch(args.weeklyTestId, {
       totalAttempts: (test.totalAttempts || 0) + 1,
     });
+
+    // Check subscription for response
+    const subscription = await ctx.db
+      .query("subscriptions")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .filter((q) => q.eq(q.field("status"), "active"))
+      .first();
+    const isPaid = subscription && subscription.endDate > Date.now();
+
+    if (!isPaid) {
+      return { 
+        attemptId, 
+        score, 
+        marks: score,
+        accuracy: null, 
+        rank: null, 
+        leaderboard: "locked",
+        totalQuestions: test.questions.length 
+      };
+    }
 
     return { attemptId, score, correctAnswers, totalQuestions: test.questions.length };
   },
