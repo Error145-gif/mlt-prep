@@ -17,6 +17,7 @@ import type * as cashfree from "../cashfree.js";
 import type * as cashfreeInternal from "../cashfreeInternal.js";
 import type * as content from "../content.js";
 import type * as coupons from "../coupons.js";
+import type * as crons from "../crons.js";
 import type * as debug from "../debug.js";
 import type * as debugEmail from "../debugEmail.js";
 import type * as debugPYQ from "../debugPYQ.js";
@@ -59,6 +60,7 @@ declare const fullApi: ApiFromModules<{
   cashfreeInternal: typeof cashfreeInternal;
   content: typeof content;
   coupons: typeof coupons;
+  crons: typeof crons;
   debug: typeof debug;
   debugEmail: typeof debugEmail;
   debugPYQ: typeof debugPYQ;
