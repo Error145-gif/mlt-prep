@@ -7,6 +7,8 @@ import { paginationOptsValidator } from "convex/server";
 export const getCurrentWeeklyTest = query({
   args: {},
   handler: async (ctx) => {
+    const now = Date.now();
+    
     // Find active test (Sunday only)
     const activeTest = await ctx.db
       .query("weeklyTests")
@@ -17,15 +19,27 @@ export const getCurrentWeeklyTest = query({
       return activeTest;
     }
 
-    // Find next scheduled test
-    const scheduledTest = await ctx.db
+    // Find scheduled test that should be active now (scheduled date has passed)
+    const scheduledTests = await ctx.db
       .query("weeklyTests")
       .withIndex("by_status", (q) => q.eq("status", "scheduled"))
-      // .filter((q) => q.gte(q.field("scheduledDate"), now))
-      .order("asc")
-      .first();
+      .collect();
+    
+    // Check if any scheduled test's time has arrived
+    const readyTest = scheduledTests.find(test => 
+      test.scheduledDate && test.scheduledDate <= now
+    );
+    
+    // Return the ready test (frontend will treat it as active)
+    if (readyTest) {
+      return readyTest;
+    }
 
-    return scheduledTest || null;
+    // Return next scheduled test for display purposes
+    const nextScheduled = scheduledTests
+      .sort((a, b) => (a.scheduledDate || 0) - (b.scheduledDate || 0))[0];
+
+    return nextScheduled || null;
   },
 });
 

@@ -30,7 +30,7 @@ export default function WeeklyLeaderboard() {
 
   // Determine user type
   const isPaidUser = subscriptionAccess?.hasAccess && subscriptionAccess?.isPaid;
-  const isFreeTrialUser = !isPaidUser; // Anyone who is NOT a paid subscriber is treated as free trial
+  const isFreeTrialUser = !isPaidUser;
 
   if (!currentTest) {
     return (
@@ -56,6 +56,7 @@ export default function WeeklyLeaderboard() {
     );
   }
 
+  // Check if leaderboard is published - use the timestamp field
   const isLeaderboardPublished = !!currentTest.leaderboardPublishedAt;
 
   // Show user's score if they attempted
