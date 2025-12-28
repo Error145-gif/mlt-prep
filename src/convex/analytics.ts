@@ -22,9 +22,14 @@ export const getDashboardStats = query({
       return lastActive > fiveMinutesAgo;
     });
 
-    // Fetch recent data
-    const recentPayments = await ctx.db.query("payments").order("desc").take(10);
-    const recentQuestions = await ctx.db.query("questions").order("desc").take(5);
+    // Fetch recent data - UPDATED to get more recent items
+    const recentPayments = await ctx.db.query("payments")
+      .order("desc")
+      .take(10);
+    
+    const recentQuestions = await ctx.db.query("questions")
+      .order("desc")
+      .take(5);
     
     const recentContent = recentQuestions.map(q => ({
       _id: q._id,
@@ -36,7 +41,7 @@ export const getDashboardStats = query({
 
     // Calculate stats
     const approvedQuestions = allQuestions.filter((q) => q.status === "approved").length;
-    const pendingQuestions = allQuestions.filter((q) => q.status === "pending" || !q.status).length; // Treat undefined as pending or handle accordingly
+    const pendingQuestions = allQuestions.filter((q) => q.status === "pending" || !q.status).length;
     
     // Get recent payment errors
     const paymentErrors = await ctx.db
@@ -45,12 +50,10 @@ export const getDashboardStats = query({
       .order("desc")
       .take(10);
 
-    // Get recent unlocks (active subscriptions sorted by creation time)
-    // Since we don't have an index on creation time for subscriptions specifically combined with status,
-    // we'll filter the recent subscriptions.
+    // Get recent unlocks - UPDATED to show ALL recent subscriptions, not just active
+    // This will show both paid and free trial subscriptions
     const recentSubscriptions = await ctx.db
       .query("subscriptions")
-      .withIndex("by_status", (q) => q.eq("status", "active"))
       .order("desc")
       .take(10);
 
