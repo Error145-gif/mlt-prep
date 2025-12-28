@@ -559,38 +559,48 @@ export const getAdminWeeklyLeaderboard = query({
     const test = await ctx.db.get(args.weeklyTestId);
     if (!test) return [];
 
-    // Get all attempts
+    // If published, return the actual leaderboard (which is paid only)
+    if (test.leaderboardPublishedAt) {
+       return await ctx.db
+        .query("weeklyLeaderboard")
+        .withIndex("by_test_and_rank", (q) => q.eq("weeklyTestId", args.weeklyTestId))
+        .order("asc")
+        .collect();
+    }
+
+    // If not published, generate a PREVIEW of paid users
     const attempts = await ctx.db
       .query("weeklyTestAttempts")
       .withIndex("by_weekly_test", (q) => q.eq("weeklyTestId", args.weeklyTestId))
       .collect();
 
-    // Sort by score (desc), then by avgTimePerQuestion (asc)
-    const sorted = attempts.sort((a, b) => {
-      if (b.score !== a.score) return b.score - a.score;
-      return a.avgTimePerQuestion - b.avgTimePerQuestion;
-    });
-
-    // Enrich with user details and subscription status
-    const enriched = await Promise.all(
-      sorted.map(async (attempt, index) => {
-        const attemptUser = await ctx.db.get(attempt.userId);
-        
-        // Check subscription status
+    const paidAttempts = [];
+    for (const attempt of attempts) {
         const subscription = await ctx.db
           .query("subscriptions")
           .withIndex("by_user", (q) => q.eq("userId", attempt.userId))
           .filter((q) => q.eq(q.field("status"), "active"))
           .first();
+        
+        if (subscription && subscription.endDate > Date.now()) {
+          paidAttempts.push(attempt);
+        }
+    }
 
-        const isPaid = subscription && subscription.endDate > Date.now();
+    const sorted = paidAttempts.sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      return a.avgTimePerQuestion - b.avgTimePerQuestion;
+    });
 
+    const enriched = await Promise.all(
+      sorted.map(async (attempt, index) => {
+        const attemptUser = await ctx.db.get(attempt.userId);
         return {
           ...attempt,
           userName: attemptUser?.name || "Anonymous",
           userEmail: attemptUser?.email,
           rank: index + 1,
-          userType: isPaid ? "PAID" : "FREE",
+          userType: "PAID",
         };
       })
     );
@@ -672,26 +682,68 @@ export const toggleLeaderboardRelease = mutation({
       throw new Error("Test not found");
     }
 
-    if (args.shouldRelease && !test.leaderboardPublishedAt) {
-      // Release leaderboard - calculate ranks
+    if (args.shouldRelease) {
+      // Release leaderboard - calculate ranks for PAID users only
       const attempts = await ctx.db
         .query("weeklyTestAttempts")
         .withIndex("by_weekly_test", (q) => q.eq("weeklyTestId", args.weeklyTestId))
         .collect();
 
-      const sorted = attempts.sort((a, b) => {
+      // Filter for paid users
+      const paidAttempts = [];
+      for (const attempt of attempts) {
+        const subscription = await ctx.db
+          .query("subscriptions")
+          .withIndex("by_user", (q) => q.eq("userId", attempt.userId))
+          .filter((q) => q.eq(q.field("status"), "active"))
+          .first();
+        
+        if (subscription && subscription.endDate > Date.now()) {
+          paidAttempts.push(attempt);
+        } else {
+          // Clear rank for free users if they had one
+          if (attempt.rank) {
+            await ctx.db.patch(attempt._id, { rank: undefined });
+          }
+        }
+      }
+
+      const sorted = paidAttempts.sort((a, b) => {
         if (b.score !== a.score) return b.score - a.score;
         return a.avgTimePerQuestion - b.avgTimePerQuestion;
       });
 
+      // Clear existing leaderboard
+      const existing = await ctx.db
+        .query("weeklyLeaderboard")
+        .withIndex("by_test_and_rank", (q) => q.eq("weeklyTestId", args.weeklyTestId))
+        .collect();
+      for (const e of existing) await ctx.db.delete(e._id);
+
+      // Insert new leaderboard entries
       for (let i = 0; i < sorted.length; i++) {
-        await ctx.db.patch(sorted[i]._id, { rank: i + 1 });
+        const attempt = sorted[i];
+        const rank = i + 1;
+        await ctx.db.patch(attempt._id, { rank });
+        
+        const u = await ctx.db.get(attempt.userId);
+        await ctx.db.insert("weeklyLeaderboard", {
+          weeklyTestId: args.weeklyTestId,
+          userId: attempt.userId,
+          userName: u?.name || "Anonymous",
+          userEmail: u?.email,
+          score: attempt.score,
+          accuracy: attempt.accuracy,
+          avgTimePerQuestion: attempt.avgTimePerQuestion,
+          rank,
+          completedAt: attempt.completedAt,
+        });
       }
 
       await ctx.db.patch(args.weeklyTestId, {
         leaderboardPublishedAt: Date.now(),
       });
-    } else if (!args.shouldRelease && test.leaderboardPublishedAt) {
+    } else {
       // Hide leaderboard
       await ctx.db.patch(args.weeklyTestId, {
         leaderboardPublishedAt: undefined,

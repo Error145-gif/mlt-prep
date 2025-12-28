@@ -5,14 +5,12 @@ import { Navigate } from "react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Loader2, Trophy, Lock, Unlock, Calendar, Plus, X, Archive, Eye, Clock } from "lucide-react";
-import { motion } from "framer-motion";
+import { Loader2, Trophy, Lock, Calendar, Plus, Users, CheckCircle, DollarSign, User } from "lucide-react";
 import { toast } from "sonner";
 import AdminSidebar from "@/components/AdminSidebar";
 import { useState } from "react";
+import { format } from "date-fns";
 
 export default function WeeklyTestManagement() {
   const { isLoading, isAuthenticated, user } = useAuth();
@@ -21,7 +19,6 @@ export default function WeeklyTestManagement() {
   const [newTestTitle, setNewTestTitle] = useState("");
   const [newTestDescription, setNewTestDescription] = useState("");
   const [newTestDate, setNewTestDate] = useState("");
-  const [showArchivedTests, setShowArchivedTests] = useState(false);
 
   const allTests = useQuery(
     api.weeklyTests.getAllWeeklyTestsWithStats,
@@ -34,9 +31,7 @@ export default function WeeklyTestManagement() {
   );
 
   const createWeeklyTest = useMutation(api.weeklyTests.createWeeklyTest);
-  const deleteWeeklyTest = useMutation(api.weeklyTests.deleteWeeklyTest);
   const toggleLeaderboard = useMutation(api.weeklyTests.toggleLeaderboardRelease);
-  const archiveTest = useMutation(api.weeklyTests.archiveWeeklyTest);
 
   if (isLoading) {
     return (
@@ -56,41 +51,9 @@ export default function WeeklyTestManagement() {
         weeklyTestId: testId as any, 
         shouldRelease: !currentStatus 
       });
-      toast.success(!currentStatus ? "Leaderboard released to paid users!" : "Leaderboard hidden from users");
+      toast.success(!currentStatus ? "Leaderboard generated for PAID users!" : "Leaderboard hidden");
     } catch (error: any) {
       toast.error(error.message || "Failed to toggle leaderboard");
-    }
-  };
-
-  const handleArchiveTest = async (testId: string) => {
-    if (!confirm("Archive this test? It will be hidden from users but remain viewable by admins.")) {
-      return;
-    }
-
-    try {
-      await archiveTest({ weeklyTestId: testId as any });
-      toast.success("Test archived successfully!");
-      if (selectedTestId === testId) {
-        setSelectedTestId(null);
-      }
-    } catch (error: any) {
-      toast.error(error.message || "Failed to archive test");
-    }
-  };
-
-  const handleDeleteTest = async (testId: string) => {
-    if (!confirm("Permanently delete this test? This action cannot be undone.")) {
-      return;
-    }
-
-    try {
-      await deleteWeeklyTest({ weeklyTestId: testId as any });
-      toast.success("Test deleted successfully!");
-      if (selectedTestId === testId) {
-        setSelectedTestId(null);
-      }
-    } catch (error: any) {
-      toast.error(error.message || "Failed to delete test");
     }
   };
 
@@ -122,293 +85,224 @@ export default function WeeklyTestManagement() {
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    const badges: Record<string, { bg: string; text: string }> = {
-      draft: { bg: "bg-gray-500/20", text: "text-gray-300" },
-      scheduled: { bg: "bg-blue-500/20", text: "text-blue-300" },
-      active: { bg: "bg-green-500/20", text: "text-green-300" },
-      completed: { bg: "bg-purple-500/20", text: "text-purple-300" },
-      archived: { bg: "bg-orange-500/20", text: "text-orange-300" },
-    };
-    const badge = badges[status] || badges.draft;
-    return (
-      <span className={`px-2 py-1 rounded text-xs font-bold ${badge.bg} ${badge.text}`}>
-        {status.toUpperCase()}
-      </span>
-    );
-  };
-
-  const filteredTests = allTests?.filter((test: any) => 
-    showArchivedTests ? test.status === "archived" : test.status !== "archived"
-  );
-
   const selectedTest = allTests?.find((t: any) => t._id === selectedTestId);
 
   return (
-    <div className="min-h-screen p-6 relative">
+    <div className="min-h-screen bg-gray-50 flex">
       <AdminSidebar />
       
-      <div className="fixed inset-0 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500" />
-      
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="max-w-7xl mx-auto space-y-6 relative z-10 ml-0 lg:ml-64"
-      >
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-white">Weekly Test Management</h1>
-            <p className="text-white/70 mt-1">Manage Sunday Free Mock Tests & Leaderboards</p>
+      <div className="flex-1 p-6 ml-0 lg:ml-64 bg-gradient-to-br from-blue-600 via-purple-700 to-purple-900 min-h-screen">
+        <div className="max-w-[1600px] mx-auto">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h1 className="text-2xl font-bold text-white">Weekly Tests Management</h1>
+              <p className="text-white/70">Manage Free Sunday Tests & Premium Leaderboards</p>
+            </div>
           </div>
-          <div className="flex gap-3">
-            <Button
-              onClick={() => setShowArchivedTests(!showArchivedTests)}
-              variant="outline"
-              className="bg-white/10 border-white/30 text-white"
-            >
-              <Eye className="h-4 w-4 mr-2" />
-              {showArchivedTests ? "Show Active" : "Show Archived"}
-            </Button>
-            <Button
-              onClick={() => setShowCreateForm(!showCreateForm)}
-              className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Create New Week Test
-            </Button>
-          </div>
-        </div>
 
-        {showCreateForm && (
-          <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
-            <CardHeader>
-              <CardTitle className="text-white">Create New Weekly Test</CardTitle>
-              <p className="text-white/70 text-sm mt-2">
-                Test will automatically activate on the scheduled Sunday and become ACTIVE for users.
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label className="text-white">Test Title *</Label>
-                <Input
-                  value={newTestTitle}
-                  onChange={(e) => setNewTestTitle(e.target.value)}
-                  placeholder="e.g., Sunday Free Mock Test - Week 1"
-                  className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
-                />
-              </div>
-              <div>
-                <Label className="text-white">Description</Label>
-                <Textarea
-                  value={newTestDescription}
-                  onChange={(e) => setNewTestDescription(e.target.value)}
-                  placeholder="Optional description"
-                  className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
-                />
-              </div>
-              <div>
-                <Label className="text-white">Schedule Date (Must be Sunday) *</Label>
-                <Input
-                  type="date"
-                  value={newTestDate}
-                  onChange={(e) => setNewTestDate(e.target.value)}
-                  className="bg-white/10 border-white/20 text-white"
-                />
-                <p className="text-white/60 text-xs mt-1">
-                  Test will automatically become ACTIVE at 12:00 AM on this Sunday
-                </p>
-              </div>
-              
-              {/* Admin Preview */}
-              <div className="bg-blue-500/20 border border-blue-400/30 rounded-lg p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Eye className="h-4 w-4 text-blue-300" />
-                  <span className="text-white font-semibold text-sm">User Preview (Before Activation)</span>
-                </div>
-                <div className="bg-white/10 rounded p-3 text-white/90 text-sm">
-                  <Clock className="h-4 w-4 inline mr-2 text-yellow-400" />
-                  🕒 Sunday Free Test<br/>
-                  This test will be active on Sunday.<br/>
-                  Please come back on Sunday to attempt the test.
-                </div>
-              </div>
-
-              <div className="flex gap-4">
-                <Button onClick={handleCreateTest} className="bg-green-500 hover:bg-green-600">
-                  Create Test (Auto-selects 100 Questions)
-                </Button>
-                <Button onClick={() => setShowCreateForm(false)} variant="outline" className="bg-white/10 border-white/30 text-white">
-                  Cancel
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Test List */}
-        <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
-          <CardHeader>
-            <CardTitle className="text-white">Weekly Tests</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {filteredTests?.map((test: any) => (
-                <div
-                  key={test._id}
-                  className={`p-4 rounded-lg border-2 transition-all relative cursor-pointer ${
-                    selectedTestId === test._id
-                      ? "border-yellow-400 bg-yellow-500/20"
-                      : "border-white/20 bg-white/5 hover:bg-white/10"
-                  }`}
-                  onClick={() => setSelectedTestId(test._id)}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <Calendar className="h-4 w-4 text-white" />
-                        <span className="text-white font-semibold">{test.title}</span>
-                        {getStatusBadge(test.status || "draft")}
-                      </div>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                        <div className="text-white/70">
-                          <span className="font-medium">Attempts:</span> {test.totalAttempts || 0}
-                        </div>
-                        <div className="text-white/70">
-                          <span className="font-medium">Submissions:</span> {test.totalSubmissions || 0}
-                        </div>
-                        <div className="text-green-300">
-                          <span className="font-medium">Paid:</span> {test.paidUsersCount || 0}
-                        </div>
-                        <div className="text-orange-300">
-                          <span className="font-medium">Free:</span> {test.freeUsersCount || 0}
-                        </div>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* LEFT COLUMN: Weekly Tests Management */}
+            <div className="lg:col-span-5 space-y-6">
+              <Card className="bg-white/10 border-white/20 backdrop-blur-xl text-white">
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <span>Weekly Tests</span>
+                    <Button 
+                      onClick={() => setShowCreateForm(!showCreateForm)}
+                      size="sm"
+                      className="bg-green-500 hover:bg-green-600 text-white"
+                    >
+                      <Plus className="h-4 w-4 mr-1" /> Create New Test
+                    </Button>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {showCreateForm && (
+                    <div className="bg-white/10 p-4 rounded-lg border border-white/20 mb-4 space-y-3">
+                      <h3 className="font-semibold text-sm">New Sunday Test</h3>
+                      <Input
+                        value={newTestTitle}
+                        onChange={(e) => setNewTestTitle(e.target.value)}
+                        placeholder="Test Title (e.g. Sunday Mock #1)"
+                        className="bg-white/5 border-white/20 text-white placeholder:text-white/40"
+                      />
+                      <Input
+                        type="date"
+                        value={newTestDate}
+                        onChange={(e) => setNewTestDate(e.target.value)}
+                        className="bg-white/5 border-white/20 text-white"
+                      />
+                      <div className="flex justify-end gap-2">
+                        <Button variant="ghost" size="sm" onClick={() => setShowCreateForm(false)} className="text-white/70 hover:text-white">Cancel</Button>
+                        <Button size="sm" onClick={handleCreateTest} className="bg-blue-500 hover:bg-blue-600">Create</Button>
                       </div>
                     </div>
-                    <div className="flex gap-2">
-                      {test.status !== "archived" && (
-                        <Button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleArchiveTest(test._id);
-                          }}
-                          variant="ghost"
-                          size="sm"
-                          className="text-orange-400 hover:text-orange-300 hover:bg-orange-500/20"
-                        >
-                          <Archive className="h-4 w-4" />
-                        </Button>
-                      )}
-                      <Button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteTest(test._id);
-                        }}
-                        variant="ghost"
-                        size="sm"
-                        className="text-red-400 hover:text-red-300 hover:bg-red-500/20"
+                  )}
+
+                  <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
+                    {allTests?.map((test: any) => (
+                      <div
+                        key={test._id}
+                        onClick={() => setSelectedTestId(test._id)}
+                        className={`p-4 rounded-xl border transition-all cursor-pointer ${
+                          selectedTestId === test._id
+                            ? "bg-white text-purple-900 border-white shadow-lg scale-[1.02]"
+                            : "bg-white/5 border-white/10 text-white hover:bg-white/10"
+                        }`}
                       >
-                        <X className="h-4 w-4" />
-                      </Button>
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <Calendar className={`h-4 w-4 ${selectedTestId === test._id ? "text-purple-600" : "text-white/70"}`} />
+                            <span className="font-bold text-sm">
+                              {format(new Date(test.scheduledDate || test._creationTime), "MMM dd, yyyy")}
+                            </span>
+                          </div>
+                          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                            selectedTestId === test._id ? "bg-purple-100 text-purple-700" : "bg-white/10 text-white/70"
+                          }`}>
+                            {test.title}
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className={`p-2 rounded-lg ${selectedTestId === test._id ? "bg-purple-50" : "bg-white/5"}`}>
+                            <div className="flex items-center gap-1.5 mb-1">
+                              <Users className={`h-3 w-3 ${selectedTestId === test._id ? "text-purple-500" : "text-white/60"}`} />
+                              <span className={`text-xs ${selectedTestId === test._id ? "text-purple-700" : "text-white/60"}`}>Unique Users</span>
+                            </div>
+                            <p className="text-lg font-bold">{test.totalAttempts || 0}</p>
+                          </div>
+                          <div className={`p-2 rounded-lg ${selectedTestId === test._id ? "bg-green-50" : "bg-white/5"}`}>
+                            <div className="flex items-center gap-1.5 mb-1">
+                              <CheckCircle className={`h-3 w-3 ${selectedTestId === test._id ? "text-green-500" : "text-white/60"}`} />
+                              <span className={`text-xs ${selectedTestId === test._id ? "text-green-700" : "text-white/60"}`}>Total Attempts</span>
+                            </div>
+                            <p className="text-lg font-bold">{test.totalSubmissions || 0}</p>
+                          </div>
+                          <div className={`p-2 rounded-lg ${selectedTestId === test._id ? "bg-yellow-50" : "bg-white/5"}`}>
+                            <div className="flex items-center gap-1.5 mb-1">
+                              <DollarSign className={`h-3 w-3 ${selectedTestId === test._id ? "text-yellow-600" : "text-white/60"}`} />
+                              <span className={`text-xs ${selectedTestId === test._id ? "text-yellow-700" : "text-white/60"}`}>Paid Users</span>
+                            </div>
+                            <p className="text-lg font-bold">{test.paidUsersCount || 0}</p>
+                          </div>
+                          <div className={`p-2 rounded-lg ${selectedTestId === test._id ? "bg-orange-50" : "bg-white/5"}`}>
+                            <div className="flex items-center gap-1.5 mb-1">
+                              <User className={`h-3 w-3 ${selectedTestId === test._id ? "text-orange-500" : "text-white/60"}`} />
+                              <span className={`text-xs ${selectedTestId === test._id ? "text-orange-700" : "text-white/60"}`}>Free Users</span>
+                            </div>
+                            <p className="text-lg font-bold">{test.freeUsersCount || 0}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* RIGHT COLUMN: Sunday Leaderboard */}
+            <div className="lg:col-span-7">
+              <Card className="bg-white h-full border-none shadow-2xl overflow-hidden">
+                <div className="bg-gradient-to-r from-purple-100 to-pink-100 p-6 border-b border-purple-200">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-xl font-bold text-purple-900 flex items-center gap-2">
+                        <Trophy className="h-6 w-6 text-yellow-500" />
+                        Sunday Leaderboard
+                      </h2>
+                      <p className="text-purple-700/70 text-sm">Premium Analytics | Weekly Top Performers</p>
                     </div>
+                    {selectedTest && (
+                      <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-full shadow-sm border border-purple-100">
+                        <span className="text-sm font-medium text-gray-600">Leaderboard Generated:</span>
+                        <Switch
+                          checked={!!selectedTest.leaderboardPublishedAt}
+                          onCheckedChange={() => handleToggleLeaderboard(selectedTest._id, !!selectedTest.leaderboardPublishedAt)}
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
 
-        {/* Leaderboard Release Control */}
-        {selectedTest && (
-          <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center justify-between">
-                <span>Leaderboard Release Control</span>
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-normal text-white/70">
-                    {selectedTest.leaderboardPublishedAt ? "Released to Paid Users" : "Hidden from All Users"}
-                  </span>
-                  <Switch
-                    checked={!!selectedTest.leaderboardPublishedAt}
-                    onCheckedChange={() => handleToggleLeaderboard(selectedTest._id, !!selectedTest.leaderboardPublishedAt)}
-                  />
-                  {selectedTest.leaderboardPublishedAt ? (
-                    <Unlock className="h-5 w-5 text-green-400" />
+                <CardContent className="p-0">
+                  {!selectedTest ? (
+                    <div className="flex flex-col items-center justify-center h-[400px] text-gray-400">
+                      <Trophy className="h-16 w-16 mb-4 opacity-20" />
+                      <p>Select a test to view leaderboard</p>
+                    </div>
                   ) : (
-                    <Lock className="h-5 w-5 text-red-400" />
-                  )}
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-white/80 text-sm">
-                Toggle ON to release leaderboard to PAID users only. Toggle OFF to hide from all users.
-              </p>
-            </CardContent>
-          </Card>
-        )}
+                    <div className="flex flex-col h-full">
+                      <div className="p-4 bg-yellow-50 border-b border-yellow-100 flex items-center gap-2 text-yellow-800 text-sm">
+                        <Lock className="h-4 w-4" />
+                        <span className="font-medium">Tip:</span> Leaderboard is a strict premium feature. Only paid users are ranked.
+                      </div>
 
-        {/* Admin Leaderboard Preview */}
-        {adminLeaderboard && adminLeaderboard.length > 0 && (
-          <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
-                <Trophy className="h-6 w-6 text-yellow-400" />
-                Leaderboard Preview (Admin Only - Always Visible)
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full text-white">
-                  <thead>
-                    <tr className="border-b border-white/20">
-                      <th className="text-left p-3">Rank</th>
-                      <th className="text-left p-3">User</th>
-                      <th className="text-left p-3">Score</th>
-                      <th className="text-left p-3">Accuracy</th>
-                      <th className="text-left p-3">Avg Time</th>
-                      <th className="text-left p-3">Type</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {adminLeaderboard.map((entry: any) => (
-                      <tr key={entry._id} className="border-b border-white/10 hover:bg-white/5">
-                        <td className="p-3">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
-                            entry.rank === 1 ? "bg-gradient-to-br from-yellow-400 to-yellow-600" :
-                            entry.rank === 2 ? "bg-gradient-to-br from-gray-300 to-gray-500" :
-                            entry.rank === 3 ? "bg-gradient-to-br from-orange-500 to-orange-700" :
-                            "bg-white/10"
-                          }`}>
-                            {entry.rank}
-                          </div>
-                        </td>
-                        <td className="p-3">
-                          <div>
-                            <p className="font-semibold">{entry.userName}</p>
-                            <p className="text-xs text-white/60">{entry.userEmail}</p>
-                          </div>
-                        </td>
-                        <td className="p-3 font-bold">{Math.round(entry.score)}%</td>
-                        <td className="p-3">{Math.round(entry.accuracy)}%</td>
-                        <td className="p-3">{Math.round(entry.avgTimePerQuestion)}s</td>
-                        <td className="p-3">
-                          <span className={`px-2 py-1 rounded text-xs font-bold ${
-                            entry.userType === "PAID" 
-                              ? "bg-green-500/30 text-green-300" 
-                              : "bg-orange-500/30 text-orange-300"
-                          }`}>
-                            {entry.userType}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-      </motion.div>
+                      <div className="overflow-auto max-h-[600px]">
+                        <table className="w-full">
+                          <thead className="bg-gray-50 sticky top-0 z-10">
+                            <tr>
+                              <th className="text-left p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Rank</th>
+                              <th className="text-left p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">User</th>
+                              <th className="text-right p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Score</th>
+                              <th className="text-right p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Accuracy</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-100">
+                            {adminLeaderboard?.length === 0 ? (
+                              <tr>
+                                <td colSpan={4} className="p-8 text-center text-gray-500">
+                                  No paid users have attempted this test yet, or leaderboard not generated.
+                                </td>
+                              </tr>
+                            ) : (
+                              adminLeaderboard?.map((entry: any) => (
+                                <tr key={entry._id} className="hover:bg-gray-50 transition-colors">
+                                  <td className="p-4">
+                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
+                                      entry.rank === 1 ? "bg-yellow-100 text-yellow-700" :
+                                      entry.rank === 2 ? "bg-gray-100 text-gray-700" :
+                                      entry.rank === 3 ? "bg-orange-100 text-orange-700" :
+                                      "text-gray-500"
+                                    }`}>
+                                      #{entry.rank}
+                                    </div>
+                                  </td>
+                                  <td className="p-4">
+                                    <div className="flex items-center gap-3">
+                                      <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 font-bold text-xs">
+                                        {entry.userName.charAt(0)}
+                                      </div>
+                                      <div>
+                                        <p className="font-medium text-gray-900">{entry.userName}</p>
+                                        <p className="text-xs text-gray-500">{entry.userEmail}</p>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td className="p-4 text-right font-bold text-gray-900">
+                                    {Math.round(entry.score)}%
+                                  </td>
+                                  <td className="p-4 text-right text-gray-600">
+                                    {Math.round(entry.accuracy)}%
+                                  </td>
+                                </tr>
+                              ))
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                      
+                      <div className="p-4 border-t border-gray-100 bg-gray-50 text-center text-xs text-gray-500">
+                        Showing top performers among {selectedTest.paidUsersCount || 0} paid users
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
