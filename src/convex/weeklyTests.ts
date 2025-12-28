@@ -282,17 +282,62 @@ export const getWeeklyLeaderboard = query({
     paginationOpts: paginationOptsValidator,
   },
   handler: async (ctx, args) => {
-    // Check if leaderboard is published
     const test = await ctx.db.get(args.weeklyTestId);
-    if (!test) return { page: [], isDone: true, continueCursor: null };
+    if (!test) return { status: "not_found", page: [], isDone: true, continueCursor: null };
 
+    // Calculate release time: Monday 6:00 AM after the scheduled date
+    // scheduledDate is assumed to be Sunday 00:00 (or start time)
+    const scheduledDate = new Date(test.scheduledDate || test._creationTime);
+    scheduledDate.setHours(0, 0, 0, 0);
+    // Add 30 hours (24 hours to Monday 00:00 + 6 hours to 06:00)
+    const releaseTime = scheduledDate.getTime() + (30 * 60 * 60 * 1000);
+    
+    const now = Date.now();
+
+    // STATE 1: BEFORE MONDAY MORNING
+    if (now < releaseTime) {
+      return { 
+        status: "not_released", 
+        releaseTime,
+        page: [], 
+        isDone: true, 
+        continueCursor: null 
+      };
+    }
+
+    // STATE 2: AFTER MONDAY MORNING
+    // Check subscription status
+    const user = await getCurrentUser(ctx);
+    let isPaid = false;
+    if (user) {
+      const subscription = await ctx.db
+        .query("subscriptions")
+        .withIndex("by_user", (q) => q.eq("userId", user._id))
+        .filter((q) => q.eq(q.field("status"), "active"))
+        .first();
+      isPaid = !!(subscription && subscription.endDate > Date.now());
+    }
+
+    // IF FREE USER -> LOCKED
+    if (!isPaid) {
+      return { 
+        status: "locked", 
+        page: [], 
+        isDone: true, 
+        continueCursor: null 
+      };
+    }
+
+    // IF PAID USER -> SHOW LEADERBOARD
     if (test.leaderboardPublishedAt) {
       // Use cached leaderboard
-      return await ctx.db
+      const result = await ctx.db
         .query("weeklyLeaderboard")
         .withIndex("by_test_and_rank", (q) => q.eq("weeklyTestId", args.weeklyTestId))
         .order("asc")
         .paginate(args.paginationOpts);
+      
+      return { status: "active", ...result };
     }
 
     // Temporary leaderboard (live, not cached)
@@ -327,7 +372,7 @@ export const getWeeklyLeaderboard = query({
     const isDone = cursor + numItems >= enriched.length;
     const continueCursor = isDone ? null : String(cursor + numItems);
 
-    return { page, isDone, continueCursor };
+    return { status: "active", page, isDone, continueCursor };
   },
 });
 

@@ -4,7 +4,7 @@ import { api } from "@/convex/_generated/api";
 import { useNavigate } from "react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trophy, Clock, Target, Loader2, AlertCircle, Lock } from "lucide-react";
+import { Trophy, Clock, Target, Loader2, AlertCircle, Lock, Crown } from "lucide-react";
 import { motion } from "framer-motion";
 import StudentNav from "@/components/StudentNav";
 
@@ -55,9 +55,6 @@ export default function WeeklyLeaderboard() {
       </div>
     );
   }
-
-  // Check if leaderboard is published - use the timestamp field
-  const isLeaderboardPublished = !!currentTest.leaderboardPublishedAt;
 
   // Show user's score if they attempted
   const userScore = userAttempt ? Math.round(userAttempt.score) : null;
@@ -117,7 +114,7 @@ export default function WeeklyLeaderboard() {
                          </p>
                       ) : (
                          <p className="text-white text-3xl font-bold">
-                           {userRank ? `#${userRank}` : (isLeaderboardPublished ? "Not Ranked" : "Pending")}
+                           {userRank ? `#${userRank}` : (leaderboardData?.status === "active" ? "Not Ranked" : "Pending")}
                          </p>
                       )}
                     </div>
@@ -125,122 +122,143 @@ export default function WeeklyLeaderboard() {
                 </div>
               )}
 
-              {/* FREE TRIAL USER - Always show lock message */}
-              {isFreeTrialUser && (
-                <div className="bg-orange-500/20 border-2 border-orange-500/50 rounded-lg p-8 mb-6 text-center">
-                  <div className="flex flex-col items-center gap-3 mb-6">
-                    <div className="p-3 bg-orange-500/20 rounded-full">
-                      <Lock className="h-8 w-8 text-orange-300" />
-                    </div>
-                    <div>
-                      <p className="text-white font-bold text-xl mb-2">Sunday Leaderboard is a premium feature.</p>
-                      <p className="text-white/80 text-base">Upgrade to view accuracy, rank, and top performers.</p>
-                    </div>
-                  </div>
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                      <Button 
-                        onClick={() => navigate("/subscription-plans")}
-                        size="lg"
-                        className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold shadow-lg"
-                      >
-                        Upgrade to Premium
-                      </Button>
+              {/* LEADERBOARD SECTION */}
+              <div className="mt-8">
+                <h3 className="text-white text-xl font-bold mb-4 flex items-center gap-2">
+                  <Crown className="h-5 w-5 text-yellow-400" />
+                  Leaderboard
+                </h3>
+
+                {/* STATE 1: BEFORE MONDAY MORNING */}
+                {leaderboardData?.status === "not_released" && (
+                  <div className="bg-white rounded-xl p-8 text-center shadow-xl">
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="p-4 bg-purple-100 rounded-full">
+                        <Clock className="h-8 w-8 text-purple-600" />
+                      </div>
+                      <div>
+                        <h4 className="text-xl font-bold text-gray-900 mb-2">
+                          Sunday Leaderboard will be released on Monday morning.
+                        </h4>
+                        <p className="text-gray-600">
+                          Top performers and ranks will be available after leaderboard release.
+                        </p>
+                      </div>
                       <Button 
                         onClick={() => navigate("/student")}
                         variant="outline"
-                        size="lg"
-                        className="bg-white/10 border-white/30 text-white hover:bg-white/20"
+                        className="mt-2"
                       >
                         Back to Dashboard
                       </Button>
-                  </div>
-                </div>
-              )}
-
-              {/* PAID USER - Show leaderboard based on admin release */}
-              {isPaidUser && (
-                <>
-                  {!isLeaderboardPublished ? (
-                    <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-lg p-6 mb-6">
-                      <p className="text-white/90 text-center flex items-center justify-center gap-2">
-                        <Clock className="h-5 w-5" />
-                        Leaderboard will be released by admin soon.
-                      </p>
                     </div>
-                  ) : (
-                    <>
-                      {!leaderboardData ? (
-                        <div className="flex items-center justify-center py-12">
-                          <Loader2 className="h-8 w-8 animate-spin text-white" />
-                        </div>
-                      ) : leaderboardData.page.length === 0 ? (
-                        <div className="text-center py-12 text-white/80">
-                          <p>No attempts yet. Be the first to take the test!</p>
-                        </div>
-                      ) : (
-                        <div className="space-y-3">
-                          {leaderboardData.page.map((entry: any, index: number) => (
-                            <motion.div
-                              key={entry._id}
-                              initial={{ opacity: 0, x: -20 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ delay: index * 0.05 }}
-                              className={`p-4 rounded-lg backdrop-blur-sm border ${
-                                entry.rank === 1
-                                  ? "bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border-yellow-500/50"
-                                  : entry.rank === 2
-                                  ? "bg-gradient-to-r from-gray-400/20 to-gray-500/20 border-gray-400/50"
-                                  : entry.rank === 3
-                                  ? "bg-gradient-to-r from-orange-600/20 to-orange-700/20 border-orange-600/50"
-                                  : "bg-white/5 border-white/10"
-                              }`}
-                            >
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-4">
-                                  <div
-                                    className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${
-                                      entry.rank === 1
-                                        ? "bg-gradient-to-br from-yellow-400 to-yellow-600 text-white"
-                                        : entry.rank === 2
-                                        ? "bg-gradient-to-br from-gray-300 to-gray-500 text-white"
-                                        : entry.rank === 3
-                                        ? "bg-gradient-to-br from-orange-500 to-orange-700 text-white"
-                                        : "bg-white/10 text-white"
-                                    }`}
-                                  >
-                                    {entry.rank}
-                                  </div>
-                                  <div>
-                                    <p className="text-white font-semibold">{entry.userName}</p>
-                                    <p className="text-white/60 text-sm">{entry.userEmail}</p>
-                                  </div>
-                                </div>
+                  </div>
+                )}
 
-                                <div className="flex items-center gap-6">
-                                  <div className="text-right">
-                                    <div className="flex items-center gap-2 text-white">
-                                      <Target className="h-4 w-4" />
-                                      <span className="font-bold">{Math.round(entry.accuracy)}%</span>
-                                    </div>
-                                    <p className="text-white/60 text-xs">Accuracy</p>
-                                  </div>
-                                  <div className="text-right">
-                                    <div className="flex items-center gap-2 text-white">
-                                      <Clock className="h-4 w-4" />
-                                      <span className="font-bold">{Math.round(entry.avgTimePerQuestion)}s</span>
-                                    </div>
-                                    <p className="text-white/60 text-xs">Avg Time</p>
-                                  </div>
-                                </div>
+                {/* STATE 2: LOCKED FOR FREE USERS */}
+                {leaderboardData?.status === "locked" && (
+                  <div className="bg-white rounded-xl p-8 text-center shadow-xl border-2 border-yellow-400/50 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1 rounded-bl-lg">
+                      PREMIUM
+                    </div>
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="p-4 bg-yellow-100 rounded-full">
+                        <Lock className="h-8 w-8 text-yellow-600" />
+                      </div>
+                      <div>
+                        <h4 className="text-xl font-bold text-gray-900 mb-2">
+                          Sunday Leaderboard is a strict premium feature.
+                        </h4>
+                        <p className="text-gray-600">
+                          Upgrade to view your accuracy, rank, and top performers.
+                        </p>
+                      </div>
+                      <Button 
+                        onClick={() => navigate("/subscription-plans")}
+                        size="lg"
+                        className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold shadow-lg mt-2"
+                      >
+                        Upgrade to Premium
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* STATE 3: ACTIVE LEADERBOARD (PAID USERS) */}
+                {leaderboardData?.status === "active" && (
+                  <div className="space-y-3">
+                    {!leaderboardData.page || leaderboardData.page.length === 0 ? (
+                      <div className="text-center py-12 text-white/80 bg-white/5 rounded-lg">
+                        <p>No attempts yet. Be the first to take the test!</p>
+                      </div>
+                    ) : (
+                      leaderboardData.page.map((entry: any, index: number) => (
+                        <motion.div
+                          key={entry._id}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.05 }}
+                          className={`p-4 rounded-lg backdrop-blur-sm border ${
+                            entry.rank === 1
+                              ? "bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border-yellow-500/50"
+                              : entry.rank === 2
+                              ? "bg-gradient-to-r from-gray-400/20 to-gray-500/20 border-gray-400/50"
+                              : entry.rank === 3
+                              ? "bg-gradient-to-r from-orange-600/20 to-orange-700/20 border-orange-600/50"
+                              : "bg-white/5 border-white/10"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                              <div
+                                className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${
+                                  entry.rank === 1
+                                    ? "bg-gradient-to-br from-yellow-400 to-yellow-600 text-white"
+                                    : entry.rank === 2
+                                    ? "bg-gradient-to-br from-gray-300 to-gray-500 text-white"
+                                    : entry.rank === 3
+                                    ? "bg-gradient-to-br from-orange-500 to-orange-700 text-white"
+                                    : "bg-white/10 text-white"
+                                }`}
+                              >
+                                {entry.rank}
                               </div>
-                            </motion.div>
-                          ))}
-                        </div>
-                      )}
-                    </>
-                  )}
-                </>
-              )}
+                              <div>
+                                <p className="text-white font-semibold">{entry.userName}</p>
+                                <p className="text-white/60 text-sm">{entry.userEmail}</p>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-6">
+                              <div className="text-right">
+                                <div className="flex items-center gap-2 text-white">
+                                  <Target className="h-4 w-4" />
+                                  <span className="font-bold">{Math.round(entry.accuracy)}%</span>
+                                </div>
+                                <p className="text-white/60 text-xs">Accuracy</p>
+                              </div>
+                              <div className="text-right">
+                                <div className="flex items-center gap-2 text-white">
+                                  <Clock className="h-4 w-4" />
+                                  <span className="font-bold">{Math.round(entry.avgTimePerQuestion)}s</span>
+                                </div>
+                                <p className="text-white/60 text-xs">Avg Time</p>
+                              </div>
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))
+                    )}
+                  </div>
+                )}
+                
+                {/* Loading State */}
+                {!leaderboardData && (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="h-8 w-8 animate-spin text-white" />
+                  </div>
+                )}
+              </div>
 
               <div className="mt-6 flex justify-center">
                 <Button onClick={() => navigate("/student")} variant="outline" className="bg-white/10 border-white/30 text-white">
