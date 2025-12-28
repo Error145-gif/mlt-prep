@@ -8,7 +8,8 @@ import {
   TrendingUp,
   ChevronRight,
   ChevronDown,
-  XCircle
+  XCircle,
+  Lock
 } from "lucide-react";
 import { useState } from "react";
 
@@ -25,9 +26,10 @@ interface Question {
 
 interface DetailedAnalysisProps {
   questions: Question[];
+  isPaidUser?: boolean;
 }
 
-export default function DetailedAnalysis({ questions }: DetailedAnalysisProps) {
+export default function DetailedAnalysis({ questions, isPaidUser = false }: DetailedAnalysisProps) {
   const [expandedExplanations, setExpandedExplanations] = useState<Record<string, boolean>>({});
 
   const toggleExplanation = (id: string) => {
@@ -67,6 +69,9 @@ export default function DetailedAnalysis({ questions }: DetailedAnalysisProps) {
     total: stats.total
   })).sort((a, b) => a.accuracy - b.accuracy); // Weakest first
 
+  // FREE USERS: Show only first 2 explanations
+  const maxFreeExplanations = 2;
+
   return (
     <Card className="overflow-hidden border-0 shadow-2xl bg-gradient-to-br from-purple-50 to-indigo-50 backdrop-blur-sm rounded-2xl">
       {/* Header */}
@@ -81,8 +86,16 @@ export default function DetailedAnalysis({ questions }: DetailedAnalysisProps) {
               Identify your mistakes, improve weak areas, and boost your score.
             </p>
           </div>
-          <Badge className="bg-white/20 hover:bg-white/30 text-white border-0 px-3 py-1 backdrop-blur-sm cursor-default">
-            <CheckCircle2 className="h-3 w-3 mr-1 text-green-300" /> Premium Unlocked
+          <Badge className={`${isPaidUser ? 'bg-white/20 hover:bg-white/30' : 'bg-yellow-400/20 border-yellow-400/30'} text-white border-0 px-3 py-1 backdrop-blur-sm cursor-default`}>
+            {isPaidUser ? (
+              <>
+                <CheckCircle2 className="h-3 w-3 mr-1 text-green-300" /> Premium Unlocked
+              </>
+            ) : (
+              <>
+                <Lock className="h-3 w-3 mr-1" /> Limited Access
+              </>
+            )}
           </Badge>
         </div>
       </div>
@@ -102,52 +115,100 @@ export default function DetailedAnalysis({ questions }: DetailedAnalysisProps) {
             </div>
 
             <div className="space-y-3">
-              {incorrectQuestions.slice(0, 5).map((q, idx) => (
-                <div key={idx} className="bg-white rounded-lg p-4 shadow-sm border border-red-100 transition-all">
-                  <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-                    <div className="flex-1 space-y-2">
-                      <div className="flex items-center gap-2">
-                        <Badge variant="secondary" className="bg-purple-100 text-purple-700 hover:bg-purple-200">
-                          {q.topic || "General"}
-                        </Badge>
-                        <span className="text-xs text-gray-500 line-clamp-1">{q.subtopic}</span>
-                      </div>
-                      <p className="text-gray-900 font-medium">{q.question}</p>
-                      <p className="text-xs text-gray-500">
-                        Your Answer: <span className="text-red-500 line-through mr-2">{q.userAnswer}</span>
-                        Correct Answer: <span className="text-green-600 font-medium">{q.correctAnswer}</span>
-                      </p>
-                    </div>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="text-purple-600 hover:text-purple-700 hover:bg-purple-50 shrink-0"
-                      onClick={() => toggleExplanation(q._id)}
-                    >
-                      {expandedExplanations[q._id] ? "Hide Explanation" : "View Explanation"} 
-                      {expandedExplanations[q._id] ? <ChevronDown className="h-4 w-4 ml-1" /> : <ChevronRight className="h-4 w-4 ml-1" />}
-                    </Button>
-                  </div>
-                  
-                  {/* Inline Explanation */}
-                  {expandedExplanations[q._id] && (
-                    <div className="mt-4 pt-4 border-t border-gray-100 animate-in fade-in slide-in-from-top-2 duration-300">
-                      <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                        <p className="text-sm font-bold text-blue-900 mb-1">💡 Explanation:</p>
-                        <p className="text-sm text-blue-800 leading-relaxed">
-                          {q.explanation || "No detailed explanation available for this question."}
+              {incorrectQuestions.slice(0, 5).map((q, idx) => {
+                const canViewExplanation = isPaidUser || idx < maxFreeExplanations;
+                
+                return (
+                  <div key={idx} className="bg-white rounded-lg p-4 shadow-sm border border-red-100 transition-all">
+                    <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                      <div className="flex-1 space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="secondary" className="bg-purple-100 text-purple-700 hover:bg-purple-200">
+                            {q.topic || "General"}
+                          </Badge>
+                          <span className="text-xs text-gray-500 line-clamp-1">{q.subtopic}</span>
+                        </div>
+                        <p className="text-gray-900 font-medium">{q.question}</p>
+                        <p className="text-xs text-gray-500">
+                          Your Answer: <span className="text-red-500 line-through mr-2">{q.userAnswer}</span>
+                          Correct Answer: <span className="text-green-600 font-medium">{q.correctAnswer}</span>
                         </p>
                       </div>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className={`${canViewExplanation ? 'text-purple-600 hover:text-purple-700 hover:bg-purple-50' : 'text-gray-400 cursor-not-allowed'} shrink-0`}
+                        onClick={() => canViewExplanation && toggleExplanation(q._id)}
+                        disabled={!canViewExplanation}
+                      >
+                        {canViewExplanation ? (
+                          <>
+                            {expandedExplanations[q._id] ? "Hide Explanation" : "View Explanation"} 
+                            {expandedExplanations[q._id] ? <ChevronDown className="h-4 w-4 ml-1" /> : <ChevronRight className="h-4 w-4 ml-1" />}
+                          </>
+                        ) : (
+                          <>
+                            <Lock className="h-4 w-4 mr-1" /> Locked
+                          </>
+                        )}
+                      </Button>
                     </div>
-                  )}
-                </div>
-              ))}
+                    
+                    {/* Inline Explanation */}
+                    {canViewExplanation && expandedExplanations[q._id] && (
+                      <div className="mt-4 pt-4 border-t border-gray-100 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                          <p className="text-sm font-bold text-blue-900 mb-1">💡 Explanation:</p>
+                          <p className="text-sm text-blue-800 leading-relaxed">
+                            {q.explanation || "No detailed explanation available for this question."}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Locked Explanation Preview */}
+                    {!canViewExplanation && (
+                      <div className="mt-4 pt-4 border-t border-gray-100">
+                        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 relative overflow-hidden">
+                          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-gray-100 z-10" />
+                          <div className="blur-sm select-none pointer-events-none">
+                            <p className="text-sm font-bold text-gray-900 mb-1">💡 Explanation:</p>
+                            <p className="text-sm text-gray-700 leading-relaxed">
+                              This detailed explanation is available for Premium users only...
+                            </p>
+                          </div>
+                          <div className="absolute inset-0 flex items-center justify-center z-20">
+                            <Badge className="bg-purple-600 text-white px-4 py-2">
+                              <Lock className="h-3 w-3 mr-1" /> Upgrade to Unlock
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
               {incorrectQuestions.length === 0 && (
                 <div className="text-center py-4 text-green-600 font-medium">
                   No mistakes found! Excellent work.
                 </div>
               )}
             </div>
+
+            {/* Upgrade CTA for Free Users */}
+            {!isPaidUser && incorrectQuestions.length > maxFreeExplanations && (
+              <div className="mt-4 p-4 bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg text-center">
+                <p className="text-sm text-gray-700 mb-2">
+                  🔒 <span className="font-semibold">{incorrectQuestions.length - maxFreeExplanations} more explanations</span> are locked
+                </p>
+                <Button 
+                  onClick={() => window.location.href = '/subscription-plans'}
+                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white text-sm"
+                >
+                  Upgrade to Premium - ₹399/4 months
+                </Button>
+              </div>
+            )}
           </div>
         </div>
 
