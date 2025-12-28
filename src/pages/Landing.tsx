@@ -366,10 +366,9 @@ export default function Landing() {
 
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-orange-200 text-sm font-bold mb-1">🔥 Limited Time Offer - Only 47 Spots Left!</p>
+                <p className="text-orange-200 text-sm font-bold mb-1">🔥 Limited Time Offer</p>
                 <p className="text-3xl font-bold text-white drop-shadow-lg">₹399 for 4 Months</p>
                 <p className="text-white/80 text-sm line-through">Regular: ₹496</p>
-                <p className="text-green-300 text-xs font-semibold mt-1">✓ 156 students upgraded in last 7 days</p>
               </div>
               <div className="text-right">
                 <div className="bg-gradient-to-r from-red-600 to-red-700 text-white text-sm font-bold px-4 py-2 rounded-full shadow-lg mb-2 animate-pulse">
@@ -568,7 +567,6 @@ export default function Landing() {
           </motion.div>
           <h2 className="text-2xl sm:text-4xl font-bold text-white drop-shadow-lg mb-2 sm:mb-4">Why Upgrade to Premium?</h2>
           <p className="text-white/90 text-base sm:text-lg drop-shadow-md">See what you're missing with the free plan</p>
-          <p className="text-yellow-300 text-sm font-semibold mt-2">🔥 47 spots left at this price • ⏰ Offer ends in 48 hours</p>
         </motion.div>
 
         <motion.div
@@ -667,12 +665,9 @@ export default function Landing() {
                       ease: "linear",
                     }}
                   />
-                  <span className="relative">🔥 Upgrade Now - Save ₹97 (Limited Time!) →</span>
+                  <span className="relative">🔥 Upgrade Now - Save ₹97 →</span>
                 </Button>
               </motion.div>
-              <p className="text-white/80 text-xs text-center mt-2">
-                ⚡ Only 47 spots left • ⏰ Offer expires in 48 hours
-              </p>
             </div>
           </div>
         </motion.div>

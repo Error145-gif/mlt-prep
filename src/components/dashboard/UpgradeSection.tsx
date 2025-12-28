@@ -39,20 +39,17 @@ export default function UpgradeSection() {
         >
           ⚡ ENDING SOON
         </motion.div>
-        <div className="absolute top-14 right-4 bg-orange-500 text-white text-xs font-semibold px-3 py-1 rounded-full">
-          47 spots left
-        </div>
 
         <CardHeader>
           <CardTitle className="text-white flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-yellow-400" />
-            🔥 Unlock Full Access - Save ₹97 Today!
+            🔥 Unlock Full Access - Save ₹97!
           </CardTitle>
           <p className="text-white/90 text-sm mt-2 font-semibold">
-            ⏰ Limited Time: Only 47 spots left at this price!
+            ⏰ Limited Time Offer
           </p>
           <p className="text-white/80 text-xs mt-1">
-            156 students upgraded in last 7 days • Join 223+ preparing smarter
+            Join 223+ students preparing smarter
           </p>
         </CardHeader>
         <CardContent>
@@ -122,14 +119,11 @@ export default function UpgradeSection() {
                   ease: "linear",
                 }}
               />
-              <span className="relative">🔥 Upgrade Now - Save ₹97 (Ending Soon!) →</span>
+              <span className="relative">🔥 Upgrade Now - Save ₹97 →</span>
             </Button>
           </motion.div>
           <p className="text-white/90 text-xs text-center mt-3 font-semibold">
             🛡️ 100% Money-back guarantee • ✓ Cancel anytime
-          </p>
-          <p className="text-yellow-300 text-xs text-center font-bold">
-            ⚡ Offer expires in 48 hours • Only 47 spots left!
           </p>
         </CardContent>
       </Card>
