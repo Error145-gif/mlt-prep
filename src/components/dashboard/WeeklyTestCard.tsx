@@ -18,9 +18,11 @@ export default function WeeklyTestCard({ isFreeTrialUser = false }: WeeklyTestCa
   const isActive = currentTest?.status === "active";
   
   // Check if scheduled test time has arrived
+  // Check if test is ready: either active OR scheduled with time arrived
+  const now = Date.now();
   const isTestReady = currentTest && (
     isActive || 
-    (isScheduled && currentTest.scheduledDate && currentTest.scheduledDate <= Date.now())
+    (isScheduled && currentTest.scheduledDate && currentTest.scheduledDate <= now)
   );
 
   return (
