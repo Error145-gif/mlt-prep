@@ -1,5 +1,2 @@
-# Remove the pinned version and update to the required version
-pnpm remove @auth/core
-pnpm add @auth/core@^0.37.0
-pnpm install
-npx convex deploy
+curl -X GET "https://successful-bandicoot-650.convex.cloud/api/emails/registered" \
+  -H "Authorization: Bearer YOUR_EMAIL_API_KEY"
