@@ -355,7 +355,7 @@ export default function AdminDashboard() {
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
               <Users className="h-5 w-5 text-green-400" />
-              Registered Users & Email Export
+              📧 Registered Users & Email Export
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -370,11 +370,16 @@ export default function AdminDashboard() {
                   <p className="text-white text-3xl font-bold">{stats?.activeUsers || 0}</p>
                 </div>
               </div>
+              <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-lg p-4 mb-4">
+                <p className="text-yellow-100 text-sm font-medium">
+                  💡 Click the button below to view all registered users and download their emails as CSV
+                </p>
+              </div>
               <Button
                 onClick={() => navigate("/admin/analytics")}
-                className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold"
+                className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold text-lg py-6"
               >
-                View All Users & Download CSV
+                📥 View All Users & Download CSV
               </Button>
             </div>
           </CardContent>
