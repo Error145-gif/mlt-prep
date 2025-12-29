@@ -4,7 +4,7 @@ import { api } from "@/convex/_generated/api";
 import { Navigate, useNavigate } from "react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, FileText, TrendingUp, Menu, X, Loader2, CreditCard, AlertCircle, LogOut, CheckCircle, Lock } from "lucide-react";
+import { Users, FileText, TrendingUp, Menu, X, Loader2, CreditCard, AlertCircle, LogOut, CheckCircle, Lock, Download } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { useAuthActions } from "@convex-dev/auth/react";
@@ -20,6 +20,48 @@ export default function AdminDashboard() {
     isAuthenticated && user?.role === "admin" ? {} : "skip"
   );
 
+  const registeredUsers = useQuery(
+    api.analytics.getAllRegisteredUsers,
+    isAuthenticated && user?.role === "admin" ? {} : "skip"
+  );
+
+  // CSV Download Function
+  const handleDownloadCSV = () => {
+    if (!registeredUsers?.users) {
+      return;
+    }
+
+    try {
+      const headers = ["Name", "Email", "Role", "Registration Status", "Joined Date"];
+      const csvRows = [headers.join(",")];
+
+      registeredUsers.users.forEach((user: any) => {
+        const row = [
+          user.name || "N/A",
+          user.email || "N/A",
+          user.role || "user",
+          user.isRegistered ? "Registered" : "Pending",
+          new Date(user._creationTime).toLocaleDateString()
+        ];
+        csvRows.push(row.join(","));
+      });
+
+      const csvContent = csvRows.join("\n");
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+      
+      link.setAttribute("href", url);
+      link.setAttribute("download", `mlt_prep_students_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error("CSV Download Error:", error);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -32,7 +74,6 @@ export default function AdminDashboard() {
     return <Navigate to="/auth" />;
   }
 
-  // If user is authenticated but not admin, redirect to dashboard
   if (user?.role !== "admin") {
     return <Navigate to="/student" />;
   }
@@ -350,36 +391,63 @@ export default function AdminDashboard() {
           </Card>
         </div>
 
-        {/* Quick Access to Analytics with CSV Download */}
-        <Card className="glass-card border-green-500/30 backdrop-blur-xl bg-green-500/10">
+        {/* CSV DOWNLOAD CARD - DIRECTLY ON DASHBOARD */}
+        <Card className="glass-card border-orange-500/30 backdrop-blur-xl bg-orange-500/10">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
-              <Users className="h-5 w-5 text-green-400" />
-              📧 Registered Users & Email Export
+              <Users className="h-5 w-5 text-orange-400" />
+              📧 Download Student Emails (CSV)
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-white/10 p-4 rounded-lg">
-                  <p className="text-white/70 text-sm">Total Registered Users</p>
-                  <p className="text-white text-3xl font-bold">{stats?.totalUsers || 0}</p>
+                  <p className="text-white/70 text-sm">Total Users</p>
+                  <p className="text-white text-3xl font-bold">{registeredUsers?.totalUsers || stats?.totalUsers || 0}</p>
                 </div>
                 <div className="bg-white/10 p-4 rounded-lg">
-                  <p className="text-white/70 text-sm">Active Users (30 days)</p>
-                  <p className="text-white text-3xl font-bold">{stats?.activeUsers || 0}</p>
+                  <p className="text-white/70 text-sm">Active Users</p>
+                  <p className="text-white text-3xl font-bold">{registeredUsers?.activeUsers || stats?.activeUsers || 0}</p>
+                </div>
+                <div className="bg-white/10 p-4 rounded-lg">
+                  <p className="text-white/70 text-sm">Emails Available</p>
+                  <p className="text-white text-3xl font-bold">
+                    {registeredUsers?.users?.filter((u: any) => u.email).length || 0}
+                  </p>
                 </div>
               </div>
-              <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-lg p-4 mb-4">
-                <p className="text-yellow-100 text-sm font-medium">
-                  💡 Click the button below to view all registered users and download their emails as CSV
-                </p>
+              
+              <div className="bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-xl p-6">
+                <div className="flex items-center justify-between flex-wrap gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-orange-200 rounded-full">
+                      <Download className="h-6 w-6 text-orange-700" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-900">Export All Student Emails</h3>
+                      <p className="text-sm text-gray-600">
+                        Download CSV with name, email, role, status, and join date
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    onClick={handleDownloadCSV}
+                    disabled={!registeredUsers?.users}
+                    className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold shadow-lg text-lg py-6 px-8"
+                  >
+                    <Download className="h-5 w-5 mr-2" />
+                    Download CSV Now
+                  </Button>
+                </div>
               </div>
+
               <Button
                 onClick={() => navigate("/admin/analytics")}
-                className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold text-lg py-6"
+                variant="outline"
+                className="w-full bg-white/10 border-white/30 text-white hover:bg-white/20"
               >
-                📥 View All Users & Download CSV
+                View Detailed Analytics →
               </Button>
             </div>
           </CardContent>
