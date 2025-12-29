@@ -350,6 +350,36 @@ export default function AdminDashboard() {
           </Card>
         </div>
 
+        {/* Quick Access to Analytics with CSV Download */}
+        <Card className="glass-card border-green-500/30 backdrop-blur-xl bg-green-500/10">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
+              <Users className="h-5 w-5 text-green-400" />
+              Registered Users & Email Export
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-white/10 p-4 rounded-lg">
+                  <p className="text-white/70 text-sm">Total Registered Users</p>
+                  <p className="text-white text-3xl font-bold">{stats?.totalUsers || 0}</p>
+                </div>
+                <div className="bg-white/10 p-4 rounded-lg">
+                  <p className="text-white/70 text-sm">Active Users (30 days)</p>
+                  <p className="text-white text-3xl font-bold">{stats?.activeUsers || 0}</p>
+                </div>
+              </div>
+              <Button
+                onClick={() => navigate("/admin/analytics")}
+                className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold"
+              >
+                View All Users & Download CSV
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Recent Content */}
         <Card className="glass-card border-white/30 backdrop-blur-xl bg-white/20">
           <CardHeader>
