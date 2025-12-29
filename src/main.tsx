@@ -189,7 +189,7 @@ createRoot(document.getElementById("root")!).render(
                   path="/admin/analytics"
                   element={
                     <AdminRoute>
-                      <UserAnalytics />
+                      <OverallAnalytics />
                     </AdminRoute>
                   }
                 />
