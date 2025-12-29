@@ -1,3 +1,12 @@
 {
-  "plan": "1. Verify the new DetailedAnalysis and LockedAnalysis components render correctly.\n2. Check for any type errors or missing imports.\n3. Confirm the upgrade button in LockedAnalysis navigates to the subscription page."
+  "success": true,
+  "count": 232,
+  "users": [
+    {
+      "email": "user@example.com",
+      "name": "User Name",
+      "registeredAt": 1234567890
+    }
+  ],
+  "timestamp": "2025-01-04T..."
 }

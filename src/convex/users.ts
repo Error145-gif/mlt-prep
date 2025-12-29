@@ -333,3 +333,28 @@ export const ensurePasswordAccount = mutation({
     });
   },
 });
+
+// Query to get verified user emails for email automation
+export const getVerifiedUserEmails = query({
+  args: {},
+  handler: async (ctx) => {
+    // Fetch all users with verified emails
+    const allUsers = await ctx.db.query("users").collect();
+    
+    // Filter for registered users with valid emails
+    const verifiedUsers = allUsers
+      .filter(u => 
+        u.email && 
+        u.isRegistered && 
+        u.email.includes("@") &&
+        !(u as any).unsubscribed // Exclude unsubscribed users if field exists
+      )
+      .map(u => ({
+        email: u.email,
+        name: u.name || "User",
+        registeredAt: u._creationTime,
+      }));
+
+    return verifiedUsers;
+  },
+});

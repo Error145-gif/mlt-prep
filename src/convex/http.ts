@@ -1,6 +1,7 @@
 import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
 import { auth } from "./auth";
+import { getRegisteredEmails } from "./emailApi";
 
 const http = httpRouter();
 
@@ -35,6 +36,13 @@ http.route({
       },
     });
   }),
+});
+
+// Register email API endpoint
+http.route({
+  path: "/api/emails/registered",
+  method: "GET",
+  handler: getRegisteredEmails,
 });
 
 export default http;

@@ -21,6 +21,7 @@ import type * as crons from "../crons.js";
 import type * as debug from "../debug.js";
 import type * as debugEmail from "../debugEmail.js";
 import type * as debugPYQ from "../debugPYQ.js";
+import type * as emailApi from "../emailApi.js";
 import type * as emails from "../emails.js";
 import type * as feedback from "../feedback.js";
 import type * as http from "../http.js";
@@ -64,6 +65,7 @@ declare const fullApi: ApiFromModules<{
   debug: typeof debug;
   debugEmail: typeof debugEmail;
   debugPYQ: typeof debugPYQ;
+  emailApi: typeof emailApi;
   emails: typeof emails;
   feedback: typeof feedback;
   http: typeof http;
