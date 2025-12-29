@@ -14,22 +14,76 @@ import {
   TrendingUp,
   CheckCircle2,
   ArrowLeft,
-  Lock
+  Lock,
+  Download,
+  Users,
+  Mail
 } from "lucide-react";
 import StudentNav from "@/components/StudentNav";
+import AdminSidebar from "@/components/AdminSidebar";
+import { toast } from "sonner";
 
 export default function OverallAnalytics() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
   const navigate = useNavigate();
   const stats = useQuery(api.student.getStudentDashboardStats);
   const subscriptionAccess = useQuery(api.student.checkSubscriptionAccess);
   const testHistory = useQuery(api.student.getTestHistory);
+  
+  // Admin-specific queries
+  const isAdmin = user?.role === "admin";
+  const registeredUsers = useQuery(
+    api.analytics.getAllRegisteredUsers,
+    isAdmin ? {} : "skip"
+  );
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       navigate("/auth");
     }
   }, [isAuthenticated, isLoading, navigate]);
+
+  // CSV Download Function
+  const handleDownloadCSV = () => {
+    if (!registeredUsers?.users) {
+      toast.error("No user data available");
+      return;
+    }
+
+    try {
+      // Create CSV content
+      const headers = ["Name", "Email", "Role", "Registration Status", "Joined Date"];
+      const csvRows = [headers.join(",")];
+
+      registeredUsers.users.forEach((user: any) => {
+        const row = [
+          user.name || "N/A",
+          user.email || "N/A",
+          user.role || "user",
+          user.isRegistered ? "Registered" : "Pending",
+          new Date(user._creationTime).toLocaleDateString()
+        ];
+        csvRows.push(row.join(","));
+      });
+
+      const csvContent = csvRows.join("\n");
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+      
+      link.setAttribute("href", url);
+      link.setAttribute("download", `mlt_prep_students_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast.success(`Downloaded ${registeredUsers.users.length} student emails`);
+    } catch (error) {
+      console.error("CSV Download Error:", error);
+      toast.error("Failed to download CSV");
+    }
+  };
 
   const isPaidUser = subscriptionAccess?.hasAccess && subscriptionAccess?.isPaid;
   const isFreeTrialUser = !isPaidUser;
@@ -42,12 +96,132 @@ export default function OverallAnalytics() {
     );
   }
 
-  // Calculate overall mistake analysis
+  // If admin, show admin analytics view
+  if (isAdmin && registeredUsers) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
+        <div className="flex">
+          <AdminSidebar />
+          <div className="flex-1 p-6 ml-0 md:ml-64">
+            <div className="max-w-6xl mx-auto space-y-6">
+              {/* Header */}
+              <div className="flex items-center justify-between">
+                <Button
+                  onClick={() => navigate("/admin")}
+                  variant="ghost"
+                  className="text-white hover:bg-white/20"
+                >
+                  <ArrowLeft className="h-5 w-5 mr-2" />
+                  Back to Admin Dashboard
+                </Button>
+              </div>
+
+              {/* Registered Users Card */}
+              <Card className="overflow-hidden border-0 shadow-2xl bg-white rounded-2xl">
+                <div className="bg-gradient-to-r from-[#8B5CF6] to-[#6366F1] p-6 text-white">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Users className="h-6 w-6 text-white" />
+                        <h1 className="text-3xl font-bold">Registered Users Analytics</h1>
+                      </div>
+                      <p className="text-purple-100 text-sm opacity-90">
+                        Total registered students and email export
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-6 space-y-6">
+                  {/* Stats Summary */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200">
+                      <p className="text-sm text-blue-700 font-medium">Total Users</p>
+                      <p className="text-3xl font-bold text-blue-900">{registeredUsers.totalUsers}</p>
+                    </div>
+                    <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-xl border border-green-200">
+                      <p className="text-sm text-green-700 font-medium">Active Users</p>
+                      <p className="text-3xl font-bold text-green-900">{registeredUsers.activeUsers}</p>
+                    </div>
+                    <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-xl border border-purple-200">
+                      <p className="text-sm text-purple-700 font-medium">Emails Available</p>
+                      <p className="text-3xl font-bold text-purple-900">
+                        {registeredUsers.users.filter((u: any) => u.email).length}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Download CSV Button */}
+                  <div className="bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-xl p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-3 bg-orange-200 rounded-full">
+                          <Mail className="h-6 w-6 text-orange-700" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-bold text-gray-900">Export Student Emails</h3>
+                          <p className="text-sm text-gray-600">
+                            Download all registered student emails as CSV file
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        onClick={handleDownloadCSV}
+                        className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold shadow-lg"
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Download CSV
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* User List Preview */}
+                  <div className="space-y-3">
+                    <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                      <Users className="h-5 w-5 text-purple-600" />
+                      Recent Registered Users
+                    </h3>
+                    <div className="max-h-96 overflow-y-auto space-y-2">
+                      {registeredUsers.users.slice(0, 50).map((user: any) => (
+                        <div
+                          key={user._id}
+                          className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="font-medium text-gray-900">{user.name || "No Name"}</p>
+                              <p className="text-sm text-gray-600">{user.email}</p>
+                            </div>
+                            <div className="text-right">
+                              <Badge
+                                variant={user.isRegistered ? "default" : "secondary"}
+                                className={user.isRegistered ? "bg-green-500" : "bg-gray-400"}
+                              >
+                                {user.isRegistered ? "Active" : "Pending"}
+                              </Badge>
+                              <p className="text-xs text-gray-500 mt-1">
+                                {new Date(user._creationTime).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Student view (existing code)
   const allSessions = testHistory;
   const allIncorrectAnswers: Array<{topic: string; count: number}> = [];
   const topicStats: Record<string, { correct: number; total: number }> = {};
 
-  // Aggregate data from test history
   allSessions.forEach((session: any) => {
     if (session.answers) {
       session.answers.forEach((ans: any) => {
@@ -70,19 +244,16 @@ export default function OverallAnalytics() {
     }
   });
 
-  // Sort topics by mistake count
   const sortedMistakes = allIncorrectAnswers.sort((a, b) => b.count - a.count);
   const weakestTopic = sortedMistakes[0];
   const totalMarksLost = sortedMistakes.reduce((sum, t) => sum + t.count, 0);
 
-  // Calculate topic performance percentages
   const topicPerformance = Object.entries(topicStats).map(([topic, data]) => ({
     topic,
     accuracy: Math.round((data.correct / data.total) * 100),
     total: data.total
   })).sort((a, b) => a.accuracy - b.accuracy);
 
-  // Time analysis
   const avgTimePerQuestion = stats.avgTimePerQuestion || 0;
   const totalTests = stats.totalTests || 0;
 
