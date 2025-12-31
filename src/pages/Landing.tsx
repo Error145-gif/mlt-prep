@@ -450,8 +450,8 @@ export default function Landing() {
           className="flex flex-col items-center"
         >
           <motion.img
-            src="https://harmless-tapir-303.convex.cloud/api/storage/89ec2764-d5ea-4da5-956f-9d0c7cf46bb9"
-            alt="RBC Mascot - MLT Prep"
+            src="https://harmless-tapir-303.convex.cloud/api/storage/182277e1-c82a-44a7-8408-287e25a1c39e"
+            alt="RBC Mascot - Happy New Year - MLT Prep"
             loading="eager"
             fetchPriority="high"
             className="w-[70%] md:w-[40%] lg:w-[35%] h-auto object-contain"
