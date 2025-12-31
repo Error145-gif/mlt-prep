@@ -28,7 +28,7 @@ export default function WeeklyLeaderboard() {
       : "skip"
   );
 
-  // Determine user type
+  // Determine user type - Check if user has PAID subscription
   const isPaidUser = subscriptionAccess?.hasAccess && subscriptionAccess?.isPaid;
   // STRICT SECURITY: If the backend attempt says it's locked, we treat it as locked regardless of client-side subscription state
   const isAttemptLocked = userAttempt?.isLocked === true;

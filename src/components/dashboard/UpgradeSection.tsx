@@ -21,15 +21,15 @@ export default function UpgradeSection() {
       transition={{ delay: 0.6 }}
     >
       <Card className="glass-card border-white/30 backdrop-blur-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 relative overflow-hidden">
-        {/* Enhanced Urgency Badge */}
+        {/* New Year Special Badge */}
         <motion.div
-          className="absolute top-4 right-4 bg-red-600 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg z-10"
+          className="absolute top-4 right-4 bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg z-10"
           animate={{
             scale: [1, 1.1, 1],
             boxShadow: [
-              "0 0 0 0 rgba(220, 38, 38, 0.7)",
-              "0 0 0 15px rgba(220, 38, 38, 0)",
-              "0 0 0 0 rgba(220, 38, 38, 0)"
+              "0 0 0 0 rgba(251, 191, 36, 0.7)",
+              "0 0 0 15px rgba(251, 191, 36, 0)",
+              "0 0 0 0 rgba(251, 191, 36, 0)"
             ]
           }}
           transition={{
@@ -37,16 +37,16 @@ export default function UpgradeSection() {
             repeat: Infinity,
           }}
         >
-          ⚡ ENDING SOON
+          🎉 NEW YEAR SPECIAL
         </motion.div>
 
         <CardHeader>
           <CardTitle className="text-white flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-yellow-400" />
-            🔥 Unlock Full Access - Save ₹97!
+            🎊 New Year Offer - Save ₹97!
           </CardTitle>
           <p className="text-white/90 text-sm mt-2 font-semibold">
-            ⏰ Limited Time Offer
+            🎆 Welcome 2025 with Premium Access
           </p>
           <p className="text-white/80 text-xs mt-1">
             Join 223+ students preparing smarter
@@ -106,7 +106,7 @@ export default function UpgradeSection() {
             <Button
               onClick={() => navigate("/subscription-plans")}
               size="lg"
-              className="w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white font-bold shadow-2xl shadow-red-500/50 relative overflow-hidden"
+              className="w-full bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white font-bold shadow-2xl shadow-yellow-500/50 relative overflow-hidden"
             >
               <motion.span
                 className="absolute inset-0 bg-white/20"
@@ -119,7 +119,7 @@ export default function UpgradeSection() {
                   ease: "linear",
                 }}
               />
-              <span className="relative">🔥 Upgrade Now - Save ₹97 →</span>
+              <span className="relative">🎉 Claim New Year Offer →</span>
             </Button>
           </motion.div>
           <p className="text-white/90 text-xs text-center mt-3 font-semibold">
