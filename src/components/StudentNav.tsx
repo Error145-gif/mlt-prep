@@ -54,7 +54,7 @@ export default function StudentNav() {
           onClick={() => setIsOpen(true)}
           variant="ghost"
           size="icon"
-          className="fixed top-4 left-4 z-50 bg-slate-900 text-white hover:bg-slate-800 border border-slate-700 shadow-lg flex items-center justify-center rounded-full p-2"
+          className="fixed top-4 left-4 z-[100] bg-slate-900 text-white hover:bg-slate-800 border border-slate-700 shadow-lg flex items-center justify-center rounded-full p-2"
         >
           <Menu className="h-6 w-6" />
         </Button>
@@ -179,6 +179,7 @@ export default function StudentNav() {
                 </Button>
               </div>
             </motion.aside>
+            </>
           )}
         </AnimatePresence>
       )}
