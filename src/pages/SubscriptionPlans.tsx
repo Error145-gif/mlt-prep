@@ -5,16 +5,20 @@ import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Sparkles, TrendingUp, Crown, Zap, Gift } from "lucide-react";
+import { Check, Sparkles, TrendingUp, Crown, Zap, Gift, Star } from "lucide-react";
 import { toast } from "sonner";
 import StudentNav from "@/components/StudentNav";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export default function SubscriptionPlans() {
   const navigate = useNavigate();
   const user = useQuery(api.users.currentUser);
   const subscription = useQuery(api.student.checkSubscriptionAccess);
+  const referralStats = useQuery(api.referrals.getReferralStats);
   
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const [starsToUse, setStarsToUse] = useState<{ [key: string]: number }>({});
 
   const plans = [
     {
@@ -94,6 +98,26 @@ export default function SubscriptionPlans() {
     }
   ];
 
+  const handleStarsChange = (planId: string, value: string) => {
+    const numValue = parseInt(value) || 0;
+    const plan = plans.find(p => p.id === planId);
+    if (!plan) return;
+
+    const maxStarsAllowed = Math.floor((plan.price * 50) / 100); // 50% max
+    const availableStars = referralStats?.wallet?.availableStars || 0;
+    const maxUsable = Math.min(maxStarsAllowed, availableStars);
+
+    setStarsToUse({
+      ...starsToUse,
+      [planId]: Math.min(numValue, maxUsable)
+    });
+  };
+
+  const calculateFinalPrice = (planId: string, originalPrice: number) => {
+    const stars = starsToUse[planId] || 0;
+    return originalPrice - stars;
+  };
+
   const handleSubscribe = async (planId: string) => {
     if (!user) {
       toast.error("Please login to subscribe");
@@ -107,8 +131,11 @@ export default function SubscriptionPlans() {
     setSelectedPlan(planId);
 
     try {
-      // Navigate to payment summary with plan details
-      navigate(`/payment-summary?name=${encodeURIComponent(plan.name)}&price=${plan.price}&duration=${plan.duration}`);
+      const starsUsed = starsToUse[planId] || 0;
+      const finalPrice = calculateFinalPrice(planId, plan.price);
+
+      // Navigate to payment summary with plan details and stars
+      navigate(`/payment-summary?name=${encodeURIComponent(plan.name)}&price=${plan.price}&duration=${plan.duration}&starsUsed=${starsUsed}&finalPrice=${finalPrice}`);
     } catch (error: any) {
       toast.error(error.message || "Failed to create order");
       setSelectedPlan(null);
@@ -132,6 +159,36 @@ export default function SubscriptionPlans() {
             Select the perfect plan for your exam preparation journey
           </p>
         </div>
+
+        {/* Star Wallet Display */}
+        {referralStats && referralStats.wallet.availableStars > 0 && (
+          <Card className="mb-8 border-2 border-yellow-300 bg-gradient-to-r from-yellow-400 to-orange-400 shadow-xl">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Star className="w-6 h-6 text-purple-700 fill-purple-700" />
+                <CardTitle className="text-purple-900">Your Star Wallet</CardTitle>
+              </div>
+              <CardDescription className="text-purple-800 font-medium">
+                Use your Stars to get discounts on subscriptions (up to 50% off)
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-4">
+                <div className="text-3xl font-bold text-purple-900">
+                  {referralStats.wallet.availableStars} Stars
+                </div>
+                <div className="text-sm text-purple-800">
+                  = ₹{referralStats.wallet.availableStars} discount available
+                </div>
+              </div>
+              {referralStats.expiringStars > 0 && (
+                <p className="text-sm text-purple-800 mt-2">
+                  ⚠️ {referralStats.expiringStars} Stars expiring in next 30 days
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Free User Access Info */}
         <Card className="mb-8 border-2 border-yellow-300 bg-gradient-to-r from-yellow-400 to-orange-400 shadow-xl">
@@ -201,6 +258,11 @@ export default function SubscriptionPlans() {
           {plans.map((plan) => {
             const Icon = plan.icon;
             const isActive = subscription?.isPaid && subscription?.planName === plan.name;
+            const starsUsed = starsToUse[plan.id] || 0;
+            const finalPrice = calculateFinalPrice(plan.id, plan.price);
+            const maxStarsAllowed = Math.floor((plan.price * 50) / 100);
+            const availableStars = referralStats?.wallet?.availableStars || 0;
+            const maxUsable = Math.min(maxStarsAllowed, availableStars);
             
             return (
               <Card 
@@ -255,6 +317,46 @@ export default function SubscriptionPlans() {
                 </CardHeader>
 
                 <CardContent className="space-y-4">
+                  {/* Star Usage Section */}
+                  {!isActive && availableStars > 0 && (
+                    <div className="border-2 border-yellow-300 rounded-lg p-4 bg-yellow-50 space-y-3">
+                      <div className="flex items-center gap-2">
+                        <Star className="w-5 h-5 text-yellow-600 fill-yellow-600" />
+                        <Label className="font-semibold text-slate-700">Use Your Stars</Label>
+                      </div>
+                      <div className="space-y-2">
+                        <Input
+                          type="number"
+                          min="0"
+                          max={maxUsable}
+                          value={starsUsed}
+                          onChange={(e) => handleStarsChange(plan.id, e.target.value)}
+                          placeholder="Enter stars to use"
+                          className="border-yellow-300"
+                        />
+                        <p className="text-xs text-slate-600">
+                          Max {maxUsable} Stars (50% of ₹{plan.price})
+                        </p>
+                      </div>
+                      {starsUsed > 0 && (
+                        <div className="space-y-1 pt-2 border-t border-yellow-300">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-slate-600">Original Price:</span>
+                            <span className="font-semibold">₹{plan.price}</span>
+                          </div>
+                          <div className="flex justify-between text-sm text-green-600">
+                            <span>Star Discount:</span>
+                            <span className="font-semibold">-₹{starsUsed}</span>
+                          </div>
+                          <div className="flex justify-between text-lg font-bold text-purple-700 pt-1 border-t border-yellow-300">
+                            <span>Final Price:</span>
+                            <span>₹{finalPrice}</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   <div className="space-y-3">
                     <p className="font-semibold text-sm text-slate-700">What you get:</p>
                     {plan.features.map((feature, idx) => (
@@ -288,7 +390,7 @@ export default function SubscriptionPlans() {
                       onClick={() => handleSubscribe(plan.id)}
                       disabled={selectedPlan === plan.id}
                     >
-                      {selectedPlan === plan.id ? "Processing..." : "Subscribe Now"}
+                      {selectedPlan === plan.id ? "Processing..." : starsUsed > 0 ? `Pay ₹${finalPrice} (${starsUsed} Stars Applied)` : "Subscribe Now"}
                     </Button>
                   )}
                 </CardFooter>
