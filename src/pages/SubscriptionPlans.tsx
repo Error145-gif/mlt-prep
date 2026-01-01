@@ -170,57 +170,57 @@ export default function SubscriptionPlans() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-pink-600">
       <StudentNav />
       
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Header */}
         <div className="text-center mb-12 space-y-4">
-          <Badge className="mb-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-1">
+          <Badge className="mb-4 bg-white/20 backdrop-blur-sm text-white px-4 py-1 border-0">
             Choose Your Plan
           </Badge>
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+          <h1 className="text-4xl md:text-5xl font-bold text-white drop-shadow-lg">
             Start Your MLT Exam Preparation
           </h1>
-          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+          <p className="text-lg text-white/90 max-w-2xl mx-auto">
             Select the perfect plan for your exam preparation journey
           </p>
         </div>
 
         {/* Free User Access Info */}
-        <Card className="mb-8 border-2 border-green-200 bg-gradient-to-r from-green-50 to-emerald-50">
+        <Card className="mb-8 border-2 border-yellow-300 bg-gradient-to-r from-yellow-400 to-orange-400 shadow-xl">
           <CardHeader>
             <div className="flex items-center gap-2">
-              <Gift className="w-6 h-6 text-green-600" />
-              <CardTitle className="text-green-700">Try First - Free Access</CardTitle>
+              <Gift className="w-6 h-6 text-purple-700" />
+              <CardTitle className="text-purple-900">Try First - Free Access</CardTitle>
             </div>
-            <CardDescription className="text-green-600">
+            <CardDescription className="text-purple-800 font-medium">
               Every free user gets one-time base access (no ads required)
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid md:grid-cols-3 gap-4">
-              <div className="flex items-center gap-2 text-green-700">
+              <div className="flex items-center gap-2 text-purple-900 font-medium">
                 <Check className="w-5 h-5" />
                 <span>1 Mock Test</span>
               </div>
-              <div className="flex items-center gap-2 text-green-700">
+              <div className="flex items-center gap-2 text-purple-900 font-medium">
                 <Check className="w-5 h-5" />
                 <span>1 PYQ Test</span>
               </div>
-              <div className="flex items-center gap-2 text-green-700">
+              <div className="flex items-center gap-2 text-purple-900 font-medium">
                 <Check className="w-5 h-5" />
                 <span>1 AI-based Test</span>
               </div>
             </div>
             
-            <div className="border-t border-green-200 pt-4 mt-4">
+            <div className="border-t border-purple-300 pt-4 mt-4">
               <div className="flex items-start gap-2 mb-2">
-                <Zap className="w-5 h-5 text-amber-600 mt-1" />
+                <Zap className="w-5 h-5 text-purple-700 mt-1" />
                 <div>
-                  <p className="font-semibold text-amber-700">Extra Access (Ad-Based)</p>
-                  <p className="text-sm text-slate-600">After base access: Watch 1 ad = Unlock 1 test</p>
-                  <p className="text-sm text-slate-600">Maximum 2 ad-unlocks per day (resets every 24 hours)</p>
+                  <p className="font-semibold text-purple-900">Extra Access (Ad-Based)</p>
+                  <p className="text-sm text-purple-800">After base access: Watch 1 ad = Unlock 1 test</p>
+                  <p className="text-sm text-purple-800">Maximum 2 ad-unlocks per day (resets every 24 hours)</p>
                 </div>
               </div>
             </div>
@@ -229,7 +229,7 @@ export default function SubscriptionPlans() {
 
         {/* Current Subscription Status */}
         {subscription?.isPaid && (
-          <Card className="mb-8 border-2 border-green-500 bg-gradient-to-r from-green-50 to-emerald-50">
+          <Card className="mb-8 border-2 border-green-300 bg-white/95 backdrop-blur-sm shadow-xl">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-green-700">
                 <Check className="w-6 h-6" />
@@ -259,14 +259,14 @@ export default function SubscriptionPlans() {
             return (
               <Card 
                 key={plan.id}
-                className={`relative overflow-hidden transition-all duration-300 hover:shadow-2xl ${
+                className={`relative overflow-hidden transition-all duration-300 hover:shadow-2xl bg-white/95 backdrop-blur-sm ${
                   plan.popular 
-                    ? 'border-4 border-orange-500 scale-105 shadow-xl' 
-                    : 'border-2 hover:border-blue-300'
-                } ${isActive ? 'ring-4 ring-green-500' : ''}`}
+                    ? 'border-4 border-orange-400 scale-105 shadow-2xl' 
+                    : 'border-2 border-white/50 hover:border-white'
+                } ${isActive ? 'ring-4 ring-green-400' : ''}`}
               >
                 {plan.badge && (
-                  <div className="absolute top-0 right-0 bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-1 text-sm font-bold rounded-bl-lg">
+                  <div className="absolute top-0 right-0 bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-1 text-sm font-bold rounded-bl-lg shadow-lg">
                     {plan.badge}
                   </div>
                 )}
@@ -352,7 +352,7 @@ export default function SubscriptionPlans() {
         </div>
 
         {/* Coupon Section */}
-        <Card className="max-w-md mx-auto">
+        <Card className="max-w-md mx-auto bg-white/95 backdrop-blur-sm shadow-xl">
           <CardHeader>
             <CardTitle className="text-lg">Have a Coupon Code?</CardTitle>
           </CardHeader>
