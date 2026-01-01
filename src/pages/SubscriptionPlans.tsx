@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { useMutation, useQuery } from "convex/react";
+import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,19 +8,13 @@ import { Badge } from "@/components/ui/badge";
 import { Check, Sparkles, TrendingUp, Crown, Zap, Gift } from "lucide-react";
 import { toast } from "sonner";
 import StudentNav from "@/components/StudentNav";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 
 export default function SubscriptionPlans() {
   const navigate = useNavigate();
   const user = useQuery(api.users.currentUser);
   const subscription = useQuery(api.student.checkSubscriptionAccess);
-  const applyCoupon = useMutation(api.coupons.applyCoupon);
   
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
-  const [couponCode, setCouponCode] = useState("");
-  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
-  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
 
   const plans = [
     {
@@ -100,37 +94,6 @@ export default function SubscriptionPlans() {
     }
   ];
 
-  const handleApplyCoupon = async () => {
-    if (!couponCode.trim()) {
-      toast.error("Please enter a coupon code");
-      return;
-    }
-
-    if (!selectedPlan) {
-      toast.error("Please select a plan first");
-      return;
-    }
-
-    setIsApplyingCoupon(true);
-    try {
-      const plan = plans.find(p => p.id === selectedPlan);
-      if (!plan) return;
-
-      const result = await applyCoupon({
-        code: couponCode.trim().toUpperCase(),
-        orderAmount: plan.price,
-      });
-
-      setAppliedCoupon(result);
-      toast.success(`Coupon applied! You saved ₹${result.discountAmount}`);
-    } catch (error: any) {
-      toast.error(error.message || "Invalid coupon code");
-      setAppliedCoupon(null);
-    } finally {
-      setIsApplyingCoupon(false);
-    }
-  };
-
   const handleSubscribe = async (planId: string) => {
     if (!user) {
       toast.error("Please login to subscribe");
@@ -144,14 +107,8 @@ export default function SubscriptionPlans() {
     setSelectedPlan(planId);
 
     try {
-      let finalAmount = plan.price;
-
-      if (appliedCoupon && appliedCoupon.couponId) {
-        finalAmount = appliedCoupon.finalAmount;
-      }
-
       // Navigate to payment summary with plan details
-      navigate(`/payment-summary?name=${encodeURIComponent(plan.name)}&price=${finalAmount}&duration=${plan.duration}`);
+      navigate(`/payment-summary?name=${encodeURIComponent(plan.name)}&price=${plan.price}&duration=${plan.duration}`);
     } catch (error: any) {
       toast.error(error.message || "Failed to create order");
       setSelectedPlan(null);
@@ -340,48 +297,68 @@ export default function SubscriptionPlans() {
           })}
         </div>
 
-        {/* Coupon Section */}
-        <Card className="max-w-md mx-auto bg-white/95 backdrop-blur-sm shadow-xl">
-          <CardHeader>
-            <CardTitle className="text-lg">Have a Coupon Code?</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex gap-2">
-              <div className="flex-1">
-                <Label htmlFor="coupon">Coupon Code</Label>
-                <Input
-                  id="coupon"
-                  placeholder="Enter code"
-                  value={couponCode}
-                  onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                  disabled={!selectedPlan}
-                />
+        {/* Motivational Section */}
+        <Card className="max-w-3xl mx-auto bg-gradient-to-br from-orange-500 to-pink-600 border-0 shadow-2xl">
+          <CardContent className="p-8 text-center space-y-6">
+            <div className="flex justify-center">
+              <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                <Crown className="w-8 h-8 text-white" />
               </div>
-              <Button 
-                onClick={handleApplyCoupon}
-                disabled={isApplyingCoupon || !selectedPlan || !couponCode.trim()}
-                className="mt-6"
-              >
-                {isApplyingCoupon ? "Applying..." : "Apply"}
-              </Button>
             </div>
             
-            {appliedCoupon && selectedPlan && (
-              <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                <p className="text-sm text-green-700 font-medium">
-                  Coupon applied! You saved ₹{appliedCoupon.discountAmount}
-                </p>
-                <p className="text-sm text-green-600">
-                  Final amount: ₹{appliedCoupon.finalAmount}
+            <div className="space-y-3">
+              <h3 className="text-3xl font-bold text-white">
+                Join 223+ Students Already Preparing!
+              </h3>
+              <p className="text-xl text-white/90 font-medium">
+                Don't let this opportunity slip away
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-4 py-4">
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div className="text-3xl font-bold text-white mb-2">100%</div>
+                <div className="text-sm text-white/90">Money-back Guarantee</div>
+              </div>
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div className="text-3xl font-bold text-white mb-2">24/7</div>
+                <div className="text-sm text-white/90">Doubt Support</div>
+              </div>
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div className="text-3xl font-bold text-white mb-2">∞</div>
+                <div className="text-sm text-white/90">Unlimited Practice</div>
+              </div>
+            </div>
+
+            <div className="space-y-3 text-white/90 text-left bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+              <div className="flex items-start gap-3">
+                <Check className="w-6 h-6 text-green-300 flex-shrink-0 mt-1" />
+                <p className="text-base">
+                  <strong className="text-white">Start preparing today</strong> - Instant access to all features
                 </p>
               </div>
-            )}
-            
-            {!selectedPlan && (
-              <p className="text-sm text-slate-500">
-                Select a plan above to apply a coupon
+              <div className="flex items-start gap-3">
+                <Check className="w-6 h-6 text-green-300 flex-shrink-0 mt-1" />
+                <p className="text-base">
+                  <strong className="text-white">Proven results</strong> - Students improving scores by 30%+
+                </p>
+              </div>
+              <div className="flex items-start gap-3">
+                <Check className="w-6 h-6 text-green-300 flex-shrink-0 mt-1" />
+                <p className="text-base">
+                  <strong className="text-white">Risk-free</strong> - Cancel anytime, full refund within 7 days
+                </p>
+              </div>
+            </div>
+
+            <div className="pt-4">
+              <p className="text-2xl font-bold text-white mb-2">
+                🎯 Your Dream Job is Just One Subscription Away!
               </p>
-            )}
+              <p className="text-lg text-white/90">
+                Select your plan above and start your journey to success
+              </p>
+            </div>
           </CardContent>
         </Card>
       </div>
