@@ -1,30 +1,8 @@
-[
-  {
-    "tool_name": "editFileTool",
-    "input_args": {
-      "file_path": "src/components/StudentNav.tsx",
-      "diff": "--- a/src/components/StudentNav.tsx\n+++ b/src/components/StudentNav.tsx\n@@ -25,18 +25,7 @@\n \n   return (\n     <>\n-      {/* Desktop Menu Button - Only shown on desktop */}\n-      {isAuthenticated && (\n-        <Button\n-          variant=\"ghost\"\n-          size=\"icon\"\n-          className=\"fixed top-4 left-4 z-50 bg-slate-900 hover:bg-slate-800 text-white border border-slate-700 shadow-lg hidden lg:block\"\n-          onClick={() => setIsOpen(!isOpen)}\n-        >\n-          {isOpen ? <X className=\"h-5 w-5\" /> : <Menu className=\"h-5 w-5\" />}\n-        </Button>\n-      )}\n-\n-      {/* Sidebar - Hidden on mobile (bottom nav used instead), visible on desktop */}\n+      {/* Sidebar - Always visible on desktop (lg screens), hidden on smaller screens */}\n       <AnimatePresence>\n         {isOpen && isAuthenticated && (\n           <motion.aside\n@@ -137,13 +126,8 @@\n         )}\n       </AnimatePresence>\n \n-      {/* Overlay for tablet/desktop */}\n-      {isOpen && (\n-        <div\n-          className=\"fixed inset-0 bg-black/50 z-30 hidden lg:block\"\n-          onClick={() => setIsOpen(false)}\n-        />\n-      )}\n     </>\n   );\n }\n"
-    }
-  },
-  {
-    "tool_name": "editFileTool",
-    "input_args": {
-      "file_path": "src/pages/StudentDashboard.tsx",
-      "diff": "--- a/src/pages/StudentDashboard.tsx\n+++ b/src/pages/StudentDashboard.tsx\n@@ -86,7 +86,7 @@\n       )}\n \n       {/* Main Dashboard Content */}\n-      <div className={`relative z-10 max-w-7xl mx-auto px-4 py-6 space-y-6 transition-all duration-500 ${isFreeTrialUser ? 'pt-16' : 'pt-6'} ${isProfileIncomplete ? 'blur-sm pointer-events-none' : ''}`}>\n+      <div className={`relative z-10 max-w-7xl mx-auto px-4 py-6 space-y-6 transition-all duration-500 ${isFreeTrialUser ? 'pt-16' : 'pt-6'} ${isProfileIncomplete ? 'blur-sm pointer-events-none' : ''} lg:pl-64`}>\n         \n         {/* Header - Show immediately with skeleton if needed */}\n         {userProfile && subscriptionAccess ? (\n"
-    }
-  },
-  {
-    "tool_name": "editFileTool",
-    "input_args": {
-      "file_path": "src/pages/Library.tsx",
-      "diff": "--- a/src/pages/Library.tsx\n+++ b/src/pages/Library.tsx\n@@ -29,7 +29,7 @@\n     <div className=\"min-h-screen bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500 pb-24\">\n       <StudentNav />\n       \n-      <div className=\"container mx-auto px-4 py-8 max-w-7xl\">\n+      <div className=\"container mx-auto px-4 py-8 max-w-7xl lg:pl-64\">\n         {/* Header */}\n         <motion.div\n           initial={{ opacity: 0, y: -20 }}\n"
-    }
-  },
-  {
-    "tool_name": "editFileTool",
-    "input_args": {
-      "file_path": "src/pages/AIQuestions.tsx",
-      "diff": "--- a/src/pages/AIQuestions.tsx\n+++ b/src/pages/AIQuestions.tsx\n@@ -98,7 +98,7 @@\n         }}\n       />\n \n-      <div className=\"relative z-10 max-w-7xl mx-auto space-y-6\">\n+      <div className=\"relative z-10 max-w-7xl mx-auto space-y-6 lg:pl-64\">\n         <div>\n           <h1 className=\"text-3xl font-bold text-white\">AI-Generated Questions</h1>\n           <p className=\"text-white/70 mt-1\">Select an AI test set to practice with AI-curated topic-wise questions (25 questions per set)</p>\n"
-    }
-  }
-]
+{
+  "file_paths": [
+    "src/convex/schema.ts",
+    "src/convex/weeklyTestsCronActions.ts",
+    "src/convex/subscriptions.ts"
+  ],
+  "replace_files_in_context": false
+}
