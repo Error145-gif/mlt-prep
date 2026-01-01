@@ -54,7 +54,7 @@ export default function StudentNav() {
 
   // Lower priority items (bottom - subtle)
   const secondaryNavItems = [
-    { path: "/free-library", icon: Library, label: "Library" },
+    { path: "/library", icon: Library, label: "Library" },
     { path: "/feedback", icon: MessageSquare, label: "Feedback" },
     { path: "/contact-us", icon: MessageSquare, label: "Contact Us" },
     { path: "/profile", icon: User, label: "Profile" },
