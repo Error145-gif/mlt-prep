@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
  
 import DashboardHeader from "@/components/DashboardHeader";
 import StudentNav from "@/components/StudentNav";
+import MobileBottomNav from "@/components/MobileBottomNav";
 
 // New Simplified Components
 import ProfileCompletionOverlay from "@/components/dashboard/ProfileCompletionOverlay";
@@ -89,8 +90,9 @@ export default function StudentDashboard() {
   const isFirstLogin = userProfile && !userProfile.name && !userProfile.avatarUrl && !userProfile.examPreparation && !userProfile.state;
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
+    <div className="min-h-screen relative overflow-hidden pb-20 lg:pb-0">
       <StudentNav />
+      <MobileBottomNav />
 
       {/* Animated Background - Always visible */}
       <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
@@ -112,7 +114,7 @@ export default function StudentDashboard() {
 
       {/* FREE TRIAL BANNER */}
       {subscriptionAccess && isFreeTrialUser && (
-        <div className="fixed top-16 left-0 right-0 z-50 bg-gradient-to-r from-orange-500 to-red-500 text-white py-2 px-4 shadow-lg">
+        <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-orange-500 to-red-500 text-white py-2 px-4 shadow-lg">
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <span className="text-lg">🔒</span>
@@ -142,7 +144,7 @@ export default function StudentDashboard() {
       )}
 
       {/* Main Dashboard Content */}
-      <div className={`relative z-10 max-w-7xl mx-auto px-4 py-6 space-y-6 transition-all duration-500 ${isFreeTrialUser ? 'pt-24' : 'pt-20'} ${isProfileIncomplete ? 'blur-sm pointer-events-none' : ''}`}>
+      <div className={`relative z-10 max-w-7xl mx-auto px-4 py-6 space-y-6 transition-all duration-500 ${isFreeTrialUser ? 'pt-16' : 'pt-6'} ${isProfileIncomplete ? 'blur-sm pointer-events-none' : ''}`}>
         
         {/* Header - Show immediately with skeleton if needed */}
         {userProfile && subscriptionAccess ? (

@@ -17,7 +17,7 @@ export default function StudentNav() {
   const { signOut, isAuthenticated } = useAuth();
   const userProfile = useQuery(api.users.getUserProfile);
 
-  // Open sidebar by default on desktop
+  // Open sidebar by default on desktop, closed on mobile
   useEffect(() => {
     const handleResize = () => {
       const width = window.innerWidth;
@@ -42,7 +42,7 @@ export default function StudentNav() {
   }, [location.pathname]);
 
   const primaryNavItems = [
-    { path: "/dashboard", icon: Home, label: "Dashboard" },
+    { path: "/student", icon: Home, label: "Dashboard" },
     { path: "/tests/mock", icon: FileText, label: "Mock Tests" },
     { path: "/tests/pyq", icon: BookOpen, label: "PYQ Sets" },
     { path: "/tests/ai", icon: Brain, label: "AI Questions" },
@@ -62,26 +62,26 @@ export default function StudentNav() {
 
   return (
     <>
-      {/* Mobile Menu Button */}
+      {/* Mobile Menu Button - Hidden on mobile, shown on tablet/desktop */}
       {isAuthenticated && (
         <Button
           variant="ghost"
           size="icon"
-          className="fixed top-4 left-4 z-50 bg-slate-900 hover:bg-slate-800 text-white border border-slate-700 shadow-lg"
+          className="fixed top-4 left-4 z-50 bg-slate-900 hover:bg-slate-800 text-white border border-slate-700 shadow-lg lg:block hidden"
           onClick={() => setIsOpen(!isOpen)}
         >
           {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </Button>
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar - Hidden on mobile (bottom nav will be used instead) */}
       <AnimatePresence>
         {isOpen && (
           <motion.aside
             initial={{ x: -300 }}
             animate={{ x: 0 }}
             exit={{ x: -300 }}
-            className="fixed left-0 top-0 h-screen w-64 bg-slate-900 border-r border-slate-700 p-6 z-40 shadow-2xl"
+            className="fixed left-0 top-0 h-screen w-64 bg-slate-900 border-r border-slate-700 p-6 z-40 shadow-2xl hidden lg:block"
           >
             <div className="flex flex-col h-full">
               <div className="flex items-center justify-between mb-8">
@@ -114,12 +114,6 @@ export default function StudentNav() {
                     <Link
                       key={item.path}
                       to={item.path}
-                      onClick={() => {
-                        const width = window.innerWidth;
-                        if (width < 1024) {
-                          setIsOpen(false);
-                        }
-                      }}
                       className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all font-medium ${
                         isActive
                           ? "bg-blue-600 text-white shadow-lg"
@@ -135,12 +129,6 @@ export default function StudentNav() {
                 {/* Upgrade CTA */}
                 <Link
                   to="/subscription"
-                  onClick={() => {
-                    const width = window.innerWidth;
-                    if (width < 1024) {
-                      setIsOpen(false);
-                    }
-                  }}
                   className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all font-semibold mt-2 ${
                     location.pathname === "/subscription"
                       ? "bg-gradient-to-r from-orange-500 to-pink-500 text-white shadow-lg shadow-orange-500/50"
@@ -161,12 +149,6 @@ export default function StudentNav() {
                       <Link
                         key={item.path}
                         to={item.path}
-                        onClick={() => {
-                          const width = window.innerWidth;
-                          if (width < 1024) {
-                            setIsOpen(false);
-                          }
-                        }}
                         className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-all text-sm ${
                           isActive
                             ? "bg-slate-800 text-white"
@@ -193,10 +175,10 @@ export default function StudentNav() {
         )}
       </AnimatePresence>
 
-      {/* Overlay for mobile */}
+      {/* Overlay for tablet/desktop */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          className="fixed inset-0 bg-black/50 z-30 hidden lg:block"
           onClick={() => setIsOpen(false)}
         />
       )}
