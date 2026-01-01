@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { useMutation, useQuery } from "convex/react";
+import { useMutation, useQuery, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,7 +15,7 @@ export default function SubscriptionPlans() {
   const navigate = useNavigate();
   const user = useQuery(api.users.currentUser);
   const subscription = useQuery(api.student.checkSubscriptionAccess);
-  const createOrder = useMutation(api.cashfree.createOrder);
+  const createOrder = useAction(api.cashfree.createOrder);
   const applyCoupon = useMutation(api.coupons.applyCoupon);
   
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
@@ -146,18 +146,19 @@ export default function SubscriptionPlans() {
 
     try {
       let finalAmount = plan.price;
-      let couponId = undefined;
 
       if (appliedCoupon && appliedCoupon.couponId) {
         finalAmount = appliedCoupon.finalAmount;
-        couponId = appliedCoupon.couponId;
       }
 
       const order = await createOrder({
-        planName: plan.name,
         amount: finalAmount,
+        currency: "INR",
+        userId: user._id,
+        planName: plan.name,
         duration: plan.duration,
-        couponId,
+        customerEmail: user.email,
+        customerPhone: user.phone,
       });
 
       if (order.paymentSessionId) {
