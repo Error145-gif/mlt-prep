@@ -143,7 +143,23 @@ export default function SubscriptionPlans() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-pink-600">
+    <div className="min-h-screen relative overflow-x-hidden">
+      {/* Lab background image with gradient overlay */}
+      <div 
+        className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500"
+        style={{
+          backgroundImage: "url('https://harmless-tapir-303.convex.cloud/api/storage/302be608-63a6-425f-97fa-e1e425700fd0')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+          backgroundAttachment: window.innerWidth < 768 ? "scroll" : "fixed"
+        }}
+      >
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-600/70 via-blue-600/70 to-pink-600/70" />
+        <div className="absolute inset-0 bg-white/5" />
+      </div>
+
       <StudentNav />
       
       <div className="container mx-auto px-4 py-8 max-w-7xl">
