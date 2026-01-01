@@ -47,7 +47,7 @@ export default function StudentNav() {
     <>
       {/* Sidebar - Hidden on mobile (bottom nav used instead), always visible on desktop */}
       {isAuthenticated && (
-        <aside className="fixed left-0 top-0 h-screen w-64 bg-slate-900 border-r border-slate-700 p-6 z-40 shadow-2xl block max-lg:hidden">
+        <aside className="fixed left-0 top-0 h-screen w-64 bg-slate-900 border-r border-slate-700 p-6 z-40 shadow-2xl hidden lg:block">
             <div className="flex flex-col h-full">
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-3">
