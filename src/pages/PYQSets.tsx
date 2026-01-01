@@ -56,23 +56,29 @@ export default function PYQSets() {
   }
 
   const handleSelectSet = (set: any) => {
-    const isFirstTest = pyqSets.length > 0 && pyqSets[0] === set;
-    const hasPaidSubscription = canAccessPYQ?.reason === "paid_subscription";
+    // Check subscription access
+    if (!canAccessPYQ?.canAccess) {
+      toast.error("Subscribe to unlock PYQ Tests!");
+      setTimeout(() => navigate("/subscription-plans"), 1000);
+      return;
+    }
     
-    if (!isFirstTest && !hasPaidSubscription) {
+    const isFirstTest = pyqSets.length > 0 && pyqSets[0] === set;
+    
+    // Free users: only first test
+    if (isFirstTest && canAccessPYQ?.reason === "free_trial") {
+      // Allow first test
+    } else if (canAccessPYQ?.reason === "free_trial_used") {
+      toast.error("Your free trial is used. Please subscribe to continue.");
+      setTimeout(() => navigate("/subscription-plans"), 500);
+      return;
+    } else if (!canAccessPYQ?.canAccess) {
       toast.error("This test is locked! Subscribe to unlock all tests.");
       setTimeout(() => navigate("/subscription-plans"), 1000);
       return;
     }
     
-    if (isFirstTest && canAccessPYQ?.reason === "free_trial_used") {
-      toast.error("Your free trial is used. Please subscribe to continue.");
-      setTimeout(() => navigate("/subscription-plans"), 500);
-      return;
-    }
-    
     // Direct start - navigate immediately
-    // Pass examName in URL to ensure correct mapping
     navigate(`/test-start?type=pyq&year=${set.year}&setNumber=${set.setNumber}&examName=${encodeURIComponent(set.examName)}`);
   };
 
