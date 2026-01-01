@@ -13,7 +13,8 @@ import NotificationBell from "@/components/NotificationBell";
 export default function StudentNav() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [isOpen, setIsOpen] = useState(true); // Default open on desktop
+  // Initialize open state based on screen width (desktop defaults to open, mobile to closed)
+  const [isOpen, setIsOpen] = useState(() => window.innerWidth >= 1024);
   const { signOut, isAuthenticated } = useAuth();
   const userProfile = useQuery(api.users.getUserProfile);
 
@@ -23,6 +24,20 @@ export default function StudentNav() {
       setIsOpen(false);
     }
   }, [location.pathname]);
+
+  // Handle window resize to auto-open/close based on breakpoint
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setIsOpen(true);
+      } else {
+        setIsOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const primaryNavItems = [
     { path: "/student", icon: Home, label: "Dashboard" },
@@ -45,19 +60,19 @@ export default function StudentNav() {
 
   return (
     <>
-      {/* Hamburger Menu Button - Visible on desktop when sidebar is CLOSED */}
+      {/* Hamburger Menu Button - Visible when sidebar is CLOSED */}
       {isAuthenticated && !isOpen && (
         <Button
           onClick={() => setIsOpen(true)}
           variant="ghost"
           size="icon"
-          className="fixed top-4 left-4 z-50 bg-slate-900 text-white hover:bg-slate-800 border border-slate-700 shadow-lg hidden lg:flex"
+          className="fixed top-4 left-4 z-50 bg-slate-900 text-white hover:bg-slate-800 border border-slate-700 shadow-lg flex"
         >
           <Menu className="h-6 w-6" />
         </Button>
       )}
 
-      {/* Sidebar - Hidden on mobile (bottom nav used instead), toggleable on desktop */}
+      {/* Sidebar - Toggleable on all screens */}
       {isAuthenticated && (
         <AnimatePresence>
           {isOpen && (
@@ -66,7 +81,7 @@ export default function StudentNav() {
               animate={{ x: 0 }}
               exit={{ x: -264 }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed left-0 top-0 h-screen w-64 bg-slate-900 border-r border-slate-700 p-6 z-50 shadow-2xl hidden lg:block"
+              className="fixed left-0 top-0 h-screen w-64 bg-slate-900 border-r border-slate-700 p-6 z-50 shadow-2xl block"
             >
               <div className="flex flex-col h-full">
                 <div className="flex items-center justify-between mb-8">

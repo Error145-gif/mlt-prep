@@ -16,7 +16,7 @@ export default function MobileBottomNav() {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-r from-blue-600 via-purple-700 to-pink-600 border-t border-white/20 pb-safe md:hidden">
+    <div className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-r from-blue-600 via-purple-700 to-pink-600 border-t border-white/20 pb-safe lg:hidden">
       <div className="flex items-center justify-around px-2 py-3">
         {/* Home */}
         <button
