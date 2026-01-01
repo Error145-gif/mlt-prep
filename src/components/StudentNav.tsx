@@ -18,17 +18,13 @@ export default function StudentNav() {
   const { signOut, isAuthenticated } = useAuth();
   const userProfile = useQuery(api.users.getUserProfile);
 
-  // Close sidebar when location changes on mobile/tablet only
+  // Close sidebar when location changes
   useEffect(() => {
-    if (window.innerWidth < 1024) {
-      setIsOpen(false);
-    }
+    setIsOpen(false);
   }, [location.pathname]);
 
-  // Remove the auto-open resize listener to give user full control
-
   const primaryNavItems = [
-    { path: "/student", icon: Home, label: "Dashboard" },
+    { path: "/dashboard", icon: Home, label: "Dashboard" },
     { path: "/tests/mock", icon: FileText, label: "Mock Tests" },
     { path: "/tests/pyq", icon: BookOpen, label: "PYQ Sets" },
     { path: "/tests/ai", icon: Brain, label: "AI Questions" },
@@ -37,7 +33,7 @@ export default function StudentNav() {
   const secondaryNavItems = [
     { path: "/library", icon: Library, label: "Library" },
     { path: "/feedback", icon: MessageSquare, label: "Feedback" },
-    { path: "/contact-us", icon: MessageSquare, label: "Contact Us" },
+    { path: "/contact", icon: MessageSquare, label: "Contact Us" },
     { path: "/profile", icon: User, label: "Profile" },
   ];
 
@@ -47,14 +43,14 @@ export default function StudentNav() {
   };
 
   return (
-    <div className="hidden lg:block">
+    <div className="hidden md:block">
       {/* Hamburger Menu Button - Visible when sidebar is CLOSED */}
       {isAuthenticated && !isOpen && (
         <Button
           onClick={() => setIsOpen(true)}
           variant="ghost"
           size="icon"
-          className="fixed top-4 left-4 z-[100] bg-slate-900 text-white hover:bg-slate-800 border border-slate-700 shadow-lg flex items-center justify-center rounded-full p-2"
+          className="fixed top-4 left-4 z-[999] bg-slate-900 text-white hover:bg-slate-800 border border-slate-700 shadow-lg flex items-center justify-center rounded-full p-2"
         >
           <Menu className="h-6 w-6" />
         </Button>
