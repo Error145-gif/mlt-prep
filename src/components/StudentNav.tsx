@@ -17,22 +17,6 @@ export default function StudentNav() {
   const { signOut, isAuthenticated } = useAuth();
   const userProfile = useQuery(api.users.getUserProfile);
 
-  // Open sidebar by default on desktop, closed on mobile
-  useEffect(() => {
-    const handleResize = () => {
-      const width = window.innerWidth;
-      if (width >= 1024) {
-        setIsOpen(true);
-      } else {
-        setIsOpen(false);
-      }
-    };
-
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
   // Close sidebar when location changes (for mobile/tablet only)
   useEffect(() => {
     if (window.innerWidth < 1024) {
@@ -61,27 +45,9 @@ export default function StudentNav() {
 
   return (
     <>
-      {/* Desktop Menu Button - Only shown on desktop */}
+      {/* Sidebar - Hidden on mobile (bottom nav used instead), always visible on desktop */}
       {isAuthenticated && (
-        <Button
-          variant="ghost"
-          size="icon"
-          className="fixed top-4 left-4 z-50 bg-slate-900 hover:bg-slate-800 text-white border border-slate-700 shadow-lg hidden lg:block"
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </Button>
-      )}
-
-      {/* Sidebar - Hidden on mobile (bottom nav used instead), visible on desktop */}
-      <AnimatePresence>
-        {isOpen && isAuthenticated && (
-          <motion.aside
-            initial={{ x: -300 }}
-            animate={{ x: 0 }}
-            exit={{ x: -300 }}
-            className="fixed left-0 top-0 h-screen w-64 bg-slate-900 border-r border-slate-700 p-6 z-40 shadow-2xl hidden lg:block"
-          >
+        <aside className="fixed left-0 top-0 h-screen w-64 bg-slate-900 border-r border-slate-700 p-6 z-40 shadow-2xl block max-lg:hidden">
             <div className="flex flex-col h-full">
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-3">
@@ -170,16 +136,7 @@ export default function StudentNav() {
                 Sign Out
               </Button>
             </div>
-          </motion.aside>
-        )}
-      </AnimatePresence>
-
-      {/* Overlay for tablet/desktop */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-30 hidden lg:block"
-          onClick={() => setIsOpen(false)}
-        />
+        </aside>
       )}
     </>
   );
