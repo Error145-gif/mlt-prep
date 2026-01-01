@@ -57,7 +57,7 @@ export default function SubscriptionPlans() {
       savings: 97,
       savingsPercent: 20,
       description: "Complete one exam preparation cycle without interruptions. Most students choose this!",
-      studentCount: "223+ students already preparing with us!",
+      studentCount: "250+ students already preparing with us!",
       features: [
         "Everything in Monthly Starter",
         "Extended access for 4 months",
@@ -410,7 +410,7 @@ export default function SubscriptionPlans() {
             
             <div className="space-y-3">
               <h3 className="text-3xl font-bold text-white">
-                Join 223+ Students Already Preparing!
+                Join 250+ Students Already Preparing!
               </h3>
               <p className="text-xl text-white/90 font-medium">
                 Don't let this opportunity slip away

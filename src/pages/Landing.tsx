@@ -324,7 +324,7 @@ export default function Landing() {
             className="flex flex-wrap justify-center lg:justify-start gap-6 py-4"
           >
             <div className="text-center">
-              <div className="text-3xl font-bold text-white">223+</div>
+              <div className="text-3xl font-bold text-white">250+</div>
               <div className="text-sm text-white/70">Active Students</div>
             </div>
             <div className="text-center">
@@ -435,7 +435,7 @@ export default function Landing() {
               🛡️ 100% Money-back guarantee - Risk FREE!
             </motion.p>
             <p className="text-white/70 text-xs">
-              ⏰ Offer expires in 48 hours • 🎯 Join 223+ students preparing smarter
+              ⏰ Offer expires in 48 hours • 🎯 Join 250+ students preparing smarter
             </p>
           </motion.div>
         </motion.div>
@@ -484,7 +484,7 @@ export default function Landing() {
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-orange-600 border-2 border-white" />
               </div>
               <div className="text-center">
-                <p className="text-white font-bold text-sm">223+ Students</p>
+                <p className="text-white font-bold text-sm">250+ Students</p>
                 <p className="text-white/70 text-xs">Preparing with us</p>
               </div>
             </div>
