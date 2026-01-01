@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, Mail, Globe, MapPin, BookOpen, Check, Camera, Upload, Lock, KeyRound } from "lucide-react";
+import { User, Mail, Globe, MapPin, BookOpen, Check, Camera, Upload, Lock, KeyRound, Gift, Copy, Star, Users, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -111,6 +111,10 @@ export default function Profile() {
   const saveProfileImage = useMutation(api.users.saveProfileImage);
   const updatePasswordStatus = useMutation(api.users.updatePasswordStatus);
   const ensurePasswordAccount = useMutation(api.users.ensurePasswordAccount);
+  
+  // Referral system queries
+  const generateReferralCode = useMutation(api.referrals.generateReferralCode);
+  const referralStats = useQuery(api.referrals.getReferralStats);
 
   const [name, setName] = useState("");
   const [selectedAvatar, setSelectedAvatar] = useState("");
@@ -128,6 +132,18 @@ export default function Profile() {
   const [isSettingPassword, setIsSettingPassword] = useState(false);
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
+  
+  // Referral state
+  const [referralLink, setReferralLink] = useState("");
+  const [isGeneratingLink, setIsGeneratingLink] = useState(false);
+  
+  // Referral system queries
+  const generateReferralCode = useMutation(api.referrals.generateReferralCode);
+  const referralStats = useQuery(api.referrals.getReferralStats);
+  
+  // Referral state
+  const [referralLink, setReferralLink] = useState("");
+  const [isGeneratingLink, setIsGeneratingLink] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -182,6 +198,27 @@ export default function Profile() {
     }
   };
 
+  const handleGenerateReferralLink = async () => {
+    setIsGeneratingLink(true);
+    try {
+      const result = await generateReferralCode();
+      setReferralLink(result.link);
+      toast.success("Referral link generated!");
+    } catch (error) {
+      toast.error("Failed to generate referral link");
+      console.error(error);
+    } finally {
+      setIsGeneratingLink(false);
+    }
+  };
+
+  const handleCopyReferralLink = () => {
+    if (referralLink) {
+      navigator.clipboard.writeText(referralLink);
+      toast.success("Referral link copied to clipboard!");
+    }
+  };
+
   const handleSave = async () => {
     if (!name || name.length < 2) {
       toast.error("Name must be at least 2 characters");
@@ -220,6 +257,27 @@ export default function Profile() {
       console.error(error);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleGenerateReferralLink = async () => {
+    setIsGeneratingLink(true);
+    try {
+      const result = await generateReferralCode();
+      setReferralLink(result.link);
+      toast.success("Referral link generated!");
+    } catch (error) {
+      toast.error("Failed to generate referral link");
+      console.error(error);
+    } finally {
+      setIsGeneratingLink(false);
+    }
+  };
+
+  const handleCopyReferralLink = () => {
+    if (referralLink) {
+      navigator.clipboard.writeText(referralLink);
+      toast.success("Referral link copied to clipboard!");
     }
   };
 
@@ -358,6 +416,238 @@ export default function Profile() {
             </div>
           </motion.div>
         )}
+
+        {/* REFER & EARN SECTION - NEW */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.05 }}
+        >
+          <Card className="glass-card border-white/20 backdrop-blur-xl bg-gradient-to-br from-yellow-500/20 to-orange-500/20">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Gift className="h-5 w-5" />
+                Refer & Earn Stars
+              </CardTitle>
+              <p className="text-white/80 text-sm">Invite friends and earn Stars! 1 Star = ₹1 (Use up to 50% on subscriptions)</p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Star Wallet */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-white/10 rounded-lg p-4 border border-white/20">
+                  <div className="flex items-center gap-2 text-yellow-300 mb-1">
+                    <Star className="h-4 w-4 fill-current" />
+                    <span className="text-xs">Available</span>
+                  </div>
+                  <p className="text-2xl font-bold text-white">{referralStats?.wallet.availableStars || 0}</p>
+                </div>
+                <div className="bg-white/10 rounded-lg p-4 border border-white/20">
+                  <div className="flex items-center gap-2 text-blue-300 mb-1">
+                    <Users className="h-4 w-4" />
+                    <span className="text-xs">Referrals</span>
+                  </div>
+                  <p className="text-2xl font-bold text-white">{referralStats?.totalReferrals || 0}</p>
+                </div>
+                <div className="bg-white/10 rounded-lg p-4 border border-white/20">
+                  <div className="flex items-center gap-2 text-green-300 mb-1">
+                    <TrendingUp className="h-4 w-4" />
+                    <span className="text-xs">Paid Users</span>
+                  </div>
+                  <p className="text-2xl font-bold text-white">{referralStats?.paidReferrals || 0}</p>
+                </div>
+                <div className="bg-white/10 rounded-lg p-4 border border-white/20">
+                  <div className="flex items-center gap-2 text-orange-300 mb-1">
+                    <Star className="h-4 w-4" />
+                    <span className="text-xs">Expiring Soon</span>
+                  </div>
+                  <p className="text-2xl font-bold text-white">{referralStats?.expiringStars || 0}</p>
+                </div>
+              </div>
+
+              {/* Generate Referral Link */}
+              <div className="space-y-3">
+                <Label className="text-white">Your Referral Link</Label>
+                {referralLink ? (
+                  <div className="flex gap-2">
+                    <Input
+                      value={referralLink}
+                      readOnly
+                      className="bg-white/10 border-white/20 text-white"
+                    />
+                    <Button
+                      onClick={handleCopyReferralLink}
+                      className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    onClick={handleGenerateReferralLink}
+                    disabled={isGeneratingLink}
+                    className="w-full bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white"
+                  >
+                    {isGeneratingLink ? "Generating..." : "Generate Referral Link"}
+                  </Button>
+                )}
+              </div>
+
+              {/* How it Works */}
+              <div className="bg-white/5 rounded-lg p-4 border border-white/10">
+                <h4 className="text-white font-semibold mb-2">How it Works:</h4>
+                <ul className="space-y-1 text-white/80 text-sm">
+                  <li>• Share your referral link with friends</li>
+                  <li>• When they purchase a paid subscription, you earn 20 Stars</li>
+                  <li>• Use Stars to get up to 50% discount on your next subscription</li>
+                  <li>• Stars expire after 90 days, so use them wisely!</li>
+                </ul>
+              </div>
+
+              {/* Recent Referrals */}
+              {referralStats && referralStats.recentReferrals.length > 0 && (
+                <div className="space-y-2">
+                  <Label className="text-white">Recent Referrals</Label>
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {referralStats.recentReferrals.map((ref, idx) => (
+                      <div key={idx} className="bg-white/5 rounded-lg p-3 border border-white/10 flex justify-between items-center">
+                        <div>
+                          <p className="text-white text-sm">
+                            {ref.isPaid ? "✅ Paid User" : "⏳ Pending"}
+                          </p>
+                          <p className="text-white/60 text-xs">
+                            {new Date(ref.signupDate).toLocaleDateString()}
+                          </p>
+                        </div>
+                        {ref.isPaid && (
+                          <div className="flex items-center gap-1 text-yellow-300">
+                            <Star className="h-4 w-4 fill-current" />
+                            <span className="font-semibold">+{ref.starsEarned}</span>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* REFER & EARN SECTION */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.05 }}
+        >
+          <Card className="glass-card border-white/20 backdrop-blur-xl bg-gradient-to-br from-yellow-500/20 to-orange-500/20">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Gift className="h-5 w-5" />
+                Refer & Earn Stars
+              </CardTitle>
+              <p className="text-white/80 text-sm">Invite friends and earn Stars! 1 Star = ₹1 (Use up to 50% on subscriptions)</p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Star Wallet */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-white/10 rounded-lg p-4 border border-white/20">
+                  <div className="flex items-center gap-2 text-yellow-300 mb-1">
+                    <Star className="h-4 w-4 fill-current" />
+                    <span className="text-xs">Available</span>
+                  </div>
+                  <p className="text-2xl font-bold text-white">{referralStats?.wallet.availableStars || 0}</p>
+                </div>
+                <div className="bg-white/10 rounded-lg p-4 border border-white/20">
+                  <div className="flex items-center gap-2 text-blue-300 mb-1">
+                    <Users className="h-4 w-4" />
+                    <span className="text-xs">Referrals</span>
+                  </div>
+                  <p className="text-2xl font-bold text-white">{referralStats?.totalReferrals || 0}</p>
+                </div>
+                <div className="bg-white/10 rounded-lg p-4 border border-white/20">
+                  <div className="flex items-center gap-2 text-green-300 mb-1">
+                    <TrendingUp className="h-4 w-4" />
+                    <span className="text-xs">Paid Users</span>
+                  </div>
+                  <p className="text-2xl font-bold text-white">{referralStats?.paidReferrals || 0}</p>
+                </div>
+                <div className="bg-white/10 rounded-lg p-4 border border-white/20">
+                  <div className="flex items-center gap-2 text-orange-300 mb-1">
+                    <Star className="h-4 w-4" />
+                    <span className="text-xs">Expiring Soon</span>
+                  </div>
+                  <p className="text-2xl font-bold text-white">{referralStats?.expiringStars || 0}</p>
+                </div>
+              </div>
+
+              {/* Generate Referral Link */}
+              <div className="space-y-3">
+                <Label className="text-white">Your Referral Link</Label>
+                {referralLink ? (
+                  <div className="flex gap-2">
+                    <Input
+                      value={referralLink}
+                      readOnly
+                      className="bg-white/10 border-white/20 text-white"
+                    />
+                    <Button
+                      onClick={handleCopyReferralLink}
+                      className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    onClick={handleGenerateReferralLink}
+                    disabled={isGeneratingLink}
+                    className="w-full bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white"
+                  >
+                    {isGeneratingLink ? "Generating..." : "Generate Referral Link"}
+                  </Button>
+                )}
+              </div>
+
+              {/* How it Works */}
+              <div className="bg-white/5 rounded-lg p-4 border border-white/10">
+                <h4 className="text-white font-semibold mb-2">How it Works:</h4>
+                <ul className="space-y-1 text-white/80 text-sm">
+                  <li>• Share your referral link with friends</li>
+                  <li>• When they purchase a paid subscription, you earn 20 Stars</li>
+                  <li>• Use Stars to get up to 50% discount on your next subscription</li>
+                  <li>• Stars expire after 90 days, so use them wisely!</li>
+                </ul>
+              </div>
+
+              {/* Recent Referrals */}
+              {referralStats && referralStats.recentReferrals.length > 0 && (
+                <div className="space-y-2">
+                  <Label className="text-white">Recent Referrals</Label>
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {referralStats.recentReferrals.map((ref, idx) => (
+                      <div key={idx} className="bg-white/5 rounded-lg p-3 border border-white/10 flex justify-between items-center">
+                        <div>
+                          <p className="text-white text-sm">
+                            {ref.isPaid ? "✅ Paid User" : "⏳ Pending"}
+                          </p>
+                          <p className="text-white/60 text-xs">
+                            {new Date(ref.signupDate).toLocaleDateString()}
+                          </p>
+                        </div>
+                        {ref.isPaid && (
+                          <div className="flex items-center gap-1 text-yellow-300">
+                            <Star className="h-4 w-4 fill-current" />
+                            <span className="font-semibold">+{ref.starsEarned}</span>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
 
         {/* Edit Profile Form */}
         <motion.div
