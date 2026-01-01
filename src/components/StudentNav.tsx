@@ -28,10 +28,7 @@ export default function StudentNav() {
       }
     };
 
-    // Set initial state
     handleResize();
-
-    // Listen for window resize
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -44,7 +41,6 @@ export default function StudentNav() {
     }
   }, [location.pathname]);
 
-  // Primary navigation items (top - most visible)
   const primaryNavItems = [
     { path: "/dashboard", icon: Home, label: "Dashboard" },
     { path: "/tests/mock", icon: FileText, label: "Mock Tests" },
@@ -52,7 +48,6 @@ export default function StudentNav() {
     { path: "/tests/ai", icon: Brain, label: "AI Questions" },
   ];
 
-  // Lower priority items (bottom - subtle)
   const secondaryNavItems = [
     { path: "/library", icon: Library, label: "Library" },
     { path: "/feedback", icon: MessageSquare, label: "Feedback" },
@@ -67,12 +62,12 @@ export default function StudentNav() {
 
   return (
     <>
-      {/* Mobile Menu Button - Only visible when authenticated */}
+      {/* Mobile Menu Button */}
       {isAuthenticated && (
         <Button
           variant="ghost"
           size="icon"
-          className="fixed top-4 left-4 z-50 glass-card border-white/20 backdrop-blur-xl bg-white/10 text-white"
+          className="fixed top-4 left-4 z-50 bg-slate-900 hover:bg-slate-800 text-white border border-slate-700 shadow-lg"
           onClick={() => setIsOpen(!isOpen)}
         >
           {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -86,13 +81,13 @@ export default function StudentNav() {
             initial={{ x: -300 }}
             animate={{ x: 0 }}
             exit={{ x: -300 }}
-            className="fixed left-0 top-0 h-screen w-64 glass-card border-r border-white/20 backdrop-blur-xl bg-white/10 p-6 z-40"
+            className="fixed left-0 top-0 h-screen w-64 bg-slate-900 border-r border-slate-700 p-6 z-40 shadow-2xl"
           >
             <div className="flex flex-col h-full">
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-3">
                   {userProfile?.avatarUrl ? (
-                    <Avatar className="h-10 w-10 border-2 border-white/20">
+                    <Avatar className="h-10 w-10 border-2 border-slate-700">
                       <AvatarImage src={userProfile.avatarUrl} />
                       <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white">
                         {userProfile.name?.charAt(0)?.toUpperCase() || "U"}
@@ -104,14 +99,14 @@ export default function StudentNav() {
                   <div className="flex flex-col">
                     <h2 className="text-xl font-bold text-white">MLT Prep</h2>
                     {userProfile?.name && (
-                      <span className="text-sm text-white/70">{userProfile.name}</span>
+                      <span className="text-sm text-slate-400">{userProfile.name}</span>
                     )}
                   </div>
                 </div>
                 <NotificationBell />
               </div>
 
-              {/* Primary Navigation - Top Section */}
+              {/* Primary Navigation */}
               <nav className="flex-1 space-y-2">
                 {primaryNavItems.map((item) => {
                   const isActive = location.pathname === item.path;
@@ -120,7 +115,6 @@ export default function StudentNav() {
                       key={item.path}
                       to={item.path}
                       onClick={() => {
-                        // Only close on mobile
                         const width = window.innerWidth;
                         if (width < 1024) {
                           setIsOpen(false);
@@ -128,8 +122,8 @@ export default function StudentNav() {
                       }}
                       className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all font-medium ${
                         isActive
-                          ? "bg-white/20 text-white shadow-lg"
-                          : "text-white/90 hover:bg-white/10 hover:text-white"
+                          ? "bg-blue-600 text-white shadow-lg"
+                          : "text-slate-300 hover:bg-slate-800 hover:text-white"
                       }`}
                     >
                       <item.icon className="h-5 w-5" />
@@ -138,7 +132,7 @@ export default function StudentNav() {
                   );
                 })}
 
-                {/* Upgrade CTA - Highlighted */}
+                {/* Upgrade CTA */}
                 <Link
                   to="/subscription"
                   onClick={() => {
@@ -157,11 +151,10 @@ export default function StudentNav() {
                   <span>Upgrade</span>
                 </Link>
 
-                {/* Spacer to push secondary items to bottom */}
                 <div className="flex-1" />
 
-                {/* Secondary Navigation - Bottom Section (subtle) */}
-                <div className="space-y-1 pt-6 mt-auto border-t border-white/10">
+                {/* Secondary Navigation */}
+                <div className="space-y-1 pt-6 mt-auto border-t border-slate-700">
                   {secondaryNavItems.map((item) => {
                     const isActive = location.pathname === item.path;
                     return (
@@ -176,8 +169,8 @@ export default function StudentNav() {
                         }}
                         className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-all text-sm ${
                           isActive
-                            ? "bg-white/10 text-white"
-                            : "text-white/60 hover:bg-white/5 hover:text-white/80"
+                            ? "bg-slate-800 text-white"
+                            : "text-slate-400 hover:bg-slate-800 hover:text-slate-300"
                         }`}
                       >
                         <item.icon className="h-4 w-4" />
@@ -191,7 +184,7 @@ export default function StudentNav() {
               <Button
                 onClick={handleSignOut}
                 variant="ghost"
-                className="w-full justify-start text-white/70 hover:text-white hover:bg-white/10 mt-4"
+                className="w-full justify-start text-slate-400 hover:text-white hover:bg-slate-800 mt-4"
               >
                 Sign Out
               </Button>
