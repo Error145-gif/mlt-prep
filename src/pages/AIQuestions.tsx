@@ -11,6 +11,7 @@ import { motion } from "framer-motion";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import StudentNav from "@/components/StudentNav";
+import MobileBottomNav from "@/components/MobileBottomNav";
 
 export default function AIQuestions() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -74,7 +75,7 @@ export default function AIQuestions() {
 
   // Show list of available AI tests
   return (
-    <div className="min-h-screen p-6 lg:p-8 relative overflow-hidden">
+    <div className="min-h-screen p-6 lg:p-8 relative overflow-hidden pb-24">
       <StudentNav />
       <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
         <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-400/50 rounded-full blur-3xl animate-pulse" />
@@ -162,6 +163,7 @@ export default function AIQuestions() {
           })}
         </div>
       </div>
+      <MobileBottomNav />
     </div>
   );
 }

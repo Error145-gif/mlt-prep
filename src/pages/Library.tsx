@@ -1,6 +1,7 @@
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import StudentNav from "@/components/StudentNav";
+import MobileBottomNav from "@/components/MobileBottomNav";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,7 +47,7 @@ export default function Library() {
   const displayContent = searchQuery ? searchResults : null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
+    <div className="min-h-screen bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500 pb-24">
       <StudentNav />
       
       <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -269,6 +270,8 @@ export default function Library() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <MobileBottomNav />
     </div>
   );
 }

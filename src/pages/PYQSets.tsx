@@ -11,6 +11,7 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Lock } from "lucide-react";
 import StudentNav from "@/components/StudentNav";
+import MobileBottomNav from "@/components/MobileBottomNav";
 
 export default function PYQSets() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -242,7 +243,7 @@ export default function PYQSets() {
 
   // Show list of available PYQ sets
   return (
-    <div className="min-h-screen p-6 lg:p-8 relative overflow-hidden">
+    <div className="min-h-screen p-6 lg:p-8 relative overflow-hidden pb-24">
       <StudentNav />
       
       <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">

@@ -11,6 +11,7 @@ import { motion } from "framer-motion";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import StudentNav from "@/components/StudentNav";
+import MobileBottomNav from "@/components/MobileBottomNav";
 
 export default function MockTests() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -91,7 +92,7 @@ export default function MockTests() {
   };
 
   return (
-    <div className="min-h-screen p-6 lg:p-8 relative overflow-hidden">
+    <div className="min-h-screen p-6 lg:p-8 relative overflow-hidden pb-24">
       <StudentNav />
       {/* Animated Background Gradients */}
       <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
@@ -203,6 +204,7 @@ export default function MockTests() {
           })}
         </div>
       </div>
+      <MobileBottomNav />
     </div>
   );
 }
