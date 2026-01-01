@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 export default function SubscriptionPlans() {
   const navigate = useNavigate();
   const user = useQuery(api.users.currentUser);
-  const subscription = useQuery(api.student.getSubscriptionAccess);
+  const subscription = useQuery(api.student.checkSubscriptionAccess);
   const createOrder = useMutation(api.cashfree.createOrder);
   const applyCoupon = useMutation(api.coupons.applyCoupon);
   
