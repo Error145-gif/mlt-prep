@@ -33,10 +33,9 @@ export default function StudentNav() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Close menu when location changes on mobile
+  // Close sidebar when location changes (for mobile/tablet)
   useEffect(() => {
-    const width = window.innerWidth;
-    if (width < 1024) {
+    if (window.innerWidth < 1024) {
       setIsOpen(false);
     }
   }, [location.pathname]);
