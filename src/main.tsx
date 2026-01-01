@@ -54,6 +54,7 @@ const ImageQuestionManagement = lazy(() => import("./pages/ImageQuestionManageme
 const ReportedErrors = lazy(() => import("./pages/ReportedErrors.tsx"));
 const WeeklyTestManagement = lazy(() => import("./pages/WeeklyTestManagement.tsx"));
 const OverallAnalytics = lazy(() => import("./pages/OverallAnalytics.tsx"));
+const ReferralAnalytics = lazy(() => import("./pages/ReferralAnalytics.tsx"));
 
 // Loading component
 const LoadingFallback = () => (
@@ -208,6 +209,14 @@ createRoot(document.getElementById("root")!).render(
                   element={
                     <AdminRoute>
                       <CouponManagement />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/admin/referrals"
+                  element={
+                    <AdminRoute>
+                      <ReferralAnalytics />
                     </AdminRoute>
                   }
                 />

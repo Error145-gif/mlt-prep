@@ -477,6 +477,95 @@ const schema = defineSchema(
     })
       .index("by_weekly_test", ["weeklyTestId"])
       .index("by_test_and_rank", ["weeklyTestId", "rank"]),
+
+    // Referral System
+    referrals: defineTable({
+      referrerId: v.id("users"), // User who shared the link
+      referredUserId: v.id("users"), // User who signed up via link
+      referralCode: v.string(), // Unique code used
+      status: v.union(
+        v.literal("pending"), // Signup only
+        v.literal("qualified"), // Paid user
+        v.literal("rejected"), // Fraud/invalid
+        v.literal("cancelled") // Refund happened
+      ),
+      signupDate: v.number(),
+      emailVerified: v.boolean(),
+      isPaidUser: v.boolean(),
+      purchasedPlanName: v.optional(v.string()),
+      amountPaid: v.optional(v.number()),
+      starsIssued: v.boolean(),
+      starsIssuedAt: v.optional(v.number()),
+      paymentId: v.optional(v.string()),
+      subscriptionId: v.optional(v.id("subscriptions")),
+      fraudFlags: v.optional(v.array(v.string())), // IP match, device match, etc.
+      adminNote: v.optional(v.string()),
+      rejectedBy: v.optional(v.id("users")),
+      rejectedAt: v.optional(v.number()),
+    })
+      .index("by_referrer", ["referrerId"])
+      .index("by_referred", ["referredUserId"])
+      .index("by_status", ["status"])
+      .index("by_referral_code", ["referralCode"]),
+
+    // Star Wallet
+    starWallets: defineTable({
+      userId: v.id("users"),
+      totalStars: v.number(),
+      earnedStars: v.number(),
+      usedStars: v.number(),
+      availableStars: v.number(), // earnedStars - usedStars
+      lastUpdated: v.number(),
+    }).index("by_user", ["userId"]),
+
+    // Star Transactions (Audit Log)
+    starTransactions: defineTable({
+      userId: v.id("users"),
+      type: v.union(
+        v.literal("earned"), // From referral
+        v.literal("used"), // For subscription
+        v.literal("expired"), // Auto-expired
+        v.literal("reversed"), // Refund/fraud
+        v.literal("admin_credit"), // Manual add
+        v.literal("admin_debit") // Manual deduct
+      ),
+      amount: v.number(), // Positive for credit, negative for debit
+      referralId: v.optional(v.id("referrals")),
+      subscriptionId: v.optional(v.id("subscriptions")),
+      expiryDate: v.optional(v.number()), // 90 days from earn date
+      isExpired: v.boolean(),
+      reason: v.optional(v.string()),
+      adminId: v.optional(v.id("users")),
+      metadata: v.optional(v.string()), // JSON string for extra data
+    })
+      .index("by_user", ["userId"])
+      .index("by_type", ["type"])
+      .index("by_expiry", ["expiryDate"]),
+
+    // Referral Settings (Admin Control)
+    referralSettings: defineTable({
+      starValueInRupees: v.number(), // Default: 1
+      starsPerReferral: v.number(), // Default: 20
+      maxStarsUsagePercent: v.number(), // Default: 50
+      starExpiryDays: v.number(), // Default: 90
+      isReferralEnabled: v.boolean(),
+      allowCouponWithStars: v.boolean(), // Default: false
+      minPurchaseForReferral: v.number(), // Minimum amount to qualify
+    }),
+
+    // Fraud Detection Logs
+    referralFraudLogs: defineTable({
+      userId: v.id("users"),
+      referralId: v.optional(v.id("referrals")),
+      fraudType: v.string(), // "duplicate_email", "same_ip", "same_device", etc.
+      details: v.string(),
+      ipAddress: v.optional(v.string()),
+      deviceFingerprint: v.optional(v.string()),
+      actionTaken: v.string(), // "blocked", "flagged", "reviewed"
+      reviewedBy: v.optional(v.id("users")),
+    })
+      .index("by_user", ["userId"])
+      .index("by_fraud_type", ["fraudType"]),
   },
   {
     schemaValidation: false,

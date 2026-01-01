@@ -56,6 +56,7 @@ export default function AdminSidebar() {
     { path: "/admin/analytics", icon: Settings, label: "Analytics" },
     { path: "/admin/subscriptions", icon: CreditCard, label: "Subscriptions" },
     { path: "/admin/coupons", icon: Tags, label: "Coupons" },
+    { path: "/admin/referrals", icon: Users, label: "Referrals" },
     { path: "/admin/notifications", icon: MessageSquare, label: "Notifications" },
     { path: "/admin/feedback", icon: Trophy, label: "Feedback" },
   ];

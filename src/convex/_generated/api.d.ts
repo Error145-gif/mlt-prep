@@ -32,6 +32,8 @@ import type * as notifications from "../notifications.js";
 import type * as questions from "../questions.js";
 import type * as razorpay from "../razorpay.js";
 import type * as razorpayInternal from "../razorpayInternal.js";
+import type * as referralAdmin from "../referralAdmin.js";
+import type * as referrals from "../referrals.js";
 import type * as sections from "../sections.js";
 import type * as seedTestData from "../seedTestData.js";
 import type * as seedWelcomeCoupon from "../seedWelcomeCoupon.js";
@@ -77,6 +79,8 @@ declare const fullApi: ApiFromModules<{
   questions: typeof questions;
   razorpay: typeof razorpay;
   razorpayInternal: typeof razorpayInternal;
+  referralAdmin: typeof referralAdmin;
+  referrals: typeof referrals;
   sections: typeof sections;
   seedTestData: typeof seedTestData;
   seedWelcomeCoupon: typeof seedWelcomeCoupon;
