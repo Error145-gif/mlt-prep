@@ -110,7 +110,7 @@ export default function MobileBottomNav() {
                 💬 Feedback
               </Button>
               <Button
-                onClick={() => navigate("/contact")}
+                onClick={() => navigate("/contact-us")}
                 variant="outline"
                 className="w-full bg-white/10 border-white/30 text-white hover:bg-white/20"
               >

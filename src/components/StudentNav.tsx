@@ -33,7 +33,7 @@ export default function StudentNav() {
   const secondaryNavItems = [
     { path: "/library", icon: Library, label: "Library" },
     { path: "/feedback", icon: MessageSquare, label: "Feedback" },
-    { path: "/contact", icon: MessageSquare, label: "Contact Us" },
+    { path: "/contact-us", icon: MessageSquare, label: "Contact Us" },
     { path: "/profile", icon: User, label: "Profile" },
   ];
 
