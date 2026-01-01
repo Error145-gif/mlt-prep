@@ -47,7 +47,7 @@ export default function StudentNav() {
   };
 
   return (
-    <>
+    <div className="hidden lg:block">
       {/* Hamburger Menu Button - Visible when sidebar is CLOSED */}
       {isAuthenticated && !isOpen && (
         <Button
@@ -183,6 +183,6 @@ export default function StudentNav() {
           )}
         </AnimatePresence>
       )}
-    </>
+    </div>
   );
 }

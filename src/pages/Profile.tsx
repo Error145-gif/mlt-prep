@@ -15,6 +15,7 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import StudentNav from "@/components/StudentNav";
+import MobileBottomNav from "@/components/MobileBottomNav";
 
 const AVATAR_OPTIONS = [
   "https://api.dicebear.com/7.x/avataaars/svg?seed=LabTech",
@@ -305,8 +306,9 @@ export default function Profile() {
   const completion = calculateCompletion();
 
   return (
-    <div className="min-h-screen p-6 lg:p-8 relative overflow-hidden">
+    <div className="min-h-screen p-6 lg:p-8 relative overflow-hidden pb-24 lg:pb-8">
       <StudentNav />
+      <MobileBottomNav />
       
       {/* Lab Background Image */}
       <div 
