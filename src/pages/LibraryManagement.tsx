@@ -176,7 +176,7 @@ export default function LibraryManagement() {
 
                   <div>
                     <Label htmlFor="pdf_url" className="text-white">
-                      PDF URL (Cloudflare R2)
+                      PDF URL (Google Drive)
                     </Label>
                     <Input
                       id="pdf_url"
@@ -184,9 +184,16 @@ export default function LibraryManagement() {
                       onChange={(e) =>
                         setFormData({ ...formData, pdf_url: e.target.value })
                       }
-                      placeholder="https://your-r2-bucket.com/file.pdf"
+                      placeholder="https://drive.google.com/file/d/FILE_ID/preview"
                       className="bg-white/10 border-white/20 text-white"
                     />
+                    <p className="text-white/60 text-xs mt-2">
+                      📌 Use Google Drive preview link format: 
+                      <br />
+                      <code className="text-white/80">https://drive.google.com/file/d/YOUR_FILE_ID/preview</code>
+                      <br />
+                      Make sure the file is set to "Anyone with the link can view"
+                    </p>
                   </div>
 
                   <div className="flex gap-3">

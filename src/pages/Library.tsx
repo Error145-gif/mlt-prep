@@ -258,6 +258,7 @@ export default function Library() {
                 src={selectedPDF}
                 className="w-full h-[calc(100%-60px)]"
                 title="PDF Viewer"
+                allow="autoplay"
               />
             </motion.div>
           </motion.div>
