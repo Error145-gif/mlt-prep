@@ -122,8 +122,8 @@ export default function RefundPolicy() {
                   <li>Purchase any subscription plan (Monthly, 4-Month, or Yearly)</li>
                   <li>Try all features: Mock Tests, PYQs, AI Questions, Analytics</li>
                   <li>If not satisfied, email us within 7 days at{" "}
-                    <a href="mailto:ak6722909@gmail.com" className="text-blue-300 hover:text-blue-200 underline">
-                      ak6722909@gmail.com
+                    <a href="mailto:mltprep.online@gmail.com" className="text-blue-300 hover:text-blue-200 underline">
+                      mltprep.online@gmail.com
                     </a>
                   </li>
                   <li>Get 100% refund within 5-7 business days</li>
@@ -177,8 +177,8 @@ export default function RefundPolicy() {
                   <p className="mb-3">To request a refund within 7 days:</p>
                   <ol className="space-y-2 list-decimal list-inside">
                     <li>Email us at{" "}
-                      <a href="mailto:ak6722909@gmail.com" className="text-blue-300 hover:text-blue-200 underline">
-                        ak6722909@gmail.com
+                      <a href="mailto:mltprep.online@gmail.com" className="text-blue-300 hover:text-blue-200 underline">
+                        mltprep.online@gmail.com
                       </a>
                     </li>
                     <li>Subject: "Refund Request - [Your Email]"</li>
@@ -222,8 +222,8 @@ export default function RefundPolicy() {
                 </p>
                 <ul className="space-y-2 list-disc list-inside">
                   <li>Contact support immediately at{" "}
-                    <a href="mailto:ak6722909@gmail.com" className="text-blue-300 hover:text-blue-200 underline">
-                      ak6722909@gmail.com
+                    <a href="mailto:mltprep.online@gmail.com" className="text-blue-300 hover:text-blue-200 underline">
+                      mltprep.online@gmail.com
                     </a>
                   </li>
                   <li>We'll work to resolve issues within 24-48 hours</li>
@@ -262,8 +262,8 @@ export default function RefundPolicy() {
                 <h3 className="text-white font-semibold text-xl mb-3">9. Contact Us</h3>
                 <p>
                   For any refund-related queries, contact us at:{" "}
-                  <a href="mailto:ak6722909@gmail.com" className="text-blue-300 hover:text-blue-200 underline">
-                    ak6722909@gmail.com
+                  <a href="mailto:mltprep.online@gmail.com" className="text-blue-300 hover:text-blue-200 underline">
+                    mltprep.online@gmail.com
                   </a>
                 </p>
                 <p className="mt-2 text-white/90">
