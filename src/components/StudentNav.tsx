@@ -13,8 +13,8 @@ import NotificationBell from "@/components/NotificationBell";
 export default function StudentNav() {
   const location = useLocation();
   const navigate = useNavigate();
-  // Initialize open state based on screen width (desktop defaults to open, mobile to closed)
-  const [isOpen, setIsOpen] = useState(() => window.innerWidth >= 1024);
+  // Initialize open state to false so hamburger menu is visible by default on all screens
+  const [isOpen, setIsOpen] = useState(false);
   const { signOut, isAuthenticated } = useAuth();
   const userProfile = useQuery(api.users.getUserProfile);
 
@@ -25,19 +25,7 @@ export default function StudentNav() {
     }
   }, [location.pathname]);
 
-  // Handle window resize to auto-open/close based on breakpoint
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 1024) {
-        setIsOpen(true);
-      } else {
-        setIsOpen(false);
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  // Remove the auto-open resize listener to give user full control
 
   const primaryNavItems = [
     { path: "/student", icon: Home, label: "Dashboard" },
@@ -66,7 +54,7 @@ export default function StudentNav() {
           onClick={() => setIsOpen(true)}
           variant="ghost"
           size="icon"
-          className="fixed top-4 left-4 z-50 bg-slate-900 text-white hover:bg-slate-800 border border-slate-700 shadow-lg flex"
+          className="fixed top-4 left-4 z-50 bg-slate-900 text-white hover:bg-slate-800 border border-slate-700 shadow-lg flex items-center justify-center rounded-full p-2"
         >
           <Menu className="h-6 w-6" />
         </Button>
@@ -76,13 +64,22 @@ export default function StudentNav() {
       {isAuthenticated && (
         <AnimatePresence>
           {isOpen && (
-            <motion.aside
-              initial={{ x: -264 }}
-              animate={{ x: 0 }}
-              exit={{ x: -264 }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed left-0 top-0 h-screen w-64 bg-slate-900 border-r border-slate-700 p-6 z-50 shadow-2xl block"
-            >
+            <>
+              {/* Backdrop for mobile/desktop overlay */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setIsOpen(false)}
+                className="fixed inset-0 bg-black/50 z-40 backdrop-blur-sm"
+              />
+              <motion.aside
+                initial={{ x: -264 }}
+                animate={{ x: 0 }}
+                exit={{ x: -264 }}
+                transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                className="fixed left-0 top-0 h-screen w-64 bg-slate-900 border-r border-slate-700 p-6 z-50 shadow-2xl block"
+              >
               <div className="flex flex-col h-full">
                 <div className="flex items-center justify-between mb-8">
                   <div className="flex items-center gap-3">
