@@ -45,15 +45,15 @@ export default function StudentNav() {
 
   return (
     <>
-      {/* Hamburger Menu Button - Visible on desktop */}
-      {isAuthenticated && (
+      {/* Hamburger Menu Button - Visible on desktop when sidebar is CLOSED */}
+      {isAuthenticated && !isOpen && (
         <Button
-          onClick={() => setIsOpen(!isOpen)}
+          onClick={() => setIsOpen(true)}
           variant="ghost"
           size="icon"
-          className="fixed top-4 left-4 z-50 bg-slate-900/90 text-white hover:bg-slate-800 border border-slate-700 shadow-lg hidden lg:flex"
+          className="fixed top-4 left-4 z-50 bg-slate-900 text-white hover:bg-slate-800 border border-slate-700 shadow-lg hidden lg:flex"
         >
-          {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          <Menu className="h-6 w-6" />
         </Button>
       )}
 
@@ -66,7 +66,7 @@ export default function StudentNav() {
               animate={{ x: 0 }}
               exit={{ x: -264 }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed left-0 top-0 h-screen w-64 bg-slate-900 border-r border-slate-700 p-6 z-40 shadow-2xl hidden lg:block"
+              className="fixed left-0 top-0 h-screen w-64 bg-slate-900 border-r border-slate-700 p-6 z-50 shadow-2xl hidden lg:block"
             >
               <div className="flex flex-col h-full">
                 <div className="flex items-center justify-between mb-8">
@@ -88,7 +88,17 @@ export default function StudentNav() {
                       )}
                     </div>
                   </div>
-                  <NotificationBell />
+                  <div className="flex items-center gap-2">
+                    <NotificationBell />
+                    <Button
+                      onClick={() => setIsOpen(false)}
+                      variant="ghost"
+                      size="icon"
+                      className="text-slate-400 hover:text-white hover:bg-slate-800"
+                    >
+                      <X className="h-5 w-5" />
+                    </Button>
+                  </div>
                 </div>
 
                 {/* Primary Navigation */}
