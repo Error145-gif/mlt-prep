@@ -361,7 +361,7 @@ export default function Landing() {
                 ease: "easeInOut"
               }}
             >
-              ⚡ ENDING SOON
+              🔥 MOST POPULAR
             </motion.div>
 
             <div className="flex items-center justify-between">
@@ -372,10 +372,10 @@ export default function Landing() {
               </div>
               <div className="text-right">
                 <div className="bg-gradient-to-r from-red-600 to-red-700 text-white text-sm font-bold px-4 py-2 rounded-full shadow-lg mb-2 animate-pulse">
-                  Save ₹97
+                  SAVE ₹97 • 20% OFF
                 </div>
-                <p className="text-white font-bold text-xs">⭐ Most Popular</p>
-                <p className="text-yellow-300 text-xs">₹99/month only</p>
+                <p className="text-white font-bold text-xs">⭐ Best Value</p>
+                <p className="text-yellow-300 text-xs">Just ₹99/month</p>
               </div>
             </div>
           </motion.div>
