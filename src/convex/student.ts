@@ -1006,72 +1006,150 @@ export const checkSubscriptionAccess = query({
   handler: async (ctx) => {
     const user = await getCurrentUser(ctx);
     if (!user) {
-      return { hasAccess: false, reason: "not_authenticated", isPaid: false };
+      return {
+        hasAccess: false,
+        planName: "Free",
+        planType: "free",
+        daysRemaining: 0,
+        isExpiringSoon: false,
+        features: {
+          mockTests: 1,
+          pyqSets: 1,
+          aiTests: 1,
+          adUnlocks: 2,
+          detailedAnalysis: false,
+          libraryAccess: false,
+          prioritySupport: false,
+        }
+      };
     }
 
-    // Check for active subscription
     const subscription = await ctx.db
       .query("subscriptions")
       .withIndex("by_user", (q) => q.eq("userId", user._id))
       .filter((q) => q.eq(q.field("status"), "active"))
       .first();
 
-    console.log("=== Subscription Access Check ===");
-    console.log("User ID:", user._id);
-    console.log("User Email:", user.email);
-    console.log("Subscription found:", !!subscription);
-    if (subscription) {
-      console.log("Subscription amount:", subscription.amount);
-      console.log("Subscription end date:", new Date(subscription.endDate).toISOString());
-      console.log("Current time:", new Date(Date.now()).toISOString());
-      console.log("Is expired:", subscription.endDate < Date.now());
-    }
-
-    if (subscription) {
-      if (subscription.endDate < Date.now()) {
-        console.log("Result: EXPIRED");
-        return { hasAccess: false, reason: "expired", isPaid: false };
-      }
-      // Distinguish between paid subscription and free trial
-      const isPaid = subscription.amount > 0;
-      console.log("Result: ACTIVE SUBSCRIPTION, isPaid:", isPaid);
-      return { hasAccess: true, subscription, isPaid };
-    }
-
-    // Check if user has used their free trial
-    const completedTests = await ctx.db
-      .query("testSessions")
-      .withIndex("by_user", (q) => q.eq("userId", user._id))
-      .filter((q) => q.eq(q.field("status"), "completed"))
-      .collect();
-
-    const mockTestsCompleted = completedTests.filter((t) => t.testType === "mock").length;
-    const pyqTestsCompleted = completedTests.filter((t) => t.testType === "pyq").length;
-    const aiTestsCompleted = completedTests.filter((t) => t.testType === "ai").length;
-
-    console.log("Completed tests - Mock:", mockTestsCompleted, "PYQ:", pyqTestsCompleted, "AI:", aiTestsCompleted);
-
-    // Allow one free test of each type
-    const hasFreeMockAccess = mockTestsCompleted < 1;
-    const hasFreePYQAccess = pyqTestsCompleted < 1;
-    const hasFreeAIAccess = aiTestsCompleted < 1;
-
-    if (hasFreeMockAccess || hasFreePYQAccess || hasFreeAIAccess) {
-      console.log("Result: FREE TRIAL");
+    if (!subscription) {
+      // Free user - no subscription
       return {
-        hasAccess: false, // Free trial is NOT full access
-        reason: "free_trial",
-        isPaid: false,
-        freeTrialRemaining: {
-          mock: hasFreeMockAccess ? 1 : 0,
-          pyq: hasFreePYQAccess ? 1 : 0,
-          ai: hasFreeAIAccess ? 1 : 0,
-        },
+        hasAccess: false,
+        planName: "Free",
+        planType: "free",
+        daysRemaining: 0,
+        isExpiringSoon: false,
+        features: {
+          mockTests: 1,
+          pyqSets: 1,
+          aiTests: 1,
+          adUnlocks: 2,
+          detailedAnalysis: false,
+          libraryAccess: false,
+          prioritySupport: false,
+        }
       };
     }
 
-    console.log("Result: NO SUBSCRIPTION");
-    return { hasAccess: false, reason: "no_subscription", isPaid: false };
+    const now = Date.now();
+    const isExpired = subscription.endDate < now;
+
+    if (isExpired) {
+      // Expired subscription - treat as free user
+      return {
+        hasAccess: false,
+        planName: "Free",
+        planType: "free",
+        daysRemaining: 0,
+        isExpiringSoon: false,
+        features: {
+          mockTests: 1,
+          pyqSets: 1,
+          aiTests: 1,
+          adUnlocks: 2,
+          detailedAnalysis: false,
+          libraryAccess: false,
+          prioritySupport: false,
+        }
+      };
+    }
+
+    const daysRemaining = Math.ceil((subscription.endDate - now) / (1000 * 60 * 60 * 24));
+    const isExpiringSoon = daysRemaining <= 7;
+
+    // Determine plan type and features based on plan name and amount
+    let planType = "free";
+    let features = {
+      mockTests: 1,
+      pyqSets: 1,
+      aiTests: 1,
+      adUnlocks: 2,
+      detailedAnalysis: false,
+      libraryAccess: false,
+      prioritySupport: false,
+    };
+
+    // Monthly Starter Plan (₹99)
+    if (subscription.amount === 99 || subscription.planName.includes("Monthly Starter")) {
+      planType = "monthly_starter";
+      features = {
+        mockTests: 999, // Unlimited
+        pyqSets: 20,
+        aiTests: 999, // Unlimited
+        adUnlocks: 0, // No ads
+        detailedAnalysis: false, // Locked - watch banner ads
+        libraryAccess: false,
+        prioritySupport: false,
+      };
+    }
+    // 4-Month Plan (₹399)
+    else if (subscription.amount === 399 || subscription.planName.includes("4-Month")) {
+      planType = "four_month";
+      features = {
+        mockTests: 999, // Unlimited
+        pyqSets: 999, // Unlimited
+        aiTests: 999, // Unlimited
+        adUnlocks: 0, // No ads
+        detailedAnalysis: true, // Full access
+        libraryAccess: false,
+        prioritySupport: true,
+      };
+    }
+    // Yearly Plan (₹599)
+    else if (subscription.amount === 599 || subscription.planName.includes("Yearly")) {
+      planType = "yearly";
+      features = {
+        mockTests: 999, // Unlimited
+        pyqSets: 999, // Unlimited
+        aiTests: 999, // Unlimited
+        adUnlocks: 0, // No ads
+        detailedAnalysis: true, // Full access
+        libraryAccess: true, // Full Library Access
+        prioritySupport: true,
+      };
+    }
+    // Legacy or other paid plans
+    else if (subscription.amount > 0) {
+      planType = "paid";
+      features = {
+        mockTests: 999,
+        pyqSets: 999,
+        aiTests: 999,
+        adUnlocks: 0,
+        detailedAnalysis: true,
+        libraryAccess: subscription.planName.includes("Yearly"),
+        prioritySupport: true,
+      };
+    }
+
+    return {
+      hasAccess: true,
+      planName: subscription.planName,
+      planType,
+      daysRemaining,
+      isExpiringSoon,
+      endDate: subscription.endDate,
+      features,
+    };
   },
 });
 
