@@ -190,27 +190,6 @@ export default function Profile() {
     }
   };
 
-  const handleGenerateReferralLink = async () => {
-    setIsGeneratingLink(true);
-    try {
-      const result = await generateReferralCode();
-      setReferralLink(result.link);
-      toast.success("Referral link generated!");
-    } catch (error) {
-      toast.error("Failed to generate referral link");
-      console.error(error);
-    } finally {
-      setIsGeneratingLink(false);
-    }
-  };
-
-  const handleCopyReferralLink = () => {
-    if (referralLink) {
-      navigator.clipboard.writeText(referralLink);
-      toast.success("Referral link copied to clipboard!");
-    }
-  };
-
   const handleSave = async () => {
     if (!name || name.length < 2) {
       toast.error("Name must be at least 2 characters");
