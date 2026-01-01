@@ -178,7 +178,6 @@ export default function Library() {
           <div className="space-y-6">
             {subjects.map((subject) => {
               const pdfs = pdfsBySubject[subject] || [];
-              if (pdfs.length === 0) return null;
 
               return (
                 <motion.div
@@ -193,31 +192,37 @@ export default function Library() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                      {pdfs.map((pdf: any) => (
-                        <div
-                          key={pdf._id}
-                          className="flex items-center justify-between gap-4 p-3 rounded-lg bg-white/10 hover:bg-white/20 transition-all"
-                        >
-                          <div className="flex items-center gap-3 flex-1 min-w-0">
-                            <BookOpen className="h-5 w-5 text-white flex-shrink-0" />
-                            <p className="text-white font-medium truncate">
-                              {pdf.title}
-                            </p>
-                          </div>
-                          <Button
-                            onClick={() => handleOpenPDF(pdf.pdf_url)}
-                            disabled={!hasAccess}
-                            size="sm"
-                            className={`flex-shrink-0 ${
-                              hasAccess
-                                ? "bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
-                                : "bg-gray-500/50 cursor-not-allowed"
-                            }`}
+                      {pdfs.length === 0 ? (
+                        <p className="text-white/60 text-center py-4 text-sm">
+                          No PDFs available in this section yet
+                        </p>
+                      ) : (
+                        pdfs.map((pdf: any) => (
+                          <div
+                            key={pdf._id}
+                            className="flex items-center justify-between gap-4 p-3 rounded-lg bg-white/10 hover:bg-white/20 transition-all"
                           >
-                            {hasAccess ? "Open" : <Lock className="h-4 w-4" />}
-                          </Button>
-                        </div>
-                      ))}
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                              <BookOpen className="h-5 w-5 text-white flex-shrink-0" />
+                              <p className="text-white font-medium truncate">
+                                {pdf.title}
+                              </p>
+                            </div>
+                            <Button
+                              onClick={() => handleOpenPDF(pdf.pdf_url)}
+                              disabled={!hasAccess}
+                              size="sm"
+                              className={`flex-shrink-0 ${
+                                hasAccess
+                                  ? "bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                                  : "bg-gray-500/50 cursor-not-allowed"
+                              }`}
+                            >
+                              {hasAccess ? "Open" : <Lock className="h-4 w-4" />}
+                            </Button>
+                          </div>
+                        ))
+                      )}
                     </CardContent>
                   </Card>
                 </motion.div>
