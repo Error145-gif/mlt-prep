@@ -42,6 +42,8 @@ const PaymentStatus = lazy(() => import("./pages/PaymentStatus.tsx"));
 const PaymentSummary = lazy(() => import("./pages/PaymentSummary.tsx"));
 const StudyMaterialsManagement = lazy(() => import("./pages/StudyMaterialsManagement.tsx"));
 const FreeLibrary = lazy(() => import("./pages/FreeLibrary.tsx"));
+const Library = lazy(() => import("./pages/Library.tsx"));
+const LibraryManagement = lazy(() => import("./pages/LibraryManagement.tsx"));
 const SectionsManagement = lazy(() => import("./pages/SectionsManagement.tsx"));
 const MLTExam = lazy(() => import("./pages/MLTExam.tsx"));
 const LabTechnicianExam = lazy(() => import("./pages/LabTechnicianExam.tsx"));
@@ -329,6 +331,22 @@ createRoot(document.getElementById("root")!).render(
                     <ProtectedRoute>
                       <FreeLibrary />
                     </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/library"
+                  element={
+                    <ProtectedRoute>
+                      <Library />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/library"
+                  element={
+                    <AdminRoute>
+                      <LibraryManagement />
+                    </AdminRoute>
                   }
                 />
                 <Route

@@ -394,6 +394,17 @@ const schema = defineSchema(
       .index("by_uploader", ["uploadedBy"])
       .index("by_category", ["category"]),
 
+    // Library PDFs (Yearly Plan Exclusive)
+    library: defineTable({
+      title: v.string(),
+      subject: v.string(), // "Hematology", "Biochemistry", etc.
+      pdf_url: v.string(), // Cloudflare R2 public URL
+      uploadedBy: v.id("users"),
+      status: v.string(), // "active", "archived"
+    })
+      .index("by_subject", ["subject"])
+      .index("by_status", ["status"]),
+
     // Sections
     sections: defineTable({
       name: v.string(),

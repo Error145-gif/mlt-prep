@@ -52,6 +52,7 @@ export default function AdminSidebar() {
     { path: "/admin/image-questions", icon: ImageIcon, label: "Image Questions" },
     { path: "/admin/reported-errors", icon: AlertTriangle, label: "Reported Errors" },
     { path: "/admin/study-materials", icon: BookOpen, label: "Study Materials" },
+    { path: "/admin/library", icon: BookOpen, label: "Library" },
     { path: "/admin/analytics", icon: Settings, label: "Analytics" },
     { path: "/admin/subscriptions", icon: CreditCard, label: "Subscriptions" },
     { path: "/admin/coupons", icon: Tags, label: "Coupons" },
