@@ -1,46 +1,27 @@
-import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { useAuth } from "@/hooks/use-auth";
+import { useState } from "react";
 import { useNavigate } from "react-router";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Star, Target, Trophy, Menu, X } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { Check, Sparkles, TrendingUp, Crown, Zap, Gift } from "lucide-react";
 import { toast } from "sonner";
-import { useEffect, useState } from "react";
 import StudentNav from "@/components/StudentNav";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export default function SubscriptionPlans() {
-  const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
-  const subscriptionAccess = useQuery(api.student.checkSubscriptionAccess);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      navigate("/auth");
-    }
-  }, [isAuthenticated, isLoading, navigate]);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
-        <div className="text-white text-xl">Loading...</div>
-      </div>
-    );
-  }
-
-  const hasPaidSubscription = subscriptionAccess?.hasAccess && subscriptionAccess?.isPaid;
-
-  const handleSubscribe = (_planId: string, amount: number, planName: string, duration: number) => {
-    if (hasPaidSubscription) {
-      toast.error("You already have an active paid subscription! Check your dashboard for expiry date.");
-      return;
-    }
-
-    navigate(`/payment-summary?name=${planName}&price=${amount}&duration=${duration}`);
-  };
+  const user = useQuery(api.users.getCurrentUser);
+  const subscription = useQuery(api.student.getSubscriptionAccess);
+  const createOrder = useMutation(api.cashfree.createOrder);
+  const applyCoupon = useMutation(api.coupons.applyCoupon);
+  
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
 
   const plans = [
     {
@@ -48,51 +29,51 @@ export default function SubscriptionPlans() {
       name: "Monthly Starter",
       subtitle: "Try Before You Commit",
       price: 99,
+      originalPrice: 99,
       duration: 30,
-      icon: Target,
+      popular: false,
+      savings: 0,
       description: "Perfect for testing the platform before committing to longer plans.",
       features: [
         "Unlimited Mock Tests",
-        "All PYQ Sets with explanations",
+        "20 PYQ Sets with explanations",
         "AI-based practice questions",
         "Rank & leaderboard access",
-        "Full performance analysis",
+        "Full test analysis",
+        "Detailed analysis locked (watch banner ads)",
+        "Banner ads shown"
       ],
       bestFor: "Students who want to test the platform first",
-      targetAudience: [
-        "First-time users exploring the platform",
-      ],
-      buttonText: "Start for ₹99",
-      highlighted: false,
-      badge: "Try First",
+      whoIsThisFor: "First-time users exploring the platform",
+      badge: null,
+      icon: Sparkles,
+      color: "from-blue-500 to-cyan-500"
     },
     {
-      id: "4months",
+      id: "4month",
       name: "4-Month Plan",
-      subtitle: "🔥 Most Popular - Best Value",
+      subtitle: "Most Popular - Best Value",
       price: 399,
       originalPrice: 496,
       duration: 120,
-      icon: Star,
-      badge: "SAVE ₹97 • 20% OFF",
+      popular: true,
+      savings: 97,
+      savingsPercent: 20,
       description: "Complete one exam preparation cycle without interruptions. Most students choose this!",
+      studentCount: "223+ students already preparing with us!",
       features: [
         "Everything in Monthly Starter",
         "Extended access for 4 months",
         "Consistent practice & progress tracking",
         "No renewal stress during preparation",
-        "Library Access (Coming Soon)",
-        "Priority support",
+        "Library Access not included",
+        "Priority support"
       ],
       bestFor: "Serious exam aspirants (Recommended)",
-      targetAudience: [
-        "Students with upcoming exams in 3-4 months",
-        "Those who want uninterrupted preparation",
-      ],
-      buttonText: "Get 4 Months - Save ₹97",
-      priceSubtext: "Just ₹99/month",
-      highlighted: true,
-      testimonial: "223+ students already preparing with us!",
+      whoIsThisFor: "Students with upcoming exams in 3-4 months • Those who want uninterrupted preparation",
+      badge: "🔥 MOST POPULAR",
+      icon: TrendingUp,
+      color: "from-orange-500 to-red-500"
     },
     {
       id: "yearly",
@@ -101,277 +82,319 @@ export default function SubscriptionPlans() {
       price: 599,
       originalPrice: 1188,
       duration: 365,
-      icon: Trophy,
-      badge: "SAVE ₹589 • 50% OFF",
+      popular: false,
+      savings: 589,
+      savingsPercent: 50,
       description: "Best for repeat aspirants and long-term government exam preparation.",
       features: [
-        "Everything in 4-Month Plan",
         "Full access for 1 year",
         "Ideal for repeaters & long-term goals",
-        "Library Access (Coming Soon)",
+        "Full Library Access",
         "Lifetime doubt support",
-        "Early access to new features",
+        "Early access to new features"
       ],
       bestFor: "Long-term preparation & repeat aspirants",
-      targetAudience: [
-        "Students preparing for multiple attempts",
-        "Long-term government exam preparation",
-      ],
-      buttonText: "Get Yearly - Save ₹589",
-      priceSubtext: "Just ₹49/month",
-      highlighted: false,
-    },
+      whoIsThisFor: "Students preparing for multiple attempts • Long-term government exam preparation",
+      badge: "SAVE ₹589",
+      icon: Crown,
+      color: "from-purple-500 to-pink-500"
+    }
   ];
 
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) {
+      toast.error("Please enter a coupon code");
+      return;
+    }
+
+    if (!selectedPlan) {
+      toast.error("Please select a plan first");
+      return;
+    }
+
+    setIsApplyingCoupon(true);
+    try {
+      const plan = plans.find(p => p.id === selectedPlan);
+      if (!plan) return;
+
+      const result = await applyCoupon({
+        code: couponCode.trim().toUpperCase(),
+        orderAmount: plan.price,
+      });
+
+      setAppliedCoupon(result);
+      toast.success(`Coupon applied! You saved ₹${result.discountAmount}`);
+    } catch (error: any) {
+      toast.error(error.message || "Invalid coupon code");
+      setAppliedCoupon(null);
+    } finally {
+      setIsApplyingCoupon(false);
+    }
+  };
+
+  const handleSubscribe = async (planId: string) => {
+    if (!user) {
+      toast.error("Please login to subscribe");
+      navigate("/auth");
+      return;
+    }
+
+    const plan = plans.find(p => p.id === planId);
+    if (!plan) return;
+
+    setSelectedPlan(planId);
+
+    try {
+      let finalAmount = plan.price;
+      let couponId = undefined;
+
+      if (appliedCoupon && appliedCoupon.couponId) {
+        finalAmount = appliedCoupon.finalAmount;
+        couponId = appliedCoupon.couponId;
+      }
+
+      const order = await createOrder({
+        planName: plan.name,
+        amount: finalAmount,
+        duration: plan.duration,
+        couponId,
+      });
+
+      if (order.paymentSessionId) {
+        navigate(`/payment-summary?orderId=${order.orderId}`);
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Failed to create order");
+      setSelectedPlan(null);
+    }
+  };
+
   return (
-    <div className="min-h-screen p-4 md:p-8 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       <StudentNav />
       
-      {/* Background */}
-      <div className="fixed inset-0 -z-10 bg-gradient-to-br from-purple-600 via-blue-600 to-pink-600">
-        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-purple-400/30 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-blue-500/30 rounded-full blur-3xl" />
-      </div>
-
-      {/* Hamburger Menu Button */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className="fixed top-4 right-4 z-50 glass-card border-white/20 backdrop-blur-xl bg-white/10 text-white md:hidden"
-        onClick={() => setIsMenuOpen(!isMenuOpen)}
-      >
-        {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-      </Button>
-
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {isMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, x: 300 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 300 }}
-            className="fixed top-16 right-0 z-40 md:hidden bg-white/10 backdrop-blur-xl border-l border-white/20 w-64 h-screen p-4 space-y-3"
-          >
-            <Button
-              onClick={() => {
-                navigate("/student");
-                setIsMenuOpen(false);
-              }}
-              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
-            >
-              Dashboard
-            </Button>
-            <Button
-              onClick={() => {
-                navigate("/tests/mock");
-                setIsMenuOpen(false);
-              }}
-              variant="outline"
-              className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30"
-            >
-              Mock Tests
-            </Button>
-            <Button
-              onClick={() => {
-                navigate("/tests/pyq");
-                setIsMenuOpen(false);
-              }}
-              variant="outline"
-              className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30"
-            >
-              PYQ Sets
-            </Button>
-            <Button
-              onClick={() => {
-                navigate("/tests/ai");
-                setIsMenuOpen(false);
-              }}
-              variant="outline"
-              className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30"
-            >
-              AI Questions
-            </Button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <div className="relative z-10 max-w-7xl mx-auto space-y-8 pt-20">
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center space-y-3"
-        >
-          <div className="inline-block bg-red-500 text-white text-sm font-bold px-4 py-2 rounded-full mb-2 animate-pulse">
-            🔥 Limited Time Offer - Save Up To 50%
-          </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-white drop-shadow-lg">
+        <div className="text-center mb-12 space-y-4">
+          <Badge className="mb-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-1">
             Choose Your Plan
+          </Badge>
+          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+            Start Your MLT Exam Preparation
           </h1>
-          <p className="text-white/90 text-lg drop-shadow-md">
-            Join 223+ students • Upgrade anytime • 100% Money-back guarantee
+          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+            Select the perfect plan for your exam preparation journey
           </p>
-          {hasPaidSubscription && (
-            <Badge className="mt-4 bg-white/90 text-purple-700 border-white backdrop-blur-xl text-sm px-4 py-2 shadow-lg">
-              ✓ You have an active paid subscription
-            </Badge>
-          )}
-        </motion.div>
+        </div>
+
+        {/* Free User Access Info */}
+        <Card className="mb-8 border-2 border-green-200 bg-gradient-to-r from-green-50 to-emerald-50">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Gift className="w-6 h-6 text-green-600" />
+              <CardTitle className="text-green-700">Try First - Free Access</CardTitle>
+            </div>
+            <CardDescription className="text-green-600">
+              Every free user gets one-time base access (no ads required)
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="flex items-center gap-2 text-green-700">
+                <Check className="w-5 h-5" />
+                <span>1 Mock Test</span>
+              </div>
+              <div className="flex items-center gap-2 text-green-700">
+                <Check className="w-5 h-5" />
+                <span>1 PYQ Test</span>
+              </div>
+              <div className="flex items-center gap-2 text-green-700">
+                <Check className="w-5 h-5" />
+                <span>1 AI-based Test</span>
+              </div>
+            </div>
+            
+            <div className="border-t border-green-200 pt-4 mt-4">
+              <div className="flex items-start gap-2 mb-2">
+                <Zap className="w-5 h-5 text-amber-600 mt-1" />
+                <div>
+                  <p className="font-semibold text-amber-700">Extra Access (Ad-Based)</p>
+                  <p className="text-sm text-slate-600">After base access: Watch 1 ad = Unlock 1 test</p>
+                  <p className="text-sm text-slate-600">Maximum 2 ad-unlocks per day (resets every 24 hours)</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Current Subscription Status */}
+        {subscription?.isPaid && (
+          <Card className="mb-8 border-2 border-green-500 bg-gradient-to-r from-green-50 to-emerald-50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-green-700">
+                <Check className="w-6 h-6" />
+                Active Subscription
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <p className="text-lg font-semibold">{subscription.planName}</p>
+                <p className="text-sm text-slate-600">
+                  Valid until: {new Date(subscription.endDate).toLocaleDateString()}
+                </p>
+                <p className="text-sm text-slate-600">
+                  Days remaining: {subscription.daysRemaining}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Plans Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {plans.map((plan, index) => (
-            <motion.div
-              key={plan.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className={plan.highlighted ? "md:scale-105" : ""}
-            >
-              <Card
-                className={`h-full border-2 rounded-3xl overflow-hidden backdrop-blur-xl ${
-                  plan.highlighted
-                    ? "border-yellow-400/60 shadow-2xl bg-gradient-to-br from-purple-500/30 to-pink-500/30"
-                    : "border-white/30 bg-white/20"
-                }`}
+        <div className="grid md:grid-cols-3 gap-6 mb-8">
+          {plans.map((plan) => {
+            const Icon = plan.icon;
+            const isActive = subscription?.isPaid && subscription?.planName === plan.name;
+            
+            return (
+              <Card 
+                key={plan.id}
+                className={`relative overflow-hidden transition-all duration-300 hover:shadow-2xl ${
+                  plan.popular 
+                    ? 'border-4 border-orange-500 scale-105 shadow-xl' 
+                    : 'border-2 hover:border-blue-300'
+                } ${isActive ? 'ring-4 ring-green-500' : ''}`}
               >
                 {plan.badge && (
-                  <div className="bg-gradient-to-r from-yellow-400 to-orange-400 text-center py-2 px-4">
-                    <p className="text-sm font-bold text-purple-900 flex items-center justify-center gap-2">
-                      <Star className="h-4 w-4 fill-purple-900" />
-                      {plan.badge}
-                    </p>
+                  <div className="absolute top-0 right-0 bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-1 text-sm font-bold rounded-bl-lg">
+                    {plan.badge}
                   </div>
                 )}
 
-                <CardHeader className="space-y-3 pb-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600">
-                        <plan.icon className="h-6 w-6 text-white" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-2xl text-white">{plan.name}</CardTitle>
-                        <p className="text-white/70 text-sm mt-1">{plan.subtitle}</p>
-                      </div>
-                    </div>
+                <CardHeader className="space-y-4">
+                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${plan.color} flex items-center justify-center`}>
+                    <Icon className="w-6 h-6 text-white" />
+                  </div>
+                  
+                  <div>
+                    <CardTitle className="text-2xl mb-1">{plan.name}</CardTitle>
+                    <CardDescription className="text-base font-medium">
+                      {plan.subtitle}
+                    </CardDescription>
                   </div>
 
-                  <div className="space-y-1">
-                    {plan.originalPrice && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-white/60 line-through text-lg">₹{plan.originalPrice}</span>
-                        <Badge className="bg-red-500/80 text-white border-red-400/50 text-xs">
-                          Save ₹{plan.originalPrice - plan.price}
-                        </Badge>
-                      </div>
-                    )}
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-4xl font-bold text-white">₹{plan.price}</span>
+                  <div className="space-y-2">
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-4xl font-bold">₹{plan.price}</span>
+                      {plan.originalPrice > plan.price && (
+                        <span className="text-lg text-slate-400 line-through">
+                          ₹{plan.originalPrice}
+                        </span>
+                      )}
                     </div>
-                    {plan.priceSubtext && (
-                      <p className="text-white/70 text-sm">{plan.priceSubtext}</p>
+                    {plan.savings > 0 && (
+                      <Badge variant="secondary" className="bg-green-100 text-green-700">
+                        SAVE ₹{plan.savings} • {plan.savingsPercent}% OFF
+                      </Badge>
                     )}
+                    <p className="text-sm text-slate-500">
+                      Just ₹{Math.round(plan.price / (plan.duration / 30))}/month
+                    </p>
                   </div>
 
-                  <p className="text-white/90 text-sm leading-relaxed">{plan.description}</p>
-
-                  {plan.testimonial && (
-                    <div className="bg-white/10 rounded-lg p-2 text-center">
-                      <p className="text-white/90 text-xs font-medium">{plan.testimonial}</p>
-                    </div>
+                  <p className="text-sm text-slate-600">{plan.description}</p>
+                  {plan.studentCount && (
+                    <p className="text-sm font-semibold text-blue-600">{plan.studentCount}</p>
                   )}
                 </CardHeader>
 
-                <CardContent className="space-y-6">
-                  {/* What you get */}
+                <CardContent className="space-y-4">
                   <div className="space-y-3">
-                    <h3 className="text-white font-semibold">What you get:</h3>
-                    <div className="space-y-2">
-                      {plan.features.map((feature, idx) => (
-                        <div key={idx} className="flex items-start gap-3">
-                          <Check className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
-                          <span className="text-white/90 text-sm">{feature}</span>
-                        </div>
-                      ))}
-                    </div>
+                    <p className="font-semibold text-sm text-slate-700">What you get:</p>
+                    {plan.features.map((feature, idx) => (
+                      <div key={idx} className="flex items-start gap-2">
+                        <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                        <span className="text-sm text-slate-600">{feature}</span>
+                      </div>
+                    ))}
                   </div>
 
-                  {/* Best for */}
-                  {plan.bestFor && (
-                    <div className="bg-white/10 rounded-lg p-3 space-y-2">
-                      <p className="text-white/90 text-sm">
-                        <span className="font-semibold">Best for:</span> {plan.bestFor}
-                      </p>
-                    </div>
-                  )}
+                  <div className="border-t pt-4 space-y-2">
+                    <p className="text-sm font-semibold text-slate-700">Best for:</p>
+                    <p className="text-sm text-slate-600">{plan.bestFor}</p>
+                  </div>
 
-                  {/* Who is this for */}
-                  {plan.targetAudience && (
-                    <div className="space-y-2">
-                      <h3 className="text-white font-semibold text-sm">Who is this for:</h3>
-                      <div className="space-y-1">
-                        {plan.targetAudience.map((audience, idx) => (
-                          <div key={idx} className="flex items-start gap-2">
-                            <Check className="h-4 w-4 text-purple-300 flex-shrink-0 mt-0.5" />
-                            <span className="text-white/80 text-sm">{audience}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* CTA Button */}
-                  <Button
-                    onClick={() => handleSubscribe(plan.id, plan.price, plan.name, plan.duration)}
-                    className={`w-full py-6 text-base font-semibold rounded-xl shadow-lg ${
-                      plan.highlighted
-                        ? "bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
-                        : "bg-gradient-to-r from-orange-400 to-pink-400 hover:from-orange-500 hover:to-pink-500 text-purple-900"
-                    }`}
-                    disabled={hasPaidSubscription}
-                  >
-                    {hasPaidSubscription ? "Already Subscribed" : plan.buttonText}
-                  </Button>
+                  <div className="border-t pt-4 space-y-2">
+                    <p className="text-sm font-semibold text-slate-700">Who is this for:</p>
+                    <p className="text-sm text-slate-600">{plan.whoIsThisFor}</p>
+                  </div>
                 </CardContent>
+
+                <CardFooter className="flex flex-col gap-3">
+                  {isActive ? (
+                    <Button className="w-full" variant="outline" disabled>
+                      <Check className="w-4 h-4 mr-2" />
+                      Already Subscribed
+                    </Button>
+                  ) : (
+                    <Button 
+                      className={`w-full ${plan.popular ? 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600' : ''}`}
+                      onClick={() => handleSubscribe(plan.id)}
+                      disabled={selectedPlan === plan.id}
+                    >
+                      {selectedPlan === plan.id ? "Processing..." : "Subscribe Now"}
+                    </Button>
+                  )}
+                </CardFooter>
               </Card>
-            </motion.div>
-          ))}
+            );
+          })}
         </div>
 
-        {/* Trust Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="glass-card border border-white/30 backdrop-blur-xl bg-white/20 rounded-xl p-6 text-center"
-        >
-          <h3 className="text-xl font-bold text-white mb-4">Why Students Trust MLT Prep</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <p className="text-3xl font-bold text-white">223+</p>
-              <p className="text-white/80 text-sm">Active Students</p>
+        {/* Coupon Section */}
+        <Card className="max-w-md mx-auto">
+          <CardHeader>
+            <CardTitle className="text-lg">Have a Coupon Code?</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <Label htmlFor="coupon">Coupon Code</Label>
+                <Input
+                  id="coupon"
+                  placeholder="Enter code"
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                  disabled={!selectedPlan}
+                />
+              </div>
+              <Button 
+                onClick={handleApplyCoupon}
+                disabled={isApplyingCoupon || !selectedPlan || !couponCode.trim()}
+                className="mt-6"
+              >
+                {isApplyingCoupon ? "Applying..." : "Apply"}
+              </Button>
             </div>
-            <div>
-              <p className="text-3xl font-bold text-white">5000+</p>
-              <p className="text-white/80 text-sm">Practice Questions</p>
-            </div>
-            <div>
-              <p className="text-3xl font-bold text-white">95%</p>
-              <p className="text-white/80 text-sm">Success Rate</p>
-            </div>
-          </div>
-          <p className="text-white/90 text-sm mt-4">
-            ✓ 100% Money-back guarantee • ✓ Cancel anytime • ✓ Secure payment
-          </p>
-        </motion.div>
-
-        {/* Bottom Note */}
-        <div className="glass-card border border-white/30 backdrop-blur-xl bg-white/20 rounded-xl p-4 text-center">
-          <p className="text-sm text-white">
-            <strong>Note:</strong> All plans include unlimited access to Mock Tests, PYQ Sets, and AI Questions. Library access will be unlocked automatically when released.
-          </p>
-        </div>
+            
+            {appliedCoupon && selectedPlan && (
+              <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                <p className="text-sm text-green-700 font-medium">
+                  Coupon applied! You saved ₹{appliedCoupon.discountAmount}
+                </p>
+                <p className="text-sm text-green-600">
+                  Final amount: ₹{appliedCoupon.finalAmount}
+                </p>
+              </div>
+            )}
+            
+            {!selectedPlan && (
+              <p className="text-sm text-slate-500">
+                Select a plan above to apply a coupon
+              </p>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
