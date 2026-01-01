@@ -143,7 +143,7 @@ export default function StudentDashboard() {
         />
       )}
 
-      {/* Main Dashboard Content */}
+      {/* Main Dashboard Content - No left padding, content adjusts based on sidebar state */}
       <div className={`relative z-10 max-w-7xl mx-auto px-4 py-6 space-y-6 transition-all duration-500 ${isFreeTrialUser ? 'pt-16' : 'pt-6'} ${isProfileIncomplete ? 'blur-sm pointer-events-none' : ''}`}>
         
         {/* Header - Show immediately with skeleton if needed */}

@@ -50,7 +50,7 @@ export default function Library() {
     <div className="min-h-screen bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500 pb-24">
       <StudentNav />
       
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
+      <div className="container mx-auto px-4 py-8 max-w-7xl transition-all duration-300">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
