@@ -61,21 +61,21 @@ export default function StudentNav() {
 
   return (
     <>
-      {/* Mobile Menu Button - Hidden on mobile, shown on tablet/desktop */}
+      {/* Desktop Menu Button - Only shown on desktop */}
       {isAuthenticated && (
         <Button
           variant="ghost"
           size="icon"
-          className="fixed top-4 left-4 z-50 bg-slate-900 hover:bg-slate-800 text-white border border-slate-700 shadow-lg lg:block hidden"
+          className="fixed top-4 left-4 z-50 bg-slate-900 hover:bg-slate-800 text-white border border-slate-700 shadow-lg hidden lg:block"
           onClick={() => setIsOpen(!isOpen)}
         >
           {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </Button>
       )}
 
-      {/* Sidebar - Hidden on mobile (bottom nav will be used instead) */}
+      {/* Sidebar - Hidden on mobile (bottom nav used instead), visible on desktop */}
       <AnimatePresence>
-        {isOpen && (
+        {isOpen && isAuthenticated && (
           <motion.aside
             initial={{ x: -300 }}
             animate={{ x: 0 }}
