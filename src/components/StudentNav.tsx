@@ -33,7 +33,7 @@ export default function StudentNav() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Close sidebar when location changes (for mobile/tablet)
+  // Close sidebar when location changes (for mobile/tablet only)
   useEffect(() => {
     if (window.innerWidth < 1024) {
       setIsOpen(false);
@@ -127,15 +127,15 @@ export default function StudentNav() {
 
                 {/* Upgrade CTA */}
                 <Link
-                  to="/subscription"
+                  to="/subscription-plans"
                   className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all font-semibold mt-2 ${
-                    location.pathname === "/subscription"
-                      ? "bg-gradient-to-r from-orange-500 to-pink-500 text-white shadow-lg shadow-orange-500/50"
-                      : "bg-gradient-to-r from-orange-500/80 to-pink-500/80 text-white hover:from-orange-500 hover:to-pink-500 shadow-md"
+                    location.pathname === "/subscription-plans"
+                      ? "bg-gradient-to-r from-red-500 to-pink-500 text-white shadow-lg shadow-red-500/50"
+                      : "bg-gradient-to-r from-red-500/80 to-pink-500/80 text-white hover:from-red-500 hover:to-pink-500 shadow-md"
                   }`}
                 >
                   <CreditCard className="h-5 w-5" />
-                  <span>Upgrade</span>
+                  <span>🔥 Upgrade</span>
                 </Link>
 
                 <div className="flex-1" />
