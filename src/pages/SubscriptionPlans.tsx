@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { useMutation, useQuery, useAction } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,7 +15,6 @@ export default function SubscriptionPlans() {
   const navigate = useNavigate();
   const user = useQuery(api.users.currentUser);
   const subscription = useQuery(api.student.checkSubscriptionAccess);
-  const createOrder = useAction(api.cashfree.createOrder);
   const applyCoupon = useMutation(api.coupons.applyCoupon);
   
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
@@ -151,19 +150,8 @@ export default function SubscriptionPlans() {
         finalAmount = appliedCoupon.finalAmount;
       }
 
-      const order = await createOrder({
-        amount: finalAmount,
-        currency: "INR",
-        userId: user._id,
-        planName: plan.name,
-        duration: plan.duration,
-        customerEmail: user.email,
-        customerPhone: user.phone,
-      });
-
-      if (order.paymentSessionId) {
-        navigate(`/payment-summary?orderId=${order.orderId}`);
-      }
+      // Navigate to payment summary with plan details
+      navigate(`/payment-summary?name=${encodeURIComponent(plan.name)}&price=${finalAmount}&duration=${plan.duration}`);
     } catch (error: any) {
       toast.error(error.message || "Failed to create order");
       setSelectedPlan(null);
