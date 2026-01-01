@@ -19,4 +19,12 @@ crons.interval(
   {}
 );
 
+// Check daily for expired subscriptions and mark them as expired
+crons.interval(
+  "check-expired-subscriptions",
+  { hours: 24 },
+  internal.subscriptions.checkExpiredSubscriptions,
+  {}
+);
+
 export default crons;

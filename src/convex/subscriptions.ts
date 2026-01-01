@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { mutation, query, internalMutation } from "./_generated/server";
 import { getCurrentUser } from "./users";
 
 // Get all subscriptions
@@ -307,5 +307,33 @@ export const debugUserSubscription = query({
       currentTime: Date.now(),
       isExpired: subscription ? subscription.endDate < Date.now() : null,
     };
+  },
+});
+
+// Internal mutation to check and expire subscriptions
+export const checkExpiredSubscriptions = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const now = Date.now();
+    
+    // Find all active subscriptions that have passed their end date
+    // We use the by_status index to filter for active subscriptions first
+    // Then filter by endDate in memory/query
+    const activeSubscriptions = await ctx.db
+      .query("subscriptions")
+      .withIndex("by_status", (q) => q.eq("status", "active"))
+      .filter((q) => q.lt(q.field("endDate"), now))
+      .collect();
+
+    let expiredCount = 0;
+
+    for (const sub of activeSubscriptions) {
+      await ctx.db.patch(sub._id, {
+        status: "expired",
+      });
+      expiredCount++;
+    }
+
+    console.log(`Checked subscriptions: Expired ${expiredCount} subscriptions`);
   },
 });
