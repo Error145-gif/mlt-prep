@@ -538,132 +538,157 @@ export const getTestQuestions = query({
       return [];
     }
 
-    // Check for active subscription and get plan limits
-    const subscription = await ctx.db
-      .query("subscriptions")
-      .withIndex("by_user", (q) => q.eq("userId", user._id))
-      .filter((q) => q.eq(q.field("status"), "active"))
-      .first();
-
-    const hasActiveSubscription = subscription && subscription.endDate > Date.now();
-
-    // Determine plan limits
-    let mockTestLimit = 1; // Free trial
-    let pyqSetLimit = 1;
-    let aiTestLimit = 1;
-
-    if (hasActiveSubscription) {
-      // Monthly Starter Plan (₹99) - LIMITED
-      if (subscription.amount === 99 || subscription.planName.includes("Monthly Starter")) {
-        mockTestLimit = 25; // 25 questions total
-        pyqSetLimit = 20; // 20 questions total
-        aiTestLimit = 25; // 25 questions total
+    // 1. Check if this specific test is unlocked via ad (HIGHEST PRIORITY)
+    if (args.setNumber) {
+      const adUnlock = await ctx.db
+        .query("adUnlockedTests")
+        .withIndex("by_user_and_type", (q) => q.eq("userId", user._id).eq("testType", args.testType))
+        .filter(q => q.eq(q.field("testSetNumber"), args.setNumber))
+        .first();
+      
+      if (adUnlock) {
+        console.log("✅ Access granted via ad unlock");
+        // Proceed to fetch questions below without limit checks
       } else {
-        // Higher plans get unlimited
-        mockTestLimit = 999;
-        pyqSetLimit = 999;
-        aiTestLimit = 999;
+        // If not ad-unlocked, check subscription limits
+        
+        // Check for active subscription and get plan limits
+        const subscription = await ctx.db
+          .query("subscriptions")
+          .withIndex("by_user", (q) => q.eq("userId", user._id))
+          .filter((q) => q.eq(q.field("status"), "active"))
+          .first();
+
+        const hasActiveSubscription = subscription && subscription.endDate > Date.now();
+
+        // Determine plan limits (IN SETS)
+        let mockSetLimit = 1; // Free trial
+        let pyqSetLimit = 1;
+        let aiSetLimit = 1;
+
+        if (hasActiveSubscription) {
+          // Monthly Starter Plan (₹99) - LIMITED SETS
+          if (subscription.amount === 99 || subscription.planName.includes("Monthly Starter")) {
+            mockSetLimit = 25; // 25 SETS
+            pyqSetLimit = 20; // 20 SETS
+            aiSetLimit = 25; // 25 SETS
+          } else {
+            // Higher plans get unlimited
+            mockSetLimit = 9999;
+            pyqSetLimit = 9999;
+            aiSetLimit = 9999;
+          }
+        }
+
+        // Count how many UNIQUE SETS user has already attempted for this test type
+        const completedTests = await ctx.db
+          .query("testSessions")
+          .withIndex("by_user", (q) => q.eq("userId", user._id))
+          .filter((q) => q.eq(q.field("status"), "completed"))
+          .filter((q) => q.eq(q.field("testType"), args.testType))
+          .collect();
+
+        // Calculate unique sets attempted
+        let uniqueSetsAttempted = 0;
+        if (args.testType === "mock" || args.testType === "ai") {
+          // For Mock/AI, count unique setNumbers (optionally per topic, but simplified to setNumber for now as per frontend)
+          const uniqueSetNumbers = new Set(completedTests.map(t => t.setNumber));
+          uniqueSetsAttempted = uniqueSetNumbers.size;
+        } else if (args.testType === "pyq") {
+          // For PYQ, count unique year+setNumber combinations
+          const uniquePyqSets = new Set(completedTests.map(t => `${t.year}-${t.setNumber}`));
+          uniqueSetsAttempted = uniquePyqSets.size;
+        }
+
+        // Check if user has exceeded their limit
+        let setLimit = 0;
+        if (args.testType === "mock") {
+          setLimit = mockSetLimit;
+        } else if (args.testType === "pyq") {
+          setLimit = pyqSetLimit;
+        } else if (args.testType === "ai") {
+          setLimit = aiSetLimit;
+        }
+
+        // If user is trying to access a new set and has reached limit
+        // Note: We allow re-taking already completed sets even if limit reached? 
+        // For now, strict limit on unique sets.
+        
+        // Check if this specific set has been completed before
+        let isCompletedBefore = false;
+        if (args.testType === "pyq") {
+           isCompletedBefore = completedTests.some(t => t.year === args.year && t.setNumber === args.setNumber);
+        } else {
+           isCompletedBefore = completedTests.some(t => t.setNumber === args.setNumber);
+        }
+
+        if (!isCompletedBefore && uniqueSetsAttempted >= setLimit) {
+          console.log(`Blocking access to ${args.testType} set ${args.setNumber} - Limit reached (${uniqueSetsAttempted}/${setLimit} sets)`);
+          return [];
+        }
       }
-    }
-
-    // Count how many questions user has already attempted for this test type
-    const completedTests = await ctx.db
-      .query("testSessions")
-      .withIndex("by_user", (q) => q.eq("userId", user._id))
-      .filter((q) => q.eq(q.field("status"), "completed"))
-      .filter((q) => q.eq(q.field("testType"), args.testType))
-      .collect();
-
-    // Calculate total questions attempted
-    let totalQuestionsAttempted = 0;
-    for (const test of completedTests) {
-      totalQuestionsAttempted += test.questionIds.length;
-    }
-
-    // Check if user has exceeded their limit
-    let questionLimit = 0;
-    if (args.testType === "mock") {
-      questionLimit = mockTestLimit;
-    } else if (args.testType === "pyq") {
-      questionLimit = pyqSetLimit;
-    } else if (args.testType === "ai") {
-      questionLimit = aiTestLimit;
-    }
-
-    if (totalQuestionsAttempted >= questionLimit) {
-      console.log(`Blocking access to ${args.testType} questions - Limit reached (${totalQuestionsAttempted}/${questionLimit})`);
-      return [];
     }
     
     try {
       let questions: any[] = [];
       
       if (args.testType === "mock") {
-        // Get approved manual questions - optimized query
+        // Get approved manual questions
         const allQuestions = await ctx.db
           .query("questions")
           .withIndex("by_source", (q) => q.eq("source", "manual"))
           .filter((q) => q.eq(q.field("status"), "approved"))
           .collect();
         
-        // Calculate remaining questions allowed
-        const remainingQuestions = questionLimit - totalQuestionsAttempted;
-        
         // Organize into sets dynamically based on setNumber parameter
         if (args.setNumber) {
-          const setSize = Math.min(100, remainingQuestions); // Limit to remaining or 100
+          const setSize = 100; // Fixed size for sets
           const startIndex = (args.setNumber - 1) * setSize;
           const endIndex = startIndex + setSize;
           questions = allQuestions.slice(startIndex, endIndex);
         } else {
-          questions = allQuestions.slice(0, Math.min(100, remainingQuestions));
+          questions = allQuestions.slice(0, 100);
         }
         
       } else if (args.testType === "pyq") {
-        // Get PYQ questions - optimized with early filtering
+        // Get PYQ questions
         const allPyqQuestions = await ctx.db
           .query("questions")
           .withIndex("by_source", (q) => q.eq("source", "pyq"))
           .filter((q) => q.eq(q.field("status"), "approved"))
           .collect();
         
-        // Calculate remaining questions allowed
-        const remainingQuestions = questionLimit - totalQuestionsAttempted;
-        
-        // Filter by year and examName, then organize into sets dynamically
+        // Filter by year and examName
         const filteredQuestions = allPyqQuestions.filter(q => 
           q.year === args.year &&
           (!args.examName || q.examName === args.examName)
         );
         
         if (args.setNumber) {
-          const setSize = Math.min(20, remainingQuestions); // Limit to remaining or 20
+          const setSize = 20; // Fixed size for PYQ sets
           const startIndex = (args.setNumber - 1) * setSize;
           const endIndex = startIndex + setSize;
           questions = filteredQuestions.slice(startIndex, endIndex);
         } else {
-          questions = filteredQuestions.slice(0, Math.min(20, remainingQuestions));
+          questions = filteredQuestions.slice(0, 20);
         }
         
       } else if (args.testType === "ai") {
-        // Get approved AI questions - optimized
+        // Get approved AI questions
         const allQuestions = await ctx.db
           .query("questions")
           .withIndex("by_source", (q) => q.eq("source", "ai"))
           .filter((q) => q.eq(q.field("status"), "approved"))
           .collect();
         
-        // Calculate remaining questions allowed
-        const remainingQuestions = questionLimit - totalQuestionsAttempted;
-        
         // Organize into sets dynamically based on setNumber parameter
         if (args.setNumber) {
-          const setSize = Math.min(25, remainingQuestions); // Limit to remaining or 25
+          const setSize = 25; // Fixed size for AI sets
           const startIndex = (args.setNumber - 1) * setSize;
           const endIndex = startIndex + setSize;
           questions = allQuestions.slice(startIndex, endIndex);
         } else {
-          questions = allQuestions.slice(0, Math.min(25, remainingQuestions));
+          questions = allQuestions.slice(0, 25);
         }
       }
       
@@ -1208,9 +1233,6 @@ export const canAccessTestType = query({
       return { canAccess: false, reason: "not_authenticated" };
     }
 
-    console.log(`=== Checking access for test type: ${args.testType} ===`);
-    console.log("User ID:", user._id);
-
     // Check for active subscription FIRST (highest priority)
     const subscription = await ctx.db
       .query("subscriptions")
@@ -1218,20 +1240,10 @@ export const canAccessTestType = query({
       .filter((q) => q.eq(q.field("status"), "active"))
       .first();
 
-    console.log("Found subscription:", subscription ? "YES" : "NO");
-    if (subscription) {
-      console.log("Subscription details:", {
-        amount: subscription.amount,
-        endDate: subscription.endDate,
-        currentTime: Date.now(),
-        isExpired: subscription.endDate < Date.now()
-      });
-    }
-
     // If user has an active paid subscription, check plan type
     if (subscription && subscription.endDate >= Date.now()) {
-      // Monthly Starter Plan (₹99) - Check TEST SET limits (not question limits)
-      if (subscription.amount === 99) {
+      // Monthly Starter Plan (₹99) - Check TEST SET limits
+      if (subscription.amount === 99 || subscription.planName.includes("Monthly Starter")) {
         // Define limits for Monthly Starter
         const limits = {
           mock: 25,
@@ -1241,33 +1253,23 @@ export const canAccessTestType = query({
 
         const limit = limits[args.testType as keyof typeof limits] || 0;
         
-        // Count sets used
+        // Count sets used correctly using testSessions for ALL types
+        const sessions = await ctx.db
+          .query("testSessions")
+          .withIndex("by_user", (q) => q.eq("userId", user._id))
+          .filter(q => q.eq(q.field("status"), "completed"))
+          .filter(q => q.eq(q.field("testType"), args.testType))
+          .collect();
+          
         let setsUsed = 0;
-        
-        if (args.testType === "mock") {
-          const attempts = await ctx.db
-            .query("weeklyTestAttempts")
-            .withIndex("by_user", (q) => q.eq("userId", user._id))
-            .collect();
-          // Count unique tests attempted
-          const uniqueTests = new Set(attempts.map(a => a.weeklyTestId));
-          setsUsed = uniqueTests.size;
-        } else if (args.testType === "pyq") {
-          const sessions = await ctx.db
-            .query("testSessions")
-            .withIndex("by_user", (q) => q.eq("userId", user._id))
-            .filter(q => q.eq(q.field("testType"), "pyq"))
-            .collect();
-          // Count unique sets (year + examName)
-          // This is an approximation, ideally we track unique sets directly
-          setsUsed = sessions.length; 
-        } else if (args.testType === "ai") {
-          const sessions = await ctx.db
-            .query("testSessions")
-            .withIndex("by_user", (q) => q.eq("userId", user._id))
-            .filter(q => q.eq(q.field("testType"), "ai"))
-            .collect();
-          setsUsed = sessions.length;
+        if (args.testType === "pyq") {
+           // Count unique year+setNumber
+           const uniqueSets = new Set(sessions.map(s => `${s.year}-${s.setNumber}`));
+           setsUsed = uniqueSets.size;
+        } else {
+           // Count unique setNumber
+           const uniqueSets = new Set(sessions.map(s => s.setNumber));
+           setsUsed = uniqueSets.size;
         }
 
         return {
@@ -1279,7 +1281,6 @@ export const canAccessTestType = query({
       }
       
       // Higher plans get unlimited access
-      console.log("✅ Access granted - premium subscription");
       return { canAccess: true, reason: "paid_subscription" };
     }
 
@@ -1292,14 +1293,10 @@ export const canAccessTestType = query({
       .filter((q) => q.eq(q.field("testType"), args.testType))
       .collect();
 
-    console.log("Completed tests of this type:", completedTests.length);
-
     if (completedTests.length === 0) {
-      console.log("✅ Access granted - free trial available");
       return { canAccess: true, reason: "free_trial" };
     }
 
-    console.log("❌ Access denied - free trial used, no paid subscription");
     return { canAccess: false, reason: "free_trial_used" };
   },
 });
