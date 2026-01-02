@@ -19,6 +19,8 @@ import {
 } from "@/components/ui/dialog";
 import { Id } from "@/convex/_generated/dataModel";
 
+const adUnlockLimit = 2;
+
 export default function Library() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
@@ -49,8 +51,6 @@ export default function Library() {
     !hasAccess && isAdEligibleUser && dailyAdUnlocksUsed < adUnlockLimit;
   const showAdGateOverlay =
     !isYearlyUser && !hasAcknowledgedAdGate && !!libraryAccess;
-
-  const adUnlockLimit = 2;
 
   const subjects = [
     "Hematology",
@@ -312,7 +312,7 @@ export default function Library() {
             <DialogTitle>Unlock Study Material</DialogTitle>
             <DialogDescription>
               {isAdEligibleUser
-                ? "Watch a short ad to unlock this note. Only two PDFs can be opened per day using ads."
+                ? `Watch a short ad to unlock this note. Only ${adUnlockLimit} PDFs can be opened per day using ads.`
                 : "Only Yearly Plan members can open this file. Upgrade now to continue learning."}
             </DialogDescription>
           </DialogHeader>
@@ -457,5 +457,4 @@ export default function Library() {
       )}
     </AnimatePresence>
   </div>
-);
 }

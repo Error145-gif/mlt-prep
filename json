@@ -1,1 +1,11 @@
-{"type":"tool_code","content":"executeCommandTool({\"command\":\"npx convex dev --once && npx tsc -b --noEmit\"})"}
+{
+  "type": "tool_call",
+  "tool_number": 1,
+  "tool_name": "readFilesToContextTool",
+  "input_args": {
+    "file_paths": [
+      "src/pages/Library.tsx"
+    ],
+    "replace_files_in_context": true
+  }
+}
