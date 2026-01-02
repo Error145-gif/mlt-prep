@@ -1228,9 +1228,54 @@ export const canAccessTestType = query({
       });
     }
 
-    // If user has an active paid subscription, grant full access immediately
+    // If user has an active paid subscription, check plan type
     if (subscription && subscription.endDate >= Date.now()) {
-      console.log("✅ Access granted - active subscription");
+      // Monthly Starter Plan (₹99) - Check question limits
+      if (subscription.amount === 99 || subscription.planName.includes("Monthly Starter")) {
+        // Count total questions attempted for this test type
+        const completedTests = await ctx.db
+          .query("testSessions")
+          .withIndex("by_user", (q) => q.eq("userId", user._id))
+          .filter((q) => q.eq(q.field("status"), "completed"))
+          .filter((q) => q.eq(q.field("testType"), args.testType))
+          .collect();
+
+        let totalQuestionsAttempted = 0;
+        for (const test of completedTests) {
+          totalQuestionsAttempted += test.questionIds.length;
+        }
+
+        // Set limits based on test type
+        let questionLimit = 0;
+        if (args.testType === "mock") {
+          questionLimit = 25;
+        } else if (args.testType === "pyq") {
+          questionLimit = 20;
+        } else if (args.testType === "ai") {
+          questionLimit = 25;
+        }
+
+        if (totalQuestionsAttempted >= questionLimit) {
+          console.log(`❌ Monthly Starter limit reached for ${args.testType}: ${totalQuestionsAttempted}/${questionLimit}`);
+          return { 
+            canAccess: false, 
+            reason: "monthly_starter_limit_reached",
+            questionsUsed: totalQuestionsAttempted,
+            questionLimit: questionLimit
+          };
+        }
+
+        console.log(`✅ Access granted - Monthly Starter (${totalQuestionsAttempted}/${questionLimit} questions used)`);
+        return { 
+          canAccess: true, 
+          reason: "paid_subscription",
+          questionsUsed: totalQuestionsAttempted,
+          questionLimit: questionLimit
+        };
+      }
+      
+      // Higher plans get unlimited access
+      console.log("✅ Access granted - premium subscription");
       return { canAccess: true, reason: "paid_subscription" };
     }
 

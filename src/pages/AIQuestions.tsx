@@ -52,20 +52,13 @@ export default function AIQuestions() {
   const handleStartTest = (test: any, isFirstTest: boolean) => {
     // Check subscription access
     if (!canAccessAI?.canAccess) {
-      toast.error("Subscribe to unlock AI Tests!");
-      setTimeout(() => navigate("/subscription-plans"), 1000);
-      return;
-    }
-    
-    // Free users: only first test
-    if (isFirstTest && canAccessAI?.reason === "free_trial") {
-      // Allow first test
-    } else if (canAccessAI?.reason === "free_trial_used") {
-      toast.error("Your free trial is used. Please subscribe to continue.");
-      setTimeout(() => navigate("/subscription-plans"), 500);
-      return;
-    } else if (!canAccessAI?.canAccess) {
-      toast.error("This test is locked! Subscribe to unlock all tests.");
+      if (canAccessAI?.reason === "monthly_starter_limit_reached") {
+        toast.error(`Monthly Starter limit reached! You've used ${canAccessAI.questionsUsed}/${canAccessAI.questionLimit} questions. Upgrade to continue.`);
+      } else if (canAccessAI?.reason === "free_trial_used") {
+        toast.error("Your free trial is used. Please subscribe to continue.");
+      } else {
+        toast.error("Subscribe to unlock AI Tests!");
+      }
       setTimeout(() => navigate("/subscription-plans"), 1000);
       return;
     }

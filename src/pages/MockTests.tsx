@@ -66,20 +66,13 @@ export default function MockTests() {
   const handleStartTest = (topicId: string | null, setNumber: number, isFirstTest: boolean) => {
     // Check subscription access
     if (!canAccessMock?.canAccess) {
-      toast.error("Subscribe to unlock Mock Tests!");
-      setTimeout(() => navigate("/subscription-plans"), 1000);
-      return;
-    }
-    
-    // Free users: only first test
-    if (isFirstTest && canAccessMock?.reason === "free_trial") {
-      // Allow first test
-    } else if (canAccessMock?.reason === "free_trial_used") {
-      toast.error("Your free trial is used. Please subscribe to continue.");
-      setTimeout(() => navigate("/subscription-plans"), 500);
-      return;
-    } else if (!canAccessMock?.canAccess) {
-      toast.error("This test is locked! Subscribe to unlock all tests.");
+      if (canAccessMock?.reason === "monthly_starter_limit_reached") {
+        toast.error(`Monthly Starter limit reached! You've used ${canAccessMock.questionsUsed}/${canAccessMock.questionLimit} questions. Upgrade to continue.`);
+      } else if (canAccessMock?.reason === "free_trial_used") {
+        toast.error("Your free trial is used. Please subscribe to continue.");
+      } else {
+        toast.error("Subscribe to unlock Mock Tests!");
+      }
       setTimeout(() => navigate("/subscription-plans"), 1000);
       return;
     }

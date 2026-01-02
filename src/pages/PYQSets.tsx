@@ -59,22 +59,13 @@ export default function PYQSets() {
   const handleSelectSet = (set: any) => {
     // Check subscription access
     if (!canAccessPYQ?.canAccess) {
-      toast.error("Subscribe to unlock PYQ Tests!");
-      setTimeout(() => navigate("/subscription-plans"), 1000);
-      return;
-    }
-    
-    const isFirstTest = pyqSets.length > 0 && pyqSets[0] === set;
-    
-    // Free users: only first test
-    if (isFirstTest && canAccessPYQ?.reason === "free_trial") {
-      // Allow first test
-    } else if (canAccessPYQ?.reason === "free_trial_used") {
-      toast.error("Your free trial is used. Please subscribe to continue.");
-      setTimeout(() => navigate("/subscription-plans"), 500);
-      return;
-    } else if (!canAccessPYQ?.canAccess) {
-      toast.error("This test is locked! Subscribe to unlock all tests.");
+      if (canAccessPYQ?.reason === "monthly_starter_limit_reached") {
+        toast.error(`Monthly Starter limit reached! You've used ${canAccessPYQ.questionsUsed}/${canAccessPYQ.questionLimit} questions. Upgrade to continue.`);
+      } else if (canAccessPYQ?.reason === "free_trial_used") {
+        toast.error("Your free trial is used. Please subscribe to continue.");
+      } else {
+        toast.error("Subscribe to unlock PYQ Tests!");
+      }
       setTimeout(() => navigate("/subscription-plans"), 1000);
       return;
     }
