@@ -26,6 +26,7 @@ export default function Library() {
   const [unlockDialogOpen, setUnlockDialogOpen] = useState(false);
   const [selectedPdfId, setSelectedPdfId] = useState<Id<"library"> | null>(null);
   const [isAdLoading, setIsAdLoading] = useState(false);
+  const [hasEnteredWithAds, setHasEnteredWithAds] = useState(false);
   
   const libraryAccess = useQuery(api.library.checkLibraryAccess);
   const pdfsBySubject = useQuery(api.library.getPDFsBySubject);
@@ -38,12 +39,14 @@ export default function Library() {
 
   const hasAccess = libraryAccess?.hasAccess ?? false;
   const isYearlyUser = libraryAccess?.isYearlyUser ?? false;
-  const planType = libraryAccess?.planType ?? "free";
   const dailyAdUnlocksUsed = libraryAccess?.dailyAdUnlocksUsed ?? 0;
   const unlockedPdfIds = libraryAccess?.unlockedPdfIds ?? [];
 
-  const isPaidUser = planType === "monthly_starter" || planType === "premium";
-  const canUnlockWithAd = isPaidUser && dailyAdUnlocksUsed < 2;
+  // Allow ad unlocks for all non-yearly users (Free, Starter, Premium)
+  const canUnlockWithAd = !isYearlyUser && dailyAdUnlocksUsed < 2;
+  
+  // Show entry gate for non-yearly users who haven't clicked "Continue with Ads"
+  const showEntryGate = libraryAccess !== undefined && !isYearlyUser && !hasEnteredWithAds;
 
   const subjects = [
     "Hematology",
@@ -98,10 +101,41 @@ export default function Library() {
   const displayContent = searchQuery ? searchResults : null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500 pb-24">
+    <div className="min-h-screen bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500 pb-24 relative">
       <StudentNav />
       
-      <div className="container mx-auto px-4 py-8 max-w-7xl transition-all duration-300 relative">
+      {/* Entry Gate Overlay */}
+      <Dialog open={showEntryGate} onOpenChange={() => {}}>
+        <DialogContent className="sm:max-w-md [&>button]:hidden" onPointerDownOutside={(e) => e.preventDefault()}>
+          <DialogHeader>
+            <DialogTitle className="text-center text-2xl">📚 Library Access</DialogTitle>
+            <DialogDescription className="text-center pt-4 text-base">
+              Full library access is exclusive to Yearly Plan users.
+              <br /><br />
+              You can continue with ads to browse and unlock up to <strong>2 PDFs daily</strong>.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 pt-4">
+            <Button 
+              onClick={() => setHasEnteredWithAds(true)}
+              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-6 text-lg"
+            >
+              <PlayCircle className="mr-2 h-5 w-5" />
+              Continue with Ads
+            </Button>
+            <Button 
+              variant="outline"
+              onClick={() => navigate("/subscription-plans")}
+              className="w-full border-yellow-500 text-yellow-600 hover:bg-yellow-50"
+            >
+              <Crown className="mr-2 h-4 w-4" />
+              Upgrade to Yearly Plan
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <div className={`container mx-auto px-4 py-8 max-w-7xl transition-all duration-300 relative ${showEntryGate ? "blur-xl pointer-events-none h-screen overflow-hidden" : ""}`}>
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -134,9 +168,7 @@ export default function Library() {
                       Library Access is Exclusive to Yearly Plan
                     </h3>
                     <p className="text-white/90 text-sm md:text-base">
-                      {isPaidUser 
-                        ? "Upgrade to Yearly Plan for unlimited access, or watch ads to unlock specific notes (2/day)."
-                        : "Upgrade to Yearly Plan to unlock all PDFs and study materials."}
+                      Upgrade to Yearly Plan for unlimited access, or watch ads to unlock specific notes (2/day).
                     </p>
                   </div>
                   <Button
@@ -177,8 +209,8 @@ export default function Library() {
           </div>
         </motion.div>
 
-        {/* Content Area with Blur Effect for Non-Yearly */}
-        <div className={`relative transition-all duration-500 ${!isYearlyUser ? "opacity-90" : ""}`}>
+        {/* Content Area */}
+        <div className="relative transition-all duration-500">
           
           {/* Search Results */}
           {searchQuery && displayContent && (
@@ -293,44 +325,34 @@ export default function Library() {
           <DialogHeader>
             <DialogTitle>Unlock Study Material</DialogTitle>
             <DialogDescription>
-              {isPaidUser 
-                ? "This content is exclusive to Yearly Plan users. You can unlock it by watching an ad."
-                : "This content is exclusive to Yearly Plan users. Upgrade now to access."}
+              This content is exclusive to Yearly Plan users. You can unlock it by watching an ad.
             </DialogDescription>
           </DialogHeader>
           
           <div className="flex flex-col gap-4 py-4">
-            {isPaidUser ? (
-              <>
-                <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-                  <span className="text-sm font-medium">Daily Ad Unlocks Used</span>
-                  <span className="text-sm font-bold">{dailyAdUnlocksUsed} / 2</span>
-                </div>
-                
-                {canUnlockWithAd ? (
-                  <Button 
-                    onClick={handleAdUnlock} 
-                    disabled={isAdLoading}
-                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white"
-                  >
-                    {isAdLoading ? (
-                      "Watching Ad..."
-                    ) : (
-                      <>
-                        <PlayCircle className="mr-2 h-4 w-4" />
-                        Watch Ad to Unlock
-                      </>
-                    )}
-                  </Button>
+            <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+              <span className="text-sm font-medium">Daily Ad Unlocks Used</span>
+              <span className="text-sm font-bold">{dailyAdUnlocksUsed} / 2</span>
+            </div>
+            
+            {canUnlockWithAd ? (
+              <Button 
+                onClick={handleAdUnlock} 
+                disabled={isAdLoading}
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white"
+              >
+                {isAdLoading ? (
+                  "Watching Ad..."
                 ) : (
-                  <div className="text-center text-red-500 text-sm font-medium">
-                    Daily unlock limit reached. Come back tomorrow or upgrade!
-                  </div>
+                  <>
+                    <PlayCircle className="mr-2 h-4 w-4" />
+                    Watch Ad to Unlock
+                  </>
                 )}
-              </>
+              </Button>
             ) : (
-              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800 text-sm">
-                Free users cannot unlock individual files. Please upgrade to access.
+              <div className="text-center text-red-500 text-sm font-medium">
+                Daily unlock limit reached. Come back tomorrow or upgrade!
               </div>
             )}
             
