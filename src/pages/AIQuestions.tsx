@@ -6,7 +6,7 @@ import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Lock } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect } from "react";
 import { toast } from "sonner";
