@@ -5,11 +5,14 @@ import { internal } from "./_generated/api";
 export const processGoogleAuthCallback = internalAction({
   args: {
     code: v.string(),
+    redirectUri: v.string(),
   },
   handler: async (ctx, args): Promise<string> => {
     const clientId = process.env.AUTH_GOOGLE_ID;
     const clientSecret = process.env.AUTH_GOOGLE_SECRET;
-    const redirectUri = `${process.env.CONVEX_SITE_URL}/api/auth/callback/google`;
+    
+    // Use the redirectUri passed from the http handler to ensure it matches the request
+    const redirectUri = args.redirectUri;
 
     if (!clientId || !clientSecret) {
       throw new Error("Missing Google Auth credentials");
@@ -31,7 +34,7 @@ export const processGoogleAuthCallback = internalAction({
     if (!tokenResponse.ok) {
       const error = await tokenResponse.text();
       console.error("Google Token Exchange Failed:", error);
-      throw new Error("Failed to exchange code for token");
+      throw new Error(`Failed to exchange code for token: ${error}`);
     }
 
     const tokens = await tokenResponse.json();

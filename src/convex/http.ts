@@ -19,10 +19,14 @@ http.route({
       return new Response("Missing code", { status: 400 });
     }
 
+    // Construct the redirect URI based on the actual request URL to avoid mismatches
+    const redirectUri = `${url.origin}/api/auth/callback/google`;
+
     try {
       // Process auth and get session ID
       const sessionId = await ctx.runAction(internal.authActions.processGoogleAuthCallback, {
         code,
+        redirectUri,
       });
 
       if (state === "app") {
@@ -35,6 +39,9 @@ http.route({
         });
       } else {
         // Web Redirect (Cookie)
+        // Note: If the callback happened on convex.site, this cookie will be set for convex.site.
+        // If the user is redirected to mltprep.online, they might not be logged in there unless
+        // the callback also happened on mltprep.online.
         return new Response(null, {
           status: 302,
           headers: {
@@ -45,7 +52,7 @@ http.route({
       }
     } catch (error) {
       console.error("Google Auth Error:", error);
-      return new Response("Authentication failed", { status: 500 });
+      return new Response(`Authentication failed: ${error instanceof Error ? error.message : "Unknown error"}`, { status: 500 });
     }
   }),
 });
