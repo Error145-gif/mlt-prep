@@ -32,11 +32,13 @@ export default function TestResultHeader({ user, userProfile, testTypeInfo, sess
   };
 
   return (
-    <div className="relative overflow-hidden shadow-lg">
-      <div
-        className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=1600&q=80&auto=format&fit=crop')] bg-cover bg-center opacity-40"
-      />
-      <div className={`relative bg-gradient-to-r ${testTypeInfo.color} text-white px-6 py-6 backdrop-blur-sm`}>
+    <div className="relative overflow-hidden shadow-lg rounded-3xl text-white">
+      <div className="absolute inset-0">
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=2000&q=80&auto=format&fit=crop')] bg-cover bg-center" />
+        <div className={`absolute inset-0 bg-gradient-to-r ${testTypeInfo.color} opacity-80`} />
+        <div className="absolute inset-0 bg-black/30 mix-blend-multiply" />
+      </div>
+      <div className="relative px-6 py-8 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto">
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center gap-3">
