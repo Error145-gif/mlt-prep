@@ -1231,7 +1231,7 @@ export const canAccessTestType = query({
     // If user has an active paid subscription, check plan type
     if (subscription && subscription.endDate >= Date.now()) {
       // Monthly Starter Plan (₹99) - Check question limits
-      if (subscription.amount === 99 || subscription.planName.includes("Monthly Starter")) {
+      if (subscription.amount === 99) {
         // Count total questions attempted for this test type
         const completedTests = await ctx.db
           .query("testSessions")
