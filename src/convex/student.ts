@@ -1232,42 +1232,49 @@ export const canAccessTestType = query({
     if (subscription && subscription.endDate >= Date.now()) {
       // Monthly Starter Plan (₹99) - Check TEST SET limits (not question limits)
       if (subscription.amount === 99) {
-        // Count total TEST SETS completed for this test type
-        const completedTests = await ctx.db
-          .query("testSessions")
-          .withIndex("by_user", (q) => q.eq("userId", user._id))
-          .filter((q) => q.eq(q.field("status"), "completed"))
-          .filter((q) => q.eq(q.field("testType"), args.testType))
-          .collect();
+        // Define limits for Monthly Starter
+        const limits = {
+          mock: 25,
+          pyq: 20,
+          ai: 25
+        };
 
-        const totalSetsCompleted = completedTests.length; // Count sets, not questions
-
-        // Set limits based on test type (SETS, not questions)
-        let setLimit = 0;
+        const limit = limits[args.testType as keyof typeof limits] || 0;
+        
+        // Count sets used
+        let setsUsed = 0;
+        
         if (args.testType === "mock") {
-          setLimit = 25; // 25 mock test sets
+          const attempts = await ctx.db
+            .query("weeklyTestAttempts")
+            .withIndex("by_user", (q) => q.eq("userId", user._id))
+            .collect();
+          // Count unique tests attempted
+          const uniqueTests = new Set(attempts.map(a => a.weeklyTestId));
+          setsUsed = uniqueTests.size;
         } else if (args.testType === "pyq") {
-          setLimit = 20; // 20 PYQ sets
+          const sessions = await ctx.db
+            .query("testSessions")
+            .withIndex("by_user", (q) => q.eq("userId", user._id))
+            .filter(q => q.eq(q.field("testType"), "pyq"))
+            .collect();
+          // Count unique sets (year + examName)
+          // This is an approximation, ideally we track unique sets directly
+          setsUsed = sessions.length; 
         } else if (args.testType === "ai") {
-          setLimit = 25; // 25 AI question sets
+          const sessions = await ctx.db
+            .query("testSessions")
+            .withIndex("by_user", (q) => q.eq("userId", user._id))
+            .filter(q => q.eq(q.field("testType"), "ai"))
+            .collect();
+          setsUsed = sessions.length;
         }
 
-        if (totalSetsCompleted >= setLimit) {
-          console.log(`❌ Monthly Starter limit reached for ${args.testType}: ${totalSetsCompleted}/${setLimit} sets`);
-          return { 
-            canAccess: false, 
-            reason: "monthly_starter_limit_reached",
-            setsUsed: totalSetsCompleted,
-            setLimit: setLimit
-          };
-        }
-
-        console.log(`✅ Access granted - Monthly Starter (${totalSetsCompleted}/${setLimit} sets used)`);
-        return { 
-          canAccess: true, 
-          reason: "paid_subscription",
-          setsUsed: totalSetsCompleted,
-          setLimit: setLimit
+        return {
+          canAccess: setsUsed < limit,
+          reason: "monthly_starter_limit_reached",
+          setsUsed,
+          setLimit: limit
         };
       }
       
