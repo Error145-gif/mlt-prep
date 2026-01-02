@@ -1296,3 +1296,63 @@ export const canAccessTestType = query({
     return { canAccess: false, reason: "free_trial_used" };
   },
 });
+
+// Get ad-unlocked tests for a user
+export const getAdUnlockedTests = query({
+  args: {
+    testType: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) {
+      return [];
+    }
+
+    const unlockedTests = await ctx.db
+      .query("adUnlockedTests")
+      .withIndex("by_user_and_type", (q) => q.eq("userId", user._id).eq("testType", args.testType))
+      .collect();
+
+    return unlockedTests;
+  },
+});
+
+// Unlock a test by watching an ad
+export const unlockTestWithAd = mutation({
+  args: {
+    testType: v.string(),
+    testSetNumber: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) {
+      throw new Error("Not authenticated");
+    }
+
+    // Check if already unlocked
+    const existing = await ctx.db
+      .query("adUnlockedTests")
+      .withIndex("by_user_and_type", (q) => q.eq("userId", user._id).eq("testType", args.testType))
+      .collect();
+
+    const alreadyUnlocked = existing.some((t) => t.testSetNumber === args.testSetNumber);
+    if (alreadyUnlocked) {
+      throw new Error("Test already unlocked");
+    }
+
+    // Check how many tests user has already unlocked via ads for this type
+    if (existing.length >= 2) {
+      throw new Error("You can only unlock 2 additional tests per section via ads");
+    }
+
+    // Create the unlock record
+    const unlockId = await ctx.db.insert("adUnlockedTests", {
+      userId: user._id,
+      testType: args.testType,
+      testSetNumber: args.testSetNumber,
+      unlockedAt: Date.now(),
+    });
+
+    return unlockId;
+  },
+});

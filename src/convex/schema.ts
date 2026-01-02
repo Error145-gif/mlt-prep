@@ -244,8 +244,7 @@ const schema = defineSchema(
       testSetNumber: v.number(),
       unlockedAt: v.number(),
     })
-      .index("by_user_and_type", ["userId", "testType"])
-      .index("by_user", ["userId"]),
+      .index("by_user_and_type", ["userId", "testType"]),
 
     // Payment History
     payments: defineTable({
