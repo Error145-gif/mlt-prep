@@ -457,4 +457,5 @@ export default function Library() {
       )}
     </AnimatePresence>
   </div>
+  );
 }
