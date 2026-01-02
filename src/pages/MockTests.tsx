@@ -122,7 +122,21 @@ export default function MockTests() {
           {mockTests.map((test, index) => {
             const isFirstTest = index === 0;
             const hasPaidSubscription = canAccessMock?.reason === "paid_subscription";
-            const isLocked = !isFirstTest && !hasPaidSubscription;
+            const isMonthlyStarter = canAccessMock?.reason === "paid_subscription" && canAccessMock?.setLimit;
+            
+            // Lock logic:
+            // - Free users: only first test unlocked
+            // - Monthly Starter (₹99): unlock up to setLimit (25 for mock)
+            // - Premium: all unlocked
+            let isLocked = false;
+            if (!hasPaidSubscription) {
+              // Free user - only first test
+              isLocked = !isFirstTest;
+            } else if (isMonthlyStarter && canAccessMock?.setLimit) {
+              // Monthly Starter - lock tests beyond the limit
+              isLocked = index >= canAccessMock.setLimit;
+            }
+            // Premium users: isLocked stays false
             
             return (
               <motion.div

@@ -118,12 +118,24 @@ export default function AIQuestions() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {aiTests.map((test, index) => {
-            // For free users: only first test is unlocked
-            // For ₹99 users: all tests unlocked until question limit reached
-            // For premium users: all tests unlocked
-            const isFreeUser = canAccessAI?.reason === "free_trial";
             const isFirstTest = index === 0;
-            const isLocked = isFreeUser && !isFirstTest;
+            const isFreeUser = canAccessAI?.reason === "free_trial";
+            const hasPaidSubscription = canAccessAI?.reason === "paid_subscription";
+            const isMonthlyStarter = hasPaidSubscription && canAccessAI?.setLimit;
+            
+            // Lock logic:
+            // - Free users: only first test unlocked
+            // - Monthly Starter (₹99): unlock up to setLimit (25 for AI)
+            // - Premium: all unlocked
+            let isLocked = false;
+            if (isFreeUser) {
+              // Free user - only first test
+              isLocked = !isFirstTest;
+            } else if (isMonthlyStarter && canAccessAI?.setLimit) {
+              // Monthly Starter - lock tests beyond the limit
+              isLocked = index >= canAccessAI.setLimit;
+            }
+            // Premium users: isLocked stays false
             
             return (
               <motion.div

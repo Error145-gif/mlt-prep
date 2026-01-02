@@ -271,7 +271,21 @@ export default function PYQSets() {
           {pyqSets.map((set, index) => {
             const isFirstTest = index === 0;
             const hasPaidSubscription = canAccessPYQ?.reason === "paid_subscription";
-            const isLocked = !isFirstTest && !hasPaidSubscription;
+            const isMonthlyStarter = canAccessPYQ?.reason === "paid_subscription" && canAccessPYQ?.setLimit;
+            
+            // Lock logic:
+            // - Free users: only first test unlocked
+            // - Monthly Starter (₹99): unlock up to setLimit (20 for PYQ)
+            // - Premium: all unlocked
+            let isLocked = false;
+            if (!hasPaidSubscription) {
+              // Free user - only first test
+              isLocked = !isFirstTest;
+            } else if (isMonthlyStarter && canAccessPYQ?.setLimit) {
+              // Monthly Starter - lock tests beyond the limit
+              isLocked = index >= canAccessPYQ.setLimit;
+            }
+            // Premium users: isLocked stays false
             
             return (
               <motion.div
