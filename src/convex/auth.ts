@@ -100,7 +100,19 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
     Anonymous
   ],
   callbacks: {
-    async redirect() {
+    async redirect({ redirectTo }) {
+      // Extract state from the request if available
+      const url = new URL(redirectTo || "https://mltprep.online/dashboard");
+      const state = url.searchParams.get("state");
+      
+      // For app users, redirect to deep link (token will be in URL params from Convex Auth)
+      if (state === "app") {
+        const token = url.searchParams.get("token");
+        if (token) {
+          return `mltprep://auth/google?token=${token}`;
+        }
+      }
+      
       // Default redirect for website users
       return "https://mltprep.online/dashboard";
     },
