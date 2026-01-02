@@ -101,19 +101,18 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
   ],
   callbacks: {
     async redirect({ redirectTo }) {
-      // Extract state from the request if available
+      // Extract state from the redirect URL
       const url = new URL(redirectTo || "https://mltprep.online/dashboard");
       const state = url.searchParams.get("state");
       
-      // For app users, redirect to deep link (token will be in URL params from Convex Auth)
+      // For app users, redirect to deep link
+      // Convex Auth will automatically include the session token in the URL
       if (state === "app") {
-        const token = url.searchParams.get("token");
-        if (token) {
-          return `mltprep://auth/google?token=${token}`;
-        }
+        return `mltprep://auth/google`;
       }
       
       // Default redirect for website users
+      // Convex Auth automatically sets the session cookie before this redirect
       return "https://mltprep.online/dashboard";
     },
     async createOrUpdateUser(ctx, args) {
@@ -172,7 +171,6 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
       }
 
       // 4. SEND WELCOME EMAIL ONLY FOR NEW USERS
-      // Only trigger welcome email if this was a NEW user creation (not existing user login)
       if (userId && args.profile.email && !args.existingUserId) {
         const user = await ctx.db.get(userId);
         console.log("[AUTH] 🔍 NEW USER DETECTED - Checking welcome email status...");
