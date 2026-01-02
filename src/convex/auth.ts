@@ -7,6 +7,8 @@ import Google from "@auth/core/providers/google";
 import { Email } from "@convex-dev/auth/providers/Email";
 import { alphabet, generateRandomString } from "oslo/crypto";
 import { internal } from "./_generated/api";
+import { v } from "convex/values";
+import { internalMutation } from "./_generated/server";
 
 const emailOtp = Email({
   id: "email-otp",
@@ -188,5 +190,54 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
       console.log("----------- AUTH CALLBACK END -----------");
       return userId;
     },
+  },
+});
+
+export const completeGoogleLogin = internalMutation({
+  args: {
+    email: v.string(),
+    name: v.optional(v.string()),
+    picture: v.optional(v.string()),
+    sub: v.string(), // Google ID
+  },
+  handler: async (ctx, args) => {
+    console.log("[AUTH] Completing Google Login for:", args.email);
+    
+    let userId;
+    const existingUser = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("email"), args.email))
+      .first();
+
+    if (existingUser) {
+      userId = existingUser._id;
+      await ctx.db.patch(userId, { lastActive: Date.now() });
+    } else {
+      userId = await ctx.db.insert("users", {
+        email: args.email,
+        name: args.name || "User",
+        image: args.picture,
+        role: "user",
+        welcomeEmailSent: false,
+        isRegistered: true,
+        registrationCompleted: true,
+        lastActive: Date.now(),
+      });
+      
+      // Schedule welcome email for new user
+      await ctx.scheduler.runAfter(0, internal.emails.sendWelcomeEmail, {
+        email: args.email,
+        name: args.name || "User",
+        userId: userId,
+      });
+    }
+
+    // Create session
+    const sessionId = await ctx.db.insert("authSessions", {
+      userId,
+      expirationTime: Date.now() + 30 * 24 * 60 * 60 * 1000, // 30 days
+    });
+
+    return sessionId;
   },
 });

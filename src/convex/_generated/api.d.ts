@@ -12,6 +12,7 @@ import type * as aiQuestions from "../aiQuestions.js";
 import type * as analytics from "../analytics.js";
 import type * as auth from "../auth.js";
 import type * as auth_emailOtp from "../auth/emailOtp.js";
+import type * as authActions from "../authActions.js";
 import type * as authHelpers from "../authHelpers.js";
 import type * as cashfree from "../cashfree.js";
 import type * as cashfreeInternal from "../cashfreeInternal.js";
@@ -59,6 +60,7 @@ declare const fullApi: ApiFromModules<{
   analytics: typeof analytics;
   auth: typeof auth;
   "auth/emailOtp": typeof auth_emailOtp;
+  authActions: typeof authActions;
   authHelpers: typeof authHelpers;
   cashfree: typeof cashfree;
   cashfreeInternal: typeof cashfreeInternal;
