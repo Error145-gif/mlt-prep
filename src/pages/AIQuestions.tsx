@@ -91,13 +91,21 @@ export default function AIQuestions() {
         <div>
           <h1 className="text-3xl font-bold text-white">AI-Generated Questions</h1>
           <p className="text-white/70 mt-1">Select an AI test set to practice with AI-curated topic-wise questions (25 questions per set)</p>
+          {canAccessAI?.reason === "paid_subscription" && canAccessAI?.questionLimit && (
+            <p className="text-yellow-300 mt-2 text-sm">
+              ⚡ Monthly Starter Plan: {canAccessAI.questionsUsed || 0}/{canAccessAI.questionLimit} questions used
+            </p>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {aiTests.map((test, index) => {
+            // For free users: only first test is unlocked
+            // For ₹99 users: all tests unlocked until question limit reached
+            // For premium users: all tests unlocked
+            const isFreeUser = canAccessAI?.reason === "free_trial";
             const isFirstTest = index === 0;
-            const hasPaidSubscription = canAccessAI?.reason === "paid_subscription";
-            const isLocked = !isFirstTest && !hasPaidSubscription;
+            const isLocked = isFreeUser && !isFirstTest;
             
             return (
               <motion.div
@@ -139,7 +147,7 @@ export default function AIQuestions() {
                         className="w-full bg-gray-500 cursor-not-allowed"
                       >
                         <Lock className="h-4 w-4 mr-2" />
-                        Locked
+                        Locked - Subscribe to Unlock
                       </Button>
                     ) : (
                       <Button
