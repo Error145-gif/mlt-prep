@@ -9,7 +9,10 @@ import {
   ChevronRight,
   ChevronDown,
   XCircle,
-  Lock
+  Lock,
+  BookOpen,
+  Target,
+  Lightbulb
 } from "lucide-react";
 import { useState } from "react";
 
@@ -54,20 +57,58 @@ export default function DetailedAnalysis({ questions, isPaidUser = false }: Deta
   const weakestTopic = sortedTopics[0];
   const marksLost = incorrectQuestions.length;
 
-  // Topic Performance
-  const topicStats: Record<string, { total: number; correct: number }> = {};
+  // Topic Performance with detailed stats
+  const topicStats: Record<string, { total: number; correct: number; incorrect: number }> = {};
   questions.forEach(q => {
     const topic = q.topic || "General";
-    if (!topicStats[topic]) topicStats[topic] = { total: 0, correct: 0 };
+    if (!topicStats[topic]) topicStats[topic] = { total: 0, correct: 0, incorrect: 0 };
     topicStats[topic].total++;
-    if (q.isCorrect) topicStats[topic].correct++;
+    if (q.isCorrect) {
+      topicStats[topic].correct++;
+    } else if (q.userAnswer) {
+      topicStats[topic].incorrect++;
+    }
   });
 
   const topicPerformance = Object.entries(topicStats).map(([topic, stats]) => ({
     topic,
     accuracy: Math.round((stats.correct / stats.total) * 100),
-    total: stats.total
+    total: stats.total,
+    correct: stats.correct,
+    incorrect: stats.incorrect,
+    skipped: stats.total - stats.correct - stats.incorrect
   })).sort((a, b) => a.accuracy - b.accuracy); // Weakest first
+
+  // Generate subject-wise suggestions
+  const getSubjectSuggestions = () => {
+    const suggestions: Array<{ topic: string; message: string; priority: 'high' | 'medium' | 'low' }> = [];
+    
+    topicPerformance.forEach(perf => {
+      if (perf.accuracy < 40) {
+        suggestions.push({
+          topic: perf.topic,
+          message: `Critical: Focus heavily on ${perf.topic}. Your accuracy is ${perf.accuracy}%. Practice 20-30 questions daily from this topic.`,
+          priority: 'high'
+        });
+      } else if (perf.accuracy < 60) {
+        suggestions.push({
+          topic: perf.topic,
+          message: `Important: Strengthen ${perf.topic} concepts. Your accuracy is ${perf.accuracy}%. Review theory and solve 10-15 questions daily.`,
+          priority: 'medium'
+        });
+      } else if (perf.accuracy < 80) {
+        suggestions.push({
+          topic: perf.topic,
+          message: `Good progress in ${perf.topic} (${perf.accuracy}%). Practice 5-10 challenging questions to reach mastery.`,
+          priority: 'low'
+        });
+      }
+    });
+
+    return suggestions;
+  };
+
+  const suggestions = getSubjectSuggestions();
 
   // FREE USERS: Show only first 2 explanations
   const maxFreeExplanations = 2;
@@ -83,7 +124,7 @@ export default function DetailedAnalysis({ questions, isPaidUser = false }: Deta
               <h2 className="text-2xl font-bold">Detailed Analysis</h2>
             </div>
             <p className="text-purple-100 text-sm opacity-90">
-              Identify your mistakes, improve weak areas, and boost your score.
+              Identify your mistakes, improve weak areas, and boost your score with personalized suggestions.
             </p>
           </div>
           <Badge className={`${isPaidUser ? 'bg-white/20 hover:bg-white/30' : 'bg-yellow-400/20 border-yellow-400/30'} text-white border-0 px-3 py-1 backdrop-blur-sm cursor-default`}>
@@ -101,6 +142,113 @@ export default function DetailedAnalysis({ questions, isPaidUser = false }: Deta
       </div>
 
       <div className="p-6 space-y-8">
+        {/* Subject-wise Performance Overview */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 text-gray-900 font-bold text-lg">
+            <BookOpen className="h-5 w-5 text-blue-500" />
+            <h3>Subject-wise Performance</h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {topicPerformance.map((topic, idx) => (
+              <div key={idx} className="bg-white rounded-xl p-4 shadow-md border-2 border-gray-100">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-bold text-gray-900">{topic.topic}</h4>
+                  <Badge 
+                    className={`${
+                      topic.accuracy >= 80 ? 'bg-green-100 text-green-700' :
+                      topic.accuracy >= 60 ? 'bg-yellow-100 text-yellow-700' :
+                      topic.accuracy >= 40 ? 'bg-orange-100 text-orange-700' :
+                      'bg-red-100 text-red-700'
+                    }`}
+                  >
+                    {topic.accuracy}%
+                  </Badge>
+                </div>
+                
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Total Questions:</span>
+                    <span className="font-semibold">{topic.total}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-green-600">✓ Correct:</span>
+                    <span className="font-semibold text-green-700">{topic.correct}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-red-600">✗ Incorrect:</span>
+                    <span className="font-semibold text-red-700">{topic.incorrect}</span>
+                  </div>
+                  {topic.skipped > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500">⊘ Skipped:</span>
+                      <span className="font-semibold text-gray-600">{topic.skipped}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Progress bar */}
+                <div className="mt-3 h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div 
+                    className={`h-full ${
+                      topic.accuracy >= 80 ? 'bg-green-500' :
+                      topic.accuracy >= 60 ? 'bg-yellow-500' :
+                      topic.accuracy >= 40 ? 'bg-orange-500' :
+                      'bg-red-500'
+                    }`}
+                    style={{ width: `${topic.accuracy}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Personalized Subject Suggestions */}
+        {suggestions.length > 0 && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-gray-900 font-bold text-lg">
+              <Lightbulb className="h-5 w-5 text-yellow-500" />
+              <h3>Personalized Study Suggestions</h3>
+            </div>
+
+            <div className="space-y-3">
+              {suggestions.map((suggestion, idx) => (
+                <div 
+                  key={idx}
+                  className={`p-4 rounded-xl border-2 ${
+                    suggestion.priority === 'high' ? 'bg-red-50 border-red-200' :
+                    suggestion.priority === 'medium' ? 'bg-orange-50 border-orange-200' :
+                    'bg-blue-50 border-blue-200'
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <Target className={`h-5 w-5 mt-0.5 ${
+                      suggestion.priority === 'high' ? 'text-red-600' :
+                      suggestion.priority === 'medium' ? 'text-orange-600' :
+                      'text-blue-600'
+                    }`} />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Badge className={`${
+                          suggestion.priority === 'high' ? 'bg-red-600' :
+                          suggestion.priority === 'medium' ? 'bg-orange-600' :
+                          'bg-blue-600'
+                        } text-white`}>
+                          {suggestion.priority === 'high' ? '🔴 High Priority' :
+                           suggestion.priority === 'medium' ? '🟠 Medium Priority' :
+                           '🔵 Low Priority'}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-gray-800 leading-relaxed">{suggestion.message}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Mistake Analysis Section */}
         <div className="space-y-4">
           <div className="flex items-center gap-2 text-gray-900 font-bold text-lg">
@@ -216,7 +364,7 @@ export default function DetailedAnalysis({ questions, isPaidUser = false }: Deta
         <div className="space-y-4">
           <div className="flex items-center gap-2 text-gray-900 font-bold text-lg">
             <TrendingUp className="h-5 w-5 text-pink-500" />
-            <h3>Topic Weaknesses</h3>
+            <h3>Areas Needing Attention</h3>
           </div>
           <div className="bg-pink-50 border border-pink-100 rounded-xl p-6">
             <div className="flex flex-wrap gap-6 justify-between items-center">
