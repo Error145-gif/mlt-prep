@@ -247,7 +247,10 @@ export default function SubscriptionPlans() {
         </Card>
 
         {/* Current Subscription Status */}
-        {subscription?.hasAccess && subscription?.planType !== "free" && (
+        {subscription?.hasAccess === true && 
+         subscription?.planType !== "free" && 
+         subscription?.endDate && 
+         subscription.endDate > Date.now() && (
           <Card className="mb-8 border-2 border-green-300 bg-white/95 backdrop-blur-sm shadow-xl">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-green-700">

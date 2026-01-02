@@ -1149,6 +1149,8 @@ export const checkSubscriptionAccess = query({
       isExpiringSoon,
       endDate: subscription.endDate,
       features,
+      isPaid: true, // Add this flag for easier checking
+      amount: subscription.amount,
     };
   },
 });

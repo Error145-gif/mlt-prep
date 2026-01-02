@@ -12,7 +12,12 @@ interface DashboardHeaderProps {
 export default function DashboardHeader({ userProfile, subscriptionAccess }: DashboardHeaderProps) {
   const navigate = useNavigate();
   
-  const isPaid = subscriptionAccess?.hasAccess && subscriptionAccess?.planType !== "free";
+  // Check if user has an active paid subscription
+  const isPaid = subscriptionAccess?.hasAccess === true && 
+                 subscriptionAccess?.planType !== "free" &&
+                 subscriptionAccess?.endDate && 
+                 subscriptionAccess.endDate > Date.now();
+  
   const daysRemaining = subscriptionAccess?.daysRemaining || 0;
   const expiryDate = subscriptionAccess?.endDate 
     ? new Date(subscriptionAccess.endDate).toLocaleDateString('en-IN', { 
@@ -21,6 +26,14 @@ export default function DashboardHeader({ userProfile, subscriptionAccess }: Das
         year: 'numeric' 
       }) 
     : "";
+
+  // Debug logging
+  console.log("=== DashboardHeader Subscription Debug ===");
+  console.log("subscriptionAccess:", subscriptionAccess);
+  console.log("isPaid:", isPaid);
+  console.log("daysRemaining:", daysRemaining);
+  console.log("expiryDate:", expiryDate);
+  console.log("=========================================");
 
   return (
     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
