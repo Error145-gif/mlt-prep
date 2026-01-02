@@ -49,16 +49,10 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
     setIsLoading(true);
     setError(null);
     try {
-      // Detect if running in Android app context
-      const isAndroidApp = /mltprep/i.test(navigator.userAgent) || 
-                          window.location.href.includes('mltprep://');
-      
-      // Set state parameter based on context
-      const state = isAndroidApp ? 'app' : 'web';
-      
-      // Create form data with state parameter
+      // WEBSITE FLOW: Always use state=web for website users
+      // Android app must handle OAuth externally with state=app
       const formData = new FormData();
-      formData.set('state', state);
+      formData.set('state', 'web');
       
       await signIn("google", formData);
     } catch (error) {

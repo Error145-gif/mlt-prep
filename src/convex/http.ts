@@ -29,27 +29,29 @@ http.route({
         redirectUri,
       });
 
+      // ANDROID APP FLOW (state === "app")
       if (state === "app") {
-        // Android App Redirect (Deep Link)
+        // Android App Redirect (Deep Link) - NO COOKIES
         return new Response(null, {
           status: 302,
           headers: {
             Location: `mltprep://auth/google?token=${sessionId}`,
           },
         });
-      } else {
-        // Web Redirect (Cookie)
-        // Note: If the callback happened on convex.site, this cookie will be set for convex.site.
-        // If the user is redirected to mltprep.online, they might not be logged in there unless
-        // the callback also happened on mltprep.online.
-        return new Response(null, {
-          status: 302,
-          headers: {
-            "Set-Cookie": `CONVEX_AUTH_SESSION_ID=${sessionId}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${60 * 60 * 24 * 30}`,
-            Location: "https://mltprep.online/dashboard",
-          },
-        });
-      }
+      } 
+      
+      // WEBSITE FLOW (state === "web" or missing state)
+      // Set cookie with proper domain for mltprep.online
+      const cookieMaxAge = 60 * 60 * 24 * 30; // 30 days
+      const sessionCookie = `convexAuthToken=${sessionId}; Domain=.mltprep.online; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${cookieMaxAge}`;
+      
+      return new Response(null, {
+        status: 302,
+        headers: {
+          "Set-Cookie": sessionCookie,
+          Location: "https://mltprep.online/dashboard",
+        },
+      });
     } catch (error) {
       console.error("Google Auth Error:", error);
       return new Response(`Authentication failed: ${error instanceof Error ? error.message : "Unknown error"}`, { status: 500 });
