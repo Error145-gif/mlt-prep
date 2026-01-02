@@ -9,11 +9,24 @@ interface ProgressSnapshotProps {
     totalTests: number;
     overallAccuracy: number;
   };
-  isFreeTrialUser?: boolean;
+  isAnalyticsLocked?: boolean;
+  onLockedCTA?: () => void;
 }
 
-export default function ProgressSnapshot({ stats, isFreeTrialUser }: ProgressSnapshotProps) {
+export default function ProgressSnapshot({ stats, isAnalyticsLocked, onLockedCTA }: ProgressSnapshotProps) {
   const navigate = useNavigate();
+
+  const handleDetailedClick = () => {
+    if (isAnalyticsLocked) {
+      if (onLockedCTA) {
+        onLockedCTA();
+      } else {
+        navigate("/subscription-plans");
+      }
+      return;
+    }
+    navigate("/overall-analytics");
+  };
 
   return (
     <motion.div
@@ -44,18 +57,18 @@ export default function ProgressSnapshot({ stats, isFreeTrialUser }: ProgressSna
             </div>
           </div>
           <div className="border-t border-white/20 pt-4">
-            {isFreeTrialUser ? (
+            {isAnalyticsLocked ? (
               <>
                 <p className="text-white/80 text-sm mb-3 flex items-center gap-2">
                   <Lock className="h-3 w-3 text-orange-300" />
-                  Detailed topic-wise analysis is available with Premium.
+                  View your comprehensive performance analytics.
                 </p>
                 <Button
-                  onClick={() => navigate("/subscription-plans")}
+                  onClick={handleDetailedClick}
                   variant="outline"
-                  className="bg-white/10 border-white/30 text-white hover:bg-white/20 w-full sm:w-auto"
+                  className="w-full sm:w-auto border-white/40 text-white hover:bg-white/10 font-semibold"
                 >
-                  Upgrade for Detailed Analysis →
+                  📊 View Detailed Analysis →
                 </Button>
               </>
             ) : (
@@ -65,7 +78,7 @@ export default function ProgressSnapshot({ stats, isFreeTrialUser }: ProgressSna
                   View your comprehensive performance analytics.
                 </p>
                 <Button
-                  onClick={() => navigate("/overall-analytics")}
+                  onClick={handleDetailedClick}
                   variant="outline"
                   className="w-full border-2 border-purple-300 text-purple-700 hover:bg-purple-50 font-semibold"
                 >

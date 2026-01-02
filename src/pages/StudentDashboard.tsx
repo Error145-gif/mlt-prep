@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
@@ -27,6 +27,7 @@ export default function StudentDashboard() {
   const stats = useQuery(api.student.getStudentDashboardStats);
   const subscriptionAccess = useQuery(api.student.checkSubscriptionAccess);
   const userProfile = useQuery(api.users.getUserProfile);
+  const [showAnalyticsUpsell, setShowAnalyticsUpsell] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -42,6 +43,7 @@ export default function StudentDashboard() {
   }, [subscriptionAccess]);
 
   const isMonthlyStarterPlan = subscriptionAccess?.planType === "monthly_starter";
+  const analyticsLocked = isFreeTrialUser || isMonthlyStarterPlan;
 
   // Show minimal loading only during initial auth check
   if (isLoading) {
@@ -163,30 +165,11 @@ export default function StudentDashboard() {
 
         {/* 2. PROGRESS SNAPSHOT - No locks */}
         {displayStats ? (
-          <div className="relative">
-            <ProgressSnapshot stats={displayStats} isFreeTrialUser={isFreeTrialUser} />
-            {isMonthlyStarterPlan && (
-              <div className="absolute inset-0 z-10 rounded-3xl border border-white/30 bg-black/40 backdrop-blur-sm flex flex-col md:flex-row items-center justify-between gap-6 p-6 text-white">
-                <div className="flex items-start gap-4 text-left">
-                  <div className="bg-white/20 p-3 rounded-xl">
-                    <Lock className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <p className="text-lg font-semibold">Progress analytics locked</p>
-                    <p className="text-sm text-white/80 mt-1 max-w-xl">
-                      Upgrade to Premium to unlock detailed performance insights, accuracy graphs, and AI-powered analytics. Your current stats stay safe and will unlock instantly after upgrading.
-                    </p>
-                  </div>
-                </div>
-                <Button
-                  onClick={() => navigate("/subscription-plans")}
-                  className="bg-white text-purple-600 hover:bg-white/90 font-semibold"
-                >
-                  Unlock with Premium
-                </Button>
-              </div>
-            )}
-          </div>
+          <ProgressSnapshot
+            stats={displayStats}
+            isAnalyticsLocked={analyticsLocked}
+            onLockedCTA={() => setShowAnalyticsUpsell(true)}
+          />
         ) : (
           <div className="glass-card border-white/30 backdrop-blur-xl bg-white/20 p-6 rounded-xl">
             <Skeleton className="h-48 w-full bg-white/20" />
@@ -208,6 +191,44 @@ export default function StudentDashboard() {
           recentTests={displayStats?.recentTestPerformance}
         />
       </div>
+      {showAnalyticsUpsell && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4"
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="max-w-md w-full glass-card border-white/30 bg-white/10 backdrop-blur-2xl rounded-3xl p-8 text-center space-y-4"
+          >
+            <Lock className="h-12 w-12 text-yellow-300 mx-auto" />
+            <p className="text-sm uppercase tracking-[0.35em] text-white/70">Premium analytics</p>
+            <h3 className="text-3xl font-bold text-white">Unlock AI-powered insights</h3>
+            <p className="text-white/80 text-sm">
+              Upgrade to the ₹399 Premium plan to access detailed accuracy graphs, topic-wise trends, and personalized study recommendations.
+            </p>
+            <div className="space-y-3 pt-2">
+              <Button
+                className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-semibold hover:from-yellow-300 hover:to-orange-400"
+                onClick={() => {
+                  setShowAnalyticsUpsell(false);
+                  navigate("/subscription-plans");
+                }}
+              >
+                Unlock with ₹399 Premium
+              </Button>
+              <Button
+                variant="ghost"
+                className="w-full text-white hover:bg-white/10"
+                onClick={() => setShowAnalyticsUpsell(false)}
+              >
+                Maybe later
+              </Button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
     </div>
   );
 }
