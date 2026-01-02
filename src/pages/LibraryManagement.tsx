@@ -33,6 +33,7 @@ export default function LibraryManagement() {
   const updatePDF = useMutation(api.library.updateLibraryPDF);
   const deletePDF = useMutation(api.library.deleteLibraryPDF);
 
+  // These subjects must match exactly with Library.tsx
   const subjects = [
     "Hematology",
     "Biochemistry",
@@ -176,7 +177,7 @@ export default function LibraryManagement() {
 
                   <div>
                     <Label htmlFor="pdf_url" className="text-white">
-                      PDF URL (Google Drive)
+                      Google Drive Link
                     </Label>
                     <Input
                       id="pdf_url"
@@ -184,15 +185,18 @@ export default function LibraryManagement() {
                       onChange={(e) =>
                         setFormData({ ...formData, pdf_url: e.target.value })
                       }
-                      placeholder="https://drive.google.com/file/d/FILE_ID/preview"
+                      placeholder="Paste Google Drive link here"
                       className="bg-white/10 border-white/20 text-white"
+                      required
                     />
                     <p className="text-white/60 text-xs mt-2">
-                      📌 Use Google Drive preview link format: 
+                      📌 <strong>Important:</strong> Use the Google Drive <strong>preview</strong> link format:
                       <br />
-                      <code className="text-white/80">https://drive.google.com/file/d/YOUR_FILE_ID/preview</code>
+                      <code className="text-white/80 bg-black/20 px-2 py-1 rounded mt-1 inline-block">
+                        https://drive.google.com/file/d/YOUR_FILE_ID/preview
+                      </code>
                       <br />
-                      Make sure the file is set to "Anyone with the link can view"
+                      <span className="text-yellow-300">⚠️ Make sure the file is set to "Anyone with the link can view"</span>
                     </p>
                   </div>
 
