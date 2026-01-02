@@ -414,6 +414,15 @@ const schema = defineSchema(
       .index("by_subject", ["subject"])
       .index("by_status", ["status"]),
 
+    // Library Ad Unlocks
+    libraryAdUnlocks: defineTable({
+      userId: v.id("users"),
+      pdfId: v.id("library"),
+      unlockedAt: v.number(),
+    })
+      .index("by_user_and_pdf", ["userId", "pdfId"])
+      .index("by_user_and_date", ["userId", "unlockedAt"]),
+
     // Sections
     sections: defineTable({
       name: v.string(),

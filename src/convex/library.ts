@@ -89,7 +89,13 @@ export const checkLibraryAccess = query({
   handler: async (ctx) => {
     const user = await getCurrentUser(ctx);
     if (!user) {
-      return { hasAccess: false, isYearlyUser: false };
+      return { 
+        hasAccess: false, 
+        isYearlyUser: false, 
+        planType: "free",
+        dailyAdUnlocksUsed: 0,
+        unlockedPdfIds: [] 
+      };
     }
 
     // Check for active subscription
@@ -99,23 +105,80 @@ export const checkLibraryAccess = query({
       .filter((q) => q.eq(q.field("status"), "active"))
       .first();
 
-    if (!subscription) {
-      return { hasAccess: false, isYearlyUser: false };
+    let planType = "free";
+    let isYearly = false;
+
+    if (subscription) {
+      const planName = subscription.planName.toLowerCase();
+      if (planName.includes("yearly") || planName.includes("year") || planName.includes("12 month")) {
+        planType = "yearly";
+        isYearly = true;
+      } else if (planName.includes("premium") || planName.includes("399")) {
+        planType = "premium";
+      } else if (planName.includes("starter") || planName.includes("99")) {
+        planType = "monthly_starter";
+      }
     }
 
-    // Check if subscription is not expired
-    const isActive = subscription.endDate > Date.now();
+    // Get ad unlocks for today
+    const now = Date.now();
+    const startOfDay = new Date(now).setHours(0, 0, 0, 0);
     
-    // Check if it's a yearly plan (365 days or more)
-    const isYearly = subscription.planName.toLowerCase().includes("yearly") || 
-                     subscription.planName.toLowerCase().includes("year") ||
-                     subscription.planName.toLowerCase().includes("12 month");
+    const adUnlocks = await ctx.db
+      .query("libraryAdUnlocks")
+      .withIndex("by_user_and_date", (q) => q.eq("userId", user._id).gte("unlockedAt", startOfDay))
+      .collect();
 
     return {
-      hasAccess: isActive && isYearly,
+      hasAccess: isYearly,
       isYearlyUser: isYearly,
-      planName: subscription.planName,
+      planName: subscription?.planName,
+      planType,
+      dailyAdUnlocksUsed: adUnlocks.length,
+      unlockedPdfIds: adUnlocks.map(u => u.pdfId),
     };
+  },
+});
+
+// Unlock PDF with Ad
+export const unlockLibraryPDFWithAd = mutation({
+  args: {
+    pdfId: v.id("library"),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error("Unauthorized");
+
+    // Check if already unlocked
+    const existingUnlock = await ctx.db
+      .query("libraryAdUnlocks")
+      .withIndex("by_user_and_pdf", (q) => q.eq("userId", user._id).eq("pdfId", args.pdfId))
+      .first();
+
+    if (existingUnlock) {
+      return { success: true, message: "Already unlocked" };
+    }
+
+    // Check daily limit
+    const now = Date.now();
+    const startOfDay = new Date(now).setHours(0, 0, 0, 0);
+    
+    const dailyUnlocks = await ctx.db
+      .query("libraryAdUnlocks")
+      .withIndex("by_user_and_date", (q) => q.eq("userId", user._id).gte("unlockedAt", startOfDay))
+      .collect();
+
+    if (dailyUnlocks.length >= 2) {
+      throw new Error("Daily ad unlock limit reached (2/day)");
+    }
+
+    await ctx.db.insert("libraryAdUnlocks", {
+      userId: user._id,
+      pdfId: args.pdfId,
+      unlockedAt: now,
+    });
+
+    return { success: true };
   },
 });
 
