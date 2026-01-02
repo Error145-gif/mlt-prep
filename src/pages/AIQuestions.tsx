@@ -6,7 +6,7 @@ import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Lock } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect } from "react";
 import { toast } from "sonner";
@@ -97,6 +97,24 @@ export default function AIQuestions() {
             </p>
           )}
         </div>
+
+        {!canAccessAI?.canAccess && canAccessAI?.reason === "monthly_starter_limit_reached" && (
+          <div className="bg-orange-50 border border-orange-200 rounded-lg p-6 text-center">
+            <AlertCircle className="w-12 h-12 text-orange-500 mx-auto mb-3" />
+            <h3 className="text-lg font-semibold text-orange-900 mb-2">
+              Monthly Starter Limit Reached
+            </h3>
+            <p className="text-orange-700 mb-4">
+              You've completed {canAccessAI.setsUsed} out of {canAccessAI.setLimit} AI question sets allowed in your Monthly Starter plan.
+            </p>
+            <Button
+              onClick={() => navigate("/subscription-plans")}
+              className="bg-orange-600 hover:bg-orange-700"
+            >
+              Upgrade to Premium for Unlimited Access
+            </Button>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {aiTests.map((test, index) => {

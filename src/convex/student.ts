@@ -1130,13 +1130,13 @@ export const checkSubscriptionAccess = query({
       prioritySupport: false,
     };
 
-    // Monthly Starter Plan (₹99) - LIMITED ACCESS
+    // Monthly Starter Plan (₹99) - LIMITED ACCESS TO TEST SETS
     if (subscription.amount === 99 || subscription.planName.includes("Monthly Starter")) {
       planType = "monthly_starter";
       features = {
-        mockTests: 25, // 25 mock test questions (not unlimited)
-        pyqSets: 20, // 20 PYQ questions
-        aiTests: 25, // 25 AI questions
+        mockTests: 25, // 25 mock test SETS
+        pyqSets: 20, // 20 PYQ SETS
+        aiTests: 25, // 25 AI question SETS
         adUnlocks: 0, // No ads
         detailedAnalysis: false, // Locked - watch banner ads
         libraryAccess: false,
@@ -1197,7 +1197,7 @@ export const checkSubscriptionAccess = query({
   },
 });
 
-// New query to check if a specific test type can be accessed
+// New query to check if a specific test type can be accessed - FIXED TO COUNT SETS
 export const canAccessTestType = query({
   args: {
     testType: v.string(),
@@ -1230,9 +1230,9 @@ export const canAccessTestType = query({
 
     // If user has an active paid subscription, check plan type
     if (subscription && subscription.endDate >= Date.now()) {
-      // Monthly Starter Plan (₹99) - Check question limits
+      // Monthly Starter Plan (₹99) - Check TEST SET limits (not question limits)
       if (subscription.amount === 99) {
-        // Count total questions attempted for this test type
+        // Count total TEST SETS completed for this test type
         const completedTests = await ctx.db
           .query("testSessions")
           .withIndex("by_user", (q) => q.eq("userId", user._id))
@@ -1240,37 +1240,34 @@ export const canAccessTestType = query({
           .filter((q) => q.eq(q.field("testType"), args.testType))
           .collect();
 
-        let totalQuestionsAttempted = 0;
-        for (const test of completedTests) {
-          totalQuestionsAttempted += test.questionIds.length;
-        }
+        const totalSetsCompleted = completedTests.length; // Count sets, not questions
 
-        // Set limits based on test type
-        let questionLimit = 0;
+        // Set limits based on test type (SETS, not questions)
+        let setLimit = 0;
         if (args.testType === "mock") {
-          questionLimit = 25;
+          setLimit = 25; // 25 mock test sets
         } else if (args.testType === "pyq") {
-          questionLimit = 20;
+          setLimit = 20; // 20 PYQ sets
         } else if (args.testType === "ai") {
-          questionLimit = 25;
+          setLimit = 25; // 25 AI question sets
         }
 
-        if (totalQuestionsAttempted >= questionLimit) {
-          console.log(`❌ Monthly Starter limit reached for ${args.testType}: ${totalQuestionsAttempted}/${questionLimit}`);
+        if (totalSetsCompleted >= setLimit) {
+          console.log(`❌ Monthly Starter limit reached for ${args.testType}: ${totalSetsCompleted}/${setLimit} sets`);
           return { 
             canAccess: false, 
             reason: "monthly_starter_limit_reached",
-            questionsUsed: totalQuestionsAttempted,
-            questionLimit: questionLimit
+            setsUsed: totalSetsCompleted,
+            setLimit: setLimit
           };
         }
 
-        console.log(`✅ Access granted - Monthly Starter (${totalQuestionsAttempted}/${questionLimit} questions used)`);
+        console.log(`✅ Access granted - Monthly Starter (${totalSetsCompleted}/${setLimit} sets used)`);
         return { 
           canAccess: true, 
           reason: "paid_subscription",
-          questionsUsed: totalQuestionsAttempted,
-          questionLimit: questionLimit
+          setsUsed: totalSetsCompleted,
+          setLimit: setLimit
         };
       }
       

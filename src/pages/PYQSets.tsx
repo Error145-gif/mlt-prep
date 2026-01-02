@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Lock } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import StudentNav from "@/components/StudentNav";
 import MobileBottomNav from "@/components/MobileBottomNav";
 
@@ -247,6 +248,24 @@ export default function PYQSets() {
           <h1 className="text-3xl font-bold text-white">Previous Year Questions</h1>
           <p className="text-white/70 mt-1">Select an exam and year to practice with previous year questions</p>
         </div>
+
+        {!canAccessPYQ?.canAccess && canAccessPYQ?.reason === "monthly_starter_limit_reached" && (
+          <div className="bg-orange-50 border border-orange-200 rounded-lg p-6 text-center">
+            <AlertCircle className="w-12 h-12 text-orange-500 mx-auto mb-3" />
+            <h3 className="text-lg font-semibold text-orange-900 mb-2">
+              Monthly Starter Limit Reached
+            </h3>
+            <p className="text-orange-700 mb-4">
+              You've completed {canAccessPYQ.setsUsed} out of {canAccessPYQ.setLimit} PYQ sets allowed in your Monthly Starter plan.
+            </p>
+            <Button
+              onClick={() => navigate("/subscription-plans")}
+              className="bg-orange-600 hover:bg-orange-700"
+            >
+              Upgrade to Premium for Unlimited Access
+            </Button>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {pyqSets.map((set, index) => {
