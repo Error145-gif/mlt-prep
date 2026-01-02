@@ -49,7 +49,18 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
     setIsLoading(true);
     setError(null);
     try {
-      await signIn("google");
+      // Detect if running in Android app context
+      const isAndroidApp = /mltprep/i.test(navigator.userAgent) || 
+                          window.location.href.includes('mltprep://');
+      
+      // Set state parameter based on context
+      const state = isAndroidApp ? 'app' : 'web';
+      
+      // Create form data with state parameter
+      const formData = new FormData();
+      formData.set('state', state);
+      
+      await signIn("google", formData);
     } catch (error) {
       console.error("Google sign-in error:", error);
       setError("Failed to sign in with Google. Please try again.");
