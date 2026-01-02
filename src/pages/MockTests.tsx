@@ -20,6 +20,10 @@ export default function MockTests() {
   const canAccessMock = useQuery(api.student.canAccessTestType, { testType: "mock" });
   const adUnlockedTests = useQuery(api.student.getAdUnlockedTests, { testType: "mock" });
   const unlockTestWithAd = useMutation(api.student.unlockTestWithAd);
+const isMonthlyStarter =
+  Boolean((canAccessMock?.setLimit ?? 0) > 0) ||
+  canAccessMock?.reason === "monthly_starter_limit_reached" ||
+  canAccessMock?.reason === "monthly_starter_limit_reached_ad_available";
   
   // Debug: Log access status
   useEffect(() => {
@@ -72,10 +76,6 @@ export default function MockTests() {
     );
 
     // Check subscription access
-    const isMonthlyStarter = canAccessMock?.reason === "monthly_starter_limit_reached" || 
-                             canAccessMock?.reason === "monthly_starter_limit_reached_ad_available" ||
-                             (canAccessMock?.setLimit && canAccessMock?.setLimit > 1);
-
     if (isMonthlyStarter) {
       const limit = canAccessMock?.setLimit || 25;
       // If test is beyond limit AND not ad unlocked
@@ -145,9 +145,9 @@ export default function MockTests() {
           {canAccessMock?.reason === "free_trial_used" && (
             <p className="text-red-400 mt-2">⚠️ Free trial used. Subscribe to continue testing.</p>
           )}
-          {isMonthlyStarter && (
+          {isMonthlyStarter && canAccessMock?.setLimit && (
             <p className="text-yellow-400 mt-2">
-              ⚡ Monthly Starter Plan: {canAccessMock.setsUsed || 0}/{canAccessMock.setLimit} sets used
+              ⚡ Monthly Starter Plan: {canAccessMock?.setsUsed || 0}/{canAccessMock?.setLimit} sets used
             </p>
           )}
         </div>
@@ -157,10 +157,6 @@ export default function MockTests() {
             const isFirstTest = index === 0;
             const isFreeUser = canAccessMock?.reason === "free_trial";
             const hasPaidSubscription = canAccessMock?.reason === "paid_subscription";
-            // Fix: Correctly identify Monthly Starter users based on setLimit or specific reasons
-            const isMonthlyStarter = (canAccessMock?.setLimit && canAccessMock?.setLimit > 1) || 
-                                     canAccessMock?.reason === "monthly_starter_limit_reached" ||
-                                     canAccessMock?.reason === "monthly_starter_limit_reached_ad_available";
             
             // Check if this test is ad-unlocked
             const isAdUnlocked = adUnlockedTests?.some(

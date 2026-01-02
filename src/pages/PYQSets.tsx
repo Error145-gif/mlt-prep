@@ -20,6 +20,10 @@ export default function PYQSets() {
   const canAccessPYQ = useQuery(api.student.canAccessTestType, { testType: "pyq" });
   const adUnlockedTests = useQuery(api.student.getAdUnlockedTests, { testType: "pyq" });
   const unlockTestWithAd = useMutation(api.student.unlockTestWithAd);
+const isMonthlyStarter =
+  Boolean((canAccessPYQ?.setLimit ?? 0) > 0) ||
+  canAccessPYQ?.reason === "monthly_starter_limit_reached" ||
+  canAccessPYQ?.reason === "monthly_starter_limit_reached_ad_available";
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -65,10 +69,6 @@ export default function PYQSets() {
     );
 
     // Check subscription access
-    const isMonthlyStarter = canAccessPYQ?.reason === "monthly_starter_limit_reached" || 
-                             canAccessPYQ?.reason === "monthly_starter_limit_reached_ad_available" ||
-                             (canAccessPYQ?.setLimit && canAccessPYQ?.setLimit > 1); // > 1 implies paid limited plan
-
     if (isMonthlyStarter) {
       const limit = canAccessPYQ?.setLimit || 20;
       // If test is beyond limit AND not ad unlocked
@@ -150,7 +150,6 @@ export default function PYQSets() {
             const isFirstTest = index === 0;
             const isFreeUser = canAccessPYQ?.reason === "free_trial";
             const hasPaidSubscription = canAccessPYQ?.reason === "paid_subscription";
-            const isMonthlyStarter = Boolean(canAccessPYQ?.setLimit && canAccessPYQ.setLimit > 0);
             
             // Check if this test is ad-unlocked
             const isAdUnlocked = adUnlockedTests?.some(

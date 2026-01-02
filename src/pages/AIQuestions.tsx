@@ -20,6 +20,10 @@ export default function AIQuestions() {
   const canAccessAI = useQuery(api.student.canAccessTestType, { testType: "ai" });
   const adUnlockedTests = useQuery(api.student.getAdUnlockedTests, { testType: "ai" });
   const unlockTestWithAd = useMutation(api.student.unlockTestWithAd);
+const isMonthlyStarter =
+  Boolean((canAccessAI?.setLimit ?? 0) > 0) ||
+  canAccessAI?.reason === "monthly_starter_limit_reached" ||
+  canAccessAI?.reason === "monthly_starter_limit_reached_ad_available";
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -58,10 +62,6 @@ export default function AIQuestions() {
     );
 
     // Check subscription access
-    const isMonthlyStarter = canAccessAI?.reason === "monthly_starter_limit_reached" || 
-                             canAccessAI?.reason === "monthly_starter_limit_reached_ad_available" ||
-                             (canAccessAI?.setLimit && canAccessAI?.setLimit > 1);
-
     if (isMonthlyStarter) {
       const limit = canAccessAI?.setLimit || 25;
       // If test is beyond limit AND not ad unlocked
@@ -124,9 +124,9 @@ export default function AIQuestions() {
         <div>
           <h1 className="text-3xl font-bold text-white">AI-Generated Questions</h1>
           <p className="text-white/70 mt-1">Select an AI test set to practice with AI-curated topic-wise questions (25 questions per set)</p>
-          {isMonthlyStarter && (
+          {isMonthlyStarter && canAccessAI?.setLimit && (
             <p className="text-yellow-300 mt-2 text-sm">
-              ⚡ Monthly Starter Plan: {canAccessAI.setsUsed || 0}/{canAccessAI.setLimit} sets used
+              ⚡ Monthly Starter Plan: {canAccessAI?.setsUsed || 0}/{canAccessAI?.setLimit} sets used
             </p>
           )}
         </div>
@@ -154,7 +154,6 @@ export default function AIQuestions() {
             const isFirstTest = index === 0;
             const isFreeUser = canAccessAI?.reason === "free_trial";
             const hasPaidSubscription = canAccessAI?.reason === "paid_subscription";
-            const isMonthlyStarter = Boolean(canAccessAI?.setLimit && canAccessAI.setLimit > 0);
             
             // Check if this test is ad-unlocked
             const isAdUnlocked = adUnlockedTests?.some(
