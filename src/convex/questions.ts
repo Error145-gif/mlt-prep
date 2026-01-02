@@ -23,19 +23,19 @@ export const getQuestions = query({
       questions = await ctx.db
         .query("questions")
         .withIndex("by_status", (q) => q.eq("status", args.status as any))
-        .collect();
+        .take(1000);
     } else if (args.topicId) {
       questions = await ctx.db
         .query("questions")
         .withIndex("by_topic", (q) => q.eq("topicId", args.topicId!))
-        .collect();
+        .take(1000);
     } else if (args.sectionId) {
       questions = await ctx.db
         .query("questions")
         .withIndex("by_section", (q) => q.eq("sectionId", args.sectionId))
-        .collect();
+        .take(1000);
     } else {
-      questions = await ctx.db.query("questions").collect();
+      questions = await ctx.db.query("questions").take(1000);
     }
 
     // Generate fresh image URLs
@@ -58,7 +58,7 @@ export const getQuestionsBySection = query({
     const questions = await ctx.db
       .query("questions")
       .withIndex("by_section", (q) => q.eq("sectionId", args.sectionId))
-      .collect();
+      .take(1000);
     
     // Generate fresh image URLs
     return await Promise.all(
@@ -87,24 +87,24 @@ export const getUnassignedQuestions = query({
       };
     }
 
-    // Get all approved questions by source
+    // Get all approved questions by source (limited to prevent excessive reads)
     const manualQuestions = await ctx.db
       .query("questions")
       .withIndex("by_source", (q) => q.eq("source", "manual"))
       .filter((q) => q.eq(q.field("status"), "approved"))
-      .collect();
+      .take(5000);
 
     const aiQuestions = await ctx.db
       .query("questions")
       .withIndex("by_source", (q) => q.eq("source", "ai"))
       .filter((q) => q.eq(q.field("status"), "approved"))
-      .collect();
+      .take(5000);
 
     const pyqQuestions = await ctx.db
       .query("questions")
       .withIndex("by_source", (q) => q.eq("source", "pyq"))
       .filter((q) => q.eq(q.field("status"), "approved"))
-      .collect();
+      .take(5000);
 
     // Calculate leftover questions (questions that don't form complete sets)
     const manualLeftover = manualQuestions.length % 100;
@@ -154,7 +154,7 @@ export const getUnassignedQuestions = query({
 export const getQuestionStatsWithSections = query({
   args: {},
   handler: async (ctx) => {
-    const allQuestions = await ctx.db.query("questions").collect();
+    const allQuestions = await ctx.db.query("questions").take(5000);
     
     const stats = {
       total: allQuestions.length,
@@ -173,7 +173,7 @@ export const getQuestionStatsWithSections = query({
     };
 
     // Count questions per section
-    const sections = await ctx.db.query("sections").collect();
+    const sections = await ctx.db.query("sections").take(100);
     for (const section of sections) {
       const count = allQuestions.filter(q => q.sectionId === section._id).length;
       stats.bySection[section.name] = count;
@@ -881,11 +881,11 @@ export const deleteAllAIQuestions = mutation({
       throw new Error("Unauthorized");
     }
 
-    // Get all AI questions
+    // Get all AI questions (batch delete in chunks)
     const aiQuestions = await ctx.db
       .query("questions")
       .withIndex("by_source", (q) => q.eq("source", "ai"))
-      .collect();
+      .take(1000);
 
     console.log(`Found ${aiQuestions.length} AI questions to delete`);
 
@@ -926,11 +926,11 @@ export const deleteAllQuestionsBySource = mutation({
       throw new Error("Invalid source type. Must be 'manual', 'ai', or 'pyq'");
     }
 
-    // Get all questions with the specified source
+    // Get all questions with the specified source (batch delete in chunks)
     const questions = await ctx.db
       .query("questions")
       .withIndex("by_source", (q) => q.eq("source", args.source as any))
-      .collect();
+      .take(1000);
 
     console.log(`Found ${questions.length} questions with source '${args.source}' to delete`);
 
@@ -1070,8 +1070,8 @@ export const autoCreateTestSets = mutation({
     // Fetch all questions of the specified source that aren't assigned to a set
     const allQuestions = await ctx.db
       .query("questions")
-      .filter((q) => q.eq(q.field("source"), _args.source))
-      .collect();
+      .withIndex("by_source", (q) => q.eq("source", _args.source))
+      .take(5000);
 
     // Filter questions without setNumber
     const unassignedQuestions = allQuestions.filter(q => !q.setNumber);
@@ -1334,7 +1334,7 @@ export const getReportedQuestions = query({
       .query("reportedQuestions")
       .withIndex("by_status", (q) => q.eq("status", "pending"))
       .order("desc")
-      .collect();
+      .take(100);
 
     // Enrich with user and question details
     const enrichedReports = await Promise.all(

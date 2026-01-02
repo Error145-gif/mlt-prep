@@ -6,10 +6,11 @@ import { getCurrentUser } from "./users";
 export const getDashboardStats = query({
   args: {},
   handler: async (ctx) => {
-    const allQuestions = await ctx.db.query("questions").collect();
-    const allTestSets = await ctx.db.query("testSets").collect();
-    const allUsers = await ctx.db.query("users").collect();
-    const allSubscriptions = await ctx.db.query("subscriptions").collect();
+    // Use take() instead of collect() to limit database reads
+    const allQuestions = await ctx.db.query("questions").take(5000);
+    const allTestSets = await ctx.db.query("testSets").take(1000);
+    const allUsers = await ctx.db.query("users").take(10000);
+    const allSubscriptions = await ctx.db.query("subscriptions").take(5000);
 
     // Calculate new users (registered in last 7 days)
     const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
@@ -106,7 +107,7 @@ export const getDashboardStats = query({
 
       // Added fields for AdminDashboard compatibility
       activeSubscriptions: allSubscriptions.filter(s => s.status === "active").length,
-      totalContent: (await ctx.db.query("content").collect()).length,
+      totalContent: (await ctx.db.query("content").take(1000)).length,
       approvedQuestions: approvedQuestions,
       manualQuestions: allQuestions.filter(q => q.source === "manual").length,
       pendingQuestions: pendingQuestions,
@@ -149,7 +150,7 @@ export const getAllRegisteredUsers = query({
       throw new Error("Unauthorized");
     }
 
-    const allUsers = await ctx.db.query("users").collect();
+    const allUsers = await ctx.db.query("users").take(10000);
     
     // Return all users with email (removed strict @gmail.com filter to show all users)
     const registeredUsers = allUsers
@@ -180,7 +181,7 @@ export const getAllUsersAnalytics = query({
       throw new Error("Unauthorized");
     }
 
-    const allUsers = await ctx.db.query("users").collect();
+    const allUsers = await ctx.db.query("users").take(10000);
     const usersWithStats = await Promise.all(
       allUsers.map(async (u) => {
         const progress = await ctx.db
