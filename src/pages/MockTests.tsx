@@ -65,30 +65,43 @@ export default function MockTests() {
     );
   }
 
-  const handleStartTest = (topicId: string | null, setNumber: number, isFirstTest: boolean) => {
+  const handleStartTest = (test: any, isFirstTest: boolean) => {
     // Check if this specific test is unlocked via ad
     const isAdUnlocked = adUnlockedTests?.some(
-      (t) => t.testSetNumber === setNumber
+      (t) => t.testSetNumber === test.setNumber
     );
 
     // Check subscription access
-    if (!canAccessMock?.canAccess && !isAdUnlocked) {
-      if (canAccessMock?.reason === "monthly_starter_limit_reached") {
-        toast.error(`Monthly Starter limit reached! You've used ${canAccessMock.setsUsed}/${canAccessMock.setLimit} sets. Watch ads to unlock 2 more!`);
-      } else if (canAccessMock?.reason === "free_trial_used") {
-        toast.error("Your free trial is used. Please subscribe to continue.");
-      } else {
-        toast.error("Subscribe to unlock Mock Tests!");
+    const isMonthlyStarter = canAccessMock?.reason === "monthly_starter_limit_reached" || 
+                             canAccessMock?.reason === "monthly_starter_limit_reached_ad_available" ||
+                             (canAccessMock?.setLimit && canAccessMock?.setLimit > 1);
+
+    if (isMonthlyStarter) {
+      const limit = canAccessMock?.setLimit || 25;
+      // If test is beyond limit AND not ad unlocked
+      if (test.setNumber > limit && !isAdUnlocked) {
+         toast.error(`This set is locked. Limit: ${limit} sets. Watch an ad to unlock!`);
+         return;
       }
-      setTimeout(() => navigate("/subscription-plans"), 1000);
-      return;
+    } else {
+      if (!canAccessMock?.canAccess && !isAdUnlocked) {
+        if (canAccessMock?.reason === "free_trial_used") {
+           if (test.setNumber === 1) {
+             // Allow retake
+           } else {
+             toast.error("Your free trial is used. Please subscribe to continue.");
+             setTimeout(() => navigate("/subscription-plans"), 1000);
+             return;
+           }
+        } else {
+          toast.error("Subscribe to unlock Mock Tests!");
+          setTimeout(() => navigate("/subscription-plans"), 1000);
+          return;
+        }
+      }
     }
     
-    if (topicId) {
-      navigate(`/test-start?type=mock&topicId=${topicId}&setNumber=${setNumber}`);
-    } else {
-      navigate(`/test-start?type=mock&setNumber=${setNumber}`);
-    }
+    navigate(`/test-start?type=mock&topicId=${test.topicId}&setNumber=${test.setNumber}`);
   };
 
   const handleUnlockWithAd = async (test: any) => {
@@ -235,7 +248,7 @@ export default function MockTests() {
                       )
                     ) : (
                       <Button
-                        onClick={() => handleStartTest(test.topicId, test.setNumber, isFirstTest)}
+                        onClick={() => handleStartTest(test, isFirstTest)}
                         className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
                       >
                         {test.hasCompleted ? (canAccessMock?.canAccess ? "Re-Test" : "Subscribe to Re-Test") : isFirstTest && canAccessMock?.reason === "free_trial" ? "Start Free Test" : "Start Test"}

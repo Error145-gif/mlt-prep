@@ -1,167 +1,109 @@
-// @ts-nocheck
-import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { useAuth } from "@/hooks/use-auth";
-import { useNavigate } from "react-router";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Lock } from "lucide-react";
-import { motion } from "framer-motion";
-import { useEffect } from "react";
-import { toast } from "sonner";
-import StudentNav from "@/components/StudentNav";
-import MobileBottomNav from "@/components/MobileBottomNav";
+// src/convex/student.ts
+// ... (keep existing code above canAccessTestType)
 
-export default function AIQuestions() {
-  const { isAuthenticated, isLoading } = useAuth();
-  const navigate = useNavigate();
-  const aiTests = useQuery(api.student.getAIQuestions, {});
-  const canAccessAI = useQuery(api.student.canAccessTestType, { testType: "ai" });
-
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      navigate("/auth");
+export const canAccessTestType = query({
+  args: { testType: v.string() },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) {
+      return { canAccess: false, reason: "not_authenticated" };
     }
-  }, [isAuthenticated, isLoading, navigate]);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
-        <div className="text-center space-y-4">
-          <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin mx-auto"></div>
-          <div className="text-white text-xl">Loading AI Tests...</div>
-        </div>
-      </div>
-    );
-  }
+    const subscription = await ctx.db
+      .query("subscriptions")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .filter((q) => q.eq(q.field("status"), "active"))
+      .first();
 
-  if (!aiTests || aiTests.length === 0) {
-    return (
-      <div className="min-h-screen p-6 lg:p-8 relative overflow-hidden">
-        <StudentNav />
-        <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500" />
-        <div className="relative z-10 max-w-2xl mx-auto text-center">
-          <h1 className="text-3xl font-bold text-white">No AI Tests Available</h1>
-          <p className="text-white/70 mt-2">Check back soon for new AI-generated questions</p>
-        </div>
-      </div>
-    );
-  }
+    const hasActiveSubscription = subscription && subscription.endDate > Date.now();
 
-  const handleStartTest = (test: any, isFirstTest: boolean) => {
-    // Check subscription access
-    if (!canAccessAI?.canAccess) {
-      if (canAccessAI?.reason === "monthly_starter_limit_reached") {
-        toast.error(`Monthly Starter limit reached! You've used ${canAccessAI.questionsUsed}/${canAccessAI.questionLimit} questions. Upgrade to continue.`);
-      } else if (canAccessAI?.reason === "free_trial_used") {
-        toast.error("Your free trial is used. Please subscribe to continue.");
+    // Determine plan limits (in sets)
+    let mockSetLimit = 1; // Default for free trial
+    let pyqSetLimit = 1;
+    let aiSetLimit = 1;
+    let isMonthlyStarterPlan = false;
+
+    if (hasActiveSubscription) {
+      if (subscription.amount === 99 || subscription.planName.includes("Monthly Starter")) {
+        isMonthlyStarterPlan = true;
+        mockSetLimit = 25;
+        pyqSetLimit = 20;
+        aiSetLimit = 25;
       } else {
-        toast.error("Subscribe to unlock AI Tests!");
+        // Unlimited for higher plans
+        mockSetLimit = 9999;
+        pyqSetLimit = 9999;
+        aiSetLimit = 9999;
       }
-      setTimeout(() => navigate("/subscription-plans"), 1000);
-      return;
     }
+
+    let limit = 0;
+    if (args.testType === "mock") {
+      limit = mockSetLimit;
+    } else if (args.testType === "pyq") {
+      limit = pyqSetLimit;
+    } else if (args.testType === "ai") {
+      limit = aiSetLimit;
+    }
+
+    // Count unique sets completed by the user for this testType
+    const completedSets = await ctx.db
+      .query("testSessions")
+      .withIndex("by_user_and_type_and_status", (q) =>
+        q.eq("userId", user._id).eq("testType", args.testType).eq("status", "completed")
+      )
+      .collect();
+
+    const uniqueCompletedSetNumbers = new Set(
+      completedSets.map((session) => session.setNumber)
+    ).size;
+
+    // Count ad-unlocked tests for this type
+    const adUnlockedTests = await ctx.db
+      .query("adUnlockedTests")
+      .withIndex("by_user_and_type", (q) => q.eq("userId", user._id).eq("testType", args.testType))
+      .collect();
+
+    const adUnlockedSetNumbers = new Set(
+      adUnlockedTests.map((adUnlock) => adUnlock.testSetNumber)
+    );
     
-    navigate(`/test-start?type=ai&topicId=general&setNumber=${test.setNumber}`);
-  };
+    // Free Trial Logic
+    if (!hasActiveSubscription) {
+      if (uniqueCompletedSetNumbers > 0) { // If user completed any free test
+        return { canAccess: false, reason: "free_trial_used", setLimit: limit, setsUsed: uniqueCompletedSetNumbers };
+      }
+      return { canAccess: true, reason: "free_trial", setLimit: limit, setsUsed: uniqueCompletedSetNumbers };
+    }
 
-  // Show list of available AI tests
-  return (
-    <div className="min-h-screen p-6 lg:p-8 relative overflow-hidden pb-24 transition-all duration-300">
-      <StudentNav />
-      <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500">
-        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-400/50 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-500/50 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-      </div>
+    // Paid Subscription Logic
+    if (isMonthlyStarterPlan) {
+      // If subscription limit is reached based on completed tests
+      if (uniqueCompletedSetNumbers >= limit) {
+        // If there are any ad-unlocked tests, overall access is still possible for individual tests
+        if (adUnlockedSetNumbers.size > 0) {
+          return {
+            canAccess: true, // Overall access is true because ad unlocks are available
+            reason: "monthly_starter_limit_reached_ad_available",
+            setLimit: limit, // Still return the subscription limit
+            setsUsed: uniqueCompletedSetNumbers,
+            adUnlockedTestsCount: adUnlockedSetNumbers.size,
+          };
+        }
+        // Subscription limit reached, and no ad unlocks available
+        return {
+          canAccess: false,
+          reason: "monthly_starter_limit_reached",
+          setLimit: limit, // Still return the subscription limit
+          setsUsed: uniqueCompletedSetNumbers,
+        };
+      }
+      // Subscription limit not reached yet
+      return { canAccess: true, reason: "paid_subscription", setLimit: limit, setsUsed: uniqueCompletedSetNumbers };
+    }
 
-      {/* Lab Background Image */}
-      <div 
-        className="fixed inset-0 -z-10 opacity-15"
-        style={{
-          backgroundImage: 'url(https://harmless-tapir-303.convex.cloud/api/storage/1e73bac3-1079-442a-b8f9-4e8b71bf087f)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-          backgroundAttachment: 'fixed'
-        }}
-      />
-
-      <div className="relative z-10 max-w-7xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold text-white">AI-Generated Questions</h1>
-          <p className="text-white/70 mt-1">Select an AI test set to practice with AI-curated topic-wise questions (25 questions per set)</p>
-          {canAccessAI?.reason === "paid_subscription" && canAccessAI?.questionLimit && (
-            <p className="text-yellow-300 mt-2 text-sm">
-              ⚡ Monthly Starter Plan: {canAccessAI.questionsUsed || 0}/{canAccessAI.questionLimit} questions used
-            </p>
-          )}
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {aiTests.map((test, index) => {
-            const isFirstTest = index === 0;
-            // A card is locked if access is denied by backend, OR if it's a free trial user and not the first test.
-            const isLocked = (!canAccessAI?.canAccess) || (canAccessAI?.reason === "free_trial" && !isFirstTest);
-            
-            return (
-              <motion.div
-                key={`${test.topicId}-${test.setNumber}`}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Card className={`glass-card border-white/20 backdrop-blur-xl bg-white/10 hover:bg-white/15 transition-all cursor-pointer ${isLocked ? 'opacity-60' : ''}`}>
-                  <div className="p-6 space-y-4">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h3 className="text-xl font-bold text-white">AI Challenge Test</h3>
-                        <p className="text-white/70 text-sm">Set {test.setNumber}/{test.totalSets}</p>
-                      </div>
-                      {isLocked && (
-                        <Lock className="h-6 w-6 text-yellow-400" />
-                      )}
-                    </div>
-
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-white/70">
-                        <span className="text-sm">⏱️ 30 mins</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-white/70">
-                        <span className="text-sm">❓ {test.questionCount} Questions</span>
-                      </div>
-                    </div>
-
-                    {test.hasCompleted && (
-                      <Badge className="bg-green-500/20 text-green-300 border-green-500/30 w-full text-center justify-center">
-                        ✓ Completed
-                      </Badge>
-                    )}
-
-                    {isLocked ? (
-                      <Button
-                        disabled
-                        className="w-full bg-gray-500 cursor-not-allowed"
-                      >
-                        <Lock className="h-4 w-4 mr-2" />
-                        Locked - Subscribe to Unlock
-                      </Button>
-                    ) : (
-                      <Button
-                        onClick={() => handleStartTest(test, isFirstTest)}
-                        className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700"
-                      >
-                        {test.hasCompleted ? "Re-Take Test" : "Start Test"}
-                      </Button>
-                    )}
-                  </div>
-                </Card>
-              </motion.div>
-            );
-          })}
-        </div>
-      </div>
-      <MobileBottomNav />
-    </div>
-  );
-}
+    // Unlimited plans
+    return { canAccess: true, reason: "paid_subscription", setLimit: limit, setsUsed: uniqueCompletedSetNumbers };
+  },
+});
+// ... (keep existing code below canAccessTestType)

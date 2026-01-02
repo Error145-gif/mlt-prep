@@ -580,26 +580,6 @@ export const getTestQuestions = query({
           }
         }
 
-        // Count how many UNIQUE SETS user has already attempted for this test type
-        const completedTests = await ctx.db
-          .query("testSessions")
-          .withIndex("by_user", (q) => q.eq("userId", user._id))
-          .filter((q) => q.eq(q.field("status"), "completed"))
-          .filter((q) => q.eq(q.field("testType"), args.testType))
-          .collect();
-
-        // Calculate unique sets attempted
-        let uniqueSetsAttempted = 0;
-        if (args.testType === "mock" || args.testType === "ai") {
-          // For Mock/AI, count unique setNumbers (optionally per topic, but simplified to setNumber for now as per frontend)
-          const uniqueSetNumbers = new Set(completedTests.map(t => t.setNumber));
-          uniqueSetsAttempted = uniqueSetNumbers.size;
-        } else if (args.testType === "pyq") {
-          // For PYQ, count unique year+setNumber combinations
-          const uniquePyqSets = new Set(completedTests.map(t => `${t.year}-${t.setNumber}`));
-          uniqueSetsAttempted = uniquePyqSets.size;
-        }
-
         // Check if user has exceeded their limit
         let setLimit = 0;
         if (args.testType === "mock") {
@@ -610,21 +590,42 @@ export const getTestQuestions = query({
           setLimit = aiSetLimit;
         }
 
-        // If user is trying to access a new set and has reached limit
-        // Note: We allow re-taking already completed sets even if limit reached? 
-        // For now, strict limit on unique sets.
-        
-        // Check if this specific set has been completed before
-        let isCompletedBefore = false;
-        if (args.testType === "pyq") {
-           isCompletedBefore = completedTests.some(t => t.year === args.year && t.setNumber === args.setNumber);
-        } else {
-           isCompletedBefore = completedTests.some(t => t.setNumber === args.setNumber);
+        // ENFORCE SET NUMBER LIMIT FOR MONTHLY STARTER / FREE
+        // If the requested set number is beyond the limit, block it (unless ad unlocked, which is checked above)
+        if (args.setNumber && args.setNumber > setLimit) {
+           // For free users, we might want to allow re-taking the 1st set even if they "used" the trial?
+           // But strictly: Set #1 <= Limit 1. Set #2 > Limit 1.
+           // So this logic works for Free (Limit 1) and Monthly (Limit 20/25).
+           
+           // Exception: If user has completed it before? 
+           // Usually "Locked" means locked. But if they did it when they had a higher plan?
+           // For now, strict enforcement based on current plan.
+           
+           console.log(`Blocking access to ${args.testType} set ${args.setNumber} - Set number > Limit (${setLimit})`);
+           return [];
         }
-
-        if (!isCompletedBefore && uniqueSetsAttempted >= setLimit) {
-          console.log(`Blocking access to ${args.testType} set ${args.setNumber} - Limit reached (${uniqueSetsAttempted}/${setLimit} sets)`);
-          return [];
+        
+        // Also check unique sets for Free Trial users specifically (since they only get 1)
+        // If they try to access Set #1 again, it's <= Limit 1, so allowed by above check.
+        // But if we want to strictly limit Free users to "One Time Only", we check completedTests.
+        if (!hasActiveSubscription) {
+           const completedTests = await ctx.db
+            .query("testSessions")
+            .withIndex("by_user", (q) => q.eq("userId", user._id))
+            .filter((q) => q.eq(q.field("status"), "completed"))
+            .filter((q) => q.eq(q.field("testType"), args.testType))
+            .collect();
+            
+           if (completedTests.length >= 1) {
+             // Free trial used.
+             // But wait, if they are retaking Set #1?
+             // If we want to allow retakes of the free set:
+             if (args.setNumber && args.setNumber === 1) {
+               // Allow retake of set 1
+             } else {
+               return [];
+             }
+           }
         }
       }
     }

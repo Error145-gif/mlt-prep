@@ -65,16 +65,38 @@ export default function PYQSets() {
     );
 
     // Check subscription access
-    if (!canAccessPYQ?.canAccess && !isAdUnlocked) {
-      if (canAccessPYQ?.reason === "monthly_starter_limit_reached") {
-        toast.error(`Monthly Starter limit reached! You've used ${canAccessPYQ.setsUsed}/${canAccessPYQ.setLimit} sets. Watch ads to unlock 2 more!`);
-      } else if (canAccessPYQ?.reason === "free_trial_used") {
-        toast.error("Your free trial is used. Please subscribe to continue.");
-      } else {
-        toast.error("Subscribe to unlock PYQ Sets!");
+    const isMonthlyStarter = canAccessPYQ?.reason === "monthly_starter_limit_reached" || 
+                             canAccessPYQ?.reason === "monthly_starter_limit_reached_ad_available" ||
+                             (canAccessPYQ?.setLimit && canAccessPYQ?.setLimit > 1); // > 1 implies paid limited plan
+
+    if (isMonthlyStarter) {
+      const limit = canAccessPYQ?.setLimit || 20;
+      // If test is beyond limit AND not ad unlocked
+      if (test.setNumber > limit && !isAdUnlocked) {
+         toast.error(`This set is locked. Limit: ${limit} sets. Watch an ad to unlock!`);
+         return;
       }
-      setTimeout(() => navigate("/subscription-plans"), 1000);
-      return;
+    } else {
+      // Free user or Unlimited
+      // If unlimited (paid_subscription), canAccess is true.
+      // If free, canAccess might be false if trial used.
+      
+      if (!canAccessPYQ?.canAccess && !isAdUnlocked) {
+        if (canAccessPYQ?.reason === "free_trial_used") {
+           // Allow retaking Set 1?
+           if (test.setNumber === 1) {
+             // Allow
+           } else {
+             toast.error("Your free trial is used. Please subscribe to continue.");
+             setTimeout(() => navigate("/subscription-plans"), 1000);
+             return;
+           }
+        } else {
+          toast.error("Subscribe to unlock PYQ Sets!");
+          setTimeout(() => navigate("/subscription-plans"), 1000);
+          return;
+        }
+      }
     }
     
     navigate(`/test-start?type=pyq&topicId=${test.year}&setNumber=${test.setNumber}`);

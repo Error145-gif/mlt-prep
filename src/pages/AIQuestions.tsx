@@ -58,19 +58,36 @@ export default function AIQuestions() {
     );
 
     // Check subscription access
-    if (!canAccessAI?.canAccess && !isAdUnlocked) {
-      if (canAccessAI?.reason === "monthly_starter_limit_reached") {
-        toast.error(`Monthly Starter limit reached! You've used ${canAccessAI.setsUsed}/${canAccessAI.setLimit} sets. Watch ads to unlock 2 more!`);
-      } else if (canAccessAI?.reason === "free_trial_used") {
-        toast.error("Your free trial is used. Please subscribe to continue.");
-      } else {
-        toast.error("Subscribe to unlock AI Tests!");
+    const isMonthlyStarter = canAccessAI?.reason === "monthly_starter_limit_reached" || 
+                             canAccessAI?.reason === "monthly_starter_limit_reached_ad_available" ||
+                             (canAccessAI?.setLimit && canAccessAI?.setLimit > 1);
+
+    if (isMonthlyStarter) {
+      const limit = canAccessAI?.setLimit || 25;
+      // If test is beyond limit AND not ad unlocked
+      if (test.setNumber > limit && !isAdUnlocked) {
+         toast.error(`This set is locked. Limit: ${limit} sets. Watch an ad to unlock!`);
+         return;
       }
-      setTimeout(() => navigate("/subscription-plans"), 1000);
-      return;
+    } else {
+      if (!canAccessAI?.canAccess && !isAdUnlocked) {
+        if (canAccessAI?.reason === "free_trial_used") {
+           if (test.setNumber === 1) {
+             // Allow retake
+           } else {
+             toast.error("Your free trial is used. Please subscribe to continue.");
+             setTimeout(() => navigate("/subscription-plans"), 1000);
+             return;
+           }
+        } else {
+          toast.error("Subscribe to unlock AI Questions!");
+          setTimeout(() => navigate("/subscription-plans"), 1000);
+          return;
+        }
+      }
     }
     
-    navigate(`/test-start?type=ai&topicId=general&setNumber=${test.setNumber}`);
+    navigate(`/test-start?type=ai&topicId=${test.topicId}&setNumber=${test.setNumber}`);
   };
 
   const handleUnlockWithAd = async (test: any) => {
