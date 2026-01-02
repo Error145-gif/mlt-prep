@@ -1,7 +1,7 @@
 export default {
   providers: [
     {
-      domain: ".mltprep.online",
+      domain: process.env.CONVEX_SITE_URL,
       applicationID: "convex",
     },
   ],
