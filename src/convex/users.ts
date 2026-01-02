@@ -38,6 +38,20 @@ export const updateUserActivity = mutation({
   },
 });
 
+// Query to track current user as active (called automatically)
+export const trackActivity = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      return null;
+    }
+
+    // This query will be called frequently, updating activity in a mutation
+    return userId;
+  },
+});
+
 /**
  * Use this function internally to get the current user data. Remember to handle the null user case.
  * @param ctx

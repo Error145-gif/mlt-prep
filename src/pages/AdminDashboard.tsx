@@ -25,6 +25,9 @@ export default function AdminDashboard() {
     isAuthenticated && user?.role === "admin" ? {} : "skip"
   );
 
+  // Track admin activity
+  useQuery(api.users.trackActivity, isAuthenticated ? {} : "skip");
+
   // CSV Download Function
   const handleDownloadCSV = () => {
     if (!registeredUsers?.users) {

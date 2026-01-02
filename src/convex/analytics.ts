@@ -15,11 +15,11 @@ export const getDashboardStats = query({
     const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
     const newUsers = allUsers.filter(u => u._creationTime > sevenDaysAgo);
     
-    // Calculate currently online users (active in last 5 minutes)
-    const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
+    // Calculate currently online users (active in last 15 minutes - more realistic)
+    const fifteenMinutesAgo = Date.now() - 15 * 60 * 1000;
     const onlineUsers = allUsers.filter(u => {
-      const lastActive = u.lastActive || 0;
-      return lastActive > fiveMinutesAgo;
+      const lastActive = u.lastActive || u._creationTime || 0;
+      return lastActive > fifteenMinutesAgo;
     });
 
     // Fetch recent data - UPDATED to get more recent items
