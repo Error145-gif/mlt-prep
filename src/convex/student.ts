@@ -522,7 +522,7 @@ export const getPracticeQuestions = query({
   },
 });
 
-// Get questions for a specific test - with set support
+// Get questions for a specific test - with set support and plan limits
 export const getTestQuestions = query({
   args: {
     testType: v.string(),
@@ -538,7 +538,7 @@ export const getTestQuestions = query({
       return [];
     }
 
-    // Check for active subscription
+    // Check for active subscription and get plan limits
     const subscription = await ctx.db
       .query("subscriptions")
       .withIndex("by_user", (q) => q.eq("userId", user._id))
@@ -547,19 +547,52 @@ export const getTestQuestions = query({
 
     const hasActiveSubscription = subscription && subscription.endDate > Date.now();
 
-    if (!hasActiveSubscription) {
-      // Check if they have already used their free trial for this test type
-      const completedTests = await ctx.db
-        .query("testSessions")
-        .withIndex("by_user", (q) => q.eq("userId", user._id))
-        .filter((q) => q.eq(q.field("status"), "completed"))
-        .filter((q) => q.eq(q.field("testType"), args.testType))
-        .collect();
+    // Determine plan limits
+    let mockTestLimit = 1; // Free trial
+    let pyqSetLimit = 1;
+    let aiTestLimit = 1;
 
-      if (completedTests.length >= 1) {
-        console.log(`Blocking access to ${args.testType} questions - Free trial limit reached`);
-        return [];
+    if (hasActiveSubscription) {
+      // Monthly Starter Plan (₹99) - LIMITED
+      if (subscription.amount === 99 || subscription.planName.includes("Monthly Starter")) {
+        mockTestLimit = 25; // 25 questions total
+        pyqSetLimit = 20; // 20 questions total
+        aiTestLimit = 25; // 25 questions total
+      } else {
+        // Higher plans get unlimited
+        mockTestLimit = 999;
+        pyqSetLimit = 999;
+        aiTestLimit = 999;
       }
+    }
+
+    // Count how many questions user has already attempted for this test type
+    const completedTests = await ctx.db
+      .query("testSessions")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .filter((q) => q.eq(q.field("status"), "completed"))
+      .filter((q) => q.eq(q.field("testType"), args.testType))
+      .collect();
+
+    // Calculate total questions attempted
+    let totalQuestionsAttempted = 0;
+    for (const test of completedTests) {
+      totalQuestionsAttempted += test.questionIds.length;
+    }
+
+    // Check if user has exceeded their limit
+    let questionLimit = 0;
+    if (args.testType === "mock") {
+      questionLimit = mockTestLimit;
+    } else if (args.testType === "pyq") {
+      questionLimit = pyqSetLimit;
+    } else if (args.testType === "ai") {
+      questionLimit = aiTestLimit;
+    }
+
+    if (totalQuestionsAttempted >= questionLimit) {
+      console.log(`Blocking access to ${args.testType} questions - Limit reached (${totalQuestionsAttempted}/${questionLimit})`);
+      return [];
     }
     
     try {
@@ -573,14 +606,17 @@ export const getTestQuestions = query({
           .filter((q) => q.eq(q.field("status"), "approved"))
           .collect();
         
+        // Calculate remaining questions allowed
+        const remainingQuestions = questionLimit - totalQuestionsAttempted;
+        
         // Organize into sets dynamically based on setNumber parameter
         if (args.setNumber) {
-          const setSize = 100;
+          const setSize = Math.min(100, remainingQuestions); // Limit to remaining or 100
           const startIndex = (args.setNumber - 1) * setSize;
           const endIndex = startIndex + setSize;
           questions = allQuestions.slice(startIndex, endIndex);
         } else {
-          questions = allQuestions.slice(0, 100);
+          questions = allQuestions.slice(0, Math.min(100, remainingQuestions));
         }
         
       } else if (args.testType === "pyq") {
@@ -591,6 +627,9 @@ export const getTestQuestions = query({
           .filter((q) => q.eq(q.field("status"), "approved"))
           .collect();
         
+        // Calculate remaining questions allowed
+        const remainingQuestions = questionLimit - totalQuestionsAttempted;
+        
         // Filter by year and examName, then organize into sets dynamically
         const filteredQuestions = allPyqQuestions.filter(q => 
           q.year === args.year &&
@@ -598,12 +637,12 @@ export const getTestQuestions = query({
         );
         
         if (args.setNumber) {
-          const setSize = 20;
+          const setSize = Math.min(20, remainingQuestions); // Limit to remaining or 20
           const startIndex = (args.setNumber - 1) * setSize;
           const endIndex = startIndex + setSize;
           questions = filteredQuestions.slice(startIndex, endIndex);
         } else {
-          questions = filteredQuestions.slice(0, 20);
+          questions = filteredQuestions.slice(0, Math.min(20, remainingQuestions));
         }
         
       } else if (args.testType === "ai") {
@@ -614,14 +653,17 @@ export const getTestQuestions = query({
           .filter((q) => q.eq(q.field("status"), "approved"))
           .collect();
         
+        // Calculate remaining questions allowed
+        const remainingQuestions = questionLimit - totalQuestionsAttempted;
+        
         // Organize into sets dynamically based on setNumber parameter
         if (args.setNumber) {
-          const setSize = 25;
+          const setSize = Math.min(25, remainingQuestions); // Limit to remaining or 25
           const startIndex = (args.setNumber - 1) * setSize;
           const endIndex = startIndex + setSize;
           questions = allQuestions.slice(startIndex, endIndex);
         } else {
-          questions = allQuestions.slice(0, 25);
+          questions = allQuestions.slice(0, Math.min(25, remainingQuestions));
         }
       }
       
@@ -1088,13 +1130,13 @@ export const checkSubscriptionAccess = query({
       prioritySupport: false,
     };
 
-    // Monthly Starter Plan (₹99)
+    // Monthly Starter Plan (₹99) - LIMITED ACCESS
     if (subscription.amount === 99 || subscription.planName.includes("Monthly Starter")) {
       planType = "monthly_starter";
       features = {
-        mockTests: 999, // Unlimited
-        pyqSets: 20,
-        aiTests: 999, // Unlimited
+        mockTests: 25, // 25 mock test questions (not unlimited)
+        pyqSets: 20, // 20 PYQ questions
+        aiTests: 25, // 25 AI questions
         adUnlocks: 0, // No ads
         detailedAnalysis: false, // Locked - watch banner ads
         libraryAccess: false,
@@ -1149,7 +1191,7 @@ export const checkSubscriptionAccess = query({
       isExpiringSoon,
       endDate: subscription.endDate,
       features,
-      isPaid: true, // Add this flag for easier checking
+      isPaid: true,
       amount: subscription.amount,
     };
   },
