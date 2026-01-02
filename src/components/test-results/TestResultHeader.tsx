@@ -32,47 +32,52 @@ export default function TestResultHeader({ user, userProfile, testTypeInfo, sess
   };
 
   return (
-    <div className={`bg-gradient-to-r ${testTypeInfo.color} text-white px-6 py-6 shadow-lg`}>
-      <div className="max-w-6xl mx-auto">
-        <div className="flex justify-between items-center mb-4">
-          <div className="flex items-center gap-3">
-            {userProfile?.avatarUrl ? (
-              <Avatar className="h-12 w-12 border-2 border-white shadow-md">
-                <AvatarImage src={userProfile.avatarUrl} />
-                <AvatarFallback className="bg-white text-blue-600 font-bold">
-                  {userProfile.name?.charAt(0)?.toUpperCase() || "U"}
-                </AvatarFallback>
-              </Avatar>
-            ) : (
-              <Avatar className="h-12 w-12 border-2 border-white shadow-md">
-                <AvatarFallback className="bg-white text-blue-600 font-bold">
-                  {user?.name?.charAt(0)?.toUpperCase() || "U"}
-                </AvatarFallback>
-              </Avatar>
-            )}
-            <div>
-              <p className="text-2xl font-bold">{user?.name || "Student"}</p>
-              <p className="text-sm opacity-90">Test Results</p>
+    <div className="relative overflow-hidden shadow-lg">
+      <div
+        className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=1600&q=80&auto=format&fit=crop')] bg-cover bg-center opacity-40"
+      />
+      <div className={`relative bg-gradient-to-r ${testTypeInfo.color} text-white px-6 py-6 backdrop-blur-sm`}>
+        <div className="max-w-6xl mx-auto">
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex items-center gap-3">
+              {userProfile?.avatarUrl ? (
+                <Avatar className="h-12 w-12 border-2 border-white shadow-md">
+                  <AvatarImage src={userProfile.avatarUrl} />
+                  <AvatarFallback className="bg-white text-blue-600 font-bold">
+                    {userProfile.name?.charAt(0)?.toUpperCase() || "U"}
+                  </AvatarFallback>
+                </Avatar>
+              ) : (
+                <Avatar className="h-12 w-12 border-2 border-white shadow-md">
+                  <AvatarFallback className="bg-white text-blue-600 font-bold">
+                    {user?.name?.charAt(0)?.toUpperCase() || "U"}
+                  </AvatarFallback>
+                </Avatar>
+              )}
+              <div>
+                <p className="text-2xl font-bold">{user?.name || "Student"}</p>
+                <p className="text-sm opacity-90">Test Results</p>
+              </div>
             </div>
           </div>
-        </div>
-        
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-          <div>
-            <p className="opacity-80">Test Type</p>
-            <p className="font-bold text-lg">{testTypeInfo.icon} {testTypeInfo.name}</p>
-          </div>
-          <div>
-            <p className="opacity-80">Attempt Date</p>
-            <p className="font-semibold">{formatDate(session._creationTime)}</p>
-          </div>
-          <div>
-            <p className="opacity-80">Time Taken</p>
-            <p className="font-semibold">⏱️ {formatTime(timeSpent)}</p>
-          </div>
-          <div>
-            <p className="opacity-80">Total Questions</p>
-            <p className="font-semibold">🧩 {totalQuestions}</p>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div>
+              <p className="opacity-80">Test Type</p>
+              <p className="font-bold text-lg">{testTypeInfo.icon} {testTypeInfo.name}</p>
+            </div>
+            <div>
+              <p className="opacity-80">Attempt Date</p>
+              <p className="font-semibold">{formatDate(session._creationTime)}</p>
+            </div>
+            <div>
+              <p className="opacity-80">Time Taken</p>
+              <p className="font-semibold">⏱️ {formatTime(timeSpent)}</p>
+            </div>
+            <div>
+              <p className="opacity-80">Total Questions</p>
+              <p className="font-semibold">🧩 {totalQuestions}</p>
+            </div>
           </div>
         </div>
       </div>
