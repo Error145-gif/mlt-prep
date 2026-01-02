@@ -18,6 +18,8 @@ export default function MockTests() {
   const navigate = useNavigate();
   const mockTests = useQuery(api.student.getMockTests, {});
   const canAccessMock = useQuery(api.student.canAccessTestType, { testType: "mock" });
+  const adUnlockedTests = useQuery(api.student.getAdUnlockedTests, { testType: "mock" });
+  const unlockTestWithAd = useMutation(api.student.unlockTestWithAd);
   
   // Debug: Log access status
   useEffect(() => {
@@ -67,7 +69,7 @@ export default function MockTests() {
     // Check subscription access
     if (!canAccessMock?.canAccess) {
       if (canAccessMock?.reason === "monthly_starter_limit_reached") {
-        toast.error(`Monthly Starter limit reached! You've used ${canAccessMock.questionsUsed}/${canAccessMock.questionLimit} questions. Upgrade to continue.`);
+        toast.error(`Monthly Starter limit reached! You've used ${canAccessMock.setsUsed}/${canAccessMock.setLimit} sets. Watch ads to unlock 2 more!`);
       } else if (canAccessMock?.reason === "free_trial_used") {
         toast.error("Your free trial is used. Please subscribe to continue.");
       } else {
@@ -81,6 +83,15 @@ export default function MockTests() {
       navigate(`/test-start?type=mock&topicId=${topicId}&setNumber=${setNumber}`);
     } else {
       navigate(`/test-start?type=mock&setNumber=${setNumber}`);
+    }
+  };
+
+  const handleUnlockWithAd = async (test: any) => {
+    try {
+      await unlockTestWithAd({ testType: "mock", testSetNumber: test.setNumber });
+      toast.success("Test unlocked! You can now take this test.");
+    } catch (error) {
+      toast.error("Failed to unlock test. Please try again.");
     }
   };
 
@@ -121,20 +132,34 @@ export default function MockTests() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {mockTests.map((test, index) => {
             const isFirstTest = index === 0;
+            const isFreeUser = canAccessMock?.reason === "free_trial";
             const hasPaidSubscription = canAccessMock?.reason === "paid_subscription";
-            const isMonthlyStarter = canAccessMock?.reason === "paid_subscription" && canAccessMock?.setLimit;
+            const isMonthlyStarter = hasPaidSubscription && canAccessMock?.setLimit;
+            
+            // Check if this test is ad-unlocked
+            const isAdUnlocked = adUnlockedTests?.some(
+              (t) => t.testSetNumber === test.setNumber
+            );
             
             // Lock logic:
             // - Free users: only first test unlocked
-            // - Monthly Starter (₹99): unlock up to setLimit (25 for mock)
+            // - Monthly Starter (₹99): unlock up to setLimit (25 for mock), then allow ad unlock for 2 more
             // - Premium: all unlocked
             let isLocked = false;
-            if (!hasPaidSubscription) {
+            let canUnlockWithAd = false;
+            
+            if (isFreeUser) {
               // Free user - only first test
               isLocked = !isFirstTest;
             } else if (isMonthlyStarter && canAccessMock?.setLimit) {
               // Monthly Starter - lock tests beyond the limit
-              isLocked = index >= canAccessMock.setLimit;
+              if (index >= canAccessMock.setLimit) {
+                isLocked = true;
+                // Allow ad unlock for up to 2 more tests after the limit
+                if (index < canAccessMock.setLimit + 2 && !isAdUnlocked) {
+                  canUnlockWithAd = true;
+                }
+              }
             }
             // Premium users: isLocked stays false
             
@@ -182,20 +207,25 @@ export default function MockTests() {
                       <span className="text-sm">{test.questionCount} Questions</span>
                     </div>
                     {isLocked ? (
-                      <Button
-                        onClick={() => {
-                          toast.error("This test is locked! Subscribe to unlock all tests.");
-                          setTimeout(() => navigate("/subscription-plans"), 1000);
-                        }}
-                        className="w-full bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700"
-                      >
-                        <img 
-                          src="https://harmless-tapir-303.convex.cloud/api/storage/22271688-6e3c-45a0-a31d-8c82daf67b1e" 
-                          alt="Locked"
-                          className="h-4 w-4 mr-2"
-                        />
-                        Unlock with Subscription
-                      </Button>
+                      canUnlockWithAd ? (
+                        <Button
+                          onClick={() => handleUnlockWithAd(test)}
+                          className="w-full bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700"
+                        >
+                          🎬 Watch Ad to Unlock
+                        </Button>
+                      ) : (
+                        <Button
+                          onClick={() => {
+                            toast.error("This test is locked! Subscribe to unlock all tests.");
+                            setTimeout(() => navigate("/subscription-plans"), 1000);
+                          }}
+                          className="w-full bg-gray-500 cursor-not-allowed"
+                        >
+                          <Lock className="h-4 w-4 mr-2" />
+                          Locked - Subscribe
+                        </Button>
+                      )
                     ) : (
                       <Button
                         onClick={() => handleStartTest(test.topicId, test.setNumber, isFirstTest)}

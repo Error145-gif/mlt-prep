@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
 import { useNavigate } from "react-router";
@@ -19,6 +19,8 @@ export default function PYQSets() {
   const navigate = useNavigate();
   const pyqSets = useQuery(api.student.getPYQSets);
   const canAccessPYQ = useQuery(api.student.canAccessTestType, { testType: "pyq" });
+  const adUnlockedTests = useQuery(api.student.getAdUnlockedTests, { testType: "pyq" });
+  const unlockTestWithAd = useMutation(api.student.unlockTestWithAd);
   const [selectedSet, setSelectedSet] = useState<any>(null);
   
   // Debug: Log access status
@@ -61,7 +63,7 @@ export default function PYQSets() {
     // Check subscription access
     if (!canAccessPYQ?.canAccess) {
       if (canAccessPYQ?.reason === "monthly_starter_limit_reached") {
-        toast.error(`Monthly Starter limit reached! You've used ${canAccessPYQ.questionsUsed}/${canAccessPYQ.questionLimit} questions. Upgrade to continue.`);
+        toast.error(`Monthly Starter limit reached! You've used ${canAccessPYQ.setsUsed}/${canAccessPYQ.setLimit} sets. Watch ads to unlock 2 more!`);
       } else if (canAccessPYQ?.reason === "free_trial_used") {
         toast.error("Your free trial is used. Please subscribe to continue.");
       } else {
@@ -73,6 +75,15 @@ export default function PYQSets() {
     
     // Direct start - navigate immediately
     navigate(`/test-start?type=pyq&year=${set.year}&setNumber=${set.setNumber}&examName=${encodeURIComponent(set.examName)}`);
+  };
+
+  const handleUnlockWithAd = async (set: any) => {
+    try {
+      await unlockTestWithAd({ testType: "pyq", testSetNumber: set.setNumber });
+      toast.success("Test unlocked! You can now take this test.");
+    } catch (error) {
+      toast.error("Failed to unlock test. Please try again.");
+    }
   };
 
   // Helper function to display year
@@ -270,20 +281,34 @@ export default function PYQSets() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {pyqSets.map((set, index) => {
             const isFirstTest = index === 0;
+            const isFreeUser = canAccessPYQ?.reason === "free_trial";
             const hasPaidSubscription = canAccessPYQ?.reason === "paid_subscription";
-            const isMonthlyStarter = canAccessPYQ?.reason === "paid_subscription" && canAccessPYQ?.setLimit;
+            const isMonthlyStarter = hasPaidSubscription && canAccessPYQ?.setLimit;
+            
+            // Check if this test is ad-unlocked
+            const isAdUnlocked = adUnlockedTests?.some(
+              (t) => t.testSetNumber === set.setNumber
+            );
             
             // Lock logic:
             // - Free users: only first test unlocked
-            // - Monthly Starter (₹99): unlock up to setLimit (20 for PYQ)
+            // - Monthly Starter (₹99): unlock up to setLimit (20 for PYQ), then allow ad unlock for 2 more
             // - Premium: all unlocked
             let isLocked = false;
-            if (!hasPaidSubscription) {
+            let canUnlockWithAd = false;
+            
+            if (isFreeUser) {
               // Free user - only first test
               isLocked = !isFirstTest;
             } else if (isMonthlyStarter && canAccessPYQ?.setLimit) {
               // Monthly Starter - lock tests beyond the limit
-              isLocked = index >= canAccessPYQ.setLimit;
+              if (index >= canAccessPYQ.setLimit) {
+                isLocked = true;
+                // Allow ad unlock for up to 2 more tests after the limit
+                if (index < canAccessPYQ.setLimit + 2 && !isAdUnlocked) {
+                  canUnlockWithAd = true;
+                }
+              }
             }
             // Premium users: isLocked stays false
             
@@ -340,13 +365,22 @@ export default function PYQSets() {
                     )}
 
                     {isLocked ? (
-                      <Button
-                        disabled
-                        className="w-full bg-gray-500 cursor-not-allowed"
-                      >
-                        <Lock className="h-4 w-4 mr-2" />
-                        Locked
-                      </Button>
+                      canUnlockWithAd ? (
+                        <Button
+                          onClick={() => handleUnlockWithAd(set)}
+                          className="w-full bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700"
+                        >
+                          🎬 Watch Ad to Unlock
+                        </Button>
+                      ) : (
+                        <Button
+                          disabled
+                          className="w-full bg-gray-500 cursor-not-allowed"
+                        >
+                          <Lock className="h-4 w-4 mr-2" />
+                          Locked - Subscribe
+                        </Button>
+                      )
                     ) : (
                       <Button
                         onClick={() => handleSelectSet(set)}

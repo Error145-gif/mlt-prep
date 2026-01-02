@@ -237,6 +237,16 @@ const schema = defineSchema(
       .index("by_user", ["userId"])
       .index("by_status", ["status"]),
 
+    // Ad-Unlocked Tests (for ₹99 users to unlock extra tests after limit)
+    adUnlockedTests: defineTable({
+      userId: v.id("users"),
+      testType: v.string(), // "mock", "pyq", "ai"
+      testSetNumber: v.number(),
+      unlockedAt: v.number(),
+    })
+      .index("by_user_and_type", ["userId", "testType"])
+      .index("by_user", ["userId"]),
+
     // Payment History
     payments: defineTable({
       userId: v.id("users"),

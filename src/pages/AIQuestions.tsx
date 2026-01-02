@@ -18,6 +18,8 @@ export default function AIQuestions() {
   const navigate = useNavigate();
   const aiTests = useQuery(api.student.getAIQuestions, {});
   const canAccessAI = useQuery(api.student.canAccessTestType, { testType: "ai" });
+  const adUnlockedTests = useQuery(api.student.getAdUnlockedTests, { testType: "ai" });
+  const unlockTestWithAd = useMutation(api.student.unlockTestWithAd);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -53,7 +55,7 @@ export default function AIQuestions() {
     // Check subscription access
     if (!canAccessAI?.canAccess) {
       if (canAccessAI?.reason === "monthly_starter_limit_reached") {
-        toast.error(`Monthly Starter limit reached! You've used ${canAccessAI.setsUsed}/${canAccessAI.setLimit} sets. Upgrade to continue.`);
+        toast.error(`Monthly Starter limit reached! You've used ${canAccessAI.setsUsed}/${canAccessAI.setLimit} sets. Watch ads to unlock 2 more!`);
       } else if (canAccessAI?.reason === "free_trial_used") {
         toast.error("Your free trial is used. Please subscribe to continue.");
       } else {
@@ -64,6 +66,15 @@ export default function AIQuestions() {
     }
     
     navigate(`/test-start?type=ai&topicId=general&setNumber=${test.setNumber}`);
+  };
+
+  const handleUnlockWithAd = async (test: any) => {
+    try {
+      await unlockTestWithAd({ testType: "ai", testSetNumber: test.setNumber });
+      toast.success("Test unlocked! You can now take this test.");
+    } catch (error) {
+      toast.error("Failed to unlock test. Please try again.");
+    }
   };
 
   // Show list of available AI tests
@@ -123,17 +134,30 @@ export default function AIQuestions() {
             const hasPaidSubscription = canAccessAI?.reason === "paid_subscription";
             const isMonthlyStarter = hasPaidSubscription && canAccessAI?.setLimit;
             
+            // Check if this test is ad-unlocked
+            const isAdUnlocked = adUnlockedTests?.some(
+              (t) => t.testSetNumber === test.setNumber
+            );
+            
             // Lock logic:
             // - Free users: only first test unlocked
-            // - Monthly Starter (₹99): unlock up to setLimit (25 for AI)
+            // - Monthly Starter (₹99): unlock up to setLimit (25 for AI), then allow ad unlock for 2 more
             // - Premium: all unlocked
             let isLocked = false;
+            let canUnlockWithAd = false;
+            
             if (isFreeUser) {
               // Free user - only first test
               isLocked = !isFirstTest;
             } else if (isMonthlyStarter && canAccessAI?.setLimit) {
               // Monthly Starter - lock tests beyond the limit
-              isLocked = index >= canAccessAI.setLimit;
+              if (index >= canAccessAI.setLimit) {
+                isLocked = true;
+                // Allow ad unlock for up to 2 more tests after the limit
+                if (index < canAccessAI.setLimit + 2 && !isAdUnlocked) {
+                  canUnlockWithAd = true;
+                }
+              }
             }
             // Premium users: isLocked stays false
             
@@ -172,13 +196,22 @@ export default function AIQuestions() {
                     )}
 
                     {isLocked ? (
-                      <Button
-                        disabled
-                        className="w-full bg-gray-500 cursor-not-allowed"
-                      >
-                        <Lock className="h-4 w-4 mr-2" />
-                        Locked - Subscribe to Unlock
-                      </Button>
+                      canUnlockWithAd ? (
+                        <Button
+                          onClick={() => handleUnlockWithAd(test)}
+                          className="w-full bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700"
+                        >
+                          🎬 Watch Ad to Unlock
+                        </Button>
+                      ) : (
+                        <Button
+                          disabled
+                          className="w-full bg-gray-500 cursor-not-allowed"
+                        >
+                          <Lock className="h-4 w-4 mr-2" />
+                          Locked - Subscribe to Unlock
+                        </Button>
+                      )
                     ) : (
                       <Button
                         onClick={() => handleStartTest(test, isFirstTest)}
