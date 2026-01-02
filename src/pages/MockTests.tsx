@@ -66,8 +66,13 @@ export default function MockTests() {
   }
 
   const handleStartTest = (topicId: string | null, setNumber: number, isFirstTest: boolean) => {
+    // Check if this specific test is unlocked via ad
+    const isAdUnlocked = adUnlockedTests?.some(
+      (t) => t.testSetNumber === setNumber
+    );
+
     // Check subscription access
-    if (!canAccessMock?.canAccess) {
+    if (!canAccessMock?.canAccess && !isAdUnlocked) {
       if (canAccessMock?.reason === "monthly_starter_limit_reached") {
         toast.error(`Monthly Starter limit reached! You've used ${canAccessMock.setsUsed}/${canAccessMock.setLimit} sets. Watch ads to unlock 2 more!`);
       } else if (canAccessMock?.reason === "free_trial_used") {
@@ -154,10 +159,12 @@ export default function MockTests() {
             } else if (isMonthlyStarter && canAccessMock?.setLimit) {
               // Monthly Starter - lock tests beyond the limit
               if (index >= canAccessMock.setLimit) {
-                isLocked = true;
-                // Allow ad unlock for up to 2 more tests after the limit
-                if (index < canAccessMock.setLimit + 2 && !isAdUnlocked) {
-                  canUnlockWithAd = true;
+                if (!isAdUnlocked) {
+                  isLocked = true;
+                  // Allow ad unlock for up to 2 more tests after the limit
+                  if (index < canAccessMock.setLimit + 2) {
+                    canUnlockWithAd = true;
+                  }
                 }
               }
             }

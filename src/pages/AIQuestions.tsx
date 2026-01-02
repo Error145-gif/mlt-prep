@@ -52,8 +52,13 @@ export default function AIQuestions() {
   }
 
   const handleStartTest = (test: any, isFirstTest: boolean) => {
+    // Check if this specific test is unlocked via ad
+    const isAdUnlocked = adUnlockedTests?.some(
+      (t) => t.testSetNumber === test.setNumber
+    );
+
     // Check subscription access
-    if (!canAccessAI?.canAccess) {
+    if (!canAccessAI?.canAccess && !isAdUnlocked) {
       if (canAccessAI?.reason === "monthly_starter_limit_reached") {
         toast.error(`Monthly Starter limit reached! You've used ${canAccessAI.setsUsed}/${canAccessAI.setLimit} sets. Watch ads to unlock 2 more!`);
       } else if (canAccessAI?.reason === "free_trial_used") {
@@ -152,10 +157,12 @@ export default function AIQuestions() {
             } else if (isMonthlyStarter && canAccessAI?.setLimit) {
               // Monthly Starter - lock tests beyond the limit
               if (index >= canAccessAI.setLimit) {
-                isLocked = true;
-                // Allow ad unlock for up to 2 more tests after the limit
-                if (index < canAccessAI.setLimit + 2 && !isAdUnlocked) {
-                  canUnlockWithAd = true;
+                if (!isAdUnlocked) {
+                  isLocked = true;
+                  // Allow ad unlock for up to 2 more tests after the limit
+                  if (index < canAccessAI.setLimit + 2) {
+                    canUnlockWithAd = true;
+                  }
                 }
               }
             }

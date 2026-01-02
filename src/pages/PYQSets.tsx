@@ -58,11 +58,16 @@ export default function PYQSets() {
     );
   }
 
-  const handleStartTest = (year: number, setNumber: number, isFirstTest: boolean) => {
+  const handleStartTest = (test: any, isFirstTest: boolean) => {
+    // Check if this specific test is unlocked via ad
+    const isAdUnlocked = adUnlockedTests?.some(
+      (t) => t.testSetNumber === test.setNumber
+    );
+
     // Check subscription access
-    if (!canAccessPYQ?.canAccess) {
+    if (!canAccessPYQ?.canAccess && !isAdUnlocked) {
       if (canAccessPYQ?.reason === "monthly_starter_limit_reached") {
-        toast.error(`Monthly Starter limit reached! You've used ${canAccessPYQ.setsUsed}/${canAccessPYQ.setLimit} sets. Watch ads to unlock more!`);
+        toast.error(`Monthly Starter limit reached! You've used ${canAccessPYQ.setsUsed}/${canAccessPYQ.setLimit} sets. Watch ads to unlock 2 more!`);
       } else if (canAccessPYQ?.reason === "free_trial_used") {
         toast.error("Your free trial is used. Please subscribe to continue.");
       } else {
@@ -72,7 +77,7 @@ export default function PYQSets() {
       return;
     }
     
-    navigate(`/test-start?type=pyq&year=${year}&setNumber=${setNumber}`);
+    navigate(`/test-start?type=pyq&topicId=${test.year}&setNumber=${test.setNumber}`);
   };
 
   const handleUnlockWithAd = async (test: any) => {
@@ -132,7 +137,7 @@ export default function PYQSets() {
             
             // Lock logic:
             // - Free users: only first test unlocked
-            // - Monthly Starter (₹99): unlock up to setLimit (20 for PYQ), then allow ad unlock
+            // - Monthly Starter (₹99): unlock up to setLimit (20 for PYQ), then allow ad unlock for 2 more
             // - Premium: all unlocked
             let isLocked = false;
             let canUnlockWithAd = false;
@@ -143,11 +148,12 @@ export default function PYQSets() {
             } else if (isMonthlyStarter && canAccessPYQ?.setLimit) {
               // Monthly Starter - lock tests beyond the limit
               if (index >= canAccessPYQ.setLimit) {
-                isLocked = true;
-                // Allow ad unlock for tests after the limit
-                // User can unlock ANY test after the limit, but only 2 per day (enforced by backend)
                 if (!isAdUnlocked) {
-                  canUnlockWithAd = true;
+                  isLocked = true;
+                  // Allow ad unlock for up to 2 more tests after the limit
+                  if (index < canAccessPYQ.setLimit + 2) {
+                    canUnlockWithAd = true;
+                  }
                 }
               }
             }
@@ -223,7 +229,7 @@ export default function PYQSets() {
                       )
                     ) : (
                       <Button
-                        onClick={() => handleStartTest(test.year, test.setNumber, isFirstTest)}
+                        onClick={() => handleStartTest(test, isFirstTest)}
                         className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
                       >
                         {test.hasCompleted ? (canAccessPYQ?.canAccess ? "Re-Test" : "Subscribe to Re-Test") : isFirstTest && canAccessPYQ?.reason === "free_trial" ? "Start Free Test" : "Start Test"}
