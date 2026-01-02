@@ -162,31 +162,31 @@ export default function StudentDashboard() {
         <NextStepCard />
 
         {/* 2. PROGRESS SNAPSHOT - No locks */}
-        {isMonthlyStarterPlan ? (
-          <div className="glass-card border-white/30 backdrop-blur-xl bg-white/10 p-6 rounded-xl relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-600/40 to-pink-500/40" />
-            <div className="relative z-10 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div className="flex items-start gap-4">
-                <div className="bg-white/20 text-white p-3 rounded-lg">
-                  <Lock className="h-6 w-6" />
+        {displayStats ? (
+          <div className="relative">
+            <ProgressSnapshot stats={displayStats} isFreeTrialUser={isFreeTrialUser} />
+            {isMonthlyStarterPlan && (
+              <div className="absolute inset-0 z-10 rounded-3xl border border-white/30 bg-black/40 backdrop-blur-sm flex flex-col md:flex-row items-center justify-between gap-6 p-6 text-white">
+                <div className="flex items-start gap-4 text-left">
+                  <div className="bg-white/20 p-3 rounded-xl">
+                    <Lock className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <p className="text-lg font-semibold">Progress analytics locked</p>
+                    <p className="text-sm text-white/80 mt-1 max-w-xl">
+                      Upgrade to Premium to unlock detailed performance insights, accuracy graphs, and AI-powered analytics. Your current stats stay safe and will unlock instantly after upgrading.
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-white/90 font-semibold text-lg">Progress analytics locked</p>
-                  <p className="text-white/70 text-sm mt-1">
-                    Upgrade to Premium to unlock detailed performance insights, accuracy graphs, and AI-powered analytics.
-                  </p>
-                </div>
+                <Button
+                  onClick={() => navigate("/subscription-plans")}
+                  className="bg-white text-purple-600 hover:bg-white/90 font-semibold"
+                >
+                  Unlock with Premium
+                </Button>
               </div>
-              <Button
-                onClick={() => navigate("/subscription-plans")}
-                className="bg-white text-purple-600 hover:bg-white/90 font-semibold"
-              >
-                Unlock with Premium
-              </Button>
-            </div>
+            )}
           </div>
-        ) : displayStats ? (
-          <ProgressSnapshot stats={displayStats} isFreeTrialUser={isFreeTrialUser} />
         ) : (
           <div className="glass-card border-white/30 backdrop-blur-xl bg-white/20 p-6 rounded-xl">
             <Skeleton className="h-48 w-full bg-white/20" />
