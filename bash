@@ -1,1 +1,1 @@
-npx convex run library:getLibraryPDFCount
+keytool -keystore ~/.android/debug.keystore -list -v -alias androiddebugkey -storepass android -keypass android
