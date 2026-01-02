@@ -21,7 +21,7 @@ export const getAllLibraryPDFs = query({
       const allPdfs = await ctx.db
         .query("library")
         .withIndex("by_status", (q) => q.eq("status", "active"))
-        .collect();
+        .take(500);
       
       const searchLower = args.searchQuery.toLowerCase();
       pdfs = allPdfs.filter((pdf) =>
@@ -33,13 +33,13 @@ export const getAllLibraryPDFs = query({
         .query("library")
         .withIndex("by_subject", (q) => q.eq("subject", args.subject!))
         .filter((q) => q.eq(q.field("status"), "active"))
-        .collect();
+        .take(500);
     } else {
       // Get all active PDFs
       pdfs = await ctx.db
         .query("library")
         .withIndex("by_status", (q) => q.eq("status", "active"))
-        .collect();
+        .take(500);
     }
 
     // Randomize order
@@ -70,7 +70,7 @@ export const getPDFsBySubject = query({
     const allPdfs = await ctx.db
       .query("library")
       .withIndex("by_status", (q) => q.eq("status", "active"))
-      .collect();
+      .take(500);
 
     const pdfsBySubject: Record<string, Array<any>> = {};
 
@@ -80,6 +80,30 @@ export const getPDFsBySubject = query({
     });
 
     return pdfsBySubject;
+  },
+});
+
+// Debug: Get count of active PDFs (for troubleshooting)
+export const getLibraryPDFCount = query({
+  args: {},
+  handler: async (ctx) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) {
+      throw new Error("Unauthorized");
+    }
+
+    const activePdfs = await ctx.db
+      .query("library")
+      .withIndex("by_status", (q) => q.eq("status", "active"))
+      .take(500);
+
+    return {
+      total: activePdfs.length,
+      bySubject: activePdfs.reduce((acc: Record<string, number>, pdf) => {
+        acc[pdf.subject] = (acc[pdf.subject] || 0) + 1;
+        return acc;
+      }, {}),
+    };
   },
 });
 
