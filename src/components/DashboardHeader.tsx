@@ -12,16 +12,10 @@ interface DashboardHeaderProps {
 export default function DashboardHeader({ userProfile, subscriptionAccess }: DashboardHeaderProps) {
   const navigate = useNavigate();
   
-  const isPaid = subscriptionAccess?.hasAccess;
-  const subscription = subscriptionAccess?.subscription;
-  
-  // Calculate days remaining if subscription exists
-  const daysRemaining = subscription 
-    ? Math.ceil((subscription.endDate - Date.now()) / (1000 * 60 * 60 * 24)) 
-    : 0;
-    
-  const expiryDate = subscription 
-    ? new Date(subscription.endDate).toLocaleDateString('en-IN', { 
+  const isPaid = subscriptionAccess?.hasAccess && subscriptionAccess?.planType !== "free";
+  const daysRemaining = subscriptionAccess?.daysRemaining || 0;
+  const expiryDate = subscriptionAccess?.endDate 
+    ? new Date(subscriptionAccess.endDate).toLocaleDateString('en-IN', { 
         day: 'numeric', 
         month: 'short', 
         year: 'numeric' 
@@ -46,7 +40,7 @@ export default function DashboardHeader({ userProfile, subscriptionAccess }: Das
       </div>
 
       {/* Subscription Status Box */}
-      {isPaid && subscription ? (
+      {isPaid && subscriptionAccess ? (
         <div className="bg-green-500/20 backdrop-blur-md border border-green-400/30 rounded-xl p-3 flex items-center gap-4 shadow-lg">
           <div className="bg-green-500 p-2 rounded-lg shadow-inner">
             <Crown className="h-6 w-6 text-white" />

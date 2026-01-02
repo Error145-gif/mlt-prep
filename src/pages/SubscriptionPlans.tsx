@@ -247,7 +247,7 @@ export default function SubscriptionPlans() {
         </Card>
 
         {/* Current Subscription Status */}
-        {subscription?.isPaid && (
+        {subscription?.hasAccess && subscription?.planType !== "free" && (
           <Card className="mb-8 border-2 border-green-300 bg-white/95 backdrop-blur-sm shadow-xl">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-green-700">
@@ -259,10 +259,14 @@ export default function SubscriptionPlans() {
               <div className="space-y-2">
                 <p className="text-lg font-semibold">{subscription.planName}</p>
                 <p className="text-sm text-slate-600">
-                  Valid until: {new Date(subscription.endDate).toLocaleDateString()}
+                  Valid until: {new Date(subscription.endDate).toLocaleDateString('en-IN', { 
+                    day: 'numeric', 
+                    month: 'short', 
+                    year: 'numeric' 
+                  })}
                 </p>
                 <p className="text-sm text-slate-600">
-                  Days remaining: {subscription.daysRemaining}
+                  Days remaining: {subscription.daysRemaining} days
                 </p>
               </div>
             </CardContent>
@@ -273,7 +277,7 @@ export default function SubscriptionPlans() {
         <div className="grid md:grid-cols-3 gap-6 mb-8">
           {plans.map((plan) => {
             const Icon = plan.icon;
-            const isActive = subscription?.isPaid && subscription?.planName === plan.name;
+            const isActive = subscription?.hasAccess && subscription?.planType !== "free" && subscription?.planName === plan.name;
             const starsUsed = starsToUse[plan.id] || 0;
             const finalPrice = calculateFinalPrice(plan.id, plan.price);
             const maxStarsAllowed = Math.floor((plan.price * 50) / 100);
