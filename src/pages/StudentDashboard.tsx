@@ -6,6 +6,7 @@ import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Lock } from "lucide-react";
  
 import DashboardHeader from "@/components/DashboardHeader";
 import StudentNav from "@/components/StudentNav";
@@ -39,6 +40,8 @@ export default function StudentDashboard() {
     const isTrial = !hasFullAccess;
     return { isFreeTrialUser: isTrial };
   }, [subscriptionAccess]);
+
+  const isMonthlyStarterPlan = subscriptionAccess?.planType === "monthly_starter";
 
   // Show minimal loading only during initial auth check
   if (isLoading) {
@@ -159,7 +162,30 @@ export default function StudentDashboard() {
         <NextStepCard />
 
         {/* 2. PROGRESS SNAPSHOT - No locks */}
-        {displayStats ? (
+        {isMonthlyStarterPlan ? (
+          <div className="glass-card border-white/30 backdrop-blur-xl bg-white/10 p-6 rounded-xl relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-600/40 to-pink-500/40" />
+            <div className="relative z-10 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div className="flex items-start gap-4">
+                <div className="bg-white/20 text-white p-3 rounded-lg">
+                  <Lock className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="text-white/90 font-semibold text-lg">Progress analytics locked</p>
+                  <p className="text-white/70 text-sm mt-1">
+                    Upgrade to Premium to unlock detailed performance insights, accuracy graphs, and AI-powered analytics.
+                  </p>
+                </div>
+              </div>
+              <Button
+                onClick={() => navigate("/subscription-plans")}
+                className="bg-white text-purple-600 hover:bg-white/90 font-semibold"
+              >
+                Unlock with Premium
+              </Button>
+            </div>
+          </div>
+        ) : displayStats ? (
           <ProgressSnapshot stats={displayStats} isFreeTrialUser={isFreeTrialUser} />
         ) : (
           <div className="glass-card border-white/30 backdrop-blur-xl bg-white/20 p-6 rounded-xl">
