@@ -150,7 +150,7 @@ export default function PYQSets() {
             const isFirstTest = index === 0;
             const isFreeUser = canAccessPYQ?.reason === "free_trial";
             const hasPaidSubscription = canAccessPYQ?.reason === "paid_subscription";
-            const isMonthlyStarter = hasPaidSubscription && canAccessPYQ?.setLimit;
+            const isMonthlyStarter = Boolean(canAccessPYQ?.setLimit && canAccessPYQ.setLimit > 0);
             
             // Check if this test is ad-unlocked
             const isAdUnlocked = adUnlockedTests?.some(

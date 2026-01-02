@@ -124,7 +124,7 @@ export default function AIQuestions() {
         <div>
           <h1 className="text-3xl font-bold text-white">AI-Generated Questions</h1>
           <p className="text-white/70 mt-1">Select an AI test set to practice with AI-curated topic-wise questions (25 questions per set)</p>
-          {canAccessAI?.reason === "paid_subscription" && canAccessAI?.setLimit && (
+          {isMonthlyStarter && (
             <p className="text-yellow-300 mt-2 text-sm">
               ⚡ Monthly Starter Plan: {canAccessAI.setsUsed || 0}/{canAccessAI.setLimit} sets used
             </p>
@@ -154,7 +154,7 @@ export default function AIQuestions() {
             const isFirstTest = index === 0;
             const isFreeUser = canAccessAI?.reason === "free_trial";
             const hasPaidSubscription = canAccessAI?.reason === "paid_subscription";
-            const isMonthlyStarter = hasPaidSubscription && canAccessAI?.setLimit;
+            const isMonthlyStarter = Boolean(canAccessAI?.setLimit && canAccessAI.setLimit > 0);
             
             // Check if this test is ad-unlocked
             const isAdUnlocked = adUnlockedTests?.some(

@@ -145,12 +145,18 @@ export default function MockTests() {
           {canAccessMock?.reason === "free_trial_used" && (
             <p className="text-red-400 mt-2">⚠️ Free trial used. Subscribe to continue testing.</p>
           )}
+          {isMonthlyStarter && (
+            <p className="text-yellow-400 mt-2">
+              ⚡ Monthly Starter Plan: {canAccessMock.setsUsed || 0}/{canAccessMock.setLimit} sets used
+            </p>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {mockTests.map((test, index) => {
             const isFirstTest = index === 0;
             const isFreeUser = canAccessMock?.reason === "free_trial";
+            const hasPaidSubscription = canAccessMock?.reason === "paid_subscription";
             // Fix: Correctly identify Monthly Starter users based on setLimit or specific reasons
             const isMonthlyStarter = (canAccessMock?.setLimit && canAccessMock?.setLimit > 1) || 
                                      canAccessMock?.reason === "monthly_starter_limit_reached" ||
