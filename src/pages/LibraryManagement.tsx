@@ -59,6 +59,12 @@ export default function LibraryManagement() {
       return;
     }
 
+    // Validate Google Drive link format
+    if (!formData.pdf_url.includes("drive.google.com")) {
+      toast.error("Please enter a valid Google Drive link");
+      return;
+    }
+
     try {
       if (editingId) {
         await updatePDF({
@@ -119,7 +125,7 @@ export default function LibraryManagement() {
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
             📚 Library Management
           </h1>
-          <p className="text-white/70">Manage PDFs for Yearly Plan users</p>
+          <p className="text-white/70">Add PDFs by selecting subject and pasting Google Drive link</p>
         </motion.div>
 
         {/* Add/Edit Form */}
@@ -139,7 +145,7 @@ export default function LibraryManagement() {
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
                     <Label htmlFor="title" className="text-white">
-                      Title
+                      PDF Title *
                     </Label>
                     <Input
                       id="title"
@@ -149,21 +155,23 @@ export default function LibraryManagement() {
                       }
                       placeholder="e.g., Blood Cell Morphology Notes"
                       className="bg-white/10 border-white/20 text-white"
+                      required
                     />
                   </div>
 
                   <div>
                     <Label htmlFor="subject" className="text-white">
-                      Subject
+                      Select Subject *
                     </Label>
                     <Select
                       value={formData.subject}
                       onValueChange={(value) =>
                         setFormData({ ...formData, subject: value })
                       }
+                      required
                     >
                       <SelectTrigger className="bg-white/10 border-white/20 text-white">
-                        <SelectValue placeholder="Select subject" />
+                        <SelectValue placeholder="Choose a subject" />
                       </SelectTrigger>
                       <SelectContent>
                         {subjects.map((subject) => (
@@ -177,7 +185,7 @@ export default function LibraryManagement() {
 
                   <div>
                     <Label htmlFor="pdf_url" className="text-white">
-                      Google Drive Link
+                      Google Drive Link *
                     </Label>
                     <Input
                       id="pdf_url"
@@ -185,18 +193,14 @@ export default function LibraryManagement() {
                       onChange={(e) =>
                         setFormData({ ...formData, pdf_url: e.target.value })
                       }
-                      placeholder="Paste Google Drive link here"
+                      placeholder="https://drive.google.com/file/d/YOUR_FILE_ID/preview"
                       className="bg-white/10 border-white/20 text-white"
                       required
                     />
                     <p className="text-white/60 text-xs mt-2">
-                      📌 <strong>Important:</strong> Use the Google Drive <strong>preview</strong> link format:
+                      📌 <strong>Important:</strong> Use Google Drive <strong>preview</strong> link format
                       <br />
-                      <code className="text-white/80 bg-black/20 px-2 py-1 rounded mt-1 inline-block">
-                        https://drive.google.com/file/d/YOUR_FILE_ID/preview
-                      </code>
-                      <br />
-                      <span className="text-yellow-300">⚠️ Make sure the file is set to "Anyone with the link can view"</span>
+                      <span className="text-yellow-300">⚠️ Make sure file is set to "Anyone with the link can view"</span>
                     </p>
                   </div>
 
