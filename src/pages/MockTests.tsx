@@ -151,8 +151,10 @@ export default function MockTests() {
           {mockTests.map((test, index) => {
             const isFirstTest = index === 0;
             const isFreeUser = canAccessMock?.reason === "free_trial";
-            const hasPaidSubscription = canAccessMock?.reason === "paid_subscription";
-            const isMonthlyStarter = hasPaidSubscription && canAccessMock?.setLimit;
+            // Fix: Correctly identify Monthly Starter users based on setLimit or specific reasons
+            const isMonthlyStarter = (canAccessMock?.setLimit && canAccessMock?.setLimit > 1) || 
+                                     canAccessMock?.reason === "monthly_starter_limit_reached" ||
+                                     canAccessMock?.reason === "monthly_starter_limit_reached_ad_available";
             
             // Check if this test is ad-unlocked
             const isAdUnlocked = adUnlockedTests?.some(
