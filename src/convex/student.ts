@@ -1347,9 +1347,14 @@ export const unlockTestWithAd = mutation({
       throw new Error("Test already unlocked");
     }
 
-    // Check how many tests user has already unlocked via ads for this type
-    if (existing.length >= 2) {
-      throw new Error("You can only unlock 2 additional tests per section via ads");
+    // Check how many tests user has unlocked TODAY
+    const now = Date.now();
+    const startOfDay = new Date(now).setHours(0, 0, 0, 0);
+    
+    const unlockedToday = existing.filter(t => t.unlockedAt >= startOfDay);
+
+    if (unlockedToday.length >= 2) {
+      throw new Error("Daily limit reached! You can only unlock 2 tests per day via ads.");
     }
 
     // Create the unlock record
