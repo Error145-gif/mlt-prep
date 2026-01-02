@@ -53,7 +53,7 @@ export default function AIQuestions() {
     // Check subscription access
     if (!canAccessAI?.canAccess) {
       if (canAccessAI?.reason === "monthly_starter_limit_reached") {
-        toast.error(`Monthly Starter limit reached! You've used ${canAccessAI.questionsUsed}/${canAccessAI.questionLimit} questions. Upgrade to continue.`);
+        toast.error(`Monthly Starter limit reached! You've used ${canAccessAI.setsUsed}/${canAccessAI.setLimit} sets. Upgrade to continue.`);
       } else if (canAccessAI?.reason === "free_trial_used") {
         toast.error("Your free trial is used. Please subscribe to continue.");
       } else {
@@ -91,9 +91,9 @@ export default function AIQuestions() {
         <div>
           <h1 className="text-3xl font-bold text-white">AI-Generated Questions</h1>
           <p className="text-white/70 mt-1">Select an AI test set to practice with AI-curated topic-wise questions (25 questions per set)</p>
-          {canAccessAI?.reason === "paid_subscription" && canAccessAI?.questionLimit && (
+          {canAccessAI?.reason === "paid_subscription" && canAccessAI?.setLimit && (
             <p className="text-yellow-300 mt-2 text-sm">
-              ⚡ Monthly Starter Plan: {canAccessAI.questionsUsed || 0}/{canAccessAI.questionLimit} questions used
+              ⚡ Monthly Starter Plan: {canAccessAI.setsUsed || 0}/{canAccessAI.setLimit} sets used
             </p>
           )}
         </div>

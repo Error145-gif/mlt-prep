@@ -1,8 +1,1 @@
-{
-  "file_paths": [
-    "src/convex/schema.ts",
-    "src/convex/weeklyTestsCronActions.ts",
-    "src/convex/subscriptions.ts"
-  ],
-  "replace_files_in_context": false
-}
+{"type":"tool_code","content":"executeCommandTool({\"command\":\"npx convex dev --once && npx tsc -b --noEmit\"})"}

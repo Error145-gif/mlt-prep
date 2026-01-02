@@ -1,0 +1,21 @@
+--- a/src/pages/MockTests.tsx
++++ b/src/pages/MockTests.tsx
+@@ -67,7 +67,7 @@
+   const handleStartTest = (test: any, isFirstTest: boolean) => {
+     if (!canAccessMock?.canAccess) {
+       if (canAccessMock?.reason === "monthly_starter_limit_reached") {
+-        toast.error(`Monthly Starter limit reached! You've used ${canAccessMock.questionsUsed}/${canAccessMock.questionLimit} questions. Upgrade to continue.`);
++        toast.error(`Monthly Starter limit reached! You've used ${canAccessMock.setsUsed}/${canAccessMock.setLimit} sets. Upgrade to continue.`);
+       } else if (canAccessMock?.reason === "free_trial_used") {
+         toast.error("Your free trial is used. Please subscribe to continue.");
+       } else {
+@@ -95,8 +95,8 @@
+         <div>
+           <h1 className="text-3xl font-bold text-white">Mock Tests</h1>
+           <p className="text-white/70 mt-1">Practice with full-length mock tests designed to simulate the actual exam environment.</p>
+-          {canAccessMock?.reason === "paid_subscription" && canAccessMock?.questionLimit && (
+-            <p className="text-yellow-300 mt-2 text-sm">⚡ Monthly Starter Plan: {canAccessMock.questionsUsed || 0}/{canAccessMock.questionLimit} questions used</p>
++          {canAccessMock?.reason === "paid_subscription" && canAccessMock?.setLimit && (
++            <p className="text-yellow-300 mt-2 text-sm">⚡ Monthly Starter Plan: {canAccessMock.setsUsed || 0}/{canAccessMock.setLimit} sets used</p>
+           )}
+         </div>
