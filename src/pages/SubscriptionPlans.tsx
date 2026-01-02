@@ -32,13 +32,12 @@ export default function SubscriptionPlans() {
       savings: 0,
       description: "Perfect for testing the platform before committing to longer plans.",
       features: [
-        "Unlimited Mock Tests",
-        "20 PYQ Sets with explanations",
-        "AI-based practice questions",
-        "Rank & leaderboard access",
-        "Full test analysis",
-        "Detailed analysis locked (watch banner ads)",
-        "Banner ads shown"
+        "25 Mock Tests",
+        "25 AI-based Practice Tests",
+        "20 PYQ Sets",
+        "Detailed Analysis Locked",
+        "Banner Ads Shown",
+        "Library Access Locked"
       ],
       bestFor: "Students who want to test the platform first",
       whoIsThisFor: "First-time users exploring the platform",
@@ -59,11 +58,11 @@ export default function SubscriptionPlans() {
       description: "Complete one exam preparation cycle without interruptions. Most students choose this!",
       studentCount: "250+ students already preparing with us!",
       features: [
-        "Everything in Monthly Starter",
-        "Extended access for 4 months",
-        "Consistent practice & progress tracking",
-        "No renewal stress during preparation",
-        "Library Access not included",
+        "Unlimited Mock Tests & PYQs",
+        "Unlimited AI Questions",
+        "Detailed Analysis Unlocked",
+        "No Banner Ads",
+        "Library Access Locked (Ad-unlocks available)",
         "Priority support"
       ],
       bestFor: "Serious exam aspirants (Recommended)",
@@ -84,9 +83,9 @@ export default function SubscriptionPlans() {
       savingsPercent: 50,
       description: "Best for repeat aspirants and long-term government exam preparation.",
       features: [
-        "Full access for 1 year",
-        "Ideal for repeaters & long-term goals",
-        "Full Library Access",
+        "All Access (Tests + Library)",
+        "No Ads (Ad-free experience)",
+        "Detailed Analysis Unlocked",
         "Lifetime doubt support",
         "Early access to new features"
       ],
