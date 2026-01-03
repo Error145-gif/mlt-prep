@@ -1,14 +1,36 @@
-override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
-    
-    intent?.data?.let { uri ->
-        if (uri.scheme == "mltprep" && uri.host == "auth-success") {
-            val token = uri.getQueryParameter("token")
-            if (token != null) {
-                // Store token and proceed with authentication
-                saveSessionToken(token)
-                navigateToMainScreen()
-            }
+import android.webkit.JavascriptInterface
+import android.webkit.WebView
+
+class MainActivity : AppCompatActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        
+        val webView = findViewById<WebView>(R.id.webview)
+        
+        // Enable JavaScript
+        webView.settings.javaScriptEnabled = true
+        
+        // Add the JavaScript Interface
+        webView.addJavascriptInterface(WebAppInterface(this), "Android")
+        
+        // Load your web app
+        webView.loadUrl("https://mltprep.online")
+    }
+}
+
+class WebAppInterface(private val context: Context) {
+    @JavascriptInterface
+    fun onAuthSuccess(token: String) {
+        Log.d("AUTH", "Received token: $token")
+        
+        // Store the token in SharedPreferences or your preferred storage
+        val prefs = context.getSharedPreferences("auth", Context.MODE_PRIVATE)
+        prefs.edit().putString("session_token", token).apply()
+        
+        // Navigate to your main app screen
+        (context as? Activity)?.runOnUiThread {
+            // Your navigation logic here
+            Toast.makeText(context, "Login successful!", Toast.LENGTH_SHORT).show()
         }
     }
 }
