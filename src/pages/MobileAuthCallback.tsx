@@ -31,6 +31,18 @@ export default function MobileAuthCallback() {
   const [status, setStatus] = useState("Ready to open app...");
   const [deepLinkUrl, setDeepLinkUrl] = useState<string>("mltprep://auth-success");
 
+  // Auto-redirect effect
+  useEffect(() => {
+    if (deepLinkUrl && isAuthenticated && token) {
+      console.log("Attempting auto-redirect to app via deep link...");
+      // Try to auto-redirect after a short delay to ensure state is settled
+      const timer = setTimeout(() => {
+        window.location.href = deepLinkUrl;
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [deepLinkUrl, isAuthenticated, token]);
+
   useEffect(() => {
     const handleAuthSuccess = async () => {
       if (isAuthenticated && token) {
