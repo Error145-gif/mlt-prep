@@ -1,13 +1,33 @@
-// MainActivity.kt mein
+// In your MainActivity.kt or wherever you initialize the WebView
+
 webView.settings.apply {
     javaScriptEnabled = true
-    domStorageEnabled = true
+    domStorageEnabled = true  // Critical for OAuth
     databaseEnabled = true
+    
+    // Enable cookies (CRITICAL for authentication)
     mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
 }
 
-// Cookie manager
+// Configure CookieManager for authentication
 CookieManager.getInstance().apply {
     setAcceptCookie(true)
-    setAcceptThirdPartyCookies(webView, true)
+    setAcceptThirdPartyCookies(webView, true)  // Essential for Google OAuth
 }
+
+// Set a proper WebViewClient to handle redirects
+webView.webViewClient = object : WebViewClient() {
+    override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
+        // Let the WebView handle all URLs internally
+        return false
+    }
+    
+    override fun onPageFinished(view: WebView?, url: String?) {
+        super.onPageFinished(view, url)
+        // Inject cookies if needed
+        CookieManager.getInstance().flush()
+    }
+}
+
+// Load your website
+webView.loadUrl("https://mltprep.online")
