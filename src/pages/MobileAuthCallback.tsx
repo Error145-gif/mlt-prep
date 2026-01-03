@@ -43,6 +43,20 @@ export default function MobileAuthCallback() {
     }
   }, [deepLinkUrl, isAuthenticated, token]);
 
+  // Add a secondary effect to try opening the app immediately if we have the token
+  // This helps if the first effect was too slow or if the user is returning
+  useEffect(() => {
+    if (isAuthenticated && token) {
+       // Also try the intent URL scheme for Android if standard scheme fails
+       // format: intent://<path>#Intent;scheme=<scheme>;package=<package_name>;end;
+       // This is often more reliable on modern Android Chrome
+       const intentUrl = `intent://auth-success?token=${encodeURIComponent(token)}#Intent;scheme=mltprep;package=com.mltprep.app;end;`;
+       console.log("Also preparing intent URL:", intentUrl);
+       
+       // We don't auto-fire intent URL to avoid double-redirects, but we could log it
+    }
+  }, [isAuthenticated, token]);
+
   useEffect(() => {
     const handleAuthSuccess = async () => {
       if (isAuthenticated && token) {

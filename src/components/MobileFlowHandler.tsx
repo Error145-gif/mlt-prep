@@ -7,22 +7,20 @@ import { useSearchParams } from "react-router";
  * This component detects if the user is accessing the site via the mobile app
  * by checking for 'is_mobile' or 'mobile' query parameters.
  * 
- * If detected, it persists this state to sessionStorage so that subsequent
- * navigations (e.g. from Landing -> Auth) still know it's a mobile flow.
- * 
- * This ensures that the Auth page correctly redirects to /mobile-auth-callback
- * instead of the web dashboard.
+ * It persists this state in sessionStorage so that authentication flows
+ * (which might involve redirects) know to redirect back to the mobile app callback.
  */
 export function MobileFlowHandler() {
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    const isMobileParam = searchParams.get("is_mobile") === "true" || searchParams.get("mobile") === "true";
+    const isMobileParam = searchParams.get("is_mobile");
+    const mobileParam = searchParams.get("mobile");
     
-    if (isMobileParam) {
-      // Persist to session storage
+    // Check if mobile params are present and true
+    if (isMobileParam === "true" || mobileParam === "true") {
+      console.log("📱 Mobile flow detected via URL params. Persisting to storage.");
       sessionStorage.setItem("is_mobile", "true");
-      console.log("[MobileFlowHandler] Mobile flow detected via URL params, persisted to sessionStorage");
     }
   }, [searchParams]);
 
