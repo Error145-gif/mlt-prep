@@ -1,15 +1,12 @@
-// In your Android app's WebView setup:
 webView.settings.apply {
     javaScriptEnabled = true
     domStorageEnabled = true
     databaseEnabled = true
-    
-    // CRITICAL for authentication:
     mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-    
-    // Enable cookies
-    CookieManager.getInstance().apply {
-        setAcceptCookie(true)
-        setAcceptThirdPartyCookies(webView, true)
-    }
+}
+
+// Critical for authentication cookies
+CookieManager.getInstance().apply {
+    setAcceptCookie(true)
+    setAcceptThirdPartyCookies(webView, true)
 }
