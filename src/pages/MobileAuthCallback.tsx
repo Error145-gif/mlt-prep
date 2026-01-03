@@ -1,7 +1,16 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
-import { useAuth } from "@/hooks/use-auth";
+import { useConvexAuth } from "convex/react";
 import { Loader2 } from "lucide-react";
+
+// Define the interface for the Android Javascript Bridge
+declare global {
+  interface Window {
+    Android?: {
+      onAuthSuccess: (token: string) => void;
+    };
+  }
+}
 
 /**
  * MobileAuthCallback Page
@@ -13,23 +22,62 @@ import { Loader2 } from "lucide-react";
  * https://mltprep.online/mobile-auth-callback?code=THE_CODE
  * 
  * The ConvexAuthProvider will automatically detect the `code` param and establish the session.
+ * Once established, this page retrieves the session token and passes it back to the Android app.
  */
 export default function MobileAuthCallback() {
-  const { isAuthenticated, isLoading } = useAuth();
+  // Cast useConvexAuth to any to access fetchAccessToken which might be missing from the type definition
+  // but is available at runtime in the ConvexReactClient context
+  const { isAuthenticated, isLoading, fetchAccessToken } = useConvexAuth() as any;
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [status, setStatus] = useState("Initializing...");
 
   useEffect(() => {
-    // If already authenticated, redirect to dashboard
-    if (isAuthenticated) {
-      setStatus("Successfully logged in! Redirecting...");
-      const timer = setTimeout(() => {
-        navigate("/student", { replace: true });
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
+    const handleAuthSuccess = async () => {
+      if (isAuthenticated) {
+        setStatus("Authenticated! Retrieving session...");
+        
+        try {
+          // 1. Get the raw session token (JWT)
+          // forceRefreshToken: true ensures we get a fresh token
+          const token = await fetchAccessToken({ forceRefreshToken: true });
+          
+          if (token) {
+            setStatus("Session retrieved. Syncing with App...");
+            console.log("Session token retrieved successfully");
 
+            // 2. Pass token to Android via Javascript Interface (Preferred)
+            if (window.Android && window.Android.onAuthSuccess) {
+              console.log("Calling window.Android.onAuthSuccess");
+              window.Android.onAuthSuccess(token);
+            }
+
+            // 3. Pass token via Deep Link Redirect (Fallback)
+            // The Android app should intercept this URL
+            const deepLink = `mltprep://session-authenticated?token=${encodeURIComponent(token)}`;
+            console.log("Redirecting to deep link:", deepLink);
+            window.location.href = deepLink;
+
+            // 4. Also redirect to dashboard on the webview as a visual confirmation
+            // (The app might close the webview before this happens)
+            const timer = setTimeout(() => {
+              navigate("/student", { replace: true });
+            }, 2000);
+            return () => clearTimeout(timer);
+          } else {
+            setStatus("Error: Failed to retrieve access token.");
+          }
+        } catch (error) {
+          console.error("Error fetching access token:", error);
+          setStatus("Error: Could not fetch session token.");
+        }
+      }
+    };
+
+    handleAuthSuccess();
+  }, [isAuthenticated, fetchAccessToken, navigate]);
+
+  useEffect(() => {
     const code = searchParams.get("code");
     
     if (!isLoading && !isAuthenticated) {
@@ -59,7 +107,7 @@ export default function MobileAuthCallback() {
         
         <div>
           <h2 className="text-2xl font-bold mb-2" style={{ fontFamily: "'Poppins', sans-serif" }}>
-            {isAuthenticated ? "Welcome Back!" : "Logging In"}
+            {isAuthenticated ? "Login Successful!" : "Logging In"}
           </h2>
           <p className="text-white/80 text-lg font-light">{status}</p>
         </div>
