@@ -49,20 +49,10 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
     setIsLoading(true);
     setError(null);
     try {
-      // Detect if running in app via URL param (e.g. ?source=app)
-      const searchParams = new URLSearchParams(window.location.search);
-      const isApp = searchParams.get("source") === "app" || searchParams.get("is_app") === "true" || searchParams.get("is_mobile") === "true";
-      
-      // Set state based on environment
-      const state = isApp ? "app" : "web";
-      
-      // Pass state via redirectTo so it's available in the backend redirect callback
-      const redirectTo = `${window.location.origin}/dashboard?state=${state}`;
-
-      const formData = new FormData();
-      formData.set("redirectTo", redirectTo);
-      
-      await signIn("google", formData);
+      // Don't override redirectTo - let the backend handle the redirect
+      // The backend (src/convex/auth.ts) already redirects to /mobile-auth-callback
+      // which handles both mobile app and web users correctly
+      await signIn("google");
     } catch (error) {
       console.error("Google sign-in error:", error);
       setError("Failed to sign in with Google. Please try again.");

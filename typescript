@@ -1,12 +1,4 @@
-import { convexAuth } from "@convex-dev/auth/server";
-import { Anonymous } from "@convex-dev/auth/providers/Anonymous";
-import { Password } from "@convex-dev/auth/providers/Password";
-import Google from "@auth/core/providers/google";
-import { Email } from "@convex-dev/auth/providers/Email";
-import { alphabet, generateRandomString } from "oslo/crypto";
-import { internalAction, internalMutation } from "./_generated/server";
-import { v } from "convex/values";
-import { internal } from "./_generated/api";
-import { auth } from "./_generated/auth";
+const redirectTo = `${window.location.origin}/dashboard?state=${state}`;
 
-auth.addHttpRoutes(http);
+const formData = new FormData();
+formData.set("redirectTo", redirectTo);
