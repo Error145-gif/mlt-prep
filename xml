@@ -1,9 +1,8 @@
-<!-- Add this inside your <activity> tag in AndroidManifest.xml -->
 <intent-filter>
     <action android:name="android.intent.action.VIEW" />
     <category android:name="android.intent.category.DEFAULT" />
     <category android:name="android.intent.category.BROWSABLE" />
     
-    <!-- Accepts mltprep://auth-success -->
+    <!-- Ye scheme match honi chahiye -->
     <data android:scheme="mltprep" android:host="auth-success" />
 </intent-filter>

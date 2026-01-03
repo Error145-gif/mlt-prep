@@ -1,19 +1,30 @@
-// ... inside your onCreate or WebView setup ...
+// MainActivity.kt ke andar
 
-val webView = findViewById<WebView>(R.id.webview) // or your webview reference
+override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    // ... existing code ...
+    
+    // Check if app was opened via Deep Link
+    handleDeepLink(intent)
+}
 
-// 1. CRITICAL: Set User Agent to look like Chrome Mobile
-// This fixes the "disallowed_useragent" error
-webView.settings.userAgentString = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Mobile Safari/537.36"
+override fun onNewIntent(intent: Intent) {
+    super.onNewIntent(intent)
+    handleDeepLink(intent)
+}
 
-// 2. Enable JavaScript and Storage
-webView.settings.javaScriptEnabled = true
-webView.settings.domStorageEnabled = true
-
-// 3. Enable Cookies (Required for keeping you logged in)
-val cookieManager = CookieManager.getInstance()
-cookieManager.setAcceptCookie(true)
-cookieManager.setAcceptThirdPartyCookies(webView, true)
-
-// ... load your URL ...
-webView.loadUrl("https://mltprep.online")
+private fun handleDeepLink(intent: Intent?) {
+    val data: Uri? = intent?.data
+    if (data != null && data.scheme == "mltprep" && data.host == "auth-success") {
+        val token = data.getQueryParameter("token")
+        if (token != null) {
+            // 1. Token ko save karein (SharedPreferences ya EncryptedStorage mein)
+            saveTokenToStorage(token)
+            
+            // 2. User ko Dashboard par bhejein
+            navigateToDashboard()
+            
+            Log.d("Auth", "Login Successful! Token: $token")
+        }
+    }
+}
