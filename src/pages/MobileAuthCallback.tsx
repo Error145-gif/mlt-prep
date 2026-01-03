@@ -52,12 +52,16 @@ export default function MobileAuthCallback() {
         console.log("Deep link ready:", deepLink);
 
         // 3. Auto-redirect to web dashboard after 2 seconds (faster for web users)
+        // REMOVED: This causes mobile users to get stuck in Chrome if they don't click fast enough.
+        // We will rely on the user clicking "Continue to Web Dashboard" if they are on web.
+        /*
         const fallbackTimer = setTimeout(() => {
           console.log("Auto-redirecting to dashboard (2 second timeout)...");
           navigate("/student", { replace: true });
         }, 2000);
 
         return () => clearTimeout(fallbackTimer);
+        */
       } else if (isAuthenticated && !token) {
         setStatus("Finalizing authentication...");
         console.log("[MOBILE_AUTH_CALLBACK] User authenticated but token not yet available");
