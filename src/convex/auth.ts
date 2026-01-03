@@ -107,7 +107,11 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
       // or fallback to the dashboard for desktop users.
       console.log("[AUTH] Redirecting to mobile-auth-callback for Bouncer check");
       console.log("[AUTH] Original redirectTo:", redirectTo);
-      return "https://mltprep.online/mobile-auth-callback";
+      
+      // Return the FULL URL to ensure OAuth respects it
+      const callbackUrl = `${process.env.CONVEX_SITE_URL}/mobile-auth-callback`;
+      console.log("[AUTH] Final redirect URL:", callbackUrl);
+      return callbackUrl;
     },
     async createOrUpdateUser(ctx, args) {
       console.log("=".repeat(60));
