@@ -8,9 +8,10 @@ import { Email } from "@convex-dev/auth/providers/Email";
 import { alphabet, generateRandomString } from "oslo/crypto";
 import { internal } from "./_generated/api";
 
-const convexSiteUrl =
-  process.env.CONVEX_SITE_URL || "https://successful-bandicoot-650.convex.site";
-const appSiteUrl = process.env.SITE_URL || convexSiteUrl;
+const convexSiteUrl = "https://successful-bandicoot-650.convex.site";
+// SITE_URL is your frontend domain (e.g., https://mltprep.online).
+// This is where users are redirected after login.
+const appSiteUrl = (process.env.SITE_URL || convexSiteUrl).replace(/\/$/, "");
 
 const emailOtp = Email({
   id: "email-otp",
