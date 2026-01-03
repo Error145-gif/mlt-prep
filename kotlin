@@ -1,6 +1,15 @@
-webView.addJavascriptInterface(object {
-    @JavascriptInterface
-    fun onAuthSuccess(token: String) {
-        // Handle the token and complete login
+// In your Android app's WebView setup:
+webView.settings.apply {
+    javaScriptEnabled = true
+    domStorageEnabled = true
+    databaseEnabled = true
+    
+    // CRITICAL for authentication:
+    mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+    
+    // Enable cookies
+    CookieManager.getInstance().apply {
+        setAcceptCookie(true)
+        setAcceptThirdPartyCookies(webView, true)
     }
-}, "Android")
+}
