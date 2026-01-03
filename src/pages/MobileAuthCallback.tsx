@@ -49,7 +49,7 @@ export default function MobileAuthCallback() {
 
           // 2. Pass token via Deep Link Redirect (Fallback)
           // The Android app should intercept this URL
-          const deepLink = `mltprep://session-authenticated?token=${encodeURIComponent(token)}`;
+          const deepLink = `mltprep://auth-success?token=${encodeURIComponent(token)}`;
           console.log("Redirecting to deep link:", deepLink);
           window.location.href = deepLink;
 
@@ -73,7 +73,7 @@ export default function MobileAuthCallback() {
     
     if (!isLoading && !isAuthenticated) {
       if (!code) {
-        setStatus("Error: No verification code found.");
+        setStatus("Authentication failed. Please try again.");
         // Redirect to login after delay
         setTimeout(() => navigate("/auth"), 3000);
       } else {

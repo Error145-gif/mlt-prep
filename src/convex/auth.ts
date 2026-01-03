@@ -115,10 +115,10 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
 
       const state = url.searchParams.get("state");
       
-      // For app users, redirect to deep link
-      // Convex Auth will automatically include the session token in the URL
+      // For app users, redirect to the intermediate page on the website
+      // This page will handle the "Cookie Handover" to the native app
       if (state === "app") {
-        return "mltprep://auth-success";
+        return "https://mltprep.online/mobile-auth-callback";
       }
       
       // Default redirect for website users
