@@ -35,7 +35,7 @@ export default function MobileAuthCallback() {
   useEffect(() => {
     const handleAuthSuccess = async () => {
       if (isAuthenticated && token) {
-        setStatus("Authenticated! Attempting app handover...");
+        setStatus("Authenticated! Ready to open app...");
         console.log("Session token retrieved. Starting Bouncer flow...");
 
         // 1. Pass token to Android via Javascript Interface (Preferred for WebView)
@@ -51,17 +51,18 @@ export default function MobileAuthCallback() {
         const deepLink = `mltprep://auth-success?token=${encodeURIComponent(token)}`;
         setDeepLinkUrl(deepLink);
         console.log("Attempting deep link:", deepLink);
+        
+        // Attempt automatic redirect (might be blocked by Chrome without user gesture)
         window.location.href = deepLink;
 
         // 3. Fallback to Web Dashboard
-        // If the browser is still open after 2.5 seconds, it means the deep link didn't take over.
+        // If the browser is still open after 4 seconds, it means the deep link didn't take over.
         // (User is likely on Desktop or Mobile Browser, not the App)
         const fallbackTimer = setTimeout(() => {
           console.log("Deep link didn't open app. Redirecting to Web Dashboard...");
           // Only redirect if we haven't manually cancelled or if the user hasn't interacted
-          // For now, we'll just redirect.
           navigate("/student", { replace: true });
-        }, 2500);
+        }, 4000);
 
         return () => clearTimeout(fallbackTimer);
       } else if (isAuthenticated && !token) {
@@ -111,29 +112,34 @@ export default function MobileAuthCallback() {
           <p className="text-white/80 text-lg font-light mb-6">{status}</p>
           
           {isAuthenticated && (
-             <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
-               <p className="text-white/60 text-sm">
-                 Opening App...
+             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+               <p className="text-white/90 text-lg font-medium">
+                 Tap the button below to open the app
                </p>
                
                {deepLinkUrl && (
                  <Button 
                    onClick={() => window.location.href = deepLinkUrl}
-                   className="w-full bg-white text-purple-700 hover:bg-white/90 font-semibold"
+                   className="w-full py-8 text-xl font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xl transform transition hover:scale-105 rounded-xl border-2 border-blue-400/50"
                  >
-                   <Smartphone className="w-4 h-4 mr-2" />
-                   Open App Manually
+                   <Smartphone className="w-8 h-8 mr-3" />
+                   CLICK TO OPEN APP
                  </Button>
                )}
 
-               <Button 
-                 variant="ghost" 
-                 onClick={() => navigate("/student")}
-                 className="w-full text-white/70 hover:text-white hover:bg-white/10"
-               >
-                 <LayoutDashboard className="w-4 h-4 mr-2" />
-                 Go to Dashboard
-               </Button>
+               <div className="flex flex-col items-center gap-2">
+                 <p className="text-white/60 text-sm">
+                   Not opening?
+                 </p>
+                 <Button 
+                   variant="ghost" 
+                   onClick={() => navigate("/student")}
+                   className="text-white/70 hover:text-white hover:bg-white/10"
+                 >
+                   <LayoutDashboard className="w-4 h-4 mr-2" />
+                   Continue to Web Dashboard
+                 </Button>
+               </div>
                
                <div className="pt-4 border-t border-white/10">
                  <p className="text-xs text-white/40 break-all font-mono">
