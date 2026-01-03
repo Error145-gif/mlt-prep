@@ -39,12 +39,14 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
     const isMobileParam = params.get("is_mobile") === "true" || params.get("mobile") === "true" || params.get("is_mobile") === "1" || params.get("mobile") === "1";
     
     if (isMobileParam) {
-      console.log("[AUTH] Mobile flow detected via URL params. Persisting to storage.");
+      console.log("[AUTH] Mobile flow detected via URL params. Persisting to storage AND localStorage.");
       sessionStorage.setItem("is_mobile", "true");
+      // Use localStorage as backup since sessionStorage can be cleared during OAuth redirects
+      localStorage.setItem("is_mobile", "true");
     }
     
     // Log current state for debugging
-    console.log("[AUTH] Mobile detection - URL param:", isMobileParam, "Storage:", sessionStorage.getItem("is_mobile"));
+    console.log("[AUTH] Mobile detection - URL param:", isMobileParam, "Storage:", sessionStorage.getItem("is_mobile"), "LocalStorage:", localStorage.getItem("is_mobile"));
   }, [location.search]);
 
   // Helper function to check if we're in mobile flow
@@ -52,7 +54,14 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
     const params = new URLSearchParams(window.location.search);
     const urlHasMobile = params.get("is_mobile") === "true" || params.get("mobile") === "true" || params.get("is_mobile") === "1" || params.get("mobile") === "1";
     const storageHasMobile = sessionStorage.getItem("is_mobile") === "true";
-    return urlHasMobile || storageHasMobile;
+    const localStorageHasMobile = localStorage.getItem("is_mobile") === "true";
+    
+    // Priority: URL params > sessionStorage > localStorage
+    const isMobile = urlHasMobile || storageHasMobile || localStorageHasMobile;
+    
+    console.log("[AUTH] isMobileFlow check - URL:", urlHasMobile, "Session:", storageHasMobile, "Local:", localStorageHasMobile, "Result:", isMobile);
+    
+    return isMobile;
   };
 
   useEffect(() => {

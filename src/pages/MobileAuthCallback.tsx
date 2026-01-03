@@ -104,6 +104,7 @@ export default function MobileAuthCallback() {
   const handleWebFallback = () => {
     // Clear mobile flag so they don't get redirected back here
     sessionStorage.removeItem("is_mobile");
+    localStorage.removeItem("is_mobile");
     navigate("/student");
   };
 
