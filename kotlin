@@ -1,12 +1,6 @@
-// Use Chrome Custom Tabs for OAuth
-val builder = CustomTabsIntent.Builder()
-val customTabsIntent = builder.build()
-customTabsIntent.launchUrl(context, Uri.parse("https://mltprep.online/auth?state=app"))
-
-// Handle deep link callback in AndroidManifest.xml
-<intent-filter>
-    <action android:name="android.intent.action.VIEW" />
-    <category android:name="android.intent.category.DEFAULT" />
-    <category android:name="android.intent.category.BROWSABLE" />
-    <data android:scheme="mltprep" android:host="auth" />
-</intent-filter>
+// Example Android code
+val loginUrl = "https://mltprep.online/auth?mobile_app=true"
+webView.loadUrl(loginUrl)
+// or
+val intent = Intent(Intent.ACTION_VIEW, Uri.parse(loginUrl))
+startActivity(intent)
