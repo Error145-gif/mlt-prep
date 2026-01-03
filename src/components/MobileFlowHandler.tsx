@@ -43,7 +43,7 @@ export function MobileFlowHandler() {
     // 2. Flagged as mobile user
     // 3. NOT on the callback page
     // THEN: Redirect to callback page to open the app
-    if (isAuthenticated && isMobile && location.pathname !== "/mobile-auth-callback") {
+    if (isAuthenticated && isMobile && location.pathname !== "/mobile-auth-callback" && location.pathname !== "/error") {
        console.log("📱 Mobile user detected on web route. Redirecting to mobile callback...");
        navigate("/mobile-auth-callback", { replace: true });
     }

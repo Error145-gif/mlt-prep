@@ -102,7 +102,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       
       // Check if we're in a mobile app context (via URL parameter or storage)
       const urlParams = new URLSearchParams(window.location.search);
-      const isMobileParam = urlParams.get('is_mobile') === 'true' || urlParams.get('mobile') === 'true' || urlParams.get('is_mobile') === '1' || urlParams.get('mobile') === '1' || sessionStorage.getItem("is_mobile_flow") === "true";
+      const isMobileParam = urlParams.get('is_mobile') === 'true' || urlParams.get('mobile') === 'true' || urlParams.get('is_mobile') === '1' || urlParams.get('mobile') === '1' || sessionStorage.getItem("is_mobile") === "true";
       
       console.log("[AUTH] Mobile param detected:", isMobileParam);
 
@@ -138,7 +138,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
 
       // Check mobile flow for password login too
       const urlParams = new URLSearchParams(window.location.search);
-      const isMobileParam = urlParams.get('is_mobile') === 'true' || urlParams.get('mobile') === 'true' || urlParams.get('is_mobile') === '1' || urlParams.get('mobile') === '1' || sessionStorage.getItem("is_mobile_flow") === "true";
+      const isMobileParam = urlParams.get('is_mobile') === 'true' || urlParams.get('mobile') === 'true' || urlParams.get('is_mobile') === '1' || urlParams.get('mobile') === '1' || sessionStorage.getItem("is_mobile") === "true";
       
       if (isMobileParam) {
         formData.set("redirectTo", "/mobile-auth-callback");
