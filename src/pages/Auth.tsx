@@ -10,7 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/hooks/use-auth";
 import { ArrowRight, Loader2, Mail, Microscope, TestTube, Dna, Lock, KeyRound } from "lucide-react";
 import { Suspense, useEffect, useState, useCallback } from "react";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { motion } from "framer-motion";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -24,6 +24,7 @@ interface AuthProps {
 function Auth({ redirectAfterAuth }: AuthProps = {}) {
   const { isLoading: authLoading, isAuthenticated, user, signIn } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const isMobile = useIsMobile();
   const [step, setStep] = useState<"signIn" | "signUp" | "forgotPassword" | { email: string, mode: "otp" } | { email: string, code: string, mode: "setPassword" }>("signIn");
   const [otp, setOtp] = useState("");
@@ -31,6 +32,24 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
   const [error, setError] = useState<string | null>(null);
   const [rememberMe, setRememberMe] = useState(false);
   const autoCompleteRegistration = useMutation(api.authHelpers.autoCompleteRegistration);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const authErrorParam = params.get("authError");
+
+    if (authErrorParam) {
+      const errorMessages: Record<string, string> = {
+        google_failed:
+          "Google login could not be completed. Please try again or contact support.",
+      };
+      const message =
+        errorMessages[authErrorParam] ||
+        "Authentication failed. Please try again.";
+      setError(message);
+      toast.error(message);
+      navigate("/auth", { replace: true });
+    }
+  }, [location.search, navigate]);
 
   // Optimized redirect logic - only run once when auth state changes
   useEffect(() => {

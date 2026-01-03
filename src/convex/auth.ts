@@ -8,6 +8,10 @@ import { Email } from "@convex-dev/auth/providers/Email";
 import { alphabet, generateRandomString } from "oslo/crypto";
 import { internal } from "./_generated/api";
 
+const convexSiteUrl =
+  process.env.CONVEX_SITE_URL || "https://successful-bandicoot-650.convex.site";
+const appSiteUrl = process.env.SITE_URL || convexSiteUrl;
+
 const emailOtp = Email({
   id: "email-otp",
   maxAge: 60 * 10, // 10 minutes
@@ -107,10 +111,14 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
       // Respect the redirectTo parameter from the sign-in call
       // This allows Auth.tsx to control where users go after authentication
       console.log("[AUTH] Redirect requested to:", redirectTo);
-      
-      const baseUrl = process.env.SITE_URL || process.env.CONVEX_SITE_URL;
-      const finalUrl = redirectTo ? `${baseUrl}${redirectTo}` : `${baseUrl}/student`;
-      
+
+      const normalizedPath =
+        !redirectTo || redirectTo === "/"
+          ? "/auth?authError=google_failed"
+          : redirectTo;
+
+      const finalUrl = `${appSiteUrl}${normalizedPath}`;
+
       console.log("[AUTH] Final redirect URL:", finalUrl);
       return finalUrl;
     },
