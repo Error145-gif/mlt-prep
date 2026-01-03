@@ -38,15 +38,18 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
     const params = new URLSearchParams(location.search);
     const isMobileParam = params.get("is_mobile") === "true" || params.get("mobile") === "true" || params.get("is_mobile") === "1" || params.get("mobile") === "1";
     
-    if (isMobileParam) {
-      console.log("[AUTH] Mobile flow detected via URL params. Persisting to storage AND localStorage.");
+    // DETECT ANDROID WEBVIEW - Check if running inside Android app
+    const isAndroidWebView = /wv/.test(navigator.userAgent) || (typeof window.Android !== 'undefined');
+    
+    if (isMobileParam || isAndroidWebView) {
+      console.log("[AUTH] Mobile flow detected - URL param:", isMobileParam, "WebView:", isAndroidWebView);
       sessionStorage.setItem("is_mobile", "true");
       // Use localStorage as backup since sessionStorage can be cleared during OAuth redirects
       localStorage.setItem("is_mobile", "true");
     }
     
     // Log current state for debugging
-    console.log("[AUTH] Mobile detection - URL param:", isMobileParam, "Storage:", sessionStorage.getItem("is_mobile"), "LocalStorage:", localStorage.getItem("is_mobile"));
+    console.log("[AUTH] Mobile detection - URL param:", isMobileParam, "WebView:", isAndroidWebView, "Storage:", sessionStorage.getItem("is_mobile"), "LocalStorage:", localStorage.getItem("is_mobile"));
   }, [location.search]);
 
   // Helper function to check if we're in mobile flow
@@ -56,10 +59,13 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
     const storageHasMobile = sessionStorage.getItem("is_mobile") === "true";
     const localStorageHasMobile = localStorage.getItem("is_mobile") === "true";
     
-    // Priority: URL params > sessionStorage > localStorage
-    const isMobile = urlHasMobile || storageHasMobile || localStorageHasMobile;
+    // DETECT ANDROID WEBVIEW
+    const isAndroidWebView = /wv/.test(navigator.userAgent) || (typeof window.Android !== 'undefined');
     
-    console.log("[AUTH] isMobileFlow check - URL:", urlHasMobile, "Session:", storageHasMobile, "Local:", localStorageHasMobile, "Result:", isMobile);
+    // Priority: URL params > WebView detection > sessionStorage > localStorage
+    const isMobile = urlHasMobile || isAndroidWebView || storageHasMobile || localStorageHasMobile;
+    
+    console.log("[AUTH] isMobileFlow check - URL:", urlHasMobile, "WebView:", isAndroidWebView, "Session:", storageHasMobile, "Local:", localStorageHasMobile, "Result:", isMobile);
     
     return isMobile;
   };
