@@ -107,10 +107,12 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       console.log("[AUTH] Mobile param detected:", isMobileParam);
 
       // Logic Update:
-      // IF is_mobile is detected: await auth.signIn("google", { redirectTo: "/mobile-auth-callback" })
+      // IF is_mobile is detected: await auth.signIn("google", { redirectTo: "/mobile-auth-callback?is_mobile=true" })
       // IF is_mobile is NOT detected: await auth.signIn("google", { redirectTo: "/" })
       
-      const redirectPath = isMobileParam ? "/mobile-auth-callback" : "/";
+      // We append is_mobile=true to the redirect path to ensure the flag persists 
+      // even if sessionStorage is lost during the OAuth redirect dance.
+      const redirectPath = isMobileParam ? "/mobile-auth-callback?is_mobile=true" : "/";
       console.log("[AUTH] Redirect path:", redirectPath);
       
       await signIn("google", { redirectTo: redirectPath });
@@ -141,7 +143,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       const isMobileParam = urlParams.get('is_mobile') === 'true' || urlParams.get('mobile') === 'true' || urlParams.get('is_mobile') === '1' || urlParams.get('mobile') === '1' || sessionStorage.getItem("is_mobile") === "true";
       
       if (isMobileParam) {
-        formData.set("redirectTo", "/mobile-auth-callback");
+        formData.set("redirectTo", "/mobile-auth-callback?is_mobile=true");
       }
       
       await signIn("password", formData);

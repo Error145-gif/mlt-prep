@@ -64,6 +64,7 @@ export default function MobileAuthCallback() {
       const isAndroid = /Android/i.test(navigator.userAgent);
       console.log(`[MOBILE_AUTH] Auto-redirect starting. Device: ${isAndroid ? 'Android' : 'Other'}`);
 
+      // Increased delay slightly to ensure browser is ready
       const timer = setTimeout(() => {
         if (isAndroid && intentUrl) {
           console.log("[MOBILE_AUTH] Trying Intent URL:", intentUrl);
@@ -73,12 +74,12 @@ export default function MobileAuthCallback() {
           setTimeout(() => {
              console.log("[MOBILE_AUTH] Intent fallback -> Custom Scheme");
              window.location.href = deepLinkUrl;
-          }, 2000);
+          }, 2500);
         } else {
           console.log("[MOBILE_AUTH] Trying Custom Scheme:", deepLinkUrl);
           window.location.href = deepLinkUrl;
         }
-      }, 1000);
+      }, 1500);
 
       return () => clearTimeout(timer);
     }
