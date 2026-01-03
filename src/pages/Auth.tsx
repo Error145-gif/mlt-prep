@@ -46,7 +46,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
         return;
       }
       
-      // Only redirect if user is already logged in and visiting /auth directly
+      // Only redirect if user is already logged in and visiting /auth directly (no OAuth in progress)
       console.log("[AUTH] User already authenticated, redirecting to dashboard");
       
       // Auto-complete registration for ALL users (handles welcome email logic internally)
@@ -56,7 +56,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       const redirect = user?.role === "admin" ? "/admin" : (redirectAfterAuth || "/student");
       navigate(redirect, { replace: true });
     }
-  }, [authLoading, isAuthenticated, user?.role, user?._id]); // Minimal dependencies
+  }, [authLoading, isAuthenticated, user?.role, user?._id, navigate, redirectAfterAuth, autoCompleteRegistration]); // Complete dependencies
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);

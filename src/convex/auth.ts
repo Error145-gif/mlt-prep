@@ -100,12 +100,13 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
     Anonymous
   ],
   callbacks: {
-    async redirect() {
+    async redirect({ redirectTo }) {
       // THE BOUNCER METHOD:
       // Always redirect to the intermediate page.
       // This page will handle the "Cookie Handover" to the native app if installed,
       // or fallback to the dashboard for desktop users.
       console.log("[AUTH] Redirecting to mobile-auth-callback for Bouncer check");
+      console.log("[AUTH] Original redirectTo:", redirectTo);
       return "https://mltprep.online/mobile-auth-callback";
     },
     async createOrUpdateUser(ctx, args) {
