@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { useConvexAuth } from "convex/react";
+import { useAuthToken } from "@convex-dev/auth/react";
 import { Loader2 } from "lucide-react";
 
 // Define the interface for the Android Javascript Bridge
@@ -25,9 +26,8 @@ declare global {
  * Once established, this page retrieves the session token and passes it back to the Android app.
  */
 export default function MobileAuthCallback() {
-  // Cast useConvexAuth to any to access fetchAccessToken which might be missing from the type definition
-  // but is available at runtime in the ConvexReactClient context
-  const { isAuthenticated, isLoading, fetchAccessToken } = useConvexAuth() as any;
+  const { isAuthenticated, isLoading } = useConvexAuth();
+  const token = useAuthToken();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [status, setStatus] = useState("Initializing...");
@@ -37,45 +37,36 @@ export default function MobileAuthCallback() {
       if (isAuthenticated) {
         setStatus("Authenticated! Retrieving session...");
         
-        try {
-          // 1. Get the raw session token (JWT)
-          // forceRefreshToken: true ensures we get a fresh token
-          const token = await fetchAccessToken({ forceRefreshToken: true });
-          
-          if (token) {
-            setStatus("Session retrieved. Syncing with App...");
-            console.log("Session token retrieved successfully");
+        if (token) {
+          setStatus("Session retrieved. Syncing with App...");
+          console.log("Session token retrieved successfully");
 
-            // 2. Pass token to Android via Javascript Interface (Preferred)
-            if (window.Android && window.Android.onAuthSuccess) {
-              console.log("Calling window.Android.onAuthSuccess");
-              window.Android.onAuthSuccess(token);
-            }
-
-            // 3. Pass token via Deep Link Redirect (Fallback)
-            // The Android app should intercept this URL
-            const deepLink = `mltprep://session-authenticated?token=${encodeURIComponent(token)}`;
-            console.log("Redirecting to deep link:", deepLink);
-            window.location.href = deepLink;
-
-            // 4. Also redirect to dashboard on the webview as a visual confirmation
-            // (The app might close the webview before this happens)
-            const timer = setTimeout(() => {
-              navigate("/student", { replace: true });
-            }, 2000);
-            return () => clearTimeout(timer);
-          } else {
-            setStatus("Error: Failed to retrieve access token.");
+          // 1. Pass token to Android via Javascript Interface (Preferred)
+          if (window.Android && window.Android.onAuthSuccess) {
+            console.log("Calling window.Android.onAuthSuccess");
+            window.Android.onAuthSuccess(token);
           }
-        } catch (error) {
-          console.error("Error fetching access token:", error);
-          setStatus("Error: Could not fetch session token.");
+
+          // 2. Pass token via Deep Link Redirect (Fallback)
+          // The Android app should intercept this URL
+          const deepLink = `mltprep://session-authenticated?token=${encodeURIComponent(token)}`;
+          console.log("Redirecting to deep link:", deepLink);
+          window.location.href = deepLink;
+
+          // 3. Also redirect to dashboard on the webview as a visual confirmation
+          // (The app might close the webview before this happens)
+          const timer = setTimeout(() => {
+            navigate("/student", { replace: true });
+          }, 2000);
+          return () => clearTimeout(timer);
+        } else {
+          setStatus("Waiting for token...");
         }
       }
     };
 
     handleAuthSuccess();
-  }, [isAuthenticated, fetchAccessToken, navigate]);
+  }, [isAuthenticated, token, navigate]);
 
   useEffect(() => {
     const code = searchParams.get("code");
