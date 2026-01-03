@@ -38,7 +38,7 @@ export default function MobileAuthCallback() {
         setStatus("Authenticated! Retrieving session...");
         
         if (token) {
-          setStatus("Session retrieved. Syncing with App...");
+          setStatus("Session retrieved. Redirecting to App...");
           console.log("Session token retrieved successfully");
 
           // 1. Pass token to Android via Javascript Interface (Preferred)

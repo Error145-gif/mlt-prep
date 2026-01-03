@@ -118,6 +118,7 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
       // For app users, redirect to the intermediate page on the website
       // This page will handle the "Cookie Handover" to the native app
       if (state === "app") {
+        console.log("[AUTH] Mobile app login detected, redirecting to callback page");
         return "https://mltprep.online/mobile-auth-callback";
       }
       

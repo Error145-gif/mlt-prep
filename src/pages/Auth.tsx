@@ -51,7 +51,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
     try {
       // Detect if running in app via URL param (e.g. ?source=app)
       const searchParams = new URLSearchParams(window.location.search);
-      const isApp = searchParams.get("source") === "app" || searchParams.get("is_app") === "true";
+      const isApp = searchParams.get("source") === "app" || searchParams.get("is_app") === "true" || searchParams.get("is_mobile") === "true";
       
       // Set state based on environment
       const state = isApp ? "app" : "web";
