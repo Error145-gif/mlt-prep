@@ -40,10 +40,19 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       const searchParams = new URLSearchParams(window.location.search);
       const hasOAuthCode = searchParams.has("code"); // OAuth callback has a 'code' parameter
       const hasState = searchParams.has("state"); // OAuth also has state parameter
+      const isMobileAppLogin = searchParams.has("mobile_app"); // Mobile app login indicator
       
       // If we're on the callback page or have OAuth parameters, don't redirect - let backend handle it
       if (currentPath === "/mobile-auth-callback" || hasOAuthCode || hasState) {
         console.log("[AUTH] OAuth flow detected, letting backend handle redirect");
+        return;
+      }
+      
+      // CRITICAL FIX: If this is a mobile app login request, force redirect to callback page
+      // even if user is already authenticated (to hand over fresh token to app)
+      if (isMobileAppLogin) {
+        console.log("[AUTH] Mobile app login detected, forcing redirect to callback page");
+        navigate("/mobile-auth-callback", { replace: true });
         return;
       }
       
@@ -63,6 +72,14 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
     setIsLoading(true);
     setError(null);
     try {
+      // Check if this is a mobile app login request
+      const searchParams = new URLSearchParams(window.location.search);
+      const isMobileAppLogin = searchParams.has("mobile_app");
+      
+      if (isMobileAppLogin) {
+        console.log("[AUTH] Mobile app login initiated, will force callback redirect");
+      }
+      
       // Don't override redirectTo - let the backend handle the redirect
       // The backend (src/convex/auth.ts) already redirects to /mobile-auth-callback
       // which handles both mobile app and web users correctly

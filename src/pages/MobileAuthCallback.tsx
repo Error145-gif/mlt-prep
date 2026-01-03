@@ -37,6 +37,7 @@ export default function MobileAuthCallback() {
       if (isAuthenticated && token) {
         setStatus("Authenticated! Ready to open app...");
         console.log("Session token retrieved. Starting Bouncer flow...");
+        console.log("[MOBILE_AUTH_CALLBACK] User authenticated, token available");
 
         // 1. Pass token to Android via Javascript Interface (Preferred for WebView)
         if (window.Android && window.Android.onAuthSuccess) {
@@ -67,11 +68,14 @@ export default function MobileAuthCallback() {
         return () => clearTimeout(fallbackTimer);
       } else if (isAuthenticated && !token) {
         setStatus("Waiting for token...");
+        console.log("[MOBILE_AUTH_CALLBACK] User authenticated but token not yet available");
+      } else if (!isAuthenticated && !isLoading) {
+        console.log("[MOBILE_AUTH_CALLBACK] User not authenticated, checking for redirect");
       }
     };
 
     handleAuthSuccess();
-  }, [isAuthenticated, token, navigate]);
+  }, [isAuthenticated, token, navigate, isLoading]);
 
   useEffect(() => {
     const code = searchParams.get("code");
