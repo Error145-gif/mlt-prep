@@ -51,11 +51,11 @@ export default function MobileAuthCallback() {
         setDeepLinkUrl(deepLink);
         console.log("Deep link ready:", deepLink);
 
-        // 3. Auto-redirect to web dashboard after 4 seconds
+        // 3. Auto-redirect to web dashboard after 2 seconds (faster for web users)
         const fallbackTimer = setTimeout(() => {
-          console.log("Auto-redirecting to dashboard (4 second timeout)...");
+          console.log("Auto-redirecting to dashboard (2 second timeout)...");
           navigate("/student", { replace: true });
-        }, 4000);
+        }, 2000);
 
         return () => clearTimeout(fallbackTimer);
       } else if (isAuthenticated && !token) {

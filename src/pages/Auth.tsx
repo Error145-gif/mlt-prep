@@ -59,11 +59,18 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
     setIsLoading(true);
     setError(null);
     try {
-      // NUCLEAR OPTION: No parameter checking, just force the redirect
-      console.log("[AUTH] Initiating Google Sign-In with forced callback redirect");
+      console.log("[AUTH] Initiating Google Sign-In");
       
-      // Always redirect to mobile-auth-callback for ALL users
-      await signIn("google", { redirectTo: "/mobile-auth-callback" });
+      // Check if we're in a mobile app context (via URL parameter or user agent)
+      const urlParams = new URLSearchParams(window.location.search);
+      const isMobileApp = urlParams.get('mobile') === 'true' || 
+                          /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      
+      // Only redirect to mobile-auth-callback if explicitly mobile
+      const redirectPath = isMobileApp ? "/mobile-auth-callback" : (redirectAfterAuth || "/student");
+      console.log("[AUTH] Redirect path:", redirectPath);
+      
+      await signIn("google", { redirectTo: redirectPath });
     } catch (error) {
       console.error("Google sign-in error:", error);
       setError("Failed to sign in with Google. Please try again.");
