@@ -136,18 +136,19 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
       // If redirectTo is /mobile-auth-callback, we are in mobile flow
       // If redirectTo is /student or similar, we are in web flow
       
-      // We simply return the redirectTo path. 
-      // The frontend (ConvexAuthProvider) will handle the redirection relative to the current window location.
-      // We DO NOT prepend the site URL here to avoid mixing backend/frontend domains.
-      
       const normalizedPath =
         !redirectTo
           ? "/error?message=LoginFailed"
           : redirectTo;
 
-      console.log("[AUTH] Final redirect path:", normalizedPath);
-      console.log("[AUTH] Mobile flag preserved:", normalizedPath.includes("is_mobile=true"));
-      return normalizedPath;
+      // FORCE REDIRECT TO FRONTEND DOMAIN
+      // The callback happens on .convex.site, so a relative path keeps us there.
+      // We must redirect back to the main website (mltprep.online).
+      const siteUrl = process.env.SITE_URL || "https://mltprep.online";
+      const finalUrl = new URL(normalizedPath, siteUrl).toString();
+
+      console.log("[AUTH] Final redirect path (absolute):", finalUrl);
+      return finalUrl;
     },
     async createOrUpdateUser(ctx, args) {
       console.log("=".repeat(60));
