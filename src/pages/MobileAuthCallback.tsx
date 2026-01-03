@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { useConvexAuth } from "convex/react";
 import { useAuthToken } from "@convex-dev/auth/react";
-import { Loader2, Smartphone, LayoutDashboard } from "lucide-react";
+import { Loader2, Smartphone, LayoutDashboard, Copy, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 // Define the interface for the Android Javascript Bridge
 declare global {
@@ -30,6 +31,7 @@ export default function MobileAuthCallback() {
   const navigate = useNavigate();
   const [status, setStatus] = useState("Ready to open app...");
   const [deepLinkUrl, setDeepLinkUrl] = useState<string>("mltprep://auth-success");
+  const [intentUrl, setIntentUrl] = useState<string>("");
 
   // Auto-redirect effect
   useEffect(() => {
@@ -50,8 +52,9 @@ export default function MobileAuthCallback() {
        // Also try the intent URL scheme for Android if standard scheme fails
        // format: intent://<path>#Intent;scheme=<scheme>;package=<package_name>;end;
        // This is often more reliable on modern Android Chrome
-       const intentUrl = `intent://auth-success?token=${encodeURIComponent(token)}#Intent;scheme=mltprep;package=com.mltprep.app;end;`;
-       console.log("Also preparing intent URL:", intentUrl);
+       const iUrl = `intent://auth-success?token=${encodeURIComponent(token)}#Intent;scheme=mltprep;package=com.mltprep.app;end;`;
+       setIntentUrl(iUrl);
+       console.log("Also preparing intent URL:", iUrl);
        
        // We don't auto-fire intent URL to avoid double-redirects, but we could log it
     }
@@ -105,6 +108,19 @@ export default function MobileAuthCallback() {
     }
   }, [token]);
 
+  const handleCopyToken = () => {
+    if (token) {
+      navigator.clipboard.writeText(token);
+      toast.success("Token copied to clipboard");
+    }
+  };
+
+  const handleWebFallback = () => {
+    // Clear mobile flag so they don't get redirected back here
+    sessionStorage.removeItem("is_mobile");
+    navigate("/student");
+  };
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#5B21B6] via-[#7C3AED] to-[#A855F7] text-white p-4">
       <div className="text-center space-y-6 max-w-md w-full bg-white/10 backdrop-blur-lg p-8 rounded-3xl border border-white/20 shadow-xl">
@@ -126,7 +142,7 @@ export default function MobileAuthCallback() {
           <p className="text-white/80 text-lg font-light mb-6">{status}</p>
           
           {/* ALWAYS SHOW THE BUTTON - CRITICAL FIX */}
-          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+          <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <p className="text-white/90 text-lg font-medium">
               Tap the button below to open the app
             </p>
@@ -136,16 +152,39 @@ export default function MobileAuthCallback() {
               className="w-full py-8 text-xl font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xl transform transition hover:scale-105 rounded-xl border-2 border-blue-400/50"
             >
               <Smartphone className="w-8 h-8 mr-3" />
-              CLICK TO OPEN APP
+              OPEN APP
             </Button>
 
-            <div className="flex flex-col items-center gap-2">
+            {intentUrl && (
+              <Button 
+                onClick={() => window.location.href = intentUrl}
+                variant="outline"
+                className="w-full py-6 text-lg font-semibold bg-white/10 hover:bg-white/20 text-white border-white/30"
+              >
+                <ExternalLink className="w-5 h-5 mr-2" />
+                OPEN APP (ALTERNATIVE)
+              </Button>
+            )}
+
+            <div className="flex gap-2 justify-center pt-2">
+               <Button
+                 variant="ghost"
+                 size="sm"
+                 onClick={handleCopyToken}
+                 className="text-white/60 hover:text-white hover:bg-white/10 text-xs"
+               >
+                 <Copy className="w-3 h-3 mr-1" />
+                 Copy Token
+               </Button>
+            </div>
+
+            <div className="flex flex-col items-center gap-2 pt-4 border-t border-white/10">
               <p className="text-white/60 text-sm">
                 Not opening?
               </p>
               <Button 
                 variant="ghost" 
-                onClick={() => navigate("/student")}
+                onClick={handleWebFallback}
                 className="text-white/70 hover:text-white hover:bg-white/10"
               >
                 <LayoutDashboard className="w-4 h-4 mr-2" />
@@ -153,8 +192,8 @@ export default function MobileAuthCallback() {
               </Button>
             </div>
             
-            <div className="pt-4 border-t border-white/10">
-              <p className="text-xs text-white/40 break-all font-mono">
+            <div className="pt-2">
+              <p className="text-[10px] text-white/30 break-all font-mono">
                 {deepLinkUrl}
               </p>
             </div>
