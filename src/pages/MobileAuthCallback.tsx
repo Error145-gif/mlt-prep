@@ -2,9 +2,15 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { useConvexAuth } from "convex/react";
 import { useAuthToken } from "@convex-dev/auth/react";
-import { Loader2, Smartphone, LayoutDashboard, Copy, ExternalLink } from "lucide-react";
+import { Loader2, Smartphone, LayoutDashboard, Copy, ExternalLink, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 // Define the interface for the Android Javascript Bridge
 declare global {
@@ -33,80 +39,59 @@ export default function MobileAuthCallback() {
   const [deepLinkUrl, setDeepLinkUrl] = useState<string>("mltprep://auth-success");
   const [intentUrl, setIntentUrl] = useState<string>("");
 
-  // Auto-redirect effect
-  useEffect(() => {
-    if (deepLinkUrl && isAuthenticated && token) {
-      console.log("Attempting auto-redirect to app via deep link...");
-      // Try to auto-redirect after a short delay to ensure state is settled
-      const timer = setTimeout(() => {
-        window.location.href = deepLinkUrl;
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [deepLinkUrl, isAuthenticated, token]);
-
-  // Add a secondary effect to try opening the app immediately if we have the token
-  // This helps if the first effect was too slow or if the user is returning
+  // Initialize URLs when token is available
   useEffect(() => {
     if (isAuthenticated && token) {
-       // Also try the intent URL scheme for Android if standard scheme fails
+       // Standard Deep Link
+       const deepLink = `mltprep://auth-success?token=${encodeURIComponent(token)}`;
+       setDeepLinkUrl(deepLink);
+
+       // Android Intent URL (More reliable for Android Chrome)
        // format: intent://<path>#Intent;scheme=<scheme>;package=<package_name>;end;
-       // This is often more reliable on modern Android Chrome
        const iUrl = `intent://auth-success?token=${encodeURIComponent(token)}#Intent;scheme=mltprep;package=com.mltprep.app;end;`;
        setIntentUrl(iUrl);
-       console.log("Also preparing intent URL:", iUrl);
        
-       // We don't auto-fire intent URL to avoid double-redirects, but we could log it
+       setStatus("Authenticated! Opening app...");
+       console.log("[MOBILE_AUTH] Token retrieved. URLs prepared.");
+    } else if (isAuthenticated && !token) {
+       setStatus("Finalizing authentication...");
     }
   }, [isAuthenticated, token]);
 
+  // Auto-redirect logic
   useEffect(() => {
-    const handleAuthSuccess = async () => {
-      if (isAuthenticated && token) {
-        setStatus("Authenticated! Ready to open app...");
-        console.log("Session token retrieved. Starting Bouncer flow...");
-        console.log("[MOBILE_AUTH_CALLBACK] User authenticated, token available");
+    if (isAuthenticated && token && (deepLinkUrl || intentUrl)) {
+      const isAndroid = /Android/i.test(navigator.userAgent);
+      console.log(`[MOBILE_AUTH] Auto-redirect starting. Device: ${isAndroid ? 'Android' : 'Other'}`);
 
-        // 1. Pass token to Android via Javascript Interface (Preferred for WebView)
-        if (window.Android && window.Android.onAuthSuccess) {
-          console.log("Calling window.Android.onAuthSuccess");
-          window.Android.onAuthSuccess(token);
-          // Don't redirect if Android interface is present - let the app handle it
-          return;
+      const timer = setTimeout(() => {
+        if (isAndroid && intentUrl) {
+          console.log("[MOBILE_AUTH] Trying Intent URL:", intentUrl);
+          window.location.href = intentUrl;
+          
+          // Fallback to custom scheme after a short delay if intent fails (though we can't easily detect failure)
+          setTimeout(() => {
+             console.log("[MOBILE_AUTH] Intent fallback -> Custom Scheme");
+             window.location.href = deepLinkUrl;
+          }, 2000);
+        } else {
+          console.log("[MOBILE_AUTH] Trying Custom Scheme:", deepLinkUrl);
+          window.location.href = deepLinkUrl;
         }
+      }, 1000);
 
-        // 2. THE BOUNCER LOGIC - Only for non-WebView users
-        const deepLink = `mltprep://auth-success?token=${encodeURIComponent(token)}`;
-        setDeepLinkUrl(deepLink);
-        console.log("Deep link ready:", deepLink);
-
-        // 3. Auto-redirect to web dashboard after 2 seconds (faster for web users)
-        // REMOVED: This causes mobile users to get stuck in Chrome if they don't click fast enough.
-        // We will rely on the user clicking "Continue to Web Dashboard" if they are on web.
-        /*
-        const fallbackTimer = setTimeout(() => {
-          console.log("Auto-redirecting to dashboard (2 second timeout)...");
-          navigate("/student", { replace: true });
-        }, 2000);
-
-        return () => clearTimeout(fallbackTimer);
-        */
-      } else if (isAuthenticated && !token) {
-        setStatus("Finalizing authentication...");
-        console.log("[MOBILE_AUTH_CALLBACK] User authenticated but token not yet available");
-      }
-    };
-
-    handleAuthSuccess();
-  }, [isAuthenticated, token, navigate]);
-
-  // Update deep link when token becomes available
-  useEffect(() => {
-    if (token) {
-      const deepLink = `mltprep://auth-success?token=${encodeURIComponent(token)}`;
-      setDeepLinkUrl(deepLink);
+      return () => clearTimeout(timer);
     }
-  }, [token]);
+  }, [isAuthenticated, token, deepLinkUrl, intentUrl]);
+
+  // Handle WebView Bridge
+  useEffect(() => {
+    if (isAuthenticated && token && window.Android && window.Android.onAuthSuccess) {
+      console.log("[MOBILE_AUTH] WebView Bridge detected. Calling onAuthSuccess.");
+      setStatus("Returning to app...");
+      window.Android.onAuthSuccess(token);
+    }
+  }, [isAuthenticated, token]);
 
   const handleCopyToken = () => {
     if (token) {
@@ -126,7 +111,7 @@ export default function MobileAuthCallback() {
       <div className="text-center space-y-6 max-w-md w-full bg-white/10 backdrop-blur-lg p-8 rounded-3xl border border-white/20 shadow-xl">
         {/* Show success checkmark if authenticated, otherwise show spinner */}
         {isAuthenticated ? (
-          <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-green-500/30">
+          <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-green-500/30 animate-in zoom-in duration-300">
             <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
             </svg>
@@ -139,9 +124,8 @@ export default function MobileAuthCallback() {
           <h2 className="text-2xl font-bold mb-2" style={{ fontFamily: "'Poppins', sans-serif" }}>
             {isAuthenticated ? "Login Successful!" : "Logging In"}
           </h2>
-          <p className="text-white/80 text-lg font-light mb-6">{status}</p>
+          <p className="text-white/80 text-lg font-light mb-6 animate-pulse">{status}</p>
           
-          {/* ALWAYS SHOW THE BUTTON - CRITICAL FIX */}
           <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <p className="text-white/90 text-lg font-medium">
               Tap the button below to open the app
@@ -166,36 +150,47 @@ export default function MobileAuthCallback() {
               </Button>
             )}
 
-            <div className="flex gap-2 justify-center pt-2">
-               <Button
-                 variant="ghost"
-                 size="sm"
-                 onClick={handleCopyToken}
-                 className="text-white/60 hover:text-white hover:bg-white/10 text-xs"
-               >
-                 <Copy className="w-3 h-3 mr-1" />
-                 Copy Token
-               </Button>
-            </div>
+            <div className="pt-4">
+              <Accordion type="single" collapsible className="w-full border-none">
+                <AccordionItem value="troubleshoot" className="border-none">
+                  <AccordionTrigger className="text-white/60 hover:text-white py-2 justify-center text-sm">
+                    <span className="flex items-center gap-2">
+                      <HelpCircle className="w-4 h-4" />
+                      Having trouble?
+                    </span>
+                  </AccordionTrigger>
+                  <AccordionContent className="space-y-4 pt-2">
+                    <div className="bg-black/20 p-4 rounded-xl space-y-3">
+                      <p className="text-xs text-white/70 text-center">
+                        If the app doesn't open automatically, try copying the token and pasting it in the app manually (if supported), or continue to the web dashboard.
+                      </p>
+                      
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={handleCopyToken}
+                        className="w-full bg-white/20 hover:bg-white/30 text-white border-none"
+                      >
+                        <Copy className="w-3 h-3 mr-2" />
+                        Copy Auth Token
+                      </Button>
 
-            <div className="flex flex-col items-center gap-2 pt-4 border-t border-white/10">
-              <p className="text-white/60 text-sm">
-                Not opening?
-              </p>
-              <Button 
-                variant="ghost" 
-                onClick={handleWebFallback}
-                className="text-white/70 hover:text-white hover:bg-white/10"
-              >
-                <LayoutDashboard className="w-4 h-4 mr-2" />
-                Continue to Web Dashboard
-              </Button>
-            </div>
-            
-            <div className="pt-2">
-              <p className="text-[10px] text-white/30 break-all font-mono">
-                {deepLinkUrl}
-              </p>
+                      <Button 
+                        variant="ghost" 
+                        onClick={handleWebFallback}
+                        className="w-full text-white/70 hover:text-white hover:bg-white/10"
+                      >
+                        <LayoutDashboard className="w-4 h-4 mr-2" />
+                        Continue to Web Dashboard
+                      </Button>
+                    </div>
+                    
+                    <div className="text-[10px] text-white/20 break-all font-mono text-center">
+                      {deepLinkUrl}
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
             </div>
           </div>
         </div>
