@@ -1,2 +1,6 @@
-// In your Android app's MainActivity or wherever you open the WebView:
-webView.loadUrl("https://mltprep.online/auth?is_mobile=true")
+webView.addJavascriptInterface(object {
+    @JavascriptInterface
+    fun onAuthSuccess(token: String) {
+        // Handle the token and complete login
+    }
+}, "Android")
