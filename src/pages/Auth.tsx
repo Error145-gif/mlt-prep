@@ -40,7 +40,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
     
     if (isMobileParam) {
       console.log("[AUTH] Mobile flow detected via URL params. Persisting to storage.");
-      sessionStorage.setItem("is_mobile_flow", "true");
+      sessionStorage.setItem("is_mobile", "true");
     }
   }, [location.search]);
 
@@ -75,7 +75,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       
       // Check for mobile param in URL or storage to handle existing sessions for app users
       const params = new URLSearchParams(location.search);
-      const isMobileParam = params.get("is_mobile") === "true" || params.get("mobile") === "true" || params.get("is_mobile") === "1" || params.get("mobile") === "1" || sessionStorage.getItem("is_mobile_flow") === "true";
+      const isMobileParam = params.get("is_mobile") === "true" || params.get("mobile") === "true" || params.get("is_mobile") === "1" || params.get("mobile") === "1" || sessionStorage.getItem("is_mobile") === "true";
 
       console.log("[AUTH] User already authenticated, redirecting. Mobile param:", isMobileParam);
       
