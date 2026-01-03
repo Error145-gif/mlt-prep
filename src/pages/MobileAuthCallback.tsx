@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { useConvexAuth } from "convex/react";
 import { useAuthToken } from "@convex-dev/auth/react";
-import { Loader2, Smartphone, LayoutDashboard, Copy, ExternalLink, HelpCircle, CheckCircle } from "lucide-react";
+import { Loader2, Smartphone, LayoutDashboard, Copy, ExternalLink, HelpCircle, CheckCircle, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
@@ -48,7 +48,8 @@ export default function MobileAuthCallback() {
        setDeepLinkUrl(deepLink);
 
        // Android Intent URL (More reliable for Android Chrome)
-       const iUrl = `intent://auth-success?token=${encodeURIComponent(token)}#Intent;scheme=mltprep;package=com.mltprep.app;end;`;
+       // Format: intent://<host>#Intent;scheme=<scheme>;package=<package_name>;S.<extra_name>=<extra_value>;end
+       const iUrl = `intent://auth-success?token=${encodeURIComponent(token)}#Intent;scheme=mltprep;package=com.mltprep.app;S.token=${encodeURIComponent(token)};end;`;
        setIntentUrl(iUrl);
        
        setStatus("Authentication successful!");
@@ -95,21 +96,9 @@ export default function MobileAuthCallback() {
       // Method 3: Try opening in new window (some browsers handle this better)
       setTimeout(() => {
         console.log("[MOBILE_AUTH] Trying window.open method");
+        // @ts-ignore
         const opened = window.open(deepLinkUrl, '_self');
-        if (!opened) {
-          console.log("[MOBILE_AUTH] window.open blocked");
-        }
       }, 1000);
-
-      // Method 4: Create invisible iframe (another fallback)
-      setTimeout(() => {
-        console.log("[MOBILE_AUTH] Trying iframe method");
-        const iframe = document.createElement('iframe');
-        iframe.style.display = 'none';
-        iframe.src = deepLinkUrl;
-        document.body.appendChild(iframe);
-        setTimeout(() => document.body.removeChild(iframe), 1000);
-      }, 1500);
 
       // Show manual button after all auto attempts
       setTimeout(() => {
@@ -136,11 +125,6 @@ export default function MobileAuthCallback() {
       window.location.href = deepLinkUrl;
     }
     
-    // Also try window.open
-    setTimeout(() => {
-      window.open(deepLinkUrl, '_self');
-    }, 1000);
-    
     toast.success("Opening app...");
   };
 
@@ -153,8 +137,8 @@ export default function MobileAuthCallback() {
 
   const handleWebFallback = () => {
     // Clear mobile flag so they don't get redirected back here
-    sessionStorage.removeItem("is_mobile");
     localStorage.removeItem("is_mobile");
+    sessionStorage.removeItem("is_mobile");
     navigate("/student");
   };
 
@@ -218,9 +202,10 @@ export default function MobileAuthCallback() {
                     </AccordionTrigger>
                     <AccordionContent className="space-y-4 pt-2">
                       <div className="bg-black/20 p-4 rounded-xl space-y-3">
-                        <p className="text-xs text-white/70 text-center">
-                          If the app doesn't open, make sure the MLT Prep app is installed on your device. You can also continue to the web dashboard.
-                        </p>
+                        <div className="flex items-start gap-2 text-left text-xs text-yellow-200 bg-yellow-500/20 p-2 rounded">
+                          <AlertTriangle className="w-4 h-4 shrink-0" />
+                          <p>Ensure you have the latest version of the app installed.</p>
+                        </div>
                         
                         <Button
                           variant="secondary"
@@ -240,10 +225,6 @@ export default function MobileAuthCallback() {
                           <LayoutDashboard className="w-4 h-4 mr-2" />
                           Continue to Web Dashboard
                         </Button>
-                      </div>
-                      
-                      <div className="text-[10px] text-white/20 break-all font-mono text-center">
-                        {deepLinkUrl}
                       </div>
                     </AccordionContent>
                   </AccordionItem>

@@ -8,7 +8,7 @@ import { useConvexAuth } from "convex/react";
  * This component detects if the user is accessing the site via the mobile app
  * by checking for 'is_mobile' or 'mobile' query parameters.
  * 
- * It persists this state in sessionStorage.
+ * It persists this state in localStorage (more robust than sessionStorage).
  * 
  * CRITICAL: If a user is authenticated and has the 'is_mobile' flag,
  * this component forces a redirect to /mobile-auth-callback.
@@ -24,10 +24,13 @@ export function MobileFlowHandler() {
   useEffect(() => {
     const isMobileParam = searchParams.get("is_mobile");
     const mobileParam = searchParams.get("mobile");
+    const platformParam = searchParams.get("platform");
     
     // Check if mobile params are present and true
-    if (isMobileParam === "true" || mobileParam === "true") {
+    if (isMobileParam === "true" || mobileParam === "true" || platformParam === "android") {
       console.log("📱 Mobile flow detected via URL params. Persisting to storage.");
+      // Use localStorage for better persistence across redirects/tabs
+      localStorage.setItem("is_mobile", "true");
       sessionStorage.setItem("is_mobile", "true");
     }
   }, [searchParams]);
@@ -36,7 +39,8 @@ export function MobileFlowHandler() {
     // Don't do anything while loading
     if (isLoading) return;
 
-    const isMobile = sessionStorage.getItem("is_mobile") === "true";
+    // Check both storages
+    const isMobile = localStorage.getItem("is_mobile") === "true" || sessionStorage.getItem("is_mobile") === "true";
     
     // If we are:
     // 1. Authenticated
