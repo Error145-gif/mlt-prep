@@ -27,9 +27,8 @@ declare global {
  * This page acts as a traffic controller:
  * 1. It receives the user after Google Login.
  * 2. It retrieves the session token.
- * 3. It IMMEDIATELY shows the "CLICK TO OPEN APP" button.
- * 4. When clicked, it attempts to open the Android App via deep link.
- * 5. If the app doesn't open, user can manually navigate to web dashboard.
+ * 3. It IMMEDIATELY attempts to open the app via multiple methods.
+ * 4. Shows a prominent button if automatic redirect fails.
  */
 export default function MobileAuthCallback() {
   const { isAuthenticated } = useConvexAuth();
@@ -60,67 +59,87 @@ export default function MobileAuthCallback() {
     }
   }, [isAuthenticated, token]);
 
-  // Auto-redirect logic - only attempt once
+  // AGGRESSIVE Auto-redirect logic - try multiple methods immediately
   useEffect(() => {
     if (isAuthenticated && token && (deepLinkUrl || intentUrl) && !autoRedirectAttempted) {
       const isAndroid = /Android/i.test(navigator.userAgent);
       console.log(`[MOBILE_AUTH] 🚀 Auto-redirect starting. Device: ${isAndroid ? 'Android' : 'Other'}`);
       
       setAutoRedirectAttempted(true);
+      setStatus("Opening app...");
 
-      // Attempt automatic redirect after a short delay
-      const timer = setTimeout(() => {
-        console.log("[MOBILE_AUTH] 🔗 Attempting automatic deep link...");
-        
-        if (isAndroid && intentUrl) {
-          console.log("[MOBILE_AUTH] Trying Intent URL:", intentUrl);
-          window.location.href = intentUrl;
-          
-          // Fallback to custom scheme after delay
-          setTimeout(() => {
-             console.log("[MOBILE_AUTH] Intent fallback -> Custom Scheme");
-             window.location.href = deepLinkUrl;
-          }, 2000);
-        } else {
-          console.log("[MOBILE_AUTH] Trying Custom Scheme:", deepLinkUrl);
-          window.location.href = deepLinkUrl;
+      // Try WebView Bridge first (most reliable if in WebView)
+      if (window.Android && window.Android.onAuthSuccess) {
+        console.log("[MOBILE_AUTH] 📱 WebView Bridge detected. Calling onAuthSuccess.");
+        try {
+          window.Android.onAuthSuccess(token);
+          setStatus("Returning to app...");
+          return; // Exit early if WebView bridge works
+        } catch (e) {
+          console.error("[MOBILE_AUTH] WebView bridge failed:", e);
         }
-        
-        // Show manual button after auto-redirect attempt
-        setTimeout(() => {
-          setStatus("Tap the button below to open the app");
-        }, 3000);
-      }, 800);
+      }
 
-      return () => clearTimeout(timer);
+      // Method 1: Immediate Intent URL (for Android Chrome)
+      if (isAndroid && intentUrl) {
+        console.log("[MOBILE_AUTH] Trying Intent URL immediately:", intentUrl);
+        window.location.href = intentUrl;
+      }
+
+      // Method 2: Custom scheme after short delay
+      setTimeout(() => {
+        console.log("[MOBILE_AUTH] Trying Custom Scheme:", deepLinkUrl);
+        window.location.href = deepLinkUrl;
+      }, 500);
+
+      // Method 3: Try opening in new window (some browsers handle this better)
+      setTimeout(() => {
+        console.log("[MOBILE_AUTH] Trying window.open method");
+        const opened = window.open(deepLinkUrl, '_self');
+        if (!opened) {
+          console.log("[MOBILE_AUTH] window.open blocked");
+        }
+      }, 1000);
+
+      // Method 4: Create invisible iframe (another fallback)
+      setTimeout(() => {
+        console.log("[MOBILE_AUTH] Trying iframe method");
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = deepLinkUrl;
+        document.body.appendChild(iframe);
+        setTimeout(() => document.body.removeChild(iframe), 1000);
+      }, 1500);
+
+      // Show manual button after all auto attempts
+      setTimeout(() => {
+        setStatus("Tap the button below to open the app");
+        setShowOpenButton(true);
+      }, 2500);
     }
   }, [isAuthenticated, token, deepLinkUrl, intentUrl, autoRedirectAttempted]);
-
-  // Handle WebView Bridge
-  useEffect(() => {
-    if (isAuthenticated && token && window.Android && window.Android.onAuthSuccess) {
-      console.log("[MOBILE_AUTH] 📱 WebView Bridge detected. Calling onAuthSuccess.");
-      setStatus("Returning to app...");
-      window.Android.onAuthSuccess(token);
-    }
-  }, [isAuthenticated, token]);
 
   const handleOpenApp = () => {
     console.log("[MOBILE_AUTH] 👆 User clicked OPEN APP button");
     const isAndroid = /Android/i.test(navigator.userAgent);
     
+    // Try all methods when user clicks
     if (isAndroid && intentUrl) {
       console.log("[MOBILE_AUTH] Opening via Intent URL");
       window.location.href = intentUrl;
       
-      // Fallback to custom scheme
       setTimeout(() => {
         window.location.href = deepLinkUrl;
-      }, 1500);
+      }, 500);
     } else {
       console.log("[MOBILE_AUTH] Opening via Custom Scheme");
       window.location.href = deepLinkUrl;
     }
+    
+    // Also try window.open
+    setTimeout(() => {
+      window.open(deepLinkUrl, '_self');
+    }, 1000);
     
     toast.success("Opening app...");
   };
