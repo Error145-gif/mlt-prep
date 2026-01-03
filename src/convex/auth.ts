@@ -101,15 +101,15 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
   ],
   callbacks: {
     async redirect({ redirectTo }) {
-      // NUCLEAR OPTION: ALWAYS redirect to mobile-auth-callback for ALL users
-      // No conditions, no parameters, no detection logic
-      // The callback page will handle both mobile (deep link) and desktop (auto-redirect) users
-      console.log("[AUTH] FORCING redirect to mobile-auth-callback for ALL users");
-      console.log("[AUTH] Original redirectTo (ignored):", redirectTo);
+      // Respect the redirectTo parameter from the sign-in call
+      // This allows Auth.tsx to control where users go after authentication
+      console.log("[AUTH] Redirect requested to:", redirectTo);
       
-      const callbackUrl = `${process.env.SITE_URL || process.env.CONVEX_SITE_URL}/mobile-auth-callback`;
-      console.log("[AUTH] Final redirect URL:", callbackUrl);
-      return callbackUrl;
+      const baseUrl = process.env.SITE_URL || process.env.CONVEX_SITE_URL;
+      const finalUrl = redirectTo ? `${baseUrl}${redirectTo}` : `${baseUrl}/student`;
+      
+      console.log("[AUTH] Final redirect URL:", finalUrl);
+      return finalUrl;
     },
     async createOrUpdateUser(ctx, args) {
       console.log("=".repeat(60));
