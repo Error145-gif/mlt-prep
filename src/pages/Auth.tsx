@@ -33,7 +33,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
   const [rememberMe, setRememberMe] = useState(false);
   const autoCompleteRegistration = useMutation(api.authHelpers.autoCompleteRegistration);
 
-  // Persist mobile flow state - check both URL and storage
+  // Persist mobile flow state - ALWAYS check URL first, then storage as fallback
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const isMobileParam = params.get("is_mobile") === "true" || params.get("mobile") === "true" || params.get("is_mobile") === "1" || params.get("mobile") === "1";
@@ -46,6 +46,14 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
     // Log current state for debugging
     console.log("[AUTH] Mobile detection - URL param:", isMobileParam, "Storage:", sessionStorage.getItem("is_mobile"));
   }, [location.search]);
+
+  // Helper function to check if we're in mobile flow
+  const isMobileFlow = () => {
+    const params = new URLSearchParams(window.location.search);
+    const urlHasMobile = params.get("is_mobile") === "true" || params.get("mobile") === "true" || params.get("is_mobile") === "1" || params.get("mobile") === "1";
+    const storageHasMobile = sessionStorage.getItem("is_mobile") === "true";
+    return urlHasMobile || storageHasMobile;
+  };
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -76,21 +84,20 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
         return;
       }
       
-      // Check for mobile param in URL or storage to handle existing sessions for app users
-      const params = new URLSearchParams(location.search);
-      const isMobileParam = params.get("is_mobile") === "true" || params.get("mobile") === "true" || params.get("is_mobile") === "1" || params.get("mobile") === "1" || sessionStorage.getItem("is_mobile") === "true";
+      // Check for mobile param - URL takes priority over storage
+      const isMobileParam = isMobileFlow();
 
-      console.log("[AUTH] User already authenticated, redirecting. Mobile param:", isMobileParam);
+      console.log("[AUTH] User already authenticated, redirecting. Mobile flow:", isMobileParam);
       
       // Auto-complete registration for ALL users (handles welcome email logic internally)
       autoCompleteRegistration().catch(console.error);
       
       // Immediate redirect without waiting
-      // If mobile param is present, force redirect to mobile callback
+      // If mobile param is present, force redirect to mobile callback WITH the flag
       let redirect = user?.role === "admin" ? "/admin" : (redirectAfterAuth || "/student");
       
       if (isMobileParam) {
-        redirect = "/mobile-auth-callback";
+        redirect = "/mobile-auth-callback?is_mobile=true";
       }
 
       navigate(redirect, { replace: true });
@@ -103,15 +110,12 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
     try {
       console.log("[AUTH] Initiating Google Sign-In");
       
-      // CRITICAL: Check mobile context from BOTH URL and storage
-      const urlParams = new URLSearchParams(window.location.search);
-      const isMobileFromUrl = urlParams.get('is_mobile') === 'true' || urlParams.get('mobile') === 'true' || urlParams.get('is_mobile') === '1' || urlParams.get('mobile') === '1';
-      const isMobileFromStorage = sessionStorage.getItem("is_mobile") === "true";
-      const isMobileParam = isMobileFromUrl || isMobileFromStorage;
+      // Use helper function for consistent mobile detection
+      const isMobileParam = isMobileFlow();
       
-      console.log("[AUTH] Google Sign-In - Mobile from URL:", isMobileFromUrl, "from Storage:", isMobileFromStorage, "Final:", isMobileParam);
+      console.log("[AUTH] Google Sign-In - Mobile flow detected:", isMobileParam);
 
-      // ALWAYS append is_mobile=true to redirect if detected from either source
+      // ALWAYS append is_mobile=true to redirect if in mobile flow
       const redirectPath = isMobileParam ? "/mobile-auth-callback?is_mobile=true" : "/";
       console.log("[AUTH] Google redirect path:", redirectPath);
       
@@ -138,17 +142,14 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
         formData.set("flow", "signIn");
       }
 
-      // CRITICAL: Check mobile flow for password login from BOTH sources
-      const urlParams = new URLSearchParams(window.location.search);
-      const isMobileFromUrl = urlParams.get('is_mobile') === 'true' || urlParams.get('mobile') === 'true' || urlParams.get('is_mobile') === '1' || urlParams.get('mobile') === '1';
-      const isMobileFromStorage = sessionStorage.getItem("is_mobile") === "true";
-      const isMobileParam = isMobileFromUrl || isMobileFromStorage;
+      // Use helper function for consistent mobile detection
+      const isMobileParam = isMobileFlow();
       
-      console.log("[AUTH] Password Sign-In - Mobile from URL:", isMobileFromUrl, "from Storage:", isMobileFromStorage, "Final:", isMobileParam);
+      console.log("[AUTH] Password Sign-In - Mobile flow detected:", isMobileParam);
       
       if (isMobileParam) {
         formData.set("redirectTo", "/mobile-auth-callback?is_mobile=true");
-        console.log("[AUTH] Password redirect set to mobile callback");
+        console.log("[AUTH] Password redirect set to mobile callback with flag");
       }
       
       await signIn("password", formData);
