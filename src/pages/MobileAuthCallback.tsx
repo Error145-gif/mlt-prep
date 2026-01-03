@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { useConvexAuth } from "convex/react";
 import { useAuthToken } from "@convex-dev/auth/react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Smartphone, LayoutDashboard } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 // Define the interface for the Android Javascript Bridge
 declare global {
@@ -29,6 +30,7 @@ export default function MobileAuthCallback() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [status, setStatus] = useState("Initializing...");
+  const [deepLinkUrl, setDeepLinkUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const handleAuthSuccess = async () => {
@@ -47,6 +49,7 @@ export default function MobileAuthCallback() {
         // Always try to open the deep link.
         // If the app is installed, it will intercept this.
         const deepLink = `mltprep://auth-success?token=${encodeURIComponent(token)}`;
+        setDeepLinkUrl(deepLink);
         console.log("Attempting deep link:", deepLink);
         window.location.href = deepLink;
 
@@ -55,6 +58,8 @@ export default function MobileAuthCallback() {
         // (User is likely on Desktop or Mobile Browser, not the App)
         const fallbackTimer = setTimeout(() => {
           console.log("Deep link didn't open app. Redirecting to Web Dashboard...");
+          // Only redirect if we haven't manually cancelled or if the user hasn't interacted
+          // For now, we'll just redirect.
           navigate("/student", { replace: true });
         }, 2500);
 
@@ -103,12 +108,39 @@ export default function MobileAuthCallback() {
           <h2 className="text-2xl font-bold mb-2" style={{ fontFamily: "'Poppins', sans-serif" }}>
             {isAuthenticated ? "Login Successful!" : "Logging In"}
           </h2>
-          <p className="text-white/80 text-lg font-light">{status}</p>
+          <p className="text-white/80 text-lg font-light mb-6">{status}</p>
+          
           {isAuthenticated && (
-             <p className="text-white/60 text-sm mt-4">
-               Opening App...<br/>
-               If not redirected, <span className="underline cursor-pointer" onClick={() => navigate("/student")}>click here</span>.
-             </p>
+             <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
+               <p className="text-white/60 text-sm">
+                 Opening App...
+               </p>
+               
+               {deepLinkUrl && (
+                 <Button 
+                   onClick={() => window.location.href = deepLinkUrl}
+                   className="w-full bg-white text-purple-700 hover:bg-white/90 font-semibold"
+                 >
+                   <Smartphone className="w-4 h-4 mr-2" />
+                   Open App Manually
+                 </Button>
+               )}
+
+               <Button 
+                 variant="ghost" 
+                 onClick={() => navigate("/student")}
+                 className="w-full text-white/70 hover:text-white hover:bg-white/10"
+               >
+                 <LayoutDashboard className="w-4 h-4 mr-2" />
+                 Go to Dashboard
+               </Button>
+               
+               <div className="pt-4 border-t border-white/10">
+                 <p className="text-xs text-white/40 break-all font-mono">
+                   {deepLinkUrl || "Generating link..."}
+                 </p>
+               </div>
+             </div>
           )}
         </div>
       </div>
