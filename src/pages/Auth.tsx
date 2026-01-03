@@ -111,6 +111,9 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
         return;
       }
       
+      // Reset loading state when authenticated (fixes stuck "Signing In..." issue)
+      setIsLoading(false);
+      
       // Check for mobile param - URL takes priority over storage
       const isMobileParam = isMobileFlow();
 
@@ -127,6 +130,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
         redirect = "/mobile-auth-callback?is_mobile=true";
       }
 
+      console.log("[AUTH] Redirecting to:", redirect);
       navigate(redirect, { replace: true });
     }
   }, [authLoading, isAuthenticated, user?.role, user?._id, navigate, redirectAfterAuth, autoCompleteRegistration, location.search]);
@@ -147,6 +151,8 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       console.log("[AUTH] Google redirect path:", redirectPath);
       
       await signIn("google", { redirectTo: redirectPath });
+      // Note: setIsLoading(false) is intentionally not called here because
+      // the page will redirect away during OAuth flow
     } catch (error) {
       console.error("Google sign-in error:", error);
       setError("Failed to sign in with Google. Please try again.");
@@ -317,8 +323,12 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
   }
 
   // Don't render if already authenticated (prevents flash)
-  if (isAuthenticated) {
-    return null;
+  if (isAuthenticated && user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#5B21B6] via-[#7C3AED] to-[#A855F7]">
+        <Loader2 className="h-8 w-8 animate-spin text-white" />
+      </div>
+    );
   }
 
   return (
