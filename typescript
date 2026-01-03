@@ -1,1 +1,14 @@
-domain: "https://successful-bandicoot-650.convex.site"
+import { getAuthUserId } from "@convex-dev/auth/server";
+import { query, mutation, internalQuery, QueryCtx } from "./_generated/server";
+import { v } from "convex/values";
+import { httpRouter } from "convex/server";
+import { httpAction } from "./_generated/server";
+import { auth } from "./auth";
+import { getRegisteredEmails } from "./emailApi";
+
+const http = httpRouter();
+
+// Helper to verify Google ID Token
+// ...
+
+export default http;

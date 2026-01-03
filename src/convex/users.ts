@@ -1,5 +1,5 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { query, mutation, internalQuery, QueryCtx } from "./_generated/server";
+import { query, mutation, internalQuery, internalMutation, QueryCtx } from "./_generated/server";
 import { v } from "convex/values";
 
 /**
@@ -370,5 +370,55 @@ export const getVerifiedUserEmails = query({
       }));
 
     return verifiedUsers;
+  },
+});
+
+// Handle mobile authentication - Find/Create user and create session
+export const ensureUserFromMobile = internalMutation({
+  args: {
+    email: v.string(),
+    name: v.optional(v.string()),
+    picture: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    // 1. Find user by email
+    let user = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", args.email))
+      .unique();
+
+    let userId;
+
+    if (user) {
+      userId = user._id;
+      // Update last active
+      await ctx.db.patch(userId, {
+        lastActive: Date.now(),
+        // Update image if not set? Optional.
+      });
+    } else {
+      // Create new user
+      userId = await ctx.db.insert("users", {
+        email: args.email,
+        name: args.name || "User",
+        image: args.picture,
+        role: "user",
+        isRegistered: true,
+        registrationCompleted: true,
+        welcomeEmailSent: false,
+        lastActive: Date.now(),
+      });
+    }
+
+    // 2. Create Session in authSessions table
+    // This allows the user to be authenticated via the CONVEX_AUTH_TOKEN cookie
+    const expirationTime = Date.now() + 30 * 24 * 60 * 60 * 1000; // 30 days
+    
+    const sessionId = await ctx.db.insert("authSessions", {
+      userId,
+      expirationTime,
+    });
+
+    return sessionId;
   },
 });
