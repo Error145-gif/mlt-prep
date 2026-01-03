@@ -14,6 +14,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 // Lazy load all pages for code splitting
 const Landing = lazy(() => import("./pages/Landing.tsx"));
 const AuthPage = lazy(() => import("@/pages/Auth.tsx"));
+const MobileAuthCallback = lazy(() => import("./pages/MobileAuthCallback.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard.tsx"));
 const ContentManagement = lazy(() => import("./pages/ContentManagement.tsx"));
@@ -108,6 +109,7 @@ createRoot(document.getElementById("root")!).render(
               <Routes>
                 <Route path="/" element={<Landing />} />
                 <Route path="/auth" element={<AuthPage />} />
+                <Route path="/mobile-auth-callback" element={<MobileAuthCallback />} />
                 <Route
                   path="/student"
                   element={
