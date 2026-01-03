@@ -107,7 +107,7 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
       console.log("[AUTH] FORCING redirect to mobile-auth-callback for ALL users");
       console.log("[AUTH] Original redirectTo (ignored):", redirectTo);
       
-      const callbackUrl = `${process.env.CONVEX_SITE_URL}/mobile-auth-callback`;
+      const callbackUrl = `${process.env.SITE_URL || process.env.CONVEX_SITE_URL}/mobile-auth-callback`;
       console.log("[AUTH] Final redirect URL:", callbackUrl);
       return callbackUrl;
     },
