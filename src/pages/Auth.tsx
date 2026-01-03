@@ -49,14 +49,22 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       userAgent.includes('webview');
     
     if (isMobileParam || isAndroidWebView) {
-      console.log("[AUTH] Mobile flow detected - URL param:", isMobileParam, "WebView:", isAndroidWebView);
+      console.log("[AUTH] ✅ Mobile flow detected - URL param:", isMobileParam, "WebView:", isAndroidWebView);
       sessionStorage.setItem("is_mobile", "true");
       // Use localStorage as backup since sessionStorage can be cleared during OAuth redirects
       localStorage.setItem("is_mobile", "true");
+      
+      // CRITICAL: If URL doesn't have the flag but we detected WebView, add it to URL
+      if (!isMobileParam && isAndroidWebView) {
+        console.log("[AUTH] 🔧 WebView detected but URL missing flag - adding it now");
+        const newUrl = new URL(window.location.href);
+        newUrl.searchParams.set("is_mobile", "true");
+        window.history.replaceState({}, '', newUrl.toString());
+      }
     }
     
     // Log current state for debugging
-    console.log("[AUTH] Mobile detection - URL param:", isMobileParam, "WebView:", isAndroidWebView, "Storage:", sessionStorage.getItem("is_mobile"), "LocalStorage:", localStorage.getItem("is_mobile"));
+    console.log("[AUTH] 📱 Mobile detection - URL param:", isMobileParam, "WebView:", isAndroidWebView, "Storage:", sessionStorage.getItem("is_mobile"), "LocalStorage:", localStorage.getItem("is_mobile"));
   }, [location.search]);
 
   // Helper function to check if we're in mobile flow
@@ -117,7 +125,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       // Check for mobile param - URL takes priority over storage
       const isMobileParam = isMobileFlow();
 
-      console.log("[AUTH] User already authenticated, redirecting. Mobile flow:", isMobileParam);
+      console.log("[AUTH] 🔐 User already authenticated, redirecting. Mobile flow:", isMobileParam);
       
       // Auto-complete registration for ALL users (handles welcome email logic internally)
       autoCompleteRegistration().catch(console.error);
@@ -128,9 +136,10 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       
       if (isMobileParam) {
         redirect = "/mobile-auth-callback?is_mobile=true";
+        console.log("[AUTH] 📱 Mobile user detected - redirecting to callback");
       }
 
-      console.log("[AUTH] Redirecting to:", redirect);
+      console.log("[AUTH] ➡️ Redirecting to:", redirect);
       navigate(redirect, { replace: true });
     }
   }, [authLoading, isAuthenticated, user?.role, user?._id, navigate, redirectAfterAuth, autoCompleteRegistration, location.search]);
