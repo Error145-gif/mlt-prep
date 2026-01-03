@@ -1,10 +1,3 @@
-useEffect(() => {
-  if (!authLoading && isAuthenticated && user) {
-    // Auto-complete registration for ALL users
-    autoCompleteRegistration().catch(console.error);
-    
-    // Immediate redirect without waiting
-    const redirect = user?.role === "admin" ? "/admin" : (redirectAfterAuth || "/student");
-    navigate(redirect, { replace: true });
-  }
-}, [authLoading, isAuthenticated, user?.role, user?._id]);
+// Get Convex URL from environment variable with fallback
+const convexUrl = "https://successful-bandicoot-650.convex.cloud";
+const convex = new ConvexReactClient(convexUrl);
