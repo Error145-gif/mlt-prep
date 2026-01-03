@@ -1,7 +1,7 @@
 export default {
   providers: [
     {
-      domain: process.env.SITE_URL || "https://mltprep.online",
+      domain: process.env.CONVEX_SITE_URL || "https://successful-bandicoot-650.convex.site",
       applicationID: "convex",
     },
   ],
