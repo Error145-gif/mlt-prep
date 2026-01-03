@@ -1,24 +1,33 @@
-// In your MainActivity.kt or wherever you initialize the WebView
+// In your MainActivity.kt or wherever you configure the WebView
 
 webView.settings.apply {
     javaScriptEnabled = true
-    domStorageEnabled = true  // Critical for OAuth
+    domStorageEnabled = true
     databaseEnabled = true
     
-    // Enable cookies (CRITICAL for authentication)
+    // CRITICAL FIX: Set a standard browser User-Agent to avoid Google's restrictions
+    userAgentString = "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
+    
+    // Enable third-party cookies (required for OAuth)
     mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+    
+    // Additional settings for better compatibility
+    setSupportMultipleWindows(true)
+    javaScriptCanOpenWindowsAutomatically = true
+    loadWithOverviewMode = true
+    useWideViewPort = true
 }
 
-// Configure CookieManager for authentication
+// Enable cookies
 CookieManager.getInstance().apply {
     setAcceptCookie(true)
-    setAcceptThirdPartyCookies(webView, true)  // Essential for Google OAuth
+    setAcceptThirdPartyCookies(webView, true)
 }
 
-// Set a proper WebViewClient to handle redirects
+// Configure WebViewClient to handle redirects
 webView.webViewClient = object : WebViewClient() {
     override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
-        // Let the WebView handle all URLs internally
+        // Let WebView handle all URLs (don't open external browser)
         return false
     }
     
@@ -29,5 +38,16 @@ webView.webViewClient = object : WebViewClient() {
     }
 }
 
-// Load your website
-webView.loadUrl("https://mltprep.online")
+// Configure WebChromeClient for better OAuth support
+webView.webChromeClient = WebChromeClient()
+
+// Add dependency in build.gradle
+implementation 'androidx.browser:browser:1.7.0'
+
+// Use Chrome Custom Tabs for OAuth
+fun openGoogleLogin() {
+    val url = "https://mltprep.online/auth"
+    val builder = CustomTabsIntent.Builder()
+    val customTabsIntent = builder.build()
+    customTabsIntent.launchUrl(this, Uri.parse(url))
+}
