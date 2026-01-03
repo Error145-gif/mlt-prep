@@ -104,8 +104,13 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       const urlParams = new URLSearchParams(window.location.search);
       const isMobileParam = urlParams.get('is_mobile') === 'true' || urlParams.get('mobile') === 'true' || urlParams.get('is_mobile') === '1' || urlParams.get('mobile') === '1' || sessionStorage.getItem("is_mobile_flow") === "true";
       
-      // Only redirect to mobile-auth-callback if explicitly mobile param is present
-      const redirectPath = isMobileParam ? "/mobile-auth-callback" : (redirectAfterAuth || "/student");
+      console.log("[AUTH] Mobile param detected:", isMobileParam);
+
+      // Logic Update:
+      // IF is_mobile is detected: await auth.signIn("google", { redirectTo: "/mobile-auth-callback" })
+      // IF is_mobile is NOT detected: await auth.signIn("google", { redirectTo: "/" })
+      
+      const redirectPath = isMobileParam ? "/mobile-auth-callback" : "/";
       console.log("[AUTH] Redirect path:", redirectPath);
       
       await signIn("google", { redirectTo: redirectPath });

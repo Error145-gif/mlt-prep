@@ -140,7 +140,7 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
       // We DO NOT prepend the site URL here to avoid mixing backend/frontend domains.
       
       const normalizedPath =
-        !redirectTo || redirectTo === "/"
+        !redirectTo
           ? "/error?message=LoginFailed"
           : redirectTo;
 
