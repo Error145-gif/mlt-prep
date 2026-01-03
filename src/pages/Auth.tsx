@@ -33,26 +33,17 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
   const autoCompleteRegistration = useMutation(api.authHelpers.autoCompleteRegistration);
 
   // Optimized redirect logic - only run once when auth state changes
-  // IMPORTANT: Let the backend handle OAuth redirects. Only redirect if user visits /auth while already logged in.
   useEffect(() => {
     if (!authLoading && isAuthenticated && user) {
       const currentPath = window.location.pathname;
-      const searchParams = new URLSearchParams(window.location.search);
-      const hasOAuthCode = searchParams.has("code"); // OAuth callback has a 'code' parameter
-      const hasState = searchParams.has("state"); // OAuth also has state parameter
-      const isMobileAppLogin = searchParams.has("mobile_app"); // Mobile app login indicator
       
-      // If we're on the callback page or have OAuth parameters, don't redirect - let backend handle it
-      if (currentPath === "/mobile-auth-callback" || hasOAuthCode || hasState) {
-        console.log("[AUTH] OAuth flow detected, letting backend handle redirect");
+      // Don't redirect if we're on the callback page - let it handle the flow
+      if (currentPath === "/mobile-auth-callback") {
+        console.log("[AUTH] On callback page, skipping redirect");
         return;
       }
       
-      // NUCLEAR OPTION REMOVED: No more mobile_app parameter checking
-      // Backend now forces ALL Google logins to /mobile-auth-callback
-      // So we don't need this conditional logic anymore
-      
-      // Only redirect if user is already logged in and visiting /auth directly (no OAuth in progress)
+      // Only redirect if user is already logged in and visiting /auth directly
       console.log("[AUTH] User already authenticated, redirecting to dashboard");
       
       // Auto-complete registration for ALL users (handles welcome email logic internally)
@@ -62,7 +53,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       const redirect = user?.role === "admin" ? "/admin" : (redirectAfterAuth || "/student");
       navigate(redirect, { replace: true });
     }
-  }, [authLoading, isAuthenticated, user?.role, user?._id, navigate, redirectAfterAuth, autoCompleteRegistration]); // Complete dependencies
+  }, [authLoading, isAuthenticated, user?.role, user?._id, navigate, redirectAfterAuth, autoCompleteRegistration]);
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);

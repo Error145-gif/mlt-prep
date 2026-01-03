@@ -43,17 +43,23 @@ export default function MobileAuthCallback() {
         if (window.Android && window.Android.onAuthSuccess) {
           console.log("Calling window.Android.onAuthSuccess");
           window.Android.onAuthSuccess(token);
+          // Don't redirect if Android interface is present - let the app handle it
+          return;
         }
 
-        // 2. THE BOUNCER LOGIC
+        // 2. THE BOUNCER LOGIC - Only for non-WebView users
         const deepLink = `mltprep://auth-success?token=${encodeURIComponent(token)}`;
         setDeepLinkUrl(deepLink);
         console.log("Attempting deep link:", deepLink);
         
-        // Attempt automatic redirect (might be blocked by Chrome without user gesture)
-        window.location.href = deepLink;
+        // Try deep link (will fail silently if app not installed)
+        try {
+          window.location.href = deepLink;
+        } catch (e) {
+          console.log("Deep link failed, will redirect to web dashboard");
+        }
 
-        // 3. NUCLEAR OPTION: Auto-redirect ALL users after 4 seconds
+        // 3. Auto-redirect to web dashboard after 4 seconds
         const fallbackTimer = setTimeout(() => {
           console.log("Auto-redirecting to dashboard (4 second timeout)...");
           navigate("/student", { replace: true });
