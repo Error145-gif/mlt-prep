@@ -8,6 +8,20 @@ import { Email } from "@convex-dev/auth/providers/Email";
 import { alphabet, generateRandomString } from "oslo/crypto";
 import { internal } from "./_generated/api";
 
+// Check for required environment variables
+if (!process.env.AUTH_GOOGLE_ID) {
+  console.error("CRITICAL: process.env.AUTH_GOOGLE_ID is missing!");
+}
+if (!process.env.AUTH_GOOGLE_SECRET) {
+  console.error("CRITICAL: process.env.AUTH_GOOGLE_SECRET is missing!");
+}
+if (!process.env.CONVEX_SITE_URL) {
+  console.error("CRITICAL: process.env.CONVEX_SITE_URL is missing!");
+} else {
+  console.log("CONVEX_SITE_URL is set to:", process.env.CONVEX_SITE_URL);
+  console.log("Expected Google Callback URL:", `${process.env.CONVEX_SITE_URL}/api/auth/callback/google`);
+}
+
 const emailOtp = Email({
   id: "email-otp",
   maxAge: 60 * 10, // 10 minutes
@@ -118,7 +132,7 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
       
       const normalizedPath =
         !redirectTo || redirectTo === "/"
-          ? "/auth?authError=google_failed"
+          ? "/error?message=LoginFailed" // Changed default to Error page to debug login loops
           : redirectTo;
 
       console.log("[AUTH] Final redirect path:", normalizedPath);
