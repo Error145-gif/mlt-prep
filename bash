@@ -1,1 +1,1 @@
-adb shell am start -W -a android.intent.action.VIEW -d "mltprep://auth-success?token=test123" com.yourpackage.name
+npx convex env set SITE_URL https://mltprep.online
