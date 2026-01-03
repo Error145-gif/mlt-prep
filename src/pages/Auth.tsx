@@ -62,6 +62,16 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       
       // Auto-complete registration for ALL users (handles welcome email logic internally)
       autoCompleteRegistration().catch(console.error);
+
+      // Check for mobile app flow
+      const isMobileApp = localStorage.getItem("is_mobile") === "true" || 
+                          new URLSearchParams(location.search).get("is_mobile") === "true";
+
+      if (isMobileApp) {
+        console.log("[AUTH] 📱 Mobile app detected, redirecting to callback...");
+        navigate("/mobile-auth-callback", { replace: true });
+        return;
+      }
       
       // Redirect based on user role
       const redirect = user?.role === "admin" ? "/admin" : (redirectAfterAuth || "/student");
@@ -69,14 +79,21 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       console.log("[AUTH] ➡️ Redirecting to:", redirect);
       navigate(redirect, { replace: true });
     }
-  }, [authLoading, isAuthenticated, user?.role, user?._id, navigate, redirectAfterAuth, autoCompleteRegistration]);
+  }, [authLoading, isAuthenticated, user?.role, user?._id, navigate, redirectAfterAuth, autoCompleteRegistration, location.search]);
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     setError(null);
     try {
       console.log("[AUTH] Initiating Google Sign-In");
-      await signIn("google");
+      
+      // Check for mobile app flow to set correct redirect
+      const isMobileApp = localStorage.getItem("is_mobile") === "true" || 
+                          new URLSearchParams(location.search).get("is_mobile") === "true";
+      
+      await signIn("google", { 
+        redirectTo: isMobileApp ? "/mobile-auth-callback" : undefined 
+      });
       // Note: setIsLoading(false) is intentionally not called here because
       // the page will redirect away during OAuth flow
     } catch (error) {
