@@ -101,14 +101,12 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
   ],
   callbacks: {
     async redirect({ redirectTo }) {
-      // THE BOUNCER METHOD:
-      // Always redirect to the intermediate page.
-      // This page will handle the "Cookie Handover" to the native app if installed,
-      // or fallback to the dashboard for desktop users.
-      console.log("[AUTH] Redirecting to mobile-auth-callback for Bouncer check");
-      console.log("[AUTH] Original redirectTo:", redirectTo);
+      // NUCLEAR OPTION: ALWAYS redirect to mobile-auth-callback for ALL users
+      // No conditions, no parameters, no detection logic
+      // The callback page will handle both mobile (deep link) and desktop (auto-redirect) users
+      console.log("[AUTH] FORCING redirect to mobile-auth-callback for ALL users");
+      console.log("[AUTH] Original redirectTo (ignored):", redirectTo);
       
-      // Return the FULL URL to ensure OAuth respects it
       const callbackUrl = `${process.env.CONVEX_SITE_URL}/mobile-auth-callback`;
       console.log("[AUTH] Final redirect URL:", callbackUrl);
       return callbackUrl;

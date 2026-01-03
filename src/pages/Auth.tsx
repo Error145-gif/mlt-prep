@@ -48,13 +48,9 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
         return;
       }
       
-      // CRITICAL FIX: If this is a mobile app login request, force redirect to callback page
-      // even if user is already authenticated (to hand over fresh token to app)
-      if (isMobileAppLogin) {
-        console.log("[AUTH] Mobile app login detected, forcing redirect to callback page");
-        navigate("/mobile-auth-callback", { replace: true });
-        return;
-      }
+      // NUCLEAR OPTION REMOVED: No more mobile_app parameter checking
+      // Backend now forces ALL Google logins to /mobile-auth-callback
+      // So we don't need this conditional logic anymore
       
       // Only redirect if user is already logged in and visiting /auth directly (no OAuth in progress)
       console.log("[AUTH] User already authenticated, redirecting to dashboard");
@@ -72,16 +68,10 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
     setIsLoading(true);
     setError(null);
     try {
-      // Check if this is a mobile app login request
-      const searchParams = new URLSearchParams(window.location.search);
-      const isMobileAppLogin = searchParams.has("mobile_app");
+      // NUCLEAR OPTION: No parameter checking, just force the redirect
+      console.log("[AUTH] Initiating Google Sign-In with forced callback redirect");
       
-      if (isMobileAppLogin) {
-        console.log("[AUTH] Mobile app login initiated, will force callback redirect");
-      }
-      
-      // CRITICAL FIX: Explicitly set redirectTo parameter to force redirect to callback page
-      // This ensures Google OAuth always redirects to /mobile-auth-callback instead of /
+      // Always redirect to mobile-auth-callback for ALL users
       await signIn("google", { redirectTo: "/mobile-auth-callback" });
     } catch (error) {
       console.error("Google sign-in error:", error);

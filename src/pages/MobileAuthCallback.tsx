@@ -56,12 +56,11 @@ export default function MobileAuthCallback() {
         // Attempt automatic redirect (might be blocked by Chrome without user gesture)
         window.location.href = deepLink;
 
-        // 3. Fallback to Web Dashboard
-        // If the browser is still open after 4 seconds, it means the deep link didn't take over.
-        // (User is likely on Desktop or Mobile Browser, not the App)
+        // 3. NUCLEAR OPTION: Auto-redirect ALL users after 4 seconds
+        // Mobile users will click the button before this fires
+        // Desktop users will automatically go to dashboard
         const fallbackTimer = setTimeout(() => {
-          console.log("Deep link didn't open app. Redirecting to Web Dashboard...");
-          // Only redirect if we haven't manually cancelled or if the user hasn't interacted
+          console.log("Auto-redirecting to dashboard (4 second timeout)...");
           navigate("/student", { replace: true });
         }, 4000);
 
