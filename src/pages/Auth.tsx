@@ -33,20 +33,23 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
   const autoCompleteRegistration = useMutation(api.authHelpers.autoCompleteRegistration);
 
   // Optimized redirect logic - only run once when auth state changes
-  // IMPORTANT: Do NOT redirect if we're on the callback page - let MobileAuthCallback handle it
+  // IMPORTANT: Let the backend handle OAuth redirects. Only redirect if user visits /auth while already logged in.
   useEffect(() => {
     if (!authLoading && isAuthenticated && user) {
-      // Check if we're coming from OAuth callback (which should go to /mobile-auth-callback)
       const currentPath = window.location.pathname;
+      const searchParams = new URLSearchParams(window.location.search);
+      const hasOAuthCode = searchParams.has("code"); // OAuth callback has a 'code' parameter
       
-      // If we're already on the callback page, don't redirect
-      if (currentPath === "/mobile-auth-callback") {
-        console.log("[AUTH] On callback page, skipping redirect");
+      // If we're on the callback page or have an OAuth code, don't redirect - let backend handle it
+      if (currentPath === "/mobile-auth-callback" || hasOAuthCode) {
+        console.log("[AUTH] OAuth flow detected, letting backend handle redirect");
         return;
       }
       
+      // Only redirect if user is already logged in and visiting /auth directly
+      console.log("[AUTH] User already authenticated, redirecting to dashboard");
+      
       // Auto-complete registration for ALL users (handles welcome email logic internally)
-      // This ensures welcome email is sent for Google signups too
       autoCompleteRegistration().catch(console.error);
       
       // Immediate redirect without waiting
