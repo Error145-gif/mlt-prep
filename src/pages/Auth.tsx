@@ -39,9 +39,10 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       const currentPath = window.location.pathname;
       const searchParams = new URLSearchParams(window.location.search);
       const hasOAuthCode = searchParams.has("code"); // OAuth callback has a 'code' parameter
+      const hasState = searchParams.has("state"); // OAuth also has state parameter
       
-      // If we're on the callback page or have an OAuth code, don't redirect - let backend handle it
-      if (currentPath === "/mobile-auth-callback" || hasOAuthCode) {
+      // If we're on the callback page or have OAuth parameters, don't redirect - let backend handle it
+      if (currentPath === "/mobile-auth-callback" || hasOAuthCode || hasState) {
         console.log("[AUTH] OAuth flow detected, letting backend handle redirect");
         return;
       }
