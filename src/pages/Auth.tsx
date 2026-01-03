@@ -34,62 +34,6 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
   const [rememberMe, setRememberMe] = useState(false);
   const autoCompleteRegistration = useMutation(api.authHelpers.autoCompleteRegistration);
 
-  // Persist mobile flow state - ALWAYS check URL first, then storage as fallback
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const isMobileParam = params.get("is_mobile") === "true" || params.get("mobile") === "true" || params.get("is_mobile") === "1" || params.get("mobile") === "1";
-    
-    // DETECT ANDROID WEBVIEW - Check if running inside Android app
-    // Check multiple indicators: wv in user agent, Android interface, or mobile-specific user agent patterns
-    const userAgent = navigator.userAgent.toLowerCase();
-    const isAndroidWebView = 
-      /wv/.test(userAgent) || 
-      (typeof window.Android !== 'undefined') ||
-      (userAgent.includes('android') && !userAgent.includes('chrome')) ||
-      userAgent.includes('webview');
-    
-    if (isMobileParam || isAndroidWebView) {
-      console.log("[AUTH] ✅ Mobile flow detected - URL param:", isMobileParam, "WebView:", isAndroidWebView);
-      sessionStorage.setItem("is_mobile", "true");
-      // Use localStorage as backup since sessionStorage can be cleared during OAuth redirects
-      localStorage.setItem("is_mobile", "true");
-      
-      // CRITICAL: If URL doesn't have the flag but we detected WebView, add it to URL
-      if (!isMobileParam && isAndroidWebView) {
-        console.log("[AUTH] 🔧 WebView detected but URL missing flag - adding it now");
-        const newUrl = new URL(window.location.href);
-        newUrl.searchParams.set("is_mobile", "true");
-        window.history.replaceState({}, '', newUrl.toString());
-      }
-    }
-    
-    // Log current state for debugging
-    console.log("[AUTH] 📱 Mobile detection - URL param:", isMobileParam, "WebView:", isAndroidWebView, "Storage:", sessionStorage.getItem("is_mobile"), "LocalStorage:", localStorage.getItem("is_mobile"));
-  }, [location.search]);
-
-  // Helper function to check if we're in mobile flow
-  const isMobileFlow = () => {
-    const params = new URLSearchParams(window.location.search);
-    const urlHasMobile = params.get("is_mobile") === "true" || params.get("mobile") === "true" || params.get("is_mobile") === "1" || params.get("mobile") === "1";
-    const storageHasMobile = sessionStorage.getItem("is_mobile") === "true";
-    const localStorageHasMobile = localStorage.getItem("is_mobile") === "true";
-    
-    // DETECT ANDROID WEBVIEW
-    const userAgent = navigator.userAgent.toLowerCase();
-    const isAndroidWebView = 
-      /wv/.test(userAgent) || 
-      (typeof window.Android !== 'undefined') ||
-      (userAgent.includes('android') && !userAgent.includes('chrome')) ||
-      userAgent.includes('webview');
-    
-    // Priority: URL params > WebView detection > sessionStorage > localStorage
-    const isMobile = urlHasMobile || isAndroidWebView || storageHasMobile || localStorageHasMobile;
-    
-    console.log("[AUTH] isMobileFlow check - URL:", urlHasMobile, "WebView:", isAndroidWebView, "Session:", storageHasMobile, "Local:", localStorageHasMobile, "Result:", isMobile);
-    
-    return isMobile;
-  };
-
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const authErrorParam = params.get("authError");
@@ -111,55 +55,28 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
   // Optimized redirect logic - only run once when auth state changes
   useEffect(() => {
     if (!authLoading && isAuthenticated && user) {
-      const currentPath = window.location.pathname;
-      
-      // Don't redirect if we're on the callback page - let it handle the flow
-      if (currentPath === "/mobile-auth-callback") {
-        console.log("[AUTH] On callback page, skipping redirect");
-        return;
-      }
-      
-      // Reset loading state when authenticated (fixes stuck "Signing In..." issue)
+      // Reset loading state when authenticated
       setIsLoading(false);
       
-      // Check for mobile param - URL takes priority over storage
-      const isMobileParam = isMobileFlow();
-
-      console.log("[AUTH] 🔐 User already authenticated, redirecting. Mobile flow:", isMobileParam);
+      console.log("[AUTH] 🔐 User authenticated, redirecting...");
       
       // Auto-complete registration for ALL users (handles welcome email logic internally)
       autoCompleteRegistration().catch(console.error);
       
-      // Immediate redirect without waiting
-      // If mobile param is present, force redirect to mobile callback WITH the flag
-      let redirect = user?.role === "admin" ? "/admin" : (redirectAfterAuth || "/student");
-      
-      if (isMobileParam) {
-        redirect = "/mobile-auth-callback?is_mobile=true";
-        console.log("[AUTH] 📱 Mobile user detected - redirecting to callback");
-      }
+      // Redirect based on user role
+      const redirect = user?.role === "admin" ? "/admin" : (redirectAfterAuth || "/student");
 
       console.log("[AUTH] ➡️ Redirecting to:", redirect);
       navigate(redirect, { replace: true });
     }
-  }, [authLoading, isAuthenticated, user?.role, user?._id, navigate, redirectAfterAuth, autoCompleteRegistration, location.search]);
+  }, [authLoading, isAuthenticated, user?.role, user?._id, navigate, redirectAfterAuth, autoCompleteRegistration]);
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     setError(null);
     try {
       console.log("[AUTH] Initiating Google Sign-In");
-      
-      // Use helper function for consistent mobile detection
-      const isMobileParam = isMobileFlow();
-      
-      console.log("[AUTH] Google Sign-In - Mobile flow detected:", isMobileParam);
-
-      // ALWAYS append is_mobile=true to redirect if in mobile flow
-      const redirectPath = isMobileParam ? "/mobile-auth-callback?is_mobile=true" : "/";
-      console.log("[AUTH] Google redirect path:", redirectPath);
-      
-      await signIn("google", { redirectTo: redirectPath });
+      await signIn("google");
       // Note: setIsLoading(false) is intentionally not called here because
       // the page will redirect away during OAuth flow
     } catch (error) {
@@ -182,16 +99,6 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
         formData.set("flow", "signUp");
       } else {
         formData.set("flow", "signIn");
-      }
-
-      // Use helper function for consistent mobile detection
-      const isMobileParam = isMobileFlow();
-      
-      console.log("[AUTH] Password Sign-In - Mobile flow detected:", isMobileParam);
-      
-      if (isMobileParam) {
-        formData.set("redirectTo", "/mobile-auth-callback?is_mobile=true");
-        console.log("[AUTH] Password redirect set to mobile callback with flag");
       }
       
       await signIn("password", formData);
