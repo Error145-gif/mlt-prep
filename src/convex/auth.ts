@@ -77,7 +77,10 @@ const emailOtp = Email({
 
 export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
   providers: [
-    Google, 
+    Google({
+      clientId: process.env.AUTH_GOOGLE_ID,
+      clientSecret: process.env.AUTH_GOOGLE_SECRET,
+    }), 
     Password({ 
       reset: emailOtp,
       profile(params) {
