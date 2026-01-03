@@ -1,4 +1,5 @@
 // @ts-nocheck
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -39,7 +40,13 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
     const isMobileParam = params.get("is_mobile") === "true" || params.get("mobile") === "true" || params.get("is_mobile") === "1" || params.get("mobile") === "1";
     
     // DETECT ANDROID WEBVIEW - Check if running inside Android app
-    const isAndroidWebView = /wv/.test(navigator.userAgent) || (typeof window.Android !== 'undefined');
+    // Check multiple indicators: wv in user agent, Android interface, or mobile-specific user agent patterns
+    const userAgent = navigator.userAgent.toLowerCase();
+    const isAndroidWebView = 
+      /wv/.test(userAgent) || 
+      (typeof window.Android !== 'undefined') ||
+      (userAgent.includes('android') && !userAgent.includes('chrome')) ||
+      userAgent.includes('webview');
     
     if (isMobileParam || isAndroidWebView) {
       console.log("[AUTH] Mobile flow detected - URL param:", isMobileParam, "WebView:", isAndroidWebView);
@@ -60,7 +67,12 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
     const localStorageHasMobile = localStorage.getItem("is_mobile") === "true";
     
     // DETECT ANDROID WEBVIEW
-    const isAndroidWebView = /wv/.test(navigator.userAgent) || (typeof window.Android !== 'undefined');
+    const userAgent = navigator.userAgent.toLowerCase();
+    const isAndroidWebView = 
+      /wv/.test(userAgent) || 
+      (typeof window.Android !== 'undefined') ||
+      (userAgent.includes('android') && !userAgent.includes('chrome')) ||
+      userAgent.includes('webview');
     
     // Priority: URL params > WebView detection > sessionStorage > localStorage
     const isMobile = urlHasMobile || isAndroidWebView || storageHasMobile || localStorageHasMobile;

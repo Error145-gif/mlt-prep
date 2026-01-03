@@ -16,7 +16,7 @@ import {
 declare global {
   interface Window {
     Android?: {
-      onAuthSuccess: (token: string) => void;
+      onAuthSuccess?: (token: string) => void;
     };
   }
 }
