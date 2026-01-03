@@ -62,17 +62,26 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
         return;
       }
       
-      // Only redirect if user is already logged in and visiting /auth directly
-      console.log("[AUTH] User already authenticated, redirecting to dashboard");
+      // Check for mobile param in URL to handle existing sessions for app users
+      const params = new URLSearchParams(location.search);
+      const isMobileParam = params.get("is_mobile") === "true" || params.get("mobile") === "true";
+
+      console.log("[AUTH] User already authenticated, redirecting. Mobile param:", isMobileParam);
       
       // Auto-complete registration for ALL users (handles welcome email logic internally)
       autoCompleteRegistration().catch(console.error);
       
       // Immediate redirect without waiting
-      const redirect = user?.role === "admin" ? "/admin" : (redirectAfterAuth || "/student");
+      // If mobile param is present, force redirect to mobile callback
+      let redirect = user?.role === "admin" ? "/admin" : (redirectAfterAuth || "/student");
+      
+      if (isMobileParam) {
+        redirect = "/mobile-auth-callback";
+      }
+
       navigate(redirect, { replace: true });
     }
-  }, [authLoading, isAuthenticated, user?.role, user?._id, navigate, redirectAfterAuth, autoCompleteRegistration]);
+  }, [authLoading, isAuthenticated, user?.role, user?._id, navigate, redirectAfterAuth, autoCompleteRegistration, location.search]);
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
@@ -80,13 +89,13 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
     try {
       console.log("[AUTH] Initiating Google Sign-In");
       
-      // Check if we're in a mobile app context (via URL parameter or user agent)
+      // Check if we're in a mobile app context (via URL parameter)
+      // We prioritize the param to distinguish between mobile web (Chrome) and Mobile App
       const urlParams = new URLSearchParams(window.location.search);
-      const isMobileApp = urlParams.get('mobile') === 'true' || 
-                          /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      const isMobileParam = urlParams.get('is_mobile') === 'true' || urlParams.get('mobile') === 'true';
       
-      // Only redirect to mobile-auth-callback if explicitly mobile
-      const redirectPath = isMobileApp ? "/mobile-auth-callback" : (redirectAfterAuth || "/student");
+      // Only redirect to mobile-auth-callback if explicitly mobile param is present
+      const redirectPath = isMobileParam ? "/mobile-auth-callback" : (redirectAfterAuth || "/student");
       console.log("[AUTH] Redirect path:", redirectPath);
       
       await signIn("google", { redirectTo: redirectPath });
