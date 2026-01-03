@@ -1,11 +1,14 @@
-// In your MainActivity or AuthActivity
 override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     
     intent?.data?.let { uri ->
         if (uri.scheme == "mltprep" && uri.host == "auth-success") {
             val token = uri.getQueryParameter("token")
-            // Store token and proceed with authentication
+            if (token != null) {
+                // Store token and proceed with authentication
+                saveSessionToken(token)
+                navigateToMainScreen()
+            }
         }
     }
 }
