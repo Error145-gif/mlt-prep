@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router";
+import { useNavigate } from "react-router";
 import { useConvexAuth } from "convex/react";
 import { useAuthToken } from "@convex-dev/auth/react";
 import { Loader2, Smartphone, LayoutDashboard } from "lucide-react";
@@ -20,16 +20,15 @@ declare global {
  * This page acts as a traffic controller:
  * 1. It receives the user after Google Login.
  * 2. It retrieves the session token.
- * 3. It IMMEDIATELY attempts to open the Android App via deep link.
- * 4. If the app doesn't open within a few seconds (meaning the user is on Desktop/Web),
- *    it falls back to the Web Dashboard.
+ * 3. It IMMEDIATELY shows the "CLICK TO OPEN APP" button.
+ * 4. When clicked, it attempts to open the Android App via deep link.
+ * 5. If the app doesn't open, user can manually navigate to web dashboard.
  */
 export default function MobileAuthCallback() {
-  const { isAuthenticated, isLoading } = useConvexAuth();
+  const { isAuthenticated } = useConvexAuth();
   const token = useAuthToken();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const [status, setStatus] = useState("Initializing...");
+  const [status, setStatus] = useState("Ready to open app...");
   const [deepLinkUrl, setDeepLinkUrl] = useState<string>("mltprep://auth-success");
 
   useEffect(() => {
@@ -50,14 +49,7 @@ export default function MobileAuthCallback() {
         // 2. THE BOUNCER LOGIC - Only for non-WebView users
         const deepLink = `mltprep://auth-success?token=${encodeURIComponent(token)}`;
         setDeepLinkUrl(deepLink);
-        console.log("Attempting deep link:", deepLink);
-        
-        // Try deep link (will fail silently if app not installed)
-        try {
-          window.location.href = deepLink;
-        } catch (e) {
-          console.log("Deep link failed, will redirect to web dashboard");
-        }
+        console.log("Deep link ready:", deepLink);
 
         // 3. Auto-redirect to web dashboard after 4 seconds
         const fallbackTimer = setTimeout(() => {
@@ -67,30 +59,13 @@ export default function MobileAuthCallback() {
 
         return () => clearTimeout(fallbackTimer);
       } else if (isAuthenticated && !token) {
-        setStatus("Waiting for token...");
+        setStatus("Finalizing authentication...");
         console.log("[MOBILE_AUTH_CALLBACK] User authenticated but token not yet available");
-      } else if (!isAuthenticated && !isLoading) {
-        console.log("[MOBILE_AUTH_CALLBACK] User not authenticated, checking for redirect");
       }
     };
 
     handleAuthSuccess();
-  }, [isAuthenticated, token, navigate, isLoading]);
-
-  useEffect(() => {
-    const code = searchParams.get("code");
-    
-    if (!isLoading && !isAuthenticated) {
-      if (!code) {
-        setStatus("Checking session...");
-        setTimeout(() => {
-             if (!isAuthenticated) navigate("/auth");
-        }, 2000);
-      } else {
-        setStatus("Verifying credentials...");
-      }
-    }
-  }, [isAuthenticated, isLoading, navigate, searchParams]);
+  }, [isAuthenticated, token, navigate]);
 
   // Update deep link when token becomes available
   useEffect(() => {
@@ -120,7 +95,7 @@ export default function MobileAuthCallback() {
           </h2>
           <p className="text-white/80 text-lg font-light mb-6">{status}</p>
           
-          {/* ALWAYS SHOW THE BUTTON - Don't wait for authentication */}
+          {/* ALWAYS SHOW THE BUTTON - CRITICAL FIX */}
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <p className="text-white/90 text-lg font-medium">
               Tap the button below to open the app
