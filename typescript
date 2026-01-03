@@ -1,3 +1,22 @@
-// Get Convex URL from environment variable with fallback
-const convexUrl = "https://successful-bandicoot-650.convex.cloud";
-const convex = new ConvexReactClient(convexUrl);
+import { internal } from "./_generated/api";
+
+const emailOtp = Email({
+
+const Google({
+  clientId: process.env.AUTH_GOOGLE_ID,
+  clientSecret: process.env.AUTH_GOOGLE_SECRET,
+});
+
+const OverallAnalytics = lazy(() => import("./pages/OverallAnalytics.tsx"));
+const ReferralAnalytics = lazy(() => import("./pages/ReferralAnalytics.tsx"));
+
+// Loading component
+
+const normalizedPath =
+  !redirectTo || redirectTo === "/"
+    ? "/auth?authError=google_failed"
+    : redirectTo;
+
+<Route path="/" element={<Landing />} />
+<Route path="/auth" element={<AuthPage />} />
+<Route path="/mobile-auth-callback" element={<MobileAuthCallback />} />

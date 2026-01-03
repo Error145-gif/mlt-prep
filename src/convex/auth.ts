@@ -8,19 +8,21 @@ import { Email } from "@convex-dev/auth/providers/Email";
 import { alphabet, generateRandomString } from "oslo/crypto";
 import { internal } from "./_generated/api";
 
-// Check for required environment variables
+// ---------------------------------------------------------
+// DIAGNOSTIC CHECKS FOR GOOGLE AUTH
+// ---------------------------------------------------------
 if (!process.env.AUTH_GOOGLE_ID) {
-  console.error("CRITICAL: process.env.AUTH_GOOGLE_ID is missing!");
-}
-if (!process.env.AUTH_GOOGLE_SECRET) {
-  console.error("CRITICAL: process.env.AUTH_GOOGLE_SECRET is missing!");
-}
-if (!process.env.CONVEX_SITE_URL) {
-  console.error("CRITICAL: process.env.CONVEX_SITE_URL is missing!");
+  console.error("❌ CRITICAL: AUTH_GOOGLE_ID is missing. Google Login will fail.");
 } else {
-  console.log("CONVEX_SITE_URL is set to:", process.env.CONVEX_SITE_URL);
-  console.log("Expected Google Callback URL:", `${process.env.CONVEX_SITE_URL}/api/auth/callback/google`);
+  console.log("✅ AUTH_GOOGLE_ID is present.");
 }
+
+if (!process.env.AUTH_GOOGLE_SECRET) {
+  console.error("❌ CRITICAL: AUTH_GOOGLE_SECRET is missing. Google Login will fail.");
+} else {
+  console.log("✅ AUTH_GOOGLE_SECRET is present.");
+}
+// ---------------------------------------------------------
 
 const emailOtp = Email({
   id: "email-otp",
@@ -94,6 +96,13 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
     Google({
       clientId: process.env.AUTH_GOOGLE_ID,
       clientSecret: process.env.AUTH_GOOGLE_SECRET,
+      authorization: {
+        params: {
+          prompt: "consent",
+          access_type: "offline",
+          response_type: "code",
+        },
+      },
     }), 
     Password({ 
       reset: emailOtp,
@@ -132,7 +141,7 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
       
       const normalizedPath =
         !redirectTo || redirectTo === "/"
-          ? "/error?message=LoginFailed" // Changed default to Error page to debug login loops
+          ? "/error?message=LoginFailed"
           : redirectTo;
 
       console.log("[AUTH] Final redirect path:", normalizedPath);

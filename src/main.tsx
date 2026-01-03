@@ -17,7 +17,6 @@ const Landing = lazy(() => import("./pages/Landing.tsx"));
 const AuthPage = lazy(() => import("@/pages/Auth.tsx"));
 const MobileAuthCallback = lazy(() => import("./pages/MobileAuthCallback.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
-const ErrorPage = lazy(() => import("./pages/ErrorPage.tsx"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard.tsx"));
 const ContentManagement = lazy(() => import("./pages/ContentManagement.tsx"));
 const QuestionManagement = lazy(() => import("./pages/QuestionManagement.tsx"));
@@ -58,6 +57,7 @@ const ReportedErrors = lazy(() => import("./pages/ReportedErrors.tsx"));
 const WeeklyTestManagement = lazy(() => import("./pages/WeeklyTestManagement.tsx"));
 const OverallAnalytics = lazy(() => import("./pages/OverallAnalytics.tsx"));
 const ReferralAnalytics = lazy(() => import("./pages/ReferralAnalytics.tsx"));
+const ErrorPage = lazy(() => import("./pages/ErrorPage.tsx"));
 
 // Loading component
 const LoadingFallback = () => (
@@ -112,8 +112,8 @@ createRoot(document.getElementById("root")!).render(
               <Routes>
                 <Route path="/" element={<Landing />} />
                 <Route path="/auth" element={<AuthPage />} />
-                <Route path="/mobile-auth-callback" element={<MobileAuthCallback />} />
                 <Route path="/error" element={<ErrorPage />} />
+                <Route path="/mobile-auth-callback" element={<MobileAuthCallback />} />
                 <Route
                   path="/student"
                   element={
