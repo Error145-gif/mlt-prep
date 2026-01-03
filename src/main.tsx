@@ -10,6 +10,7 @@ import "./index.css";
 
 import { useAuth } from "@/hooks/use-auth";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { MobileFlowHandler } from "@/components/MobileFlowHandler";
 
 // Lazy load all pages for code splitting
 const Landing = lazy(() => import("./pages/Landing.tsx"));
@@ -105,6 +106,7 @@ createRoot(document.getElementById("root")!).render(
       <ConvexAuthProvider client={convex}>
         <ErrorBoundary>
           <BrowserRouter>
+            <MobileFlowHandler />
             <Suspense fallback={<LoadingFallback />}>
               <Routes>
                 <Route path="/" element={<Landing />} />
