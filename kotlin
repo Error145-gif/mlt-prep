@@ -1,53 +1,19 @@
-// In your MainActivity.kt or wherever you configure the WebView
+// ... inside your onCreate or WebView setup ...
 
-webView.settings.apply {
-    javaScriptEnabled = true
-    domStorageEnabled = true
-    databaseEnabled = true
-    
-    // CRITICAL FIX: Set a standard browser User-Agent to avoid Google's restrictions
-    userAgentString = "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
-    
-    // Enable third-party cookies (required for OAuth)
-    mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-    
-    // Additional settings for better compatibility
-    setSupportMultipleWindows(true)
-    javaScriptCanOpenWindowsAutomatically = true
-    loadWithOverviewMode = true
-    useWideViewPort = true
-}
+val webView = findViewById<WebView>(R.id.webview) // or your webview reference
 
-// Enable cookies
-CookieManager.getInstance().apply {
-    setAcceptCookie(true)
-    setAcceptThirdPartyCookies(webView, true)
-}
+// 1. CRITICAL: Set User Agent to look like Chrome Mobile
+// This fixes the "disallowed_useragent" error
+webView.settings.userAgentString = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Mobile Safari/537.36"
 
-// Configure WebViewClient to handle redirects
-webView.webViewClient = object : WebViewClient() {
-    override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
-        // Let WebView handle all URLs (don't open external browser)
-        return false
-    }
-    
-    override fun onPageFinished(view: WebView?, url: String?) {
-        super.onPageFinished(view, url)
-        // Inject cookies if needed
-        CookieManager.getInstance().flush()
-    }
-}
+// 2. Enable JavaScript and Storage
+webView.settings.javaScriptEnabled = true
+webView.settings.domStorageEnabled = true
 
-// Configure WebChromeClient for better OAuth support
-webView.webChromeClient = WebChromeClient()
+// 3. Enable Cookies (Required for keeping you logged in)
+val cookieManager = CookieManager.getInstance()
+cookieManager.setAcceptCookie(true)
+cookieManager.setAcceptThirdPartyCookies(webView, true)
 
-// Add dependency in build.gradle
-implementation 'androidx.browser:browser:1.7.0'
-
-// Use Chrome Custom Tabs for OAuth
-fun openGoogleLogin() {
-    val url = "https://mltprep.online/auth"
-    val builder = CustomTabsIntent.Builder()
-    val customTabsIntent = builder.build()
-    customTabsIntent.launchUrl(this, Uri.parse(url))
-}
+// ... load your URL ...
+webView.loadUrl("https://mltprep.online")
