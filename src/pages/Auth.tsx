@@ -49,10 +49,18 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
     setIsLoading(true);
     setError(null);
     try {
-      // WEBSITE FLOW: Always use state=web for website users
-      // Android app must handle OAuth externally with state=app
+      // Detect if running in app via URL param (e.g. ?source=app)
+      const searchParams = new URLSearchParams(window.location.search);
+      const isApp = searchParams.get("source") === "app" || searchParams.get("is_app") === "true";
+      
+      // Set state based on environment
+      const state = isApp ? "app" : "web";
+      
+      // Pass state via redirectTo so it's available in the backend redirect callback
+      const redirectTo = `${window.location.origin}/dashboard?state=${state}`;
+
       const formData = new FormData();
-      formData.set('state', 'web');
+      formData.set("redirectTo", redirectTo);
       
       await signIn("google", formData);
     } catch (error) {

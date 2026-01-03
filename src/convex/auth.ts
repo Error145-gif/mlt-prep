@@ -101,19 +101,29 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
   ],
   callbacks: {
     async redirect({ redirectTo }) {
-      // Extract state from the redirect URL
-      const url = new URL(redirectTo || "https://mltprep.online/dashboard");
+      // Check if redirectTo is valid and absolute, otherwise default to dashboard
+      // We use the redirectTo param to pass the state from the frontend
+      const dashboardUrl = "https://mltprep.online/dashboard";
+      let url;
+      
+      try {
+        // Handle relative URLs by using a base
+        url = new URL(redirectTo || dashboardUrl, "https://mltprep.online");
+      } catch (e) {
+        url = new URL(dashboardUrl);
+      }
+
       const state = url.searchParams.get("state");
       
       // For app users, redirect to deep link
       // Convex Auth will automatically include the session token in the URL
       if (state === "app") {
-        return `mltprep://auth/google`;
+        return "mltprep://auth-success";
       }
       
       // Default redirect for website users
       // Convex Auth automatically sets the session cookie before this redirect
-      return "https://mltprep.online/dashboard";
+      return dashboardUrl;
     },
     async createOrUpdateUser(ctx, args) {
       console.log("=".repeat(60));
