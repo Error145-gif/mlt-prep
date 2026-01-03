@@ -14,16 +14,14 @@ declare global {
 }
 
 /**
- * MobileAuthCallback Page
+ * MobileAuthCallback Page (The Bouncer)
  * 
- * This page is designed to be loaded by the Android WebView after the native app
- * intercepts the `mltprep://auth-success?code=...` deep link.
- * 
- * The Android app should extract the `code` from the deep link and load:
- * https://mltprep.online/mobile-auth-callback?code=THE_CODE
- * 
- * The ConvexAuthProvider will automatically detect the `code` param and establish the session.
- * Once established, this page retrieves the session token and passes it back to the Android app.
+ * This page acts as a traffic controller:
+ * 1. It receives the user after Google Login.
+ * 2. It retrieves the session token.
+ * 3. It IMMEDIATELY attempts to open the Android App via deep link.
+ * 4. If the app doesn't open within a few seconds (meaning the user is on Desktop/Web),
+ *    it falls back to the Web Dashboard.
  */
 export default function MobileAuthCallback() {
   const { isAuthenticated, isLoading } = useConvexAuth();
@@ -34,34 +32,35 @@ export default function MobileAuthCallback() {
 
   useEffect(() => {
     const handleAuthSuccess = async () => {
-      if (isAuthenticated) {
-        setStatus("Authenticated! Retrieving session...");
-        
-        if (token) {
-          setStatus("Session retrieved. Redirecting to App...");
-          console.log("Session token retrieved successfully");
+      if (isAuthenticated && token) {
+        setStatus("Authenticated! Attempting app handover...");
+        console.log("Session token retrieved. Starting Bouncer flow...");
 
-          // 1. Pass token to Android via Javascript Interface (Preferred)
-          if (window.Android && window.Android.onAuthSuccess) {
-            console.log("Calling window.Android.onAuthSuccess");
-            window.Android.onAuthSuccess(token);
-          }
-
-          // 2. Pass token via Deep Link Redirect (Fallback)
-          // The Android app should intercept this URL
-          const deepLink = `mltprep://auth-success?token=${encodeURIComponent(token)}`;
-          console.log("Redirecting to deep link:", deepLink);
-          window.location.href = deepLink;
-
-          // 3. Also redirect to dashboard on the webview as a visual confirmation
-          // (The app might close the webview before this happens)
-          const timer = setTimeout(() => {
-            navigate("/student", { replace: true });
-          }, 2000);
-          return () => clearTimeout(timer);
-        } else {
-          setStatus("Waiting for token...");
+        // 1. Pass token to Android via Javascript Interface (Preferred for WebView)
+        if (window.Android && window.Android.onAuthSuccess) {
+          console.log("Calling window.Android.onAuthSuccess");
+          window.Android.onAuthSuccess(token);
+          // We can stop here if we are sure it's the WebView, but the deep link is a safe backup
         }
+
+        // 2. THE BOUNCER LOGIC
+        // Always try to open the deep link.
+        // If the app is installed, it will intercept this.
+        const deepLink = `mltprep://auth-success?token=${encodeURIComponent(token)}`;
+        console.log("Attempting deep link:", deepLink);
+        window.location.href = deepLink;
+
+        // 3. Fallback to Web Dashboard
+        // If the browser is still open after 2.5 seconds, it means the deep link didn't take over.
+        // (User is likely on Desktop or Mobile Browser, not the App)
+        const fallbackTimer = setTimeout(() => {
+          console.log("Deep link didn't open app. Redirecting to Web Dashboard...");
+          navigate("/student", { replace: true });
+        }, 2500);
+
+        return () => clearTimeout(fallbackTimer);
+      } else if (isAuthenticated && !token) {
+        setStatus("Waiting for token...");
       }
     };
 
@@ -73,12 +72,16 @@ export default function MobileAuthCallback() {
     
     if (!isLoading && !isAuthenticated) {
       if (!code) {
-        setStatus("Authentication failed. Please try again.");
-        // Redirect to login after delay
-        setTimeout(() => navigate("/auth"), 3000);
+        // If no code and not authenticated, this might be a direct visit or error
+        // Check if we just need to go to dashboard (already logged in but state not updated yet?)
+        // Or send back to login
+        setStatus("Checking session...");
+        setTimeout(() => {
+             if (!isAuthenticated) navigate("/auth");
+        }, 2000);
       } else {
         setStatus("Verifying credentials...");
-        // ConvexAuthProvider automatically handles the code exchange when it sees the ?code= param
+        // ConvexAuthProvider automatically handles the code exchange
       }
     }
   }, [isAuthenticated, isLoading, navigate, searchParams]);
@@ -101,16 +104,13 @@ export default function MobileAuthCallback() {
             {isAuthenticated ? "Login Successful!" : "Logging In"}
           </h2>
           <p className="text-white/80 text-lg font-light">{status}</p>
+          {isAuthenticated && (
+             <p className="text-white/60 text-sm mt-4">
+               Opening App...<br/>
+               If not redirected, <span className="underline cursor-pointer" onClick={() => navigate("/student")}>click here</span>.
+             </p>
+          )}
         </div>
-
-        {!isAuthenticated && !isLoading && !searchParams.get("code") && (
-          <button 
-            onClick={() => navigate("/auth")}
-            className="mt-4 px-6 py-2 bg-white/20 hover:bg-white/30 rounded-xl transition-colors font-medium"
-          >
-            Return to Login
-          </button>
-        )}
       </div>
     </div>
   );

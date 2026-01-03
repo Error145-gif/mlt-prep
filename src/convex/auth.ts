@@ -100,31 +100,13 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
     Anonymous
   ],
   callbacks: {
-    async redirect({ redirectTo }) {
-      // Check if redirectTo is valid and absolute, otherwise default to dashboard
-      // We use the redirectTo param to pass the state from the frontend
-      const dashboardUrl = "https://mltprep.online/dashboard";
-      let url;
-      
-      try {
-        // Handle relative URLs by using a base
-        url = new URL(redirectTo || dashboardUrl, "https://mltprep.online");
-      } catch (e) {
-        url = new URL(dashboardUrl);
-      }
-
-      const state = url.searchParams.get("state");
-      
-      // For app users, redirect to the intermediate page on the website
-      // This page will handle the "Cookie Handover" to the native app
-      if (state === "app") {
-        console.log("[AUTH] Mobile app login detected, redirecting to callback page");
-        return "https://mltprep.online/mobile-auth-callback";
-      }
-      
-      // Default redirect for website users
-      // Convex Auth automatically sets the session cookie before this redirect
-      return dashboardUrl;
+    async redirect() {
+      // THE BOUNCER METHOD:
+      // Always redirect to the intermediate page.
+      // This page will handle the "Cookie Handover" to the native app if installed,
+      // or fallback to the dashboard for desktop users.
+      console.log("[AUTH] Redirecting to mobile-auth-callback for Bouncer check");
+      return "https://mltprep.online/mobile-auth-callback";
     },
     async createOrUpdateUser(ctx, args) {
       console.log("=".repeat(60));
