@@ -130,6 +130,7 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
       // Respect the redirectTo parameter from the sign-in call
       // This allows Auth.tsx to control where users go after authentication
       console.log("[AUTH] Redirect requested to:", redirectTo);
+      console.log("[AUTH] Redirect includes is_mobile:", redirectTo?.includes("is_mobile=true"));
 
       // Check if we are in a mobile context or web context based on the redirectTo
       // If redirectTo is /mobile-auth-callback, we are in mobile flow
@@ -145,6 +146,7 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
           : redirectTo;
 
       console.log("[AUTH] Final redirect path:", normalizedPath);
+      console.log("[AUTH] Mobile flag preserved:", normalizedPath.includes("is_mobile=true"));
       return normalizedPath;
     },
     async createOrUpdateUser(ctx, args) {

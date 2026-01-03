@@ -33,7 +33,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
   const [rememberMe, setRememberMe] = useState(false);
   const autoCompleteRegistration = useMutation(api.authHelpers.autoCompleteRegistration);
 
-  // Persist mobile flow state
+  // Persist mobile flow state - check both URL and storage
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const isMobileParam = params.get("is_mobile") === "true" || params.get("mobile") === "true" || params.get("is_mobile") === "1" || params.get("mobile") === "1";
@@ -42,6 +42,9 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       console.log("[AUTH] Mobile flow detected via URL params. Persisting to storage.");
       sessionStorage.setItem("is_mobile", "true");
     }
+    
+    // Log current state for debugging
+    console.log("[AUTH] Mobile detection - URL param:", isMobileParam, "Storage:", sessionStorage.getItem("is_mobile"));
   }, [location.search]);
 
   useEffect(() => {
@@ -100,20 +103,17 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
     try {
       console.log("[AUTH] Initiating Google Sign-In");
       
-      // Check if we're in a mobile app context (via URL parameter or storage)
+      // CRITICAL: Check mobile context from BOTH URL and storage
       const urlParams = new URLSearchParams(window.location.search);
-      const isMobileParam = urlParams.get('is_mobile') === 'true' || urlParams.get('mobile') === 'true' || urlParams.get('is_mobile') === '1' || urlParams.get('mobile') === '1' || sessionStorage.getItem("is_mobile") === "true";
+      const isMobileFromUrl = urlParams.get('is_mobile') === 'true' || urlParams.get('mobile') === 'true' || urlParams.get('is_mobile') === '1' || urlParams.get('mobile') === '1';
+      const isMobileFromStorage = sessionStorage.getItem("is_mobile") === "true";
+      const isMobileParam = isMobileFromUrl || isMobileFromStorage;
       
-      console.log("[AUTH] Mobile param detected:", isMobileParam);
+      console.log("[AUTH] Google Sign-In - Mobile from URL:", isMobileFromUrl, "from Storage:", isMobileFromStorage, "Final:", isMobileParam);
 
-      // Logic Update:
-      // IF is_mobile is detected: await auth.signIn("google", { redirectTo: "/mobile-auth-callback?is_mobile=true" })
-      // IF is_mobile is NOT detected: await auth.signIn("google", { redirectTo: "/" })
-      
-      // We append is_mobile=true to the redirect path to ensure the flag persists 
-      // even if sessionStorage is lost during the OAuth redirect dance.
+      // ALWAYS append is_mobile=true to redirect if detected from either source
       const redirectPath = isMobileParam ? "/mobile-auth-callback?is_mobile=true" : "/";
-      console.log("[AUTH] Redirect path:", redirectPath);
+      console.log("[AUTH] Google redirect path:", redirectPath);
       
       await signIn("google", { redirectTo: redirectPath });
     } catch (error) {
@@ -138,12 +138,17 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
         formData.set("flow", "signIn");
       }
 
-      // Check mobile flow for password login too
+      // CRITICAL: Check mobile flow for password login from BOTH sources
       const urlParams = new URLSearchParams(window.location.search);
-      const isMobileParam = urlParams.get('is_mobile') === 'true' || urlParams.get('mobile') === 'true' || urlParams.get('is_mobile') === '1' || urlParams.get('mobile') === '1' || sessionStorage.getItem("is_mobile") === "true";
+      const isMobileFromUrl = urlParams.get('is_mobile') === 'true' || urlParams.get('mobile') === 'true' || urlParams.get('is_mobile') === '1' || urlParams.get('mobile') === '1';
+      const isMobileFromStorage = sessionStorage.getItem("is_mobile") === "true";
+      const isMobileParam = isMobileFromUrl || isMobileFromStorage;
+      
+      console.log("[AUTH] Password Sign-In - Mobile from URL:", isMobileFromUrl, "from Storage:", isMobileFromStorage, "Final:", isMobileParam);
       
       if (isMobileParam) {
         formData.set("redirectTo", "/mobile-auth-callback?is_mobile=true");
+        console.log("[AUTH] Password redirect set to mobile callback");
       }
       
       await signIn("password", formData);
