@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { useConvexAuth } from "convex/react";
 import { useAuthToken } from "@convex-dev/auth/react";
-import { Loader2, Smartphone, LayoutDashboard, Copy, ExternalLink, HelpCircle } from "lucide-react";
+import { Loader2, Smartphone, LayoutDashboard, Copy, ExternalLink, HelpCircle, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
@@ -35,9 +35,11 @@ export default function MobileAuthCallback() {
   const { isAuthenticated } = useConvexAuth();
   const token = useAuthToken();
   const navigate = useNavigate();
-  const [status, setStatus] = useState("Ready to open app...");
+  const [status, setStatus] = useState("Checking authentication...");
+  const [showOpenButton, setShowOpenButton] = useState(false);
   const [deepLinkUrl, setDeepLinkUrl] = useState<string>("mltprep://auth-success");
   const [intentUrl, setIntentUrl] = useState<string>("");
+  const [autoRedirectAttempted, setAutoRedirectAttempted] = useState(false);
 
   // Initialize URLs when token is available
   useEffect(() => {
@@ -47,52 +49,81 @@ export default function MobileAuthCallback() {
        setDeepLinkUrl(deepLink);
 
        // Android Intent URL (More reliable for Android Chrome)
-       // format: intent://<path>#Intent;scheme=<scheme>;package=<package_name>;end;
        const iUrl = `intent://auth-success?token=${encodeURIComponent(token)}#Intent;scheme=mltprep;package=com.mltprep.app;end;`;
        setIntentUrl(iUrl);
        
-       setStatus("Authenticated! Opening app...");
-       console.log("[MOBILE_AUTH] Token retrieved. URLs prepared.");
+       setStatus("Authentication successful!");
+       setShowOpenButton(true);
+       console.log("[MOBILE_AUTH] ✅ Token retrieved. Ready to open app.");
     } else if (isAuthenticated && !token) {
        setStatus("Finalizing authentication...");
     }
   }, [isAuthenticated, token]);
 
-  // Auto-redirect logic
+  // Auto-redirect logic - only attempt once
   useEffect(() => {
-    if (isAuthenticated && token && (deepLinkUrl || intentUrl)) {
+    if (isAuthenticated && token && (deepLinkUrl || intentUrl) && !autoRedirectAttempted) {
       const isAndroid = /Android/i.test(navigator.userAgent);
-      console.log(`[MOBILE_AUTH] Auto-redirect starting. Device: ${isAndroid ? 'Android' : 'Other'}`);
+      console.log(`[MOBILE_AUTH] 🚀 Auto-redirect starting. Device: ${isAndroid ? 'Android' : 'Other'}`);
+      
+      setAutoRedirectAttempted(true);
 
-      // Increased delay slightly to ensure browser is ready
+      // Attempt automatic redirect after a short delay
       const timer = setTimeout(() => {
+        console.log("[MOBILE_AUTH] 🔗 Attempting automatic deep link...");
+        
         if (isAndroid && intentUrl) {
           console.log("[MOBILE_AUTH] Trying Intent URL:", intentUrl);
           window.location.href = intentUrl;
           
-          // Fallback to custom scheme after a short delay if intent fails (though we can't easily detect failure)
+          // Fallback to custom scheme after delay
           setTimeout(() => {
              console.log("[MOBILE_AUTH] Intent fallback -> Custom Scheme");
              window.location.href = deepLinkUrl;
-          }, 2500);
+          }, 2000);
         } else {
           console.log("[MOBILE_AUTH] Trying Custom Scheme:", deepLinkUrl);
           window.location.href = deepLinkUrl;
         }
-      }, 1500);
+        
+        // Show manual button after auto-redirect attempt
+        setTimeout(() => {
+          setStatus("Tap the button below to open the app");
+        }, 3000);
+      }, 800);
 
       return () => clearTimeout(timer);
     }
-  }, [isAuthenticated, token, deepLinkUrl, intentUrl]);
+  }, [isAuthenticated, token, deepLinkUrl, intentUrl, autoRedirectAttempted]);
 
   // Handle WebView Bridge
   useEffect(() => {
     if (isAuthenticated && token && window.Android && window.Android.onAuthSuccess) {
-      console.log("[MOBILE_AUTH] WebView Bridge detected. Calling onAuthSuccess.");
+      console.log("[MOBILE_AUTH] 📱 WebView Bridge detected. Calling onAuthSuccess.");
       setStatus("Returning to app...");
       window.Android.onAuthSuccess(token);
     }
   }, [isAuthenticated, token]);
+
+  const handleOpenApp = () => {
+    console.log("[MOBILE_AUTH] 👆 User clicked OPEN APP button");
+    const isAndroid = /Android/i.test(navigator.userAgent);
+    
+    if (isAndroid && intentUrl) {
+      console.log("[MOBILE_AUTH] Opening via Intent URL");
+      window.location.href = intentUrl;
+      
+      // Fallback to custom scheme
+      setTimeout(() => {
+        window.location.href = deepLinkUrl;
+      }, 1500);
+    } else {
+      console.log("[MOBILE_AUTH] Opening via Custom Scheme");
+      window.location.href = deepLinkUrl;
+    }
+    
+    toast.success("Opening app...");
+  };
 
   const handleCopyToken = () => {
     if (token) {
@@ -113,10 +144,8 @@ export default function MobileAuthCallback() {
       <div className="text-center space-y-6 max-w-md w-full bg-white/10 backdrop-blur-lg p-8 rounded-3xl border border-white/20 shadow-xl">
         {/* Show success checkmark if authenticated, otherwise show spinner */}
         {isAuthenticated ? (
-          <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-green-500/30 animate-in zoom-in duration-300">
-            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-            </svg>
+          <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-green-500/30 animate-in zoom-in duration-300">
+            <CheckCircle className="w-12 h-12 text-white" strokeWidth={3} />
           </div>
         ) : (
           <Loader2 className="w-16 h-16 animate-spin mx-auto text-white/80" />
@@ -124,77 +153,85 @@ export default function MobileAuthCallback() {
         
         <div>
           <h2 className="text-2xl font-bold mb-2" style={{ fontFamily: "'Poppins', sans-serif" }}>
-            {isAuthenticated ? "Login Successful!" : "Logging In"}
+            {isAuthenticated ? "Login Successful! ✅" : "Logging In"}
           </h2>
-          <p className="text-white/80 text-lg font-light mb-6 animate-pulse">{status}</p>
+          <p className="text-white/80 text-base font-light mb-6">{status}</p>
           
-          <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <p className="text-white/90 text-lg font-medium">
-              Tap the button below to open the app
-            </p>
-            
-            <Button 
-              onClick={() => window.location.href = deepLinkUrl}
-              className="w-full py-8 text-xl font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xl transform transition hover:scale-105 rounded-xl border-2 border-blue-400/50"
-            >
-              <Smartphone className="w-8 h-8 mr-3" />
-              OPEN APP
-            </Button>
-
-            {intentUrl && (
+          {showOpenButton && (
+            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <p className="text-white/90 text-lg font-semibold mb-4">
+                👇 Tap here to open the app
+              </p>
+              
+              {/* PRIMARY OPEN APP BUTTON - Large and prominent */}
               <Button 
-                onClick={() => window.location.href = intentUrl}
-                variant="outline"
-                className="w-full py-6 text-lg font-semibold bg-white/10 hover:bg-white/20 text-white border-white/30"
+                onClick={handleOpenApp}
+                className="w-full py-10 text-2xl font-bold bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-2xl transform transition hover:scale-105 rounded-2xl border-4 border-green-300/50 animate-pulse"
+                style={{ fontFamily: "'Poppins', sans-serif" }}
               >
-                <ExternalLink className="w-5 h-5 mr-2" />
-                OPEN APP (ALTERNATIVE)
+                <Smartphone className="w-10 h-10 mr-3" />
+                OPEN APP
               </Button>
-            )}
 
-            <div className="pt-4">
-              <Accordion type="single" collapsible className="w-full border-none">
-                <AccordionItem value="troubleshoot" className="border-none">
-                  <AccordionTrigger className="text-white/60 hover:text-white py-2 justify-center text-sm">
-                    <span className="flex items-center gap-2">
-                      <HelpCircle className="w-4 h-4" />
-                      Having trouble?
-                    </span>
-                  </AccordionTrigger>
-                  <AccordionContent className="space-y-4 pt-2">
-                    <div className="bg-black/20 p-4 rounded-xl space-y-3">
-                      <p className="text-xs text-white/70 text-center">
-                        If the app doesn't open automatically, try copying the token and pasting it in the app manually (if supported), or continue to the web dashboard.
-                      </p>
+              {/* Alternative method for Android */}
+              {intentUrl && (
+                <Button 
+                  onClick={() => {
+                    console.log("[MOBILE_AUTH] Trying alternative Intent method");
+                    window.location.href = intentUrl;
+                  }}
+                  variant="outline"
+                  className="w-full py-6 text-base font-semibold bg-white/10 hover:bg-white/20 text-white border-2 border-white/40 rounded-xl"
+                >
+                  <ExternalLink className="w-5 h-5 mr-2" />
+                  Try Alternative Method
+                </Button>
+              )}
+
+              <div className="pt-4 border-t border-white/20 mt-6">
+                <Accordion type="single" collapsible className="w-full border-none">
+                  <AccordionItem value="troubleshoot" className="border-none">
+                    <AccordionTrigger className="text-white/60 hover:text-white py-2 justify-center text-sm">
+                      <span className="flex items-center gap-2">
+                        <HelpCircle className="w-4 h-4" />
+                        App not opening?
+                      </span>
+                    </AccordionTrigger>
+                    <AccordionContent className="space-y-4 pt-2">
+                      <div className="bg-black/20 p-4 rounded-xl space-y-3">
+                        <p className="text-xs text-white/70 text-center">
+                          If the app doesn't open, make sure the MLT Prep app is installed on your device. You can also continue to the web dashboard.
+                        </p>
+                        
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={handleCopyToken}
+                          className="w-full bg-white/20 hover:bg-white/30 text-white border-none"
+                        >
+                          <Copy className="w-3 h-3 mr-2" />
+                          Copy Auth Token
+                        </Button>
+
+                        <Button 
+                          variant="ghost" 
+                          onClick={handleWebFallback}
+                          className="w-full text-white/70 hover:text-white hover:bg-white/10"
+                        >
+                          <LayoutDashboard className="w-4 h-4 mr-2" />
+                          Continue to Web Dashboard
+                        </Button>
+                      </div>
                       
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={handleCopyToken}
-                        className="w-full bg-white/20 hover:bg-white/30 text-white border-none"
-                      >
-                        <Copy className="w-3 h-3 mr-2" />
-                        Copy Auth Token
-                      </Button>
-
-                      <Button 
-                        variant="ghost" 
-                        onClick={handleWebFallback}
-                        className="w-full text-white/70 hover:text-white hover:bg-white/10"
-                      >
-                        <LayoutDashboard className="w-4 h-4 mr-2" />
-                        Continue to Web Dashboard
-                      </Button>
-                    </div>
-                    
-                    <div className="text-[10px] text-white/20 break-all font-mono text-center">
-                      {deepLinkUrl}
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
+                      <div className="text-[10px] text-white/20 break-all font-mono text-center">
+                        {deepLinkUrl}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
