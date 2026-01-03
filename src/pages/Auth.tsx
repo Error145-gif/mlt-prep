@@ -80,10 +80,9 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
         console.log("[AUTH] Mobile app login initiated, will force callback redirect");
       }
       
-      // Don't override redirectTo - let the backend handle the redirect
-      // The backend (src/convex/auth.ts) already redirects to /mobile-auth-callback
-      // which handles both mobile app and web users correctly
-      await signIn("google");
+      // CRITICAL FIX: Explicitly set redirectTo parameter to force redirect to callback page
+      // This ensures Google OAuth always redirects to /mobile-auth-callback instead of /
+      await signIn("google", { redirectTo: "/mobile-auth-callback" });
     } catch (error) {
       console.error("Google sign-in error:", error);
       setError("Failed to sign in with Google. Please try again.");
