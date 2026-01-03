@@ -1,6 +1,11 @@
-// Example Android code
-val loginUrl = "https://mltprep.online/auth?mobile_app=true"
-webView.loadUrl(loginUrl)
-// or
-val intent = Intent(Intent.ACTION_VIEW, Uri.parse(loginUrl))
-startActivity(intent)
+// In your MainActivity or AuthActivity
+override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    
+    intent?.data?.let { uri ->
+        if (uri.scheme == "mltprep" && uri.host == "auth-success") {
+            val token = uri.getQueryParameter("token")
+            // Store token and proceed with authentication
+        }
+    }
+}
