@@ -91,6 +91,8 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       const isMobileApp = localStorage.getItem("is_mobile") === "true" || 
                           new URLSearchParams(location.search).get("is_mobile") === "true";
       
+      console.log("[AUTH] Is Mobile App Flow:", isMobileApp);
+
       await signIn("google", { 
         redirectTo: isMobileApp ? "/mobile-auth-callback" : undefined 
       });

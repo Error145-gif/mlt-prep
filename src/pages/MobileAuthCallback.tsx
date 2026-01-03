@@ -43,18 +43,21 @@ export default function MobileAuthCallback() {
   // Initialize URLs when token is available
   useEffect(() => {
     if (isAuthenticated && token) {
+       // Get package name from storage or default
+       const packageName = localStorage.getItem("mobile_package_name") || "com.mltprep.app";
+       
        // Standard Deep Link
        const deepLink = `mltprep://auth-success?token=${encodeURIComponent(token)}`;
        setDeepLinkUrl(deepLink);
 
        // Android Intent URL (More reliable for Android Chrome)
        // Format: intent://<host>#Intent;scheme=<scheme>;package=<package_name>;S.<extra_name>=<extra_value>;end
-       const iUrl = `intent://auth-success?token=${encodeURIComponent(token)}#Intent;scheme=mltprep;package=com.mltprep.app;S.token=${encodeURIComponent(token)};end;`;
+       const iUrl = `intent://auth-success?token=${encodeURIComponent(token)}#Intent;scheme=mltprep;package=${packageName};S.token=${encodeURIComponent(token)};end;`;
        setIntentUrl(iUrl);
        
        setStatus("Authentication successful!");
        setShowOpenButton(true);
-       console.log("[MOBILE_AUTH] ✅ Token retrieved. Ready to open app.");
+       console.log(`[MOBILE_AUTH] ✅ Token retrieved. Package: ${packageName}`);
     } else if (isAuthenticated && !token) {
        setStatus("Finalizing authentication...");
     }
@@ -87,17 +90,10 @@ export default function MobileAuthCallback() {
         window.location.href = intentUrl;
       }
 
-      // Method 2: Custom scheme after short delay
+      // Method 2: Custom scheme after short delay (Fallback)
       setTimeout(() => {
         console.log("[MOBILE_AUTH] Trying Custom Scheme:", deepLinkUrl);
         window.location.href = deepLinkUrl;
-      }, 500);
-
-      // Method 3: Try opening in new window (some browsers handle this better)
-      setTimeout(() => {
-        console.log("[MOBILE_AUTH] Trying window.open method");
-        // @ts-ignore
-        const opened = window.open(deepLinkUrl, '_self');
       }, 1000);
 
       // Show manual button after all auto attempts
@@ -117,6 +113,7 @@ export default function MobileAuthCallback() {
       console.log("[MOBILE_AUTH] Opening via Intent URL");
       window.location.href = intentUrl;
       
+      // Fallback to deep link if intent fails (e.g. app not installed or package name wrong)
       setTimeout(() => {
         window.location.href = deepLinkUrl;
       }, 500);
@@ -216,6 +213,11 @@ export default function MobileAuthCallback() {
                           <Copy className="w-3 h-3 mr-2" />
                           Copy Auth Token
                         </Button>
+                        
+                        {/* Display token for manual entry if needed */}
+                        <div className="text-[10px] text-white/40 break-all font-mono bg-black/30 p-2 rounded select-all">
+                          {token}
+                        </div>
 
                         <Button 
                           variant="ghost" 

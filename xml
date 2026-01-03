@@ -1,8 +1,7 @@
-<intent-filter>
-    <action android:name="android.intent.action.VIEW" />
-    <category android:name="android.intent.category.DEFAULT" />
-    <category android:name="android.intent.category.BROWSABLE" />
+    <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="mltprep" android:host="auth-success" />
+    </intent-filter>
     
-    <!-- Ye scheme match honi chahiye -->
-    <data android:scheme="mltprep" android:host="auth-success" />
-</intent-filter>

@@ -25,6 +25,7 @@ export function MobileFlowHandler() {
     const isMobileParam = searchParams.get("is_mobile");
     const mobileParam = searchParams.get("mobile");
     const platformParam = searchParams.get("platform");
+    const packageParam = searchParams.get("package");
     
     // Check if mobile params are present and true
     if (isMobileParam === "true" || mobileParam === "true" || platformParam === "android") {
@@ -32,6 +33,12 @@ export function MobileFlowHandler() {
       // Use localStorage for better persistence across redirects/tabs
       localStorage.setItem("is_mobile", "true");
       sessionStorage.setItem("is_mobile", "true");
+    }
+
+    // Persist package name if provided (for Intent URLs)
+    if (packageParam) {
+      console.log(`📦 Package name detected: ${packageParam}`);
+      localStorage.setItem("mobile_package_name", packageParam);
     }
   }, [searchParams]);
 
