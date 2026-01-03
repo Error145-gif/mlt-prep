@@ -8,11 +8,6 @@ import { Email } from "@convex-dev/auth/providers/Email";
 import { alphabet, generateRandomString } from "oslo/crypto";
 import { internal } from "./_generated/api";
 
-const convexSiteUrl = "https://successful-bandicoot-650.convex.site";
-// SITE_URL is your frontend domain (e.g., https://mltprep.online).
-// This is where users are redirected after login.
-const appSiteUrl = (process.env.SITE_URL || convexSiteUrl).replace(/\/$/, "");
-
 const emailOtp = Email({
   id: "email-otp",
   maxAge: 60 * 10, // 10 minutes
@@ -113,15 +108,21 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
       // This allows Auth.tsx to control where users go after authentication
       console.log("[AUTH] Redirect requested to:", redirectTo);
 
+      // Check if we are in a mobile context or web context based on the redirectTo
+      // If redirectTo is /mobile-auth-callback, we are in mobile flow
+      // If redirectTo is /student or similar, we are in web flow
+      
+      // We simply return the redirectTo path. 
+      // The frontend (ConvexAuthProvider) will handle the redirection relative to the current window location.
+      // We DO NOT prepend the site URL here to avoid mixing backend/frontend domains.
+      
       const normalizedPath =
         !redirectTo || redirectTo === "/"
           ? "/auth?authError=google_failed"
           : redirectTo;
 
-      const finalUrl = `${appSiteUrl}${normalizedPath}`;
-
-      console.log("[AUTH] Final redirect URL:", finalUrl);
-      return finalUrl;
+      console.log("[AUTH] Final redirect path:", normalizedPath);
+      return normalizedPath;
     },
     async createOrUpdateUser(ctx, args) {
       console.log("=".repeat(60));

@@ -1,1 +1,3 @@
-print(executeCommandTool(command='keytool -keystore ~/.android/debug.keystore -list -v -alias androiddebugkey -storepass android -keypass android'))
+print(executeCommandTool("grep -r \"AUTH_GOOGLE_SECRET\" src/**/*.tsx src/*.tsx"))
+print(executeCommandTool("grep -r \"CONVEX_SITE_URL\" src/**/*.tsx src/*.tsx"))
+print(executeCommandTool("grep -r \"AUTH_GOOGLE_ID\" src/**/*.tsx src/*.tsx"))
