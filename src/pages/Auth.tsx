@@ -36,7 +36,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
   // Persist mobile flow state
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const isMobileParam = params.get("is_mobile") === "true" || params.get("mobile") === "true";
+    const isMobileParam = params.get("is_mobile") === "true" || params.get("mobile") === "true" || params.get("is_mobile") === "1" || params.get("mobile") === "1";
     
     if (isMobileParam) {
       console.log("[AUTH] Mobile flow detected via URL params. Persisting to storage.");
@@ -75,7 +75,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       
       // Check for mobile param in URL or storage to handle existing sessions for app users
       const params = new URLSearchParams(location.search);
-      const isMobileParam = params.get("is_mobile") === "true" || params.get("mobile") === "true" || sessionStorage.getItem("is_mobile_flow") === "true";
+      const isMobileParam = params.get("is_mobile") === "true" || params.get("mobile") === "true" || params.get("is_mobile") === "1" || params.get("mobile") === "1" || sessionStorage.getItem("is_mobile_flow") === "true";
 
       console.log("[AUTH] User already authenticated, redirecting. Mobile param:", isMobileParam);
       
@@ -102,7 +102,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       
       // Check if we're in a mobile app context (via URL parameter or storage)
       const urlParams = new URLSearchParams(window.location.search);
-      const isMobileParam = urlParams.get('is_mobile') === 'true' || urlParams.get('mobile') === 'true' || sessionStorage.getItem("is_mobile_flow") === "true";
+      const isMobileParam = urlParams.get('is_mobile') === 'true' || urlParams.get('mobile') === 'true' || urlParams.get('is_mobile') === '1' || urlParams.get('mobile') === '1' || sessionStorage.getItem("is_mobile_flow") === "true";
       
       // Only redirect to mobile-auth-callback if explicitly mobile param is present
       const redirectPath = isMobileParam ? "/mobile-auth-callback" : (redirectAfterAuth || "/student");
@@ -133,7 +133,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
 
       // Check mobile flow for password login too
       const urlParams = new URLSearchParams(window.location.search);
-      const isMobileParam = urlParams.get('is_mobile') === 'true' || urlParams.get('mobile') === 'true' || sessionStorage.getItem("is_mobile_flow") === "true";
+      const isMobileParam = urlParams.get('is_mobile') === 'true' || urlParams.get('mobile') === 'true' || urlParams.get('is_mobile') === '1' || urlParams.get('mobile') === '1' || sessionStorage.getItem("is_mobile_flow") === "true";
       
       if (isMobileParam) {
         formData.set("redirectTo", "/mobile-auth-callback");
