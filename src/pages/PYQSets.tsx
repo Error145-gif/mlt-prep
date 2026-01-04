@@ -99,7 +99,7 @@ const isMonthlyStarter =
       }
     }
     
-    navigate(`/test-start?type=pyq&topicId=${test.year}&setNumber=${test.setNumber}`);
+    navigate(`/test-start?type=pyq&year=${test.year}&setNumber=${test.setNumber}&examName=${encodeURIComponent(test.examName || "")}`);
   };
 
   const handleUnlockWithAd = async (test: any) => {

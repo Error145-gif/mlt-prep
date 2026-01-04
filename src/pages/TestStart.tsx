@@ -57,7 +57,9 @@ export default function TestStart() {
 
   const testType = searchParams.get("type") || "mock";
   const topicIdParam = searchParams.get("topicId");
-  const topicId = topicIdParam && topicIdParam !== "general" && topicIdParam !== "null" ? (topicIdParam as Id<"topics">) : undefined;
+  // Validate that topicIdParam looks like a valid ID to prevent validator errors (e.g. "2024" passed as ID)
+  const isValidId = (id: string) => id.length > 10;
+  const topicId = topicIdParam && topicIdParam !== "general" && topicIdParam !== "null" && isValidId(topicIdParam) ? (topicIdParam as Id<"topics">) : undefined;
   const year = searchParams.get("year") ? parseInt(searchParams.get("year")!) : undefined;
   const setNumber = searchParams.get("setNumber") ? parseInt(searchParams.get("setNumber")!) : undefined;
   const examName = searchParams.get("examName") ? decodeURIComponent(searchParams.get("examName")!) : undefined;
