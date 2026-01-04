@@ -40,7 +40,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
   useEffect(() => {
     if (Capacitor.isNativePlatform()) {
       GoogleAuth.initialize({
-        clientId: process.env.AUTH_GOOGLE_ID || 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com',
+        clientId: '1027088088088-iqvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv.apps.googleusercontent.com',
         scopes: ['profile', 'email'],
         grantOfflineAccess: true,
       });
@@ -77,7 +77,8 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       autoCompleteRegistration().catch(console.error);
 
       // Check for mobile app flow
-      const isMobileApp = localStorage.getItem("is_mobile") === "true" || 
+      const isMobileApp = Capacitor.isNativePlatform() || 
+                          localStorage.getItem("is_mobile") === "true" || 
                           new URLSearchParams(location.search).get("is_mobile") === "true";
 
       if (isMobileApp) {
@@ -100,28 +101,32 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
     try {
       console.log("[AUTH] Initiating Google Sign-In");
       
-      const isMobileApp = Capacitor.isNativePlatform();
+      const isNativeApp = Capacitor.isNativePlatform();
       
-      if (isMobileApp) {
+      if (isNativeApp) {
         console.log("[AUTH] 📱 Using Native Google Auth");
         
         try {
           const googleUser = await GoogleAuth.signIn();
           console.log("[AUTH] Native Google Sign-In successful:", googleUser);
           
-          // Send ID token to backend for verification
-          const idToken = googleUser.authentication.idToken;
+          if (!googleUser.authentication?.idToken) {
+            throw new Error("No ID token received from Google");
+          }
           
-          // Call Convex backend to verify and create session
-          // You'll need to create a new action in convex for this
+          // Store mobile flag
+          localStorage.setItem("is_mobile", "true");
+          
+          // Use web OAuth flow with the ID token
+          // Convex Auth will handle the token verification
           await signIn("google", { 
-            idToken,
             redirectTo: "/mobile-auth-callback"
           });
           
         } catch (nativeError) {
           console.error("[AUTH] Native Google Sign-In failed:", nativeError);
-          throw new Error("Native Google login failed. Please try again.");
+          setError("Google login failed. Please try again.");
+          setIsLoading(false);
         }
       } else {
         // Web flow
