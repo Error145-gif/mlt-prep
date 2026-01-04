@@ -1,1 +1,6 @@
-npx convex env set SITE_URL https://mltprep.online
+pnpm install
+pnpm build
+npx cap init "MLT Prep" "com.mltprep.app" --web-dir=dist
+npx cap add android
+npx cap sync
+npx cap open android
