@@ -1,0 +1,3 @@
+1. Run the build and capacitor initialization commands.
+2. Verify `capacitor.config.ts` is created.
+3. Inform the user that the mobile environment is set up and explain how to use it (e.g., `pnpm mobile:sync`, opening Android Studio).

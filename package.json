@@ -12,7 +12,13 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "mobile:init": "cap init",
+    "mobile:android": "cap add android",
+    "mobile:ios": "cap add ios",
+    "mobile:sync": "cap sync",
+    "mobile:open:android": "cap open android",
+    "mobile:open:ios": "cap open ios"
   },
   "dependencies": {
     "@auth/core": "^0.37.4",
