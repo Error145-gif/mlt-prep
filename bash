@@ -1,20 +1,14 @@
-# Initialize Capacitor (only once)
-npx cap init
+# 1. Install Capacitor packages (if not already done)
+pnpm add @capacitor/core @capacitor/cli @capacitor/android @codetrix-studio/capacitor-google-auth
 
-# Add Android platform
-npx cap add android
-
-# Sync web code to Android
-npx cap sync
-
-# Install Capacitor packages
-pnpm add @capacitor/core @capacitor/cli @capacitor/android @capacitor/splash-screen @capacitor/status-bar
-
-# Install Google Auth plugin for native login
-pnpm add @codetrix-studio/capacitor-google-auth
-
-# Build the web app
+# 2. Build your web app first
 pnpm build
 
-cd android
-./gradlew signingReport
+# 3. Add Android platform (skip npx cap init!)
+npx cap add android
+
+# 4. Sync web code to Android
+npx cap sync android
+
+# 5. Open in Android Studio
+npx cap open android
