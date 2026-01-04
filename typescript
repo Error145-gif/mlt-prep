@@ -1,5 +1,15 @@
-GoogleAuth: {
-  scopes: ['profile', 'email'],
-  serverClientId: 'APNA_ANDROID_CLIENT_ID_YAHA_PASTE_KARO.apps.googleusercontent.com',
-  forceCodeForRefreshToken: true
-}
+// src/pages/Auth.tsx
+// ... (previous code)
+
+  // Initialize GoogleAuth for Capacitor
+  useEffect(() => {
+    if (Capacitor.isNativePlatform()) {
+      GoogleAuth.initialize({
+        clientId: process.env.AUTH_GOOGLE_ID || '513889515278-j5igvo075g0iigths2ifjs1agebfepti.apps.googleusercontent.com',
+        scopes: ['profile', 'email'],
+        grantOfflineAccess: true,
+      });
+    }
+  }, []);
+
+// ... (rest of the code)

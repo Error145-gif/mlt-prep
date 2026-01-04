@@ -1,3 +1,3 @@
 pnpm build
-npx cap sync android
+npx cap sync
 npx cap open android
