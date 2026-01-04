@@ -6,7 +6,7 @@ import { useNavigate } from "react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Clock, Target, AlertCircle, Lock } from "lucide-react";
+import { FileText, Clock, Target, AlertCircle, Lock, Book } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect } from "react";
 import { toast } from "sonner";
@@ -202,7 +202,7 @@ const isMonthlyStarter =
                           className="h-12 w-12 object-contain"
                         />
                       ) : (
-                        <FileText className="h-8 w-8 text-blue-400" />
+                        <Book className="h-8 w-8 text-blue-400" />
                       )}
                       <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30">
                         {test.year}
@@ -222,7 +222,7 @@ const isMonthlyStarter =
                   <CardContent className="space-y-4">
                     <div className="flex items-center gap-2 text-white/70">
                       <Clock className="h-4 w-4" />
-                      <span className="text-sm">45 mins</span>
+                      <span className="text-sm">10 mins</span>
                     </div>
                     <div className="flex items-center gap-2 text-white/70">
                       <Target className="h-4 w-4" />
