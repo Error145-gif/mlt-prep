@@ -1,7 +1,5 @@
-plugins: {
-  GoogleAuth: {
-    scopes: ['profile', 'email'],
-    clientId: 'YOUR_ANDROID_CLIENT_ID.apps.googleusercontent.com',
-    forceCodeForRefreshToken: true,
-  },
+GoogleAuth: {
+  scopes: ['profile', 'email'],
+  serverClientId: 'YOUR_ANDROID_CLIENT_ID_HERE.apps.googleusercontent.com', // Replace this
+  forceCodeForRefreshToken: true
 }
