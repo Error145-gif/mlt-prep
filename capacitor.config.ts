@@ -1,6 +1,1 @@
-    GoogleAuth: {
-      scopes: ['profile', 'email'],
-      // Your Android OAuth Client ID from Google Cloud Console
-      serverClientId: '1051234567890-abcdefghijklmnopqrstuvwxyz123456.apps.googleusercontent.com',
-      forceCodeForRefreshToken: true
-    }
+      serverClientId: '513889515278-j5igvo075g0iigths2ifjs1agebfepti.apps.googleusercontent.com',
