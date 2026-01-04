@@ -202,7 +202,7 @@ const isMonthlyStarter =
                           className="h-12 w-12 object-contain"
                         />
                       ) : (
-                        <Book className="h-8 w-8 text-blue-400" />
+                        <Book className="h-8 w-8 text-green-400" />
                       )}
                       <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30">
                         {test.year}
