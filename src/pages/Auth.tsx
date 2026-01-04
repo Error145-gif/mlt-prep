@@ -39,10 +39,13 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
   // Initialize GoogleAuth for Capacitor
   useEffect(() => {
     if (Capacitor.isNativePlatform()) {
-      // Initialize with your actual Android Client ID from Google Cloud Console
-      // This MUST be the Android OAuth Client ID, not the Web Client ID
+      // IMPORTANT: Replace this with your Android OAuth Client ID from Google Cloud Console
+      // Steps to get it:
+      // 1. Go to: https://console.cloud.google.com/apis/credentials
+      // 2. Find your Android OAuth Client ID (NOT Web Client ID)
+      // 3. Copy the Client ID and paste it below
       GoogleAuth.initialize({
-        clientId: 'YOUR_ANDROID_CLIENT_ID_HERE.apps.googleusercontent.com',
+        clientId: '1051234567890-abcdefghijklmnopqrstuvwxyz123456.apps.googleusercontent.com', // REPLACE THIS
         scopes: ['profile', 'email'],
         grantOfflineAccess: true,
       });
