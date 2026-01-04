@@ -1,3 +1,3 @@
-   pnpm add @codetrix-studio/capacitor-google-auth
-   npx cap sync
-   
+pnpm build
+npx cap sync
+npx cap open android

@@ -17,6 +17,8 @@ import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
+import { Capacitor } from "@capacitor/core";
+import { GoogleAuth } from "@codetrix-studio/capacitor-google-auth";
 
 interface AuthProps {
   redirectAfterAuth?: string;
@@ -33,6 +35,17 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
   const [error, setError] = useState<string | null>(null);
   const [rememberMe, setRememberMe] = useState(false);
   const autoCompleteRegistration = useMutation(api.authHelpers.autoCompleteRegistration);
+
+  // Initialize GoogleAuth for Capacitor
+  useEffect(() => {
+    if (Capacitor.isNativePlatform()) {
+      GoogleAuth.initialize({
+        clientId: process.env.AUTH_GOOGLE_ID || 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com',
+        scopes: ['profile', 'email'],
+        grantOfflineAccess: true,
+      });
+    }
+  }, []);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -87,17 +100,40 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
     try {
       console.log("[AUTH] Initiating Google Sign-In");
       
-      // Check for mobile app flow to set correct redirect
-      const isMobileApp = localStorage.getItem("is_mobile") === "true" || 
-                          new URLSearchParams(location.search).get("is_mobile") === "true";
+      const isMobileApp = Capacitor.isNativePlatform();
       
-      console.log("[AUTH] Is Mobile App Flow:", isMobileApp);
+      if (isMobileApp) {
+        console.log("[AUTH] 📱 Using Native Google Auth");
+        
+        try {
+          const googleUser = await GoogleAuth.signIn();
+          console.log("[AUTH] Native Google Sign-In successful:", googleUser);
+          
+          // Send ID token to backend for verification
+          const idToken = googleUser.authentication.idToken;
+          
+          // Call Convex backend to verify and create session
+          // You'll need to create a new action in convex for this
+          await signIn("google", { 
+            idToken,
+            redirectTo: "/mobile-auth-callback"
+          });
+          
+        } catch (nativeError) {
+          console.error("[AUTH] Native Google Sign-In failed:", nativeError);
+          throw new Error("Native Google login failed. Please try again.");
+        }
+      } else {
+        // Web flow
+        const isMobileWeb = localStorage.getItem("is_mobile") === "true" || 
+                            new URLSearchParams(location.search).get("is_mobile") === "true";
+        
+        console.log("[AUTH] Is Mobile Web Flow:", isMobileWeb);
 
-      await signIn("google", { 
-        redirectTo: isMobileApp ? "/mobile-auth-callback" : undefined 
-      });
-      // Note: setIsLoading(false) is intentionally not called here because
-      // the page will redirect away during OAuth flow
+        await signIn("google", { 
+          redirectTo: isMobileWeb ? "/mobile-auth-callback" : undefined 
+        });
+      }
     } catch (error) {
       console.error("Google sign-in error:", error);
       setError("Failed to sign in with Google. Please try again.");
@@ -113,7 +149,6 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
     try {
       const formData = new FormData(event.currentTarget);
       
-      // Ensure flow parameter is set correctly for Password provider
       if (step === "signUp") {
         formData.set("flow", "signUp");
       } else {
@@ -122,18 +157,15 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       
       await signIn("password", formData);
       
-      // For sign-up, complete registration after successful auth
       if (step === "signUp") {
         await autoCompleteRegistration().catch(console.error);
       }
       
-      // Redirect handled by useEffect
     } catch (error) {
       console.error("Password authentication error:", error);
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
       
       if (step === "signIn") {
-        // Sign-in specific errors
         if (errorMessage.includes("InvalidAccountId") || errorMessage.includes("Account not found")) {
           setError("No account found with this email. Please sign up first.");
         } else if (errorMessage.includes("Invalid password") || errorMessage.includes("Invalid credentials")) {
@@ -142,7 +174,6 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
           setError("Login failed. Please check your credentials or sign up if you don't have an account.");
         }
       } else {
-        // Sign-up specific errors
         if (errorMessage.includes("Account with this email already exists")) {
           setError("An account with this email already exists. Please sign in instead.");
         } else if (errorMessage.includes("Password")) {
@@ -164,7 +195,6 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       const formData = new FormData(event.currentTarget);
       const email = (formData.get("email") as string).toLowerCase().trim();
       
-      // Use the password provider's reset flow to generate a token compatible with reset-verification
       formData.set("flow", "reset");
       await signIn("password", formData);
       
@@ -197,7 +227,6 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       const email = formData.get("email") as string;
       const code = formData.get("code") as string;
       
-      // Move to password setting step instead of signing in directly
       setStep({ email, code, mode: "setPassword" });
       setIsLoading(false);
     } catch (error) {
@@ -217,7 +246,6 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       const formData = new FormData(event.currentTarget);
       const password = formData.get("password") as string;
       
-      // Client-side validation
       if (!password || password.length < 6) {
         setError("Password must be at least 6 characters long");
         setIsLoading(false);

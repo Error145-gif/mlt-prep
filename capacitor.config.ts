@@ -6,20 +6,17 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   server: {
     androidScheme: 'https',
-    hostname: 'mltprep.app'
+    hostname: 'mltprep.online'
   },
   plugins: {
     SplashScreen: {
       launchShowDuration: 2000,
-      backgroundColor: '#6366f1',
-      showSpinner: false,
-      androidSpinnerStyle: 'small',
-      splashFullScreen: true,
-      splashImmersive: true
+      backgroundColor: '#7C3AED',
+      showSpinner: false
     },
     GoogleAuth: {
       scopes: ['profile', 'email'],
-      serverClientId: 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com', // Replace with your actual Web Client ID from Google Cloud Console
+      serverClientId: process.env.AUTH_GOOGLE_ID || 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com',
       forceCodeForRefreshToken: true
     }
   }
