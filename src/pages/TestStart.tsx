@@ -58,8 +58,14 @@ export default function TestStart() {
   const testType = searchParams.get("type") || "mock";
   const topicIdParam = searchParams.get("topicId");
   // Validate that topicIdParam looks like a valid ID to prevent validator errors (e.g. "2024" passed as ID)
-  const isValidId = (id: string) => id.length > 10;
-  const topicId = topicIdParam && topicIdParam !== "general" && topicIdParam !== "null" && isValidId(topicIdParam) ? (topicIdParam as Id<"topics">) : undefined;
+  // Convex IDs are typically base32 strings, usually around 20-30 chars. 
+  // We'll require at least 15 chars to be safe and ensure it's not a year like "2024"
+  const isValidId = (id: string) => id && id.length > 15 && id !== "general" && id !== "null" && id !== "undefined";
+  
+  // Explicitly ignore topicId for PYQ unless we are sure it's needed (usually PYQ uses year/examName)
+  // But if the URL has it, we validate it.
+  const topicId = topicIdParam && isValidId(topicIdParam) ? (topicIdParam as Id<"topics">) : undefined;
+  
   const year = searchParams.get("year") ? parseInt(searchParams.get("year")!) : undefined;
   const setNumber = searchParams.get("setNumber") ? parseInt(searchParams.get("setNumber")!) : undefined;
   const examName = searchParams.get("examName") ? decodeURIComponent(searchParams.get("examName")!) : undefined;
