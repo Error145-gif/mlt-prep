@@ -1,3 +1,4 @@
-npx cap init "MLT Prep" "com.mltprep.app" --web-dir=dist
-npx cap add android
-npx cap sync
+   # In your android/ folder, run:
+   ./gradlew signingReport
+   # Copy the SHA-1 fingerprint
+   
