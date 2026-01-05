@@ -1,3 +1,8 @@
-{
-  "command": "grep -n \"Login Failed\" src/pages/Auth.tsx"
-}
+[
+  {
+    "tool_code": "await editFileTool({\n  \"file_path\": \"src/pages/Auth.tsx\",\n  \"changes\": [\n    {\n      \"start_line\": 82,\n      \"end_line\": 124,\n      \"content\": \"          // Also redirect to the callback page which handles the \\\"finishing touches\\\"\\n          navigate(`/mobile-auth-callback?session=${result.sessionId}`, { replace: true });\\n          \\n        } catch (nativeError: any) {\\n          console.error(\\\"[AUTH] ❌ Native Google Sign-In FAILED\\\", nativeError);\\n          // Show Alert for better visibility on phone\\n          const errorMessage = nativeError.message || JSON.stringify(nativeError);\\n          \\n          // Check for common configuration errors (SHA-1 mismatch usually returns \\\"Something went wrong\\\" or error 10)\\n          if (errorMessage.toLowerCase().includes(\\\"something went wrong\\\") || errorMessage.includes(\\\"10\\\")) {\\n             alert(`⚠️ SETUP ERROR: SHA-1 MISMATCH\\\\n\\\\nGoogle refused the login. This happens when the \\\"SHA-1 fingerprint\\\" of your Android app doesn't match the one in Google Cloud Console.\\\\n\\\\nError details: ${errorMessage}\\\\n\\\\nTo fix this:\\\\n1. Go to Google Cloud Console > Credentials\\\\n2. Add the SHA-1 of your keystore (debug or release)\\\\n3. Rebuild the app.`);\\n          } else {\\n             alert(`Login Failed: ${errorMessage}`);\\n          }\\n          setError(nativeError.message || \\\"Google login failed\\\");\\n          setIsLoading(false);\\n        }\\n      } else {\\n        // Web flow\"\n    }\n  ]\n})"
+  },
+  {
+    "tool_code": "await readFilesToContextTool({\n  \"file_paths\": [\n    \"capacitor.config.ts\"\n  ]\n})"
+  }
+]

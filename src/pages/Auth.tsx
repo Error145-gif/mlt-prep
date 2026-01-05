@@ -158,8 +158,10 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
           console.error("[AUTH] ❌ Native Google Sign-In FAILED", nativeError);
           // Show Alert for better visibility on phone
           const errorMessage = nativeError.message || JSON.stringify(nativeError);
-          if (errorMessage.includes("Something went wrong")) {
-             alert(`Login Failed: "Something went wrong". This is usually due to a SHA-1 Key mismatch in Firebase/Google Cloud Console. Please verify your keystore SHA-1 matches the one in the console.`);
+          
+          // Check for common configuration errors (SHA-1 mismatch usually returns "Something went wrong" or error 10)
+          if (errorMessage.toLowerCase().includes("something went wrong") || errorMessage.includes("10")) {
+             alert(`⚠️ SETUP ERROR: SHA-1 MISMATCH\n\nGoogle refused the login. This happens when the "SHA-1 fingerprint" of your Android app doesn't match the one in Google Cloud Console.\n\nError details: ${errorMessage}\n\nTo fix this:\n1. Go to Google Cloud Console > Credentials\n2. Add the SHA-1 of your keystore (debug or release)\n3. Rebuild the app.`);
           } else {
              alert(`Login Failed: ${errorMessage}`);
           }
