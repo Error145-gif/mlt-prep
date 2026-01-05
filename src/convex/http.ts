@@ -9,14 +9,30 @@ const http = httpRouter();
 // Helper to verify Google ID Token
 async function verifyGoogleToken(token: string) {
   try {
+    console.log("[VERIFY] Starting Google token verification...");
+    console.log("[VERIFY] Token length:", token?.length);
+    console.log("[VERIFY] Token preview:", token?.substring(0, 50) + "...");
+    
     const response = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${token}`);
+    
+    console.log("[VERIFY] Google API response status:", response.status);
+    
     if (!response.ok) {
-      console.error("Google token verification failed:", await response.text());
+      const errorText = await response.text();
+      console.error("[VERIFY] ❌ Google token verification FAILED");
+      console.error("[VERIFY] Status:", response.status);
+      console.error("[VERIFY] Error:", errorText);
       return null;
     }
-    return await response.json();
+    
+    const userData = await response.json();
+    console.log("[VERIFY] ✅ Token verified successfully");
+    console.log("[VERIFY] User email:", userData.email);
+    console.log("[VERIFY] User name:", userData.name);
+    
+    return userData;
   } catch (e) {
-    console.error("Error verifying Google token:", e);
+    console.error("[VERIFY] ❌ Exception during token verification:", e);
     return null;
   }
 }
@@ -63,12 +79,18 @@ http.route({
   path: "/auth/mobile-callback",
   method: "GET",
   handler: httpAction(async (ctx, request) => {
-    console.log("[HTTP] Mobile auth callback triggered");
+    console.log("=".repeat(60));
+    console.log("[HTTP] 🚀 MOBILE AUTH CALLBACK TRIGGERED");
+    console.log("=".repeat(60));
+    
     const url = new URL(request.url);
     const mobileToken = url.searchParams.get("mobile_token");
     
+    console.log("[HTTP] Full URL:", request.url);
+    console.log("[HTTP] Has mobile_token param:", !!mobileToken);
+    
     if (!mobileToken) {
-      console.error("[HTTP] Missing mobile_token");
+      console.error("[HTTP] ❌ MISSING mobile_token parameter");
       return new Response(null, {
         status: 302,
         headers: {
@@ -77,11 +99,15 @@ http.route({
       });
     }
     
+    console.log("[HTTP] Token received, length:", mobileToken.length);
+    
     // Verify Google Token
-    console.log("[HTTP] Verifying Google token...");
+    console.log("[HTTP] 🔍 Starting Google token verification...");
     const googleUser = await verifyGoogleToken(mobileToken);
+    
     if (!googleUser || !googleUser.email) {
-      console.error("[HTTP] Invalid Google Token - Response:", googleUser);
+      console.error("[HTTP] ❌ INVALID GOOGLE TOKEN");
+      console.error("[HTTP] Google response:", JSON.stringify(googleUser, null, 2));
       return new Response(null, {
         status: 302,
         headers: {
@@ -90,9 +116,13 @@ http.route({
       });
     }
     
-    console.log("[HTTP] Google user verified:", googleUser.email);
+    console.log("[HTTP] ✅ Google user verified successfully");
+    console.log("[HTTP] Email:", googleUser.email);
+    console.log("[HTTP] Name:", googleUser.name);
     
     try {
+      console.log("[HTTP] 💾 Creating/finding user and session...");
+      
       // Find or Create User and Get Session ID
       const sessionId = await ctx.runMutation(internal.users.ensureUserFromMobile, {
         email: googleUser.email,
@@ -100,11 +130,13 @@ http.route({
         picture: googleUser.picture,
       });
       
-      console.log("[HTTP] Session created:", sessionId);
+      console.log("[HTTP] ✅ Session created successfully:", sessionId);
       
-      // Redirect to Mobile Auth Callback page (not directly to dashboard)
-      // This allows the frontend to properly set up the auth state
+      // Redirect to Mobile Auth Callback page
       const dashboardUrl = `/mobile-auth-callback?session=${sessionId}`;
+      
+      console.log("[HTTP] ➡️ Redirecting to:", dashboardUrl);
+      console.log("=".repeat(60));
       
       return new Response(null, {
         status: 302,
@@ -114,7 +146,9 @@ http.route({
         },
       });
     } catch (error) {
-      console.error("[HTTP] Error creating session:", error);
+      console.error("[HTTP] ❌ ERROR creating session");
+      console.error("[HTTP] Error details:", error);
+      console.error("[HTTP] Error stack:", error instanceof Error ? error.stack : "No stack");
       return new Response(null, {
         status: 302,
         headers: {
