@@ -58,8 +58,10 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
 
     if (authErrorParam) {
       const errorMessages: Record<string, string> = {
-        google_failed:
-          "Google login could not be completed. Please try again or contact support.",
+        google_failed: "Google login could not be completed. Please try again or contact support.",
+        missing_token: "No authentication token received from Google. Please try again.",
+        invalid_token: "Google authentication token is invalid. Please check your Google Cloud Console configuration (SHA-1 fingerprint and package name).",
+        session_failed: "Failed to create session. Please try again or contact support.",
       };
       const message =
         errorMessages[authErrorParam] ||
@@ -124,9 +126,9 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
           
           // Send the ID token to our backend endpoint
           // Use VITE_ prefix for client-side env vars, fallback to production URL
-          const siteUrl = import.meta.env.VITE_CONVEX_URL?.replace('/api', '') || 
-                          'https://successful-bandicoot-650.convex.cloud';
-          const callbackUrl = `${siteUrl}/auth/mobile-callback?mobile_token=${googleUser.authentication.idToken}`;
+          const convexUrl = import.meta.env.VITE_CONVEX_URL || 
+                            'https://successful-bandicoot-650.convex.cloud';
+          const callbackUrl = `${convexUrl}/auth/mobile-callback?mobile_token=${googleUser.authentication.idToken}`;
           
           console.log("[AUTH] Redirecting to mobile callback:", callbackUrl);
           window.location.href = callbackUrl;

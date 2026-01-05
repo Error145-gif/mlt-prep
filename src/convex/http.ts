@@ -69,39 +69,59 @@ http.route({
     
     if (!mobileToken) {
       console.error("[HTTP] Missing mobile_token");
-      return new Response("Missing mobile_token", { status: 400 });
+      return new Response(null, {
+        status: 302,
+        headers: {
+          "Location": "/auth?authError=missing_token",
+        },
+      });
     }
     
     // Verify Google Token
     console.log("[HTTP] Verifying Google token...");
     const googleUser = await verifyGoogleToken(mobileToken);
     if (!googleUser || !googleUser.email) {
-      console.error("[HTTP] Invalid Google Token");
-      return new Response("Invalid Google Token", { status: 401 });
+      console.error("[HTTP] Invalid Google Token - Response:", googleUser);
+      return new Response(null, {
+        status: 302,
+        headers: {
+          "Location": "/auth?authError=invalid_token",
+        },
+      });
     }
     
     console.log("[HTTP] Google user verified:", googleUser.email);
     
-    // Find or Create User and Get Session ID
-    const sessionId = await ctx.runMutation(internal.users.ensureUserFromMobile, {
-      email: googleUser.email,
-      name: googleUser.name,
-      picture: googleUser.picture,
-    });
-    
-    console.log("[HTTP] Session created:", sessionId);
-    
-    // Redirect to Mobile Auth Callback page (not directly to dashboard)
-    // This allows the frontend to properly set up the auth state
-    const dashboardUrl = `/mobile-auth-callback?session=${sessionId}`;
-    
-    return new Response(null, {
-      status: 302,
-      headers: {
-        "Location": dashboardUrl,
-        "Set-Cookie": `convex_auth_token=${sessionId}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${60 * 60 * 24 * 30}`,
-      },
-    });
+    try {
+      // Find or Create User and Get Session ID
+      const sessionId = await ctx.runMutation(internal.users.ensureUserFromMobile, {
+        email: googleUser.email,
+        name: googleUser.name,
+        picture: googleUser.picture,
+      });
+      
+      console.log("[HTTP] Session created:", sessionId);
+      
+      // Redirect to Mobile Auth Callback page (not directly to dashboard)
+      // This allows the frontend to properly set up the auth state
+      const dashboardUrl = `/mobile-auth-callback?session=${sessionId}`;
+      
+      return new Response(null, {
+        status: 302,
+        headers: {
+          "Location": dashboardUrl,
+          "Set-Cookie": `convex_auth_token=${sessionId}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${60 * 60 * 24 * 30}`,
+        },
+      });
+    } catch (error) {
+      console.error("[HTTP] Error creating session:", error);
+      return new Response(null, {
+        status: 302,
+        headers: {
+          "Location": "/auth?authError=session_failed",
+        },
+      });
+    }
   }),
 });
 
