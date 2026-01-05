@@ -114,10 +114,14 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
         console.log("[AUTH] 📱 Using Native Google Auth");
         
         try {
+          console.log("[AUTH] 🚀 Starting Native Google Sign-In...");
           const googleUser = await GoogleAuth.signIn();
-          console.log("[AUTH] Native Google Sign-In successful:", googleUser);
+          console.log("[AUTH] ✅ Native Google Sign-In successful");
+          console.log("[AUTH] 📧 Email:", googleUser.email);
+          console.log("[AUTH] 🔑 Has ID Token:", !!googleUser.authentication?.idToken);
           
           if (!googleUser.authentication?.idToken) {
+            console.error("[AUTH] ❌ No ID token in response");
             throw new Error("No ID token received from Google");
           }
           
@@ -125,17 +129,37 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
           localStorage.setItem("is_mobile", "true");
           
           // Send the ID token to our backend endpoint
-          // Use VITE_ prefix for client-side env vars, fallback to production URL
           const convexUrl = import.meta.env.VITE_CONVEX_URL || 
                             'https://successful-bandicoot-650.convex.cloud';
           const callbackUrl = `${convexUrl}/auth/mobile-callback?mobile_token=${googleUser.authentication.idToken}`;
           
-          console.log("[AUTH] Redirecting to mobile callback:", callbackUrl);
+          console.log("[AUTH] 🌐 Convex URL:", convexUrl);
+          console.log("[AUTH] 🔗 Callback URL:", callbackUrl);
+          console.log("[AUTH] ➡️ Redirecting to backend...");
+          
           window.location.href = callbackUrl;
           
-        } catch (nativeError) {
-          console.error("[AUTH] Native Google Sign-In failed:", nativeError);
-          setError("Google login failed. Please try again.");
+        } catch (nativeError: any) {
+          console.error("[AUTH] ❌ Native Google Sign-In FAILED");
+          console.error("[AUTH] Error Type:", nativeError?.constructor?.name);
+          console.error("[AUTH] Error Message:", nativeError?.message);
+          console.error("[AUTH] Error Code:", nativeError?.code);
+          console.error("[AUTH] Full Error:", JSON.stringify(nativeError, null, 2));
+          
+          let errorMessage = "Google login failed. ";
+          
+          if (nativeError?.message?.includes("12501")) {
+            errorMessage += "Sign-in was cancelled. Please try again.";
+          } else if (nativeError?.message?.includes("10")) {
+            errorMessage += "Configuration error. Please check Google Cloud Console settings (SHA-1 fingerprint and OAuth Client ID).";
+          } else if (nativeError?.message) {
+            errorMessage += nativeError.message;
+          } else {
+            errorMessage += "Please try again or contact support.";
+          }
+          
+          setError(errorMessage);
+          toast.error(errorMessage);
           setIsLoading(false);
         }
       } else {
