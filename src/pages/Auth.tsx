@@ -122,11 +122,12 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
           // Store mobile flag
           localStorage.setItem("is_mobile", "true");
           
-          // Use web OAuth flow with the ID token
-          // Convex Auth will handle the token verification
-          await signIn("google", { 
-            redirectTo: "/mobile-auth-callback"
-          });
+          // Send the ID token to our backend endpoint
+          const siteUrl = process.env.CONVEX_SITE_URL || window.location.origin;
+          const callbackUrl = `${siteUrl}/auth/mobile-callback?mobile_token=${googleUser.authentication.idToken}`;
+          
+          console.log("[AUTH] Redirecting to mobile callback:", callbackUrl);
+          window.location.href = callbackUrl;
           
         } catch (nativeError) {
           console.error("[AUTH] Native Google Sign-In failed:", nativeError);
