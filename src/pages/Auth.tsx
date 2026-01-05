@@ -40,9 +40,13 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
   // Initialize GoogleAuth for Capacitor
   useEffect(() => {
     if (Capacitor.isNativePlatform()) {
+      const googleServerClientId =
+        "513889515278-j5igvo075g0iigths2ifjs1agebfepti.apps.googleusercontent.com";
+
       GoogleAuth.initialize({
-        clientId: '513889515278-j5igvo075g0iigths2ifjs1agebfepti.apps.googleusercontent.com',
-        scopes: ['profile', 'email'],
+        clientId: googleServerClientId,
+        serverClientId: googleServerClientId,
+        scopes: ["profile", "email"],
         grantOfflineAccess: false,
       });
     }
@@ -114,8 +118,13 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
           const googleUser = await GoogleAuth.signIn();
           console.log("[AUTH] ✅ Native Google Sign-In successful");
           
-          if (!googleUser.authentication?.idToken) {
-            throw new Error("No ID token received from Google");
+          const idToken =
+            googleUser.authentication?.idToken ?? (googleUser as any)?.idToken;
+
+          if (!idToken) {
+            throw new Error(
+              "No ID token received from Google. Check serverClientId configuration."
+            );
           }
           
           // Store mobile flag
@@ -124,7 +133,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
           // NEW FLOW: Call Convex Action directly
           console.log("[AUTH] 🔄 Verifying token with backend...");
           const result = await verifyAndSignInGoogle({
-            idToken: googleUser.authentication.idToken
+            idToken,
           });
 
           console.log("[AUTH] ✅ Backend verification successful");
