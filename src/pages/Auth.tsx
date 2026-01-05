@@ -156,6 +156,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
           // Only show SHA-1 alert for SPECIFIC error codes that indicate configuration issues
           // Error code 10 = DEVELOPER_ERROR (wrong SHA-1 or package name)
           if (errorCode === 10 || errorCode === "10" || errorMessage.includes("DEVELOPER_ERROR")) {
+             console.error("[AUTH] ❌ SHA-1 MISMATCH DETECTED");
              alert(`⚠️ SETUP ERROR: SHA-1 MISMATCH\n\nGoogle refused the login.\n\nReason: The "SHA-1 fingerprint" of your Android app does NOT match the one in Google Cloud Console.\n\nError Code: ${errorCode}\n\nFIX REQUIRED:\n1. Go to Google Cloud Console\n2. Verify SHA-1 matches your keystore\n3. Check package name is correct\n4. REBUILD THE APP (npx cap sync android)`);
           } 
           // Error code 12501 = USER_CANCELLED
@@ -163,13 +164,21 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
             console.log("[AUTH] User cancelled the login");
             setError("Login cancelled");
           }
-          // Generic "something went wrong" - likely a network or temporary issue
+          // Generic "something went wrong" - DO NOT show SHA-1 alert
           else if (errorMessage.toLowerCase().includes("something went wrong")) {
-             alert(`⚠️ LOGIN ERROR\n\nGoogle Sign-In failed.\n\nThis could be due to:\n• Network connection issues\n• Google Play Services not updated\n• Temporary Google server issue\n\nError: ${errorMessage}\n\nPlease try:\n1. Check your internet connection\n2. Update Google Play Services\n3. Try again in a few moments`);
+             console.error("[AUTH] ❌ Generic Google error (NOT SHA-1 related)");
+             console.error("[AUTH] Error details:", { errorCode, errorMessage, nativeError });
+             
+             // Show a simpler, less alarming message
+             toast.error("Google login failed. Please try again or use email login.");
+             setError("Google login temporarily unavailable");
           }
           // All other errors
           else {
-             alert(`Login Error: ${errorMessage}\n\nError Code: ${errorCode || 'Unknown'}\n\nPlease take a screenshot and contact support.`);
+             console.error("[AUTH] ❌ Unknown Google Sign-In error");
+             console.error("[AUTH] Error details:", { errorCode, errorMessage, nativeError });
+             toast.error(`Login failed: ${errorMessage}`);
+             setError(errorMessage || "Google login failed");
           }
           
           setError(nativeError.message || "Google login failed");
