@@ -123,7 +123,9 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
           localStorage.setItem("is_mobile", "true");
           
           // Send the ID token to our backend endpoint
-          const siteUrl = process.env.CONVEX_SITE_URL || window.location.origin;
+          // Use VITE_ prefix for client-side env vars, fallback to production URL
+          const siteUrl = import.meta.env.VITE_CONVEX_URL?.replace('/api', '') || 
+                          'https://successful-bandicoot-650.convex.cloud';
           const callbackUrl = `${siteUrl}/auth/mobile-callback?mobile_token=${googleUser.authentication.idToken}`;
           
           console.log("[AUTH] Redirecting to mobile callback:", callbackUrl);
