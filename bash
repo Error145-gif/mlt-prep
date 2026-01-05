@@ -1,4 +1,4 @@
+   pnpm run build
    npx cap sync android
-   npx cap copy android
    npx cap open android
    

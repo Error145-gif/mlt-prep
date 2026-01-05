@@ -1,24 +1,9 @@
-import { CapacitorConfig } from '@capacitor/cli';
-
-const config: CapacitorConfig = {
-  appId: 'com.mltprep.app',
-  appName: 'MLT Prep',
-  webDir: 'dist',
-  server: {
-    androidScheme: 'https'
-  },
   plugins: {
     GoogleAuth: {
       scopes: ['profile', 'email'],
-      serverClientId: '513889515278-j5igvo075g0iigths2ifjs1agebfepti.apps.googleusercontent.com',
+      // IMPORTANT: This should be your ANDROID Client ID from Google Cloud Console
+      // NOT the Web Client ID. Get it from:
+      // Google Cloud Console > APIs & Services > Credentials > OAuth 2.0 Client IDs > Android
+      serverClientId: 'YOUR_ANDROID_CLIENT_ID_HERE.apps.googleusercontent.com',
       forceCodeForRefreshToken: true,
     },
-    SplashScreen: {
-      launchShowDuration: 2000,
-      backgroundColor: '#5B21B6',
-      showSpinner: false,
-    },
-  },
-};
-
-export default config;
