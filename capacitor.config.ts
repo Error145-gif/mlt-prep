@@ -10,13 +10,15 @@ const config: CapacitorConfig = {
   plugins: {
     GoogleAuth: {
       scopes: ['profile', 'email'],
-      // serverClientId: The WEB Client ID (for backend verification)
       serverClientId: '513889515278-j5igvo075g0iigths2ifjs1agebfepti.apps.googleusercontent.com',
-      // forceCodeForRefreshToken: true,
-      // NOTE: 'clientId' for Android is usually read from google-services.json.
-      // Do NOT set 'clientId' here to the Web Client ID.
-    }
-  }
+      forceCodeForRefreshToken: true,
+    },
+    SplashScreen: {
+      launchShowDuration: 2000,
+      backgroundColor: '#5B21B6',
+      showSpinner: false,
+    },
+  },
 };
 
 export default config;

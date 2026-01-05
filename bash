@@ -1,1 +1,4 @@
-npx cap sync android
+   npx cap sync android
+   npx cap copy android
+   npx cap open android
+   
