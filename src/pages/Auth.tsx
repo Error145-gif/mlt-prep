@@ -13,7 +13,7 @@ import { ArrowRight, Loader2, Mail, Microscope, TestTube, Dna, Lock, KeyRound } 
 import { Suspense, useEffect, useState, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { motion } from "framer-motion";
-import { useMutation } from "convex/react";
+import { useMutation, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
@@ -35,19 +35,15 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
   const [error, setError] = useState<string | null>(null);
   const [rememberMe, setRememberMe] = useState(false);
   const autoCompleteRegistration = useMutation(api.authHelpers.autoCompleteRegistration);
+  const verifyAndSignInGoogle = useAction(api.authActions.verifyAndSignInGoogle);
 
   // Initialize GoogleAuth for Capacitor
   useEffect(() => {
     if (Capacitor.isNativePlatform()) {
-      // IMPORTANT: Replace this with your Android OAuth Client ID from Google Cloud Console
-      // Steps to get it:
-      // 1. Go to: https://console.cloud.google.com/apis/credentials
-      // 2. Find your Android OAuth Client ID (NOT Web Client ID)
-      // 3. Copy the Client ID and paste it below
       GoogleAuth.initialize({
         clientId: '513889515278-j5igvo075g0iigths2ifjs1agebfepti.apps.googleusercontent.com',
         scopes: ['profile', 'email'],
-        grantOfflineAccess: true,
+        grantOfflineAccess: false,
       });
     }
   }, []);
@@ -117,49 +113,43 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
           console.log("[AUTH] 🚀 Starting Native Google Sign-In...");
           const googleUser = await GoogleAuth.signIn();
           console.log("[AUTH] ✅ Native Google Sign-In successful");
-          console.log("[AUTH] 📧 Email:", googleUser.email);
-          console.log("[AUTH] 🔑 Has ID Token:", !!googleUser.authentication?.idToken);
           
           if (!googleUser.authentication?.idToken) {
-            console.error("[AUTH] ❌ No ID token in response");
             throw new Error("No ID token received from Google");
           }
           
           // Store mobile flag
           localStorage.setItem("is_mobile", "true");
           
-          // Send the ID token to our backend endpoint
-          const convexUrl = import.meta.env.VITE_CONVEX_URL || 
-                            'https://successful-bandicoot-650.convex.cloud';
-          const callbackUrl = `${convexUrl}/auth/mobile-callback?mobile_token=${googleUser.authentication.idToken}`;
+          // NEW FLOW: Call Convex Action directly
+          console.log("[AUTH] 🔄 Verifying token with backend...");
+          const result = await verifyAndSignInGoogle({
+            idToken: googleUser.authentication.idToken
+          });
+
+          console.log("[AUTH] ✅ Backend verification successful");
           
-          console.log("[AUTH] 🌐 Convex URL:", convexUrl);
-          console.log("[AUTH] 🔗 Callback URL:", callbackUrl);
-          console.log("[AUTH] ➡️ Redirecting to backend...");
+          // Manually set the session cookie for Convex Auth
+          // Note: In a real browser, httpOnly cookies can't be set by JS, 
+          // but for Capacitor/Convex Auth client, we might need to rely on the token being handled by the client or a custom flow.
+          // However, since we have the sessionId, we can simulate the auth flow.
           
-          window.location.href = callbackUrl;
+          // For Convex Auth to pick it up, we usually need the cookie.
+          // Since we are in Capacitor, we can set document.cookie (if not HttpOnly) or use a different auth method.
+          // BUT, the previous flow relied on the server setting the cookie.
+          
+          // Let's try setting it manually since we are in a "browser" environment (WebView)
+          // The cookie name is usually `convex_auth_token`
+          document.cookie = `convex_auth_token=${result.sessionId}; path=/; max-age=${60 * 60 * 24 * 30}; secure; samesite=lax`;
+          
+          // Also redirect to the callback page which handles the "finishing touches"
+          navigate(`/mobile-auth-callback?session=${result.sessionId}`, { replace: true });
           
         } catch (nativeError: any) {
-          console.error("[AUTH] ❌ Native Google Sign-In FAILED");
-          console.error("[AUTH] Error Type:", nativeError?.constructor?.name);
-          console.error("[AUTH] Error Message:", nativeError?.message);
-          console.error("[AUTH] Error Code:", nativeError?.code);
-          console.error("[AUTH] Full Error:", JSON.stringify(nativeError, null, 2));
-          
-          let errorMessage = "Google login failed. ";
-          
-          if (nativeError?.message?.includes("12501")) {
-            errorMessage += "Sign-in was cancelled. Please try again.";
-          } else if (nativeError?.message?.includes("10")) {
-            errorMessage += "Configuration error. Please check Google Cloud Console settings (SHA-1 fingerprint and OAuth Client ID).";
-          } else if (nativeError?.message) {
-            errorMessage += nativeError.message;
-          } else {
-            errorMessage += "Please try again or contact support.";
-          }
-          
-          setError(errorMessage);
-          toast.error(errorMessage);
+          console.error("[AUTH] ❌ Native Google Sign-In FAILED", nativeError);
+          // Show Alert for better visibility on phone
+          alert(`Login Failed: ${nativeError.message || JSON.stringify(nativeError)}`);
+          setError(nativeError.message || "Google login failed");
           setIsLoading(false);
         }
       } else {
@@ -173,7 +163,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
           redirectTo: isMobileWeb ? "/mobile-auth-callback" : undefined 
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Google sign-in error:", error);
       setError("Failed to sign in with Google. Please try again.");
       setIsLoading(false);
