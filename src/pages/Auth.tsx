@@ -45,7 +45,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       // 2. Find your Android OAuth Client ID (NOT Web Client ID)
       // 3. Copy the Client ID and paste it below
       GoogleAuth.initialize({
-        clientId: '1051234567890-abcdefghijklmnopqrstuvwxyz123456.apps.googleusercontent.com', // REPLACE THIS
+        clientId: '513889515278-j5igvo075g0iigths2ifjs1agebfepti.apps.googleusercontent.com',
         scopes: ['profile', 'email'],
         grantOfflineAccess: true,
       });
