@@ -83,17 +83,6 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       // Auto-complete registration for ALL users (handles welcome email logic internally)
       autoCompleteRegistration().catch(console.error);
 
-      // Check for mobile app flow
-      const isMobileApp = Capacitor.isNativePlatform() || 
-                          localStorage.getItem("is_mobile") === "true" || 
-                          new URLSearchParams(location.search).get("is_mobile") === "true";
-
-      if (isMobileApp) {
-        console.log("[AUTH] 📱 Mobile app detected, redirecting to callback...");
-        navigate("/mobile-auth-callback", { replace: true });
-        return;
-      }
-      
       // Redirect based on user role
       const redirect = user?.role === "admin" ? "/admin" : (redirectAfterAuth || "/student");
 
@@ -116,7 +105,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
         try {
           console.log("[AUTH] 🚀 Starting Native Google Sign-In...");
           const googleUser = await GoogleAuth.signIn();
-          console.log("[AUTH] ✅ Native Google Sign-In successful");
+          console.log("[AUTH] ✅ Native Google Sign-In successful", googleUser);
           
           const idToken =
             googleUser.authentication?.idToken ?? (googleUser as any)?.idToken;
@@ -160,10 +149,11 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
           const errorMessage = nativeError.message || JSON.stringify(nativeError);
           
           // Check for common configuration errors (SHA-1 mismatch usually returns "Something went wrong" or error 10)
+          // We are making this check broader and the alert more prominent
           if (errorMessage.toLowerCase().includes("something went wrong") || errorMessage.includes("10")) {
-             alert(`⚠️ SETUP ERROR: SHA-1 MISMATCH\n\nGoogle refused the login. This happens when the "SHA-1 fingerprint" of your Android app doesn't match the one in Google Cloud Console.\n\nError details: ${errorMessage}\n\nTo fix this:\n1. Go to Google Cloud Console > Credentials\n2. Add the SHA-1 of your keystore (debug or release)\n3. Rebuild the app.`);
+             alert(`⚠️ SETUP ERROR: SHA-1 MISMATCH\n\nGoogle refused the login.\n\nReason: The "SHA-1 fingerprint" of your Android app does NOT match the one in Google Cloud Console.\n\nError: ${errorMessage}\n\nFIX REQUIRED:\n1. Go to Google Cloud Console\n2. Add the SHA-1 from your keystore\n3. REBUILD THE APP (npx cap sync android)`);
           } else {
-             alert(`Login Failed: ${errorMessage}`);
+             alert(`Login Error: ${errorMessage}\n\nPlease take a screenshot and send it to support.`);
           }
           setError(nativeError.message || "Google login failed");
           setIsLoading(false);

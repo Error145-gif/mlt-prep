@@ -1,13 +1,22 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { Loader2 } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function MobileAuthCallback() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [status, setStatus] = useState("Initializing...");
 
   useEffect(() => {
+    // If already authenticated, go straight to dashboard
+    if (isAuthenticated) {
+      console.log("[CALLBACK] User already authenticated. Redirecting to student dashboard.");
+      navigate("/student", { replace: true });
+      return;
+    }
+
     const handleCallback = async () => {
       try {
         setStatus("Processing session...");
@@ -47,7 +56,7 @@ export default function MobileAuthCallback() {
     };
 
     handleCallback();
-  }, [searchParams, navigate]);
+  }, [searchParams, navigate, isAuthenticated]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#5B21B6] via-[#7C3AED] to-[#A855F7] text-white p-4">
