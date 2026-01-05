@@ -1,3 +1,3 @@
 {
-  "plan": "1. Advise the user to ensure the Android app uses Chrome Custom Tabs or a system browser for authentication to resolve the 'Access blocked' error.\n2. Explain that for the website login to work seamlessly on 'mltprep.online', the Google OAuth flow must be initiated from 'mltprep.online' so that the callback and cookie setting occur on the correct domain."
+  "command": "grep -n \"Login Failed\" src/pages/Auth.tsx"
 }

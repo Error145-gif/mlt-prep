@@ -157,7 +157,12 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
         } catch (nativeError: any) {
           console.error("[AUTH] ❌ Native Google Sign-In FAILED", nativeError);
           // Show Alert for better visibility on phone
-          alert(`Login Failed: ${nativeError.message || JSON.stringify(nativeError)}`);
+          const errorMessage = nativeError.message || JSON.stringify(nativeError);
+          if (errorMessage.includes("Something went wrong")) {
+             alert(`Login Failed: "Something went wrong". This is usually due to a SHA-1 Key mismatch in Firebase/Google Cloud Console. Please verify your keystore SHA-1 matches the one in the console.`);
+          } else {
+             alert(`Login Failed: ${errorMessage}`);
+          }
           setError(nativeError.message || "Google login failed");
           setIsLoading(false);
         }

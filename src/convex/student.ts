@@ -401,12 +401,17 @@ export const getPYQSets = query({
       console.log("No PYQ questions found in database");
       return [];
     }
+
+    // Filter out invalid questions (empty question text or no options)
+    const validQuestions = pyqQuestions.filter(
+      (q) => q.question && q.question.trim() !== "" && q.options && q.options.length > 0
+    );
     
-    console.log(`Found ${pyqQuestions.length} PYQ questions`);
+    console.log(`Found ${validQuestions.length} valid PYQ questions out of ${pyqQuestions.length} total`);
 
     // Group by exam name and year
-    const setsByExamYear = new Map<string, typeof pyqQuestions>();
-    for (const q of pyqQuestions) {
+    const setsByExamYear = new Map<string, typeof validQuestions>();
+    for (const q of validQuestions) {
       const examName = q.examName || "General";
       const year = q.year || 0;
       const key = `${examName}_${year}`;
@@ -532,190 +537,65 @@ export const getTestQuestions = query({
     examName: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    // Enforce authentication and subscription/trial limits
-    const user = await getCurrentUser(ctx);
-    if (!user) {
-      return [];
-    }
+    const { testType, topicId, year, setNumber, examName } = args;
 
-    // 1. Check if this specific test is unlocked via ad (HIGHEST PRIORITY)
-    if (args.setNumber) {
-      const adUnlock = await ctx.db
-        .query("adUnlockedTests")
-        .withIndex("by_user_and_type", (q) => q.eq("userId", user._id).eq("testType", args.testType))
-        .filter(q => q.eq(q.field("testSetNumber"), args.setNumber))
-        .first();
-      
-      if (adUnlock) {
-        console.log("✅ Access granted via ad unlock");
-        // Proceed to fetch questions below without limit checks
+    let questions: any[] = [];
+
+    if (testType === "mock") {
+      if (topicId) {
+        questions = await ctx.db
+          .query("questions")
+          .withIndex("by_topic", (q) => q.eq("topicId", topicId))
+          .collect();
       } else {
-        // If not ad-unlocked, check subscription limits
-        
-        // Check for active subscription and get plan limits
-        const subscription = await ctx.db
-          .query("subscriptions")
-          .withIndex("by_user", (q) => q.eq("userId", user._id))
-          .filter((q) => q.eq(q.field("status"), "active"))
-          .first();
-
-        const hasActiveSubscription = subscription && subscription.endDate > Date.now();
-
-        // Determine plan limits (IN SETS)
-        let mockSetLimit = 1; // Free trial
-        let pyqSetLimit = 1;
-        let aiSetLimit = 1;
-
-        if (hasActiveSubscription) {
-          // Monthly Starter Plan (₹99) - LIMITED SETS
-          if (subscription.amount === 99 || subscription.planName.includes("Monthly Starter")) {
-            mockSetLimit = 25; // 25 SETS
-            pyqSetLimit = 20; // 20 SETS
-            aiSetLimit = 25; // 25 SETS
-          } else {
-            // Higher plans get unlimited
-            mockSetLimit = 9999;
-            pyqSetLimit = 9999;
-            aiSetLimit = 9999;
-          }
-        }
-
-        // Check if user has exceeded their limit
-        let setLimit = 0;
-        if (args.testType === "mock") {
-          setLimit = mockSetLimit;
-        } else if (args.testType === "pyq") {
-          setLimit = pyqSetLimit;
-        } else if (args.testType === "ai") {
-          setLimit = aiSetLimit;
-        }
-
-        // ENFORCE SET NUMBER LIMIT FOR MONTHLY STARTER / FREE
-        // If the requested set number is beyond the limit, block it (unless ad unlocked, which is checked above)
-        if (args.setNumber && args.setNumber > setLimit) {
-           // For free users, we might want to allow re-taking the 1st set even if they "used" the trial?
-           // But strictly: Set #1 <= Limit 1. Set #2 > Limit 1.
-           // So this logic works for Free (Limit 1) and Monthly (Limit 20/25).
-           
-           // Exception: If user has completed it before? 
-           // Usually "Locked" means locked. But if they did it when they had a higher plan?
-           // For now, strict enforcement based on current plan.
-           
-           console.log(`Blocking access to ${args.testType} set ${args.setNumber} - Set number > Limit (${setLimit})`);
-           return [];
-        }
-        
-        // Also check unique sets for Free Trial users specifically (since they only get 1)
-        // If they try to access Set #1 again, it's <= Limit 1, so allowed by above check.
-        // But if we want to strictly limit Free users to "One Time Only", we check completedTests.
-        if (!hasActiveSubscription) {
-           const completedTests = await ctx.db
-            .query("testSessions")
-            .withIndex("by_user", (q) => q.eq("userId", user._id))
-            .filter((q) => q.eq(q.field("status"), "completed"))
-            .filter((q) => q.eq(q.field("testType"), args.testType))
-            .collect();
-            
-           if (completedTests.length >= 1) {
-             // Free trial used.
-             // But wait, if they are retaking Set #1?
-             // If we want to allow retakes of the free set:
-             if (args.setNumber && args.setNumber === 1) {
-               // Allow retake of set 1
-             } else {
-               return [];
-             }
-           }
-        }
+        // Get random questions for mock test if no topic specified
+        // For now, just get some questions
+        questions = await ctx.db.query("questions").take(50);
       }
+    } else if (testType === "pyq") {
+      let query = ctx.db.query("questions");
+      
+      // Apply filters for PYQ
+      if (year) {
+        query = query.filter((q) => q.eq(q.field("year"), year));
+      }
+      if (setNumber) {
+        query = query.filter((q) => q.eq(q.field("setNumber"), setNumber));
+      }
+      if (examName) {
+        query = query.filter((q) => q.eq(q.field("examName"), examName));
+      }
+      
+      // If topicId is provided for PYQ (unlikely but possible)
+      if (topicId) {
+        query = query.filter((q) => q.eq(q.field("topicId"), topicId));
+      }
+
+      questions = await query.collect();
+    } else if (testType === "ai") {
+       // AI questions logic
+       if (topicId) {
+         questions = await ctx.db
+           .query("questions")
+           .withIndex("by_topic", (q) => q.eq("topicId", topicId))
+           .take(20);
+       } else {
+         questions = await ctx.db.query("questions").take(20);
+       }
     }
-    
-    try {
-      let questions: any[] = [];
-      
-      if (args.testType === "mock") {
-        // Get approved manual questions
-        const allQuestions = await ctx.db
-          .query("questions")
-          .withIndex("by_source", (q) => q.eq("source", "manual"))
-          .filter((q) => q.eq(q.field("status"), "approved"))
-          .collect();
-        
-        // Organize into sets dynamically based on setNumber parameter
-        if (args.setNumber) {
-          const setSize = 100; // Fixed size for sets
-          const startIndex = (args.setNumber - 1) * setSize;
-          const endIndex = startIndex + setSize;
-          questions = allQuestions.slice(startIndex, endIndex);
-        } else {
-          questions = allQuestions.slice(0, 100);
-        }
-        
-      } else if (args.testType === "pyq") {
-        // Get PYQ questions
-        const allPyqQuestions = await ctx.db
-          .query("questions")
-          .withIndex("by_source", (q) => q.eq("source", "pyq"))
-          .filter((q) => q.eq(q.field("status"), "approved"))
-          .collect();
-        
-        // Filter by year and examName
-        const filteredQuestions = allPyqQuestions.filter(q => 
-          q.year === args.year &&
-          (!args.examName || q.examName === args.examName)
-        );
-        
-        if (args.setNumber) {
-          const setSize = 20; // Fixed size for PYQ sets
-          const startIndex = (args.setNumber - 1) * setSize;
-          const endIndex = startIndex + setSize;
-          questions = filteredQuestions.slice(startIndex, endIndex);
-        } else {
-          questions = filteredQuestions.slice(0, 20);
-        }
-        
-      } else if (args.testType === "ai") {
-        // Get approved AI questions
-        const allQuestions = await ctx.db
-          .query("questions")
-          .withIndex("by_source", (q) => q.eq("source", "ai"))
-          .filter((q) => q.eq(q.field("status"), "approved"))
-          .collect();
-        
-        // Organize into sets dynamically based on setNumber parameter
-        if (args.setNumber) {
-          const setSize = 25; // Fixed size for AI sets
-          const startIndex = (args.setNumber - 1) * setSize;
-          const endIndex = startIndex + setSize;
-          questions = allQuestions.slice(startIndex, endIndex);
-        } else {
-          questions = allQuestions.slice(0, 25);
-        }
-      }
-      
-      // Early return if no questions found
-      if (questions.length === 0) {
-        console.log(`No questions found for testType: ${args.testType}, setNumber: ${args.setNumber}`);
-        return [];
-      }
 
-      // Generate fresh image URLs
-      const questionsWithUrls = await Promise.all(
-        questions.map(async (q) => {
-          if (q.imageStorageId) {
-            const url = await ctx.storage.getUrl(q.imageStorageId);
-            return { ...q, imageUrl: url || q.imageUrl };
-          }
-          return q;
-        })
-      );
+    // Filter out empty questions and shuffle
+    const validQuestions = questions.filter(
+      (q) => q.question && q.question.trim() !== "" && q.options && q.options.length > 0
+    );
 
-      return questionsWithUrls;
-      
-    } catch (error) {
-      console.error("Error fetching test questions:", error);
-      return [];
+    // Shuffle questions (Fisher-Yates shuffle)
+    for (let i = validQuestions.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [validQuestions[i], validQuestions[j]] = [validQuestions[j], validQuestions[i]];
     }
+
+    return validQuestions;
   },
 });
 

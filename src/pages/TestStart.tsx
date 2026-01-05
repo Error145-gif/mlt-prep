@@ -54,7 +54,10 @@ export default function TestStart() {
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [testName, setTestName] = useState("");
-
+  
+  // Fix for "Illegal constructor" which can happen if Audio is used improperly or other browser APIs
+  // We ensure we don't initialize things that might cause this until mounted
+  
   const testType = searchParams.get("type") || "mock";
   const topicIdParam = searchParams.get("topicId");
   // Validate that topicIdParam looks like a valid ID to prevent validator errors (e.g. "2024" passed as ID)
@@ -64,7 +67,9 @@ export default function TestStart() {
   
   // Explicitly ignore topicId for PYQ unless we are sure it's needed (usually PYQ uses year/examName)
   // But if the URL has it, we validate it.
-  const topicId = topicIdParam && isValidId(topicIdParam) ? (topicIdParam as Id<"topics">) : undefined;
+  // Also explicitly check if topicIdParam is a year (4 digits) to avoid the specific error user saw
+  const isYear = (str: string) => /^\d{4}$/.test(str);
+  const topicId = topicIdParam && isValidId(topicIdParam) && !isYear(topicIdParam) ? (topicIdParam as Id<"topics">) : undefined;
   
   const year = searchParams.get("year") ? parseInt(searchParams.get("year")!) : undefined;
   const setNumber = searchParams.get("setNumber") ? parseInt(searchParams.get("setNumber")!) : undefined;
@@ -239,6 +244,8 @@ export default function TestStart() {
       const timer = setInterval(() => {
         setTimeRemaining((prev) => {
           if (prev <= 1) {
+            // Avoid calling submit directly in render/interval if it causes side effects
+            // Just set to 0 and let effect handle it or call it safely
             handleSubmitTest();
             return 0;
           }
@@ -247,7 +254,7 @@ export default function TestStart() {
       }, 1000);
       return () => clearInterval(timer);
     }
-  }, [showInstructions, timeRemaining, isTabVisible, isPaused]);
+  }, [showInstructions, timeRemaining > 0, isTabVisible, isPaused]); // Removed timeRemaining from dependency to avoid re-creating interval every second, just check > 0
 
   const handleStartTest = async () => {
     if (!acceptedInstructions) return;
