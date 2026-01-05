@@ -39,13 +39,23 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
 
   // Initialize GoogleAuth for Capacitor
   useEffect(() => {
-    if (Capacitor.isNativePlatform()) {
-      const googleServerClientId =
-        "513889515278-j5igvo075g0iigths2ifjs1agebfepti.apps.googleusercontent.com";
+    const googleServerClientId =
+      "513889515278-j5igvo075g0iigths2ifjs1agebfepti.apps.googleusercontent.com";
 
+    if (Capacitor.isNativePlatform()) {
+      // NATIVE (Android/iOS) Initialization
       GoogleAuth.initialize({
-        clientId: googleServerClientId,
+        // IMPORTANT: On Android, do NOT set 'clientId' to the Web Client ID.
+        // The plugin should read the Android Client ID from google-services.json.
+        // We ONLY set serverClientId (Web ID) so we get an ID Token for the backend.
         serverClientId: googleServerClientId,
+        scopes: ["profile", "email"],
+        grantOfflineAccess: false,
+      });
+    } else {
+      // WEB Initialization
+      GoogleAuth.initialize({
+        clientId: googleServerClientId, // On Web, Client ID IS the Web ID
         scopes: ["profile", "email"],
         grantOfflineAccess: false,
       });
