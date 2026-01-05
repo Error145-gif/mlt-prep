@@ -1,9 +1,4 @@
-  plugins: {
-    GoogleAuth: {
-      scopes: ['profile', 'email'],
-      // IMPORTANT: This should be your ANDROID Client ID from Google Cloud Console
-      // NOT the Web Client ID. Get it from:
-      // Google Cloud Console > APIs & Services > Credentials > OAuth 2.0 Client IDs > Android
-      serverClientId: 'YOUR_ANDROID_CLIENT_ID_HERE.apps.googleusercontent.com',
-      forceCodeForRefreshToken: true,
-    },
+      // Using the Android Client ID from your Google Cloud Console
+      serverClientId: '513889515278-0vvhbfqnhvvvvvvvvvvvvvvvvvvvvvvv.apps.googleusercontent.com',
+=======
+      serverClientId: '513889515278-j5igvo075g0iigths2ifjs1agebfepti.apps.googleusercontent.com',
