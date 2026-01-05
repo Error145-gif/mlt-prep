@@ -1,11 +1,19 @@
-import { CapacitorConfig } from '@capacitor/cli';
+import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.mltprep.app',
   appName: 'MLT Prep',
   webDir: 'dist',
   server: {
-    androidScheme: 'https'
+    androidScheme: 'https',
+    hostname: 'mltprep.online',
+    allowNavigation: [
+      'mltprep.online',
+      '*.mltprep.online',
+      'accounts.google.com',
+      '*.google.com',
+      '*.googleapis.com'
+    ]
   },
   plugins: {
     GoogleAuth: {
