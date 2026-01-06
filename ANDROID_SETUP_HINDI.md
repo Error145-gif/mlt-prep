@@ -1,8 +1,8 @@
-# 🚀 Android App Banane Ka Simple Guide (Hindi)
+# 🚀 Android App Banane Ka Complete Guide (Zero Se Start)
 
-## ⚡ Quick Start (3 Easy Steps)
+## ⚡ Quick Start - Sirf 3 Steps!
 
-### Step 1: Node Upgrade Karein (Zaroori!)
+### 📋 Pre-Requirements Check Karein
 
 Aapka current Node version: **v20.19.5**  
 Required: **v22+**
