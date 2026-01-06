@@ -8,18 +8,6 @@ Aapka current Node version: **v20.19.5**
 Required: **v22+**
 
 **NVM se upgrade karein:**  
-```bash
-# NVM install karein (agar nahi hai)
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
-
-# Terminal restart karein, phir:
-nvm install 22
-nvm use 22
-nvm alias default 22
-
-# Check karein
-node --version  # v22.x.x dikhna chahiye
-```
 
 ---
 
