@@ -164,7 +164,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
           // Error code 10 = DEVELOPER_ERROR (wrong SHA-1 or package name)
           if (errorCode === 10 || errorCode === "10" || errorMessage.includes("DEVELOPER_ERROR")) {
              console.error("[AUTH] ❌ SHA-1 MISMATCH DETECTED");
-             alert(`⚠️ SETUP ERROR: SHA-1 MISMATCH\n\nGoogle refused the login.\n\nReason: The "SHA-1 fingerprint" of your Android app does NOT match the one in Google Cloud Console.\n\nError Code: ${errorCode}\n\nFIX REQUIRED:\n1. Go to Google Cloud Console\n2. Verify SHA-1 matches your keystore\n3. Check package name is correct\n4. REBUILD THE APP (npx cap sync android)`);
+             alert(`⚠️ SETUP ERROR: SHA-1 MISMATCH (Code 10)\n\nGoogle Login Fail ho gaya.\n\nReason: Aapka SHA-1 fingerprint Google Console se match nahi kar raha hai.\n\nSolution:\n1. ANDROID_SETUP_HINDI.md file padhein.\n2. Sahi SHA-1 key Google Console me dalein.\n3. google-services.json file update karein.\n4. App rebuild karein.`);
           } 
           // Error code 12501 = USER_CANCELLED
           else if (errorCode === 12501 || errorCode === "12501") {
