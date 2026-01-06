@@ -10,21 +10,10 @@ const config: CapacitorConfig = {
   plugins: {
     GoogleAuth: {
       scopes: ['profile', 'email'],
-      // IMPORTANT: This MUST be your WEB Client ID from Google Cloud Console.
-      // Do NOT put the Android Client ID here.
-      // The Android Client ID is linked automatically via the google-services.json file.
+      // NOTE: This must be the WEB Client ID, not the Android one.
+      // The Android one is read automatically from google-services.json
       serverClientId: '513889515278-j5igvo075g0iigths2ifjs1agebfepti.apps.googleusercontent.com',
       forceCodeForRefreshToken: true,
-    },
-    SplashScreen: {
-      launchShowDuration: 2000,
-      backgroundColor: "#5B21B6",
-      showSpinner: true,
-      spinnerColor: "#ffffff"
-    },
-    StatusBar: {
-      style: "DARK",
-      backgroundColor: "#5B21B6"
     }
   }
 };
