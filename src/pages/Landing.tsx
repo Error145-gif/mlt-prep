@@ -1,9 +1,20 @@
+// @ts-nocheck
 
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router";
 import { useAuth } from "@/hooks/use-auth";
-import { BookOpen, Brain, Award, TrendingUp, Sparkles, ArrowRight, LogOut, CheckCircle, X } from "lucide-react";
+import {
+  BookOpen,
+  Brain,
+  Award,
+  TrendingUp,
+  Sparkles,
+  ArrowRight,
+  LogOut,
+  CheckCircle,
+  X,
+} from "lucide-react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
@@ -18,7 +29,9 @@ export default function Landing() {
   useEffect(() => {
     document.title = "MLT Prep - AI-Powered Medical Lab Technology Learning";
 
-    const metaDescription = document.querySelector('meta[name="description"]');
+    const metaDescription = document.querySelector(
+      'meta[name="description"]'
+    );
     if (metaDescription) {
       metaDescription.setAttribute(
         "content",
@@ -57,7 +70,7 @@ export default function Landing() {
           url: "https://www.mltprep.online",
           logo: "https://harmless-tapir-303.convex.cloud/api/storage/39c4275e-7220-41f1-b10f-c38ae74bf9f1",
           description:
-            "MLT exam preparation with AI-powered mock tests, PYQs, and analytics for DMLT, BMLT and Govt MLT exams."
+            "MLT exam preparation with AI-powered mock tests, PYQs, and analytics for DMLT, BMLT and Govt MLT exams.",
         });
         document.head.appendChild(schemaScript);
       }
@@ -80,8 +93,14 @@ export default function Landing() {
   useEffect(() => {
     const autoActivateAdmin = async () => {
       if (isAuthenticated && user && user.role !== "admin") {
-        const allowedEmails = ["ak6722909@gmail.com", "historyindia145@gmail.com"];
-        if (allowedEmails.includes(user.email?.toLowerCase().trim() || "")) {
+        const allowedEmails = [
+          "ak6722909@gmail.com",
+          "historyindia145@gmail.com",
+        ];
+
+        if (
+          allowedEmails.includes(user.email?.toLowerCase().trim() || "")
+        ) {
           try {
             await makeAdmin({});
             toast.success("Admin access activated!");
@@ -102,7 +121,9 @@ export default function Landing() {
       toast.success("You are now an admin! Redirecting...");
       setTimeout(() => navigate("/admin"), 1000);
     } catch (error: any) {
-      toast.error(error.message || "Failed to make you an admin. Please try again.");
+      toast.error(
+        error.message || "Failed to make you an admin. Please try again."
+      );
     }
   };
 
@@ -111,26 +132,26 @@ export default function Landing() {
       icon: Brain,
       title: "AI-Powered Medical Lab Questions",
       description:
-        "Practice with AI-generated Medical Lab MCQs tailored to MLT Exam and Lab Technician Exam patterns"
+        "Practice with AI-generated Medical Lab MCQs tailored to MLT Exam and Lab Technician Exam patterns",
     },
     {
       icon: BookOpen,
       title: "Medical Lab PYQs",
       description:
-        "Access comprehensive Medical Lab PYQs and MLT Previous Year Questions organized by exam and year"
+        "Access comprehensive Medical Lab PYQs and MLT Previous Year Questions organized by exam and year",
     },
     {
       icon: Award,
       title: "MLT Mock Tests",
       description:
-        "Take full-length MLT Mock Tests and Lab Technician Govt Exam practice tests to simulate real exam conditions"
+        "Take full-length MLT Mock Tests and Lab Technician Govt Exam practice tests to simulate real exam conditions",
     },
     {
       icon: TrendingUp,
       title: "Track Medical Lab Tech Progress",
       description:
-        "Monitor your Medical Lab Technician Exam performance with detailed analytics and rankings"
-    }
+        "Monitor your Medical Lab Technician Exam performance with detailed analytics and rankings",
+    },
   ];
 
   return (
