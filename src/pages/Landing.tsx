@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Download } from "lucide-react";
 import { useEffect } from "react";
@@ -28,8 +28,8 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500 text-white">
 
-      {/* HERO SECTION */}
-      <section className="px-5 pt-20 pb-14 text-center">
+      {/* HERO */}
+      <section className="px-5 pt-20 pb-16 text-center">
         <h1 className="text-4xl font-bold leading-tight">
           Medical Lab Technician (MLT) Exam Preparation
         </h1>
@@ -51,7 +51,8 @@ export default function Landing() {
             onClick={downloadApp}
             className="w-full max-w-xs bg-green-600 hover:bg-green-700"
           >
-            <Download className="mr-2 h-4 w-4" /> Download MLT Prep App
+            <Download className="mr-2 h-4 w-4" />
+            Download MLT Prep App
           </Button>
 
         </div>
@@ -60,32 +61,25 @@ export default function Landing() {
       {/* FEATURES */}
       <section className="px-5 space-y-5 pb-16">
 
-        {[
-          {
-            title: "AI Powered Medical Lab Questions",
-            desc: "Practice AI generated MCQs based on real exam pattern",
-          },
-          {
-            title: "Medical Lab PYQs",
-            desc: "Previous year questions with structured sets",
-          },
-          {
-            title: "MLT Mock Tests",
-            desc: "Full length mock tests for real exam experience",
-          },
-          {
-            title: "Track Medical Lab Progress",
-            desc: "Detailed analytics and performance tracking",
-          },
-        ].map((item, i) => (
-          <div
-            key={i}
-            className="bg-white/15 backdrop-blur-lg p-5 rounded-xl"
-          >
-            <h3 className="font-semibold text-lg">{item.title}</h3>
-            <p className="text-sm text-white/70 mt-2">{item.desc}</p>
-          </div>
-        ))}
+        <Feature
+          title="AI Powered Medical Lab Questions"
+          desc="Practice AI generated MCQs based on real exam pattern"
+        />
+
+        <Feature
+          title="Medical Lab PYQs"
+          desc="Previous year questions with structured sets"
+        />
+
+        <Feature
+          title="MLT Mock Tests"
+          desc="Full length mock tests for real exam experience"
+        />
+
+        <Feature
+          title="Track Medical Lab Progress"
+          desc="Detailed analytics and performance tracking"
+        />
 
       </section>
 
@@ -93,6 +87,7 @@ export default function Landing() {
       <section className="px-5 pb-20">
         <div className="bg-white/15 backdrop-blur-lg rounded-xl p-8 text-center">
           <h2 className="text-2xl font-bold">Ready to Start Your Journey?</h2>
+
           <p className="text-white/70 text-sm mt-3">
             Join thousands of students preparing smarter
           </p>
@@ -152,6 +147,16 @@ export default function Landing() {
 
       </footer>
 
+    </div>
+  );
+}
+
+/* SAFE FEATURE COMPONENT */
+function Feature({ title, desc }: { title: string; desc: string }) {
+  return (
+    <div className="bg-white/15 backdrop-blur-lg p-5 rounded-xl">
+      <h3 className="font-semibold text-lg">{title}</h3>
+      <p className="text-sm text-white/70 mt-2">{desc}</p>
     </div>
   );
 }
