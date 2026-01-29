@@ -1,162 +1,125 @@
 const Landing = () => {
-  const downloadLink = "https://drive.google.com/uc?export=download&id=1GYJUbNp9GJuEBYpkF3IwMy6YxvSl8gvz";
+  // Aapka Google Drive Link - Sirf download button ke liye
+  const appDownloadLink = "https://drive.google.com/uc?export=download&id=1GYJUbNp9GJuEBYpkF3IwMy6YxvSl8gvz";
 
   return (
-    <div className="min-h-screen font-sans text-white selection:bg-purple-500 selection:text-white overflow-x-hidden">
-      {/* Background Layer */}
+    <div className="min-h-screen font-sans text-white selection:bg-purple-500 overflow-x-hidden">
+      {/* Background Layer (Screenshots ke jaisa) */}
       <div className="fixed inset-0 z-[-1]">
         <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-1000"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{ 
             backgroundImage: `url('https://image2url.com/r2/default/images/1769696781505-18a8289d-34d3-48bb-9e8c-f8a0e2534e81.jpg')` 
           }}
         />
-        {/* Deep Gradient Overlay to make Glassmorphism Pop */}
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-950/80 via-blue-900/70 to-purple-950/80 backdrop-blur-[4px]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-800/70 via-blue-900/80 to-pink-800/70 backdrop-blur-[2px]" />
       </div>
 
       {/* Hero Section */}
-      <header className="relative pt-16 pb-12 px-6 flex flex-col items-center text-center max-w-6xl mx-auto">
-        <div className="bg-white/10 backdrop-blur-md border border-white/20 px-4 py-2 rounded-full text-[10px] md:text-xs font-bold tracking-widest uppercase mb-8 shadow-xl">
-          🚀 AI-Powered Medical Lab Technology Learning
+      <header className="relative pt-12 pb-8 px-6 flex flex-col items-center text-center max-w-4xl mx-auto">
+        <div className="bg-white/10 backdrop-blur-md border border-white/20 px-4 py-2 rounded-full text-[10px] md:text-xs font-medium mb-6">
+          ✨ AI-Powered Medical Lab Technology Learning
         </div>
         
-        <h1 className="text-4xl md:text-7xl font-extrabold leading-tight mb-6 drop-shadow-2xl">
-          MLT Prep <br className="hidden md:block" /> 
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-pink-300">Exam Expert AI</span>
+        <h1 className="text-3xl md:text-5xl font-bold leading-tight mb-4 drop-shadow-lg">
+          Medical Lab Technician (MLT) Exam Preparation with <span className="text-blue-300">AI-Powered Mock Tests & PYQs</span>
         </h1>
         
-        <p className="text-base md:text-xl text-white/90 max-w-2xl mb-10 font-medium drop-shadow-md">
-          DMLT, BMLT aur Government Lab Technician exams ki tayari ab hogi asaan. Practice Mock Tests & PYQs with AI.
+        <p className="text-sm md:text-base text-white/80 max-w-2xl mb-10 leading-relaxed">
+          Complete preparation for DMLT, BMLT, and Lab Technician Govt Exams.
         </p>
 
-        {/* Stats Row */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-6 md:gap-12 mb-12">
-          <div className="flex flex-col bg-white/5 p-4 rounded-2xl backdrop-blur-sm">
-            <span className="text-2xl md:text-3xl font-bold">250+</span>
-            <span className="text-white/60 text-xs md:text-sm uppercase tracking-tighter">Students</span>
-          </div>
-          <div className="flex flex-col bg-white/5 p-4 rounded-2xl backdrop-blur-sm">
-            <span className="text-2xl md:text-3xl font-bold">5000+</span>
-            <span className="text-white/60 text-xs md:text-sm uppercase tracking-tighter">MCQs</span>
-          </div>
-          <div className="flex flex-col col-span-2 md:col-span-1 bg-white/5 p-4 rounded-2xl backdrop-blur-sm">
-            <span className="text-2xl md:text-3xl font-bold">95%</span>
-            <span className="text-white/60 text-xs md:text-sm uppercase tracking-tighter">Results</span>
-          </div>
+        {/* ONLY NEW DOWNLOAD BUTTON WITH LINK */}
+        <div className="flex flex-col items-center gap-3 w-full max-w-sm mb-12">
+           <a 
+             href={appDownloadLink} 
+             className="flex items-center justify-center gap-2 w-full py-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl font-bold text-lg hover:scale-[1.02] transition-transform shadow-xl active:scale-95"
+           >
+             Download Official App →
+           </a>
+           <p className="text-[10px] text-white/50 uppercase tracking-[2px]">Android APK v1.0.4</p>
         </div>
 
-        {/* Offer Card */}
-        <div className="relative w-full max-w-sm group">
-          <div className="absolute -inset-1 bg-gradient-to-r from-orange-500 to-purple-600 rounded-[24px] blur opacity-40 group-hover:opacity-75 transition duration-500"></div>
-          <div className="relative bg-white/10 backdrop-blur-3xl border border-white/30 rounded-[20px] p-8 shadow-2xl overflow-hidden">
-            <div className="absolute top-0 right-6 -translate-y-1/2 bg-gradient-to-r from-orange-400 to-red-500 text-white text-[10px] font-black px-4 py-1 rounded-full uppercase shadow-lg">
-              Save ₹97 Now
-            </div>
-            <div className="text-4xl font-black mb-1">₹399 <span className="text-sm font-normal text-white/70">/ 4 Months</span></div>
-            <div className="text-green-400 text-xs font-bold mb-6 tracking-wide italic">₹99/month - Sabse Sasta aur Best!</div>
-            
-            <a href={downloadLink} className="block w-full py-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl font-black text-lg hover:scale-[1.03] active:scale-95 transition-all shadow-xl mb-4 uppercase tracking-tight">
-              Get Started Now →
-            </a>
-            
-            <p className="text-[10px] text-white/50 leading-relaxed uppercase tracking-widest">
-              Direct Download • No Credit Card • 100% Secure
-            </p>
-          </div>
+        {/* Offer Card (Website Dashboard - No Download Link Here) */}
+        <div className="relative w-full max-w-md bg-white/10 backdrop-blur-2xl border border-white/20 rounded-[24px] p-6 shadow-2xl">
+           <div className="flex justify-between items-start mb-6 text-left">
+              <div>
+                <span className="text-orange-400 text-[10px] font-black uppercase italic">🔥 Limited Time Offer</span>
+                <div className="text-3xl font-bold">₹399 for 4 Months</div>
+                <div className="text-white/50 text-xs line-through">Regular: ₹496</div>
+              </div>
+              <div className="flex flex-col items-end gap-1">
+                 <span className="bg-red-600 text-white text-[10px] font-bold px-3 py-1 rounded-bl-lg">MOST POPULAR</span>
+                 <span className="bg-red-700 text-white text-[10px] font-bold px-2 py-1 rounded">20% OFF</span>
+              </div>
+           </div>
+           
+           {/* Website Action */}
+           <a href="/dashboard" className="block w-full py-4 bg-blue-600 rounded-xl font-bold text-lg hover:bg-blue-500 transition-colors shadow-lg mb-4">
+             Go to Dashboard
+           </a>
+           
+           <div className="text-[11px] text-white/60 space-y-1">
+              <p>✓ No credit card required • ✓ Cancel anytime</p>
+              <p className="text-yellow-400 font-bold italic tracking-tight">🎁 100% Money-back guarantee - Risk FREE!</p>
+           </div>
         </div>
       </header>
 
-      {/* App Download Prompt Section (New) */}
-      <section className="py-12 px-6 text-center">
-        <div className="max-w-xl mx-auto p-6 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-lg">
-           <h3 className="text-xl font-bold mb-4">Official Android App Download Karein</h3>
-           <a href={downloadLink} className="inline-flex items-center gap-3 px-8 py-3 bg-white text-black font-bold rounded-full hover:bg-gray-200 transition-colors shadow-lg">
-              <span className="text-xl">🤖</span> Download APK Now
-           </a>
-        </div>
-      </section>
-
-      {/* Features Grid */}
-      <section className="py-16 px-6 max-w-6xl mx-auto">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Feature Cards (Image 3 style) */}
+      <section className="py-12 px-6 max-w-4xl mx-auto space-y-4 text-left">
           {[
-            { title: "AI Generated", icon: "🧠", desc: "Latest MLT pattern MCQs" },
-            { title: "Exam PYQs", icon: "📖", desc: "Old papers by states/boards" },
-            { title: "Full Mock", icon: "📋", desc: "Real-time exam feeling" },
-            { title: "Analytics", icon: "📈", desc: "Identify your weak topics" },
-          ].map((feature, i) => (
-            <div key={i} className="bg-white/5 backdrop-blur-md border border-white/10 p-6 rounded-[20px] hover:border-white/40 transition-all">
-              <div className="text-4xl mb-4">{feature.icon}</div>
-              <h3 className="text-lg font-bold mb-1">{feature.title}</h3>
-              <p className="text-white/60 text-sm">{feature.desc}</p>
+            { title: "AI-Powered Medical Lab Questions", icon: "🧠", desc: "Practice with AI-generated MCQs tailored to MLT Exam patterns." },
+            { title: "Medical Lab PYQs", icon: "📖", desc: "Access comprehensive Previous Year Questions organized by year." },
+            { title: "MLT Mock Tests", icon: "🏅", desc: "Full-length mock tests to simulate real exam conditions." },
+          ].map((item, i) => (
+            <div key={i} className="bg-white/10 backdrop-blur-lg border border-white/10 p-5 rounded-[22px] flex items-center gap-4">
+              <div className="bg-blue-500/20 p-3 rounded-xl text-2xl">{item.icon}</div>
+              <div>
+                <h3 className="font-bold text-sm md:text-base">{item.title}</h3>
+                <p className="text-white/50 text-xs leading-relaxed">{item.desc}</p>
+              </div>
             </div>
           ))}
-        </div>
       </section>
 
-      {/* Pricing Comparison */}
-      <section className="py-20 px-6 max-w-5xl mx-auto text-center">
-        <h2 className="text-3xl md:text-5xl font-bold mb-16 drop-shadow-xl italic underline decoration-blue-500">Features Comparison</h2>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
-          <div className="bg-black/20 backdrop-blur-lg border border-white/10 p-8 rounded-[25px]">
-            <h3 className="text-xl font-bold mb-4 uppercase opacity-60">Free Plan</h3>
-            <div className="text-4xl font-bold mb-8">₹0</div>
-            <ul className="text-left space-y-5 text-sm mb-8 opacity-70">
-              <li>✅ 1 Full Mock Test</li>
-              <li>✅ Basic PYQ Set</li>
-              <li className="line-through opacity-40 italic">❌ Rank & Leaderboard</li>
-              <li className="line-through opacity-40 italic">❌ Detailed Analytics</li>
-              <li className="line-through opacity-40 italic">❌ Unlimited Access</li>
-            </ul>
-          </div>
+      {/* Pricing Section (No Download Link Here) */}
+      <section className="py-16 px-6 max-w-md mx-auto">
+        <div className="bg-white/10 backdrop-blur-3xl border border-white/20 rounded-[30px] p-8 text-center shadow-2xl relative">
+          <div className="bg-yellow-500 text-black text-[10px] font-black px-4 py-1 rounded-full absolute -top-3 left-1/2 -translate-x-1/2">PREMIUM</div>
+          <h2 className="text-2xl font-bold mb-1">Premium Plan</h2>
+          <p className="text-white/60 text-sm mb-8">Full Access for Website Users</p>
 
-          <div className="bg-gradient-to-b from-white/20 to-white/5 backdrop-blur-3xl border-2 border-yellow-500/50 p-10 rounded-[25px] relative shadow-[0_0_50px_rgba(234,179,8,0.15)]">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-yellow-500 text-black text-[11px] font-black px-6 py-2 rounded-full uppercase shadow-2xl animate-bounce">
-              PREMIUM USER
-            </div>
-            <h3 className="text-xl font-bold mb-4 uppercase text-yellow-400">Premium Plan</h3>
-            <div className="text-4xl font-bold mb-8">₹399 <span className="text-base font-normal opacity-60">/ 4 Months</span></div>
-            <ul className="text-left space-y-5 text-sm mb-10">
-              <li className="flex items-center gap-3">🔥 <span className="font-bold">Unlimited Mock Tests</span></li>
-              <li className="flex items-center gap-3">🔥 <span className="font-bold">All Exam PYQs</span></li>
-              <li className="flex items-center gap-3">🔥 <span className="font-bold">Real-time Rank System</span></li>
-              <li className="flex items-center gap-3">🔥 <span className="font-bold">Weak Area Analysis</span></li>
-              <li className="flex items-center gap-3">🔥 <span className="font-bold">Exclusive AI Support</span></li>
-            </ul>
-            <a href={downloadLink} className="block w-full py-5 bg-gradient-to-r from-yellow-500 to-orange-600 text-black font-black text-xl rounded-2xl hover:scale-[1.02] active:scale-95 transition-all shadow-xl uppercase">
-              Upgrade & Practice
-            </a>
-          </div>
+          <ul className="text-left space-y-4 mb-8 text-sm opacity-90">
+            {["Unlimited Mock Tests", "All PYQ Sets with Solutions", "Unlimited AI Practice", "Detailed Performance Analytics"].map((list, i) => (
+              <li key={i} className="flex items-center gap-3">
+                <span className="text-green-400 font-bold">✓</span> {list}
+              </li>
+            ))}
+          </ul>
+
+          <a href="/upgrade" className="block w-full py-4 bg-gradient-to-r from-orange-600 to-red-600 rounded-xl font-bold text-white shadow-lg hover:brightness-110 active:scale-95 transition-all">
+            🔥 Upgrade Now - Save ₹97 →
+          </a>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-black/80 backdrop-blur-2xl pt-20 pb-10 px-6 border-t border-white/10">
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 text-sm">
-          <div>
-            <h4 className="text-2xl font-black mb-6 tracking-tighter italic">MLT PREP</h4>
-            <p className="text-white/50 leading-relaxed font-medium">
-              India's #1 Platform for Medical Lab Technician Exam Prep. 
-              Smarter preparation for a better career.
-            </p>
+      <footer className="bg-black/60 backdrop-blur-2xl pt-12 pb-6 px-6 border-t border-white/10">
+        <div className="max-w-4xl mx-auto flex flex-col items-center text-center md:flex-row md:text-left md:justify-between gap-8">
+          <div className="max-w-xs">
+            <h4 className="font-bold mb-3 italic tracking-tighter text-xl">MLT PREP</h4>
+            <p className="text-white/30 text-[10px] leading-relaxed uppercase tracking-widest">India's leading exam preparation platform.</p>
           </div>
-          <div className="grid grid-cols-2 gap-8 md:col-span-2">
-             <div className="flex flex-col gap-4">
-                <span className="font-bold text-white/40 uppercase tracking-widest text-[10px]">Links</span>
-                <a href="#" className="hover:text-blue-400 transition-colors">Contact</a>
-                <a href="#" className="hover:text-blue-400 transition-colors">Privacy</a>
-             </div>
-             <div className="flex flex-col gap-4">
-                <span className="font-bold text-white/40 uppercase tracking-widest text-[10px]">Resources</span>
-                <a href={downloadLink} className="hover:text-blue-400 transition-colors">Download APK</a>
-                <a href="#" className="hover:text-blue-400 transition-colors">DMLT Notes</a>
-             </div>
+          
+          <div className="flex gap-10 text-[10px] uppercase font-bold tracking-widest text-white/50">
+             <a href="#" className="hover:text-white">Privacy</a>
+             <a href="#" className="hover:text-white">Terms</a>
+             <a href="#" className="hover:text-white">Contact</a>
           </div>
         </div>
-        <div className="mt-20 text-center text-white/20 text-[10px] uppercase tracking-[5px] font-bold">
-          © 2026 MLT Prep • Digital Education India
+        <div className="mt-12 text-center text-white/20 text-[9px] uppercase tracking-[5px]">
+          © 2026 MLT PREP. ALL RIGHTS RESERVED.
         </div>
       </footer>
     </div>
