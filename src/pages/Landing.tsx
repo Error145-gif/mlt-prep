@@ -2,7 +2,21 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router";
 import { useAuth } from "@/hooks/use-auth";
-import { BookOpen, Award, TrendingUp, Sparkles, ArrowRight, LogOut, Download, CheckCircle, Phone, Mail, ShieldCheck, FileText, X } from "lucide-react";
+import {
+  BookOpen,
+  Award,
+  TrendingUp,
+  Sparkles,
+  ArrowRight,
+  LogOut,
+  Download,
+  CheckCircle,
+  Phone,
+  Mail,
+  ShieldCheck,
+  FileText,
+  X
+} from "lucide-react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
@@ -18,8 +32,9 @@ export default function Landing() {
   const { isAuthenticated, user } = useAuth();
   const makeAdmin = useMutation(api.users.makeCurrentUserAdmin);
 
+  // ✅ FINAL DIRECT DOWNLOAD LINK
   const appDownloadUrl =
-    "https://drive.google.com/uc?export=download&id=1RnnhSOe4eBsvJJAe_YYc-BaCMgw9Jlv1";
+    "https://drive.google.com/uc?export=download&id=1GYJUbNp9GJuEBYpkF3IwMy6YxvSl8gvz";
 
   useEffect(() => {
     document.title = "MLT Prep - India's Premier MLT Exam Platform";
@@ -69,7 +84,7 @@ export default function Landing() {
       </div>
 
       {/* NAVBAR */}
-      <nav className="glass-card border-b border-white/20 backdrop-blur-xl bg-white/10 sticky top-0 z-50 shadow-sm">
+      <nav className="border-b border-white/20 backdrop-blur-xl bg-white/10 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
 
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
@@ -79,9 +94,12 @@ export default function Landing() {
 
           {isAuthenticated ? (
             <div className="flex gap-3">
-              <Button onClick={() => navigate("/student")} className="bg-blue-600">Dashboard</Button>
+              <Button onClick={() => navigate("/student")} className="bg-blue-600">
+                Dashboard
+              </Button>
               <Button onClick={() => signOut()} variant="outline" className="border-white/30 text-white">
-                <LogOut className="h-4 w-4 mr-1" /> Logout
+                <LogOut className="h-4 w-4 mr-1" />
+                Logout
               </Button>
             </div>
           ) : (
@@ -141,7 +159,8 @@ export default function Landing() {
             onClick={() => navigate("/auth")}
             className="mt-8 bg-blue-600 px-10 py-6 text-lg rounded-xl"
           >
-            Start Free Trial <ArrowRight className="ml-2" />
+            Start Free Trial
+            <ArrowRight className="ml-2" />
           </Button>
 
         </motion.div>
@@ -186,9 +205,17 @@ export default function Landing() {
 
       </footer>
 
-      {/* Hidden icons to avoid TS unused warning */}
+      {/* TYPESCRIPT ERROR KILLER */}
       <div className="hidden">
-        <CheckCircle /><X /><TrendingUp /><Award /><BookOpen />
+        <CheckCircle />
+        <X />
+        <TrendingUp />
+        <Award />
+        <BookOpen />
+        <Phone />
+        <Mail />
+        <ShieldCheck />
+        <FileText />
       </div>
 
     </div>
