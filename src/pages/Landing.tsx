@@ -1,64 +1,23 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { ArrowRight, Download, LogOut, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router";
 import { useAuth } from "@/hooks/use-auth";
-import {
-  BookOpen,
-  Award,
-  TrendingUp,
-  Sparkles,
-  ArrowRight,
-  LogOut,
-  Download,
-  CheckCircle,
-  Phone,
-  Mail,
-  ShieldCheck,
-  FileText,
-  X
-} from "lucide-react";
-import { useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { toast } from "sonner";
-import { useEffect } from "react";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function Landing() {
 
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const { signOut } = useAuthActions();
   const isMobile = useIsMobile();
-  const navigate = useNavigate();
-  const { isAuthenticated, user } = useAuth();
-  const makeAdmin = useMutation(api.users.makeCurrentUserAdmin);
 
-  // ✅ FINAL DIRECT DOWNLOAD LINK
   const appDownloadUrl =
     "https://drive.google.com/uc?export=download&id=1GYJUbNp9GJuEBYpkF3IwMy6YxvSl8gvz";
 
-  useEffect(() => {
-    document.title = "MLT Prep - India's Premier MLT Exam Platform";
-  }, []);
-
-  useEffect(() => {
-    const autoActivate = async () => {
-      if (isAuthenticated && user && user.role !== "admin") {
-        const allowed = ["ak6722909@gmail.com", "historyindia145@gmail.com"];
-        if (allowed.includes(user.email?.toLowerCase().trim() || "")) {
-          try {
-            await makeAdmin({});
-            toast.success("Admin access activated!");
-          } catch (e) {
-            console.error(e);
-          }
-        }
-      }
-    };
-    autoActivate();
-  }, [isAuthenticated, user, makeAdmin]);
-
   return (
-    <div className="min-h-screen relative overflow-x-hidden">
+    <div className="min-h-screen relative overflow-hidden">
 
       {/* BACKGROUND */}
       <div
@@ -71,152 +30,132 @@ export default function Landing() {
           backgroundAttachment: isMobile ? "scroll" : "fixed"
         }}
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/70 via-purple-600/70 to-pink-500/70" />
-
-        {!isMobile && (
-          <>
-            <motion.div className="absolute top-20 left-10 text-6xl opacity-20" animate={{ y: [0, -30, 0] }} transition={{ duration: 6, repeat: Infinity }}>💉</motion.div>
-            <motion.div className="absolute top-40 right-20 text-5xl opacity-20" animate={{ y: [0, 25, 0] }} transition={{ duration: 7, repeat: Infinity }}>🔬</motion.div>
-            <motion.div className="absolute bottom-32 left-1/4 text-5xl opacity-20" animate={{ y: [0, -20, 0] }} transition={{ duration: 8, repeat: Infinity }}>🧪</motion.div>
-            <motion.div className="absolute bottom-20 right-1/3 text-4xl opacity-20" animate={{ y: [0, 30, 0] }} transition={{ duration: 5, repeat: Infinity }}>🩺</motion.div>
-          </>
-        )}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/80 via-purple-700/80 to-pink-600/80" />
       </div>
 
       {/* NAVBAR */}
-      <nav className="border-b border-white/20 backdrop-blur-xl bg-white/10 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+      <nav className="flex justify-between items-center px-6 py-4 bg-white/10 backdrop-blur-xl border-b border-white/20">
 
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
-            <img src="/logo.png" className="h-10 w-10" />
-            <span className="text-white font-bold text-xl">MLT Prep</span>
-          </div>
-
-          {isAuthenticated ? (
-            <div className="flex gap-3">
-              <Button onClick={() => navigate("/student")} className="bg-blue-600">
-                Dashboard
-              </Button>
-              <Button onClick={() => signOut()} variant="outline" className="border-white/30 text-white">
-                <LogOut className="h-4 w-4 mr-1" />
-                Logout
-              </Button>
-            </div>
-          ) : (
-            <Button onClick={() => navigate("/auth")} className="bg-white text-blue-600 font-bold">
-              Login
-            </Button>
-          )}
-
+        <div
+          className="flex items-center gap-2 cursor-pointer"
+          onClick={() => navigate("/")}
+        >
+          <img src="/logo.png" className="h-10" />
+          <span className="text-white font-bold text-lg tracking-wide">
+            MLT Prep
+          </span>
         </div>
+
+        {isAuthenticated ? (
+          <div className="flex gap-2">
+            <Button
+              onClick={() => navigate("/student")}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              Dashboard
+            </Button>
+
+            <Button
+              onClick={() => signOut()}
+              variant="outline"
+              className="border-white/30 text-white hover:bg-white/10"
+            >
+              <LogOut className="h-4 w-4 mr-1" />
+              Logout
+            </Button>
+          </div>
+        ) : (
+          <Button
+            onClick={() => navigate("/auth")}
+            className="bg-white text-blue-600 font-bold hover:bg-gray-200"
+          >
+            Login
+          </Button>
+        )}
+
       </nav>
 
       {/* HERO */}
-      <section className="max-w-7xl mx-auto px-4 pt-12 text-center relative z-10">
+      <section className="max-w-6xl mx-auto px-6 pt-24 text-center">
 
-        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}>
+        <div className="inline-flex items-center gap-2 bg-white/20 px-5 py-1.5 rounded-full text-white text-sm mb-6">
+          <Sparkles className="h-4 w-4 text-yellow-300" />
+          AI Powered Medical Exam Preparation
+        </div>
 
-          <div className="inline-flex gap-2 bg-white/20 px-4 py-1 rounded-full text-white text-sm mb-4">
-            <Sparkles className="h-4 w-4 text-yellow-300" />
-            AI Powered Preparation
-          </div>
+        <motion.h1
+          initial={{ opacity: 0, y: 25 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-4xl sm:text-6xl font-black text-white leading-tight"
+        >
+          Crack MLT Exams With <br />
+          <span className="text-yellow-300">
+            AI Mock Tests & PYQs
+          </span>
+        </motion.h1>
 
-          <h1 className="text-4xl sm:text-6xl font-black text-white">
-            Crack MLT Exams with <br />
-            <span className="text-yellow-300">AI Mock Tests & PYQs</span>
-          </h1>
+        <p className="text-white/80 mt-6 max-w-2xl mx-auto text-base sm:text-lg">
+          Prepare smarter for DMLT, BMLT, AIIMS, ESIC and Government Lab Technician exams using AI powered practice system.
+        </p>
 
-          {/* DOWNLOAD BUTTON */}
-          <div className="max-w-xl mx-auto mt-8">
-
-            <Button
-              onClick={() => window.open(appDownloadUrl, "_blank")}
-              className="w-full bg-gradient-to-r from-green-500 to-emerald-600 py-7 rounded-2xl flex gap-4 justify-center items-center shadow-xl"
-            >
-              <Download className="w-7 h-7" />
-              <div className="text-left">
-                <p className="text-xs opacity-80">Official Android App</p>
-                <p className="font-black text-lg">DOWNLOAD MLTPREP APP</p>
-              </div>
-            </Button>
-
-            <p className="text-white/70 text-xs mt-2">
-              After download enable "Install unknown apps"
-            </p>
-
-          </div>
-
-          {/* STATS */}
-          <div className="flex flex-wrap justify-center gap-4 mt-6">
-            {["250+ Students", "5000+ MCQs", "95% Success"].map((stat) => (
-              <div key={stat} className="bg-white/10 px-6 py-2 rounded-xl text-white font-bold">
-                {stat}
-              </div>
-            ))}
-          </div>
+        {/* CTA BUTTONS */}
+        <div className="flex flex-col sm:flex-row justify-center gap-4 mt-10">
 
           <Button
             onClick={() => navigate("/auth")}
-            className="mt-8 bg-blue-600 px-10 py-6 text-lg rounded-xl"
+            className="bg-blue-600 hover:bg-blue-700 px-10 py-6 text-lg rounded-xl shadow-xl"
           >
             Start Free Trial
             <ArrowRight className="ml-2" />
           </Button>
 
-        </motion.div>
+          <Button
+            onClick={() => window.open(appDownloadUrl, "_blank")}
+            className="bg-green-600 hover:bg-green-700 px-10 py-6 text-lg rounded-xl shadow-xl"
+          >
+            Download App
+            <Download className="ml-2" />
+          </Button>
+
+        </div>
+
+        <p className="text-white/60 text-xs mt-3">
+          After download enable "Install unknown apps"
+        </p>
+
+      </section>
+
+      {/* MASCOT */}
+      <section className="flex justify-center mt-20">
+
+        <motion.img
+          src="https://harmless-tapir-303.convex.cloud/api/storage/182277e1-c82a-44a7-8408-287e25a1c39e"
+          className="w-36 sm:w-52 drop-shadow-2xl"
+          animate={{ y: [0, -12, 0] }}
+          transition={{ duration: 3, repeat: Infinity }}
+        />
+
+      </section>
+
+      {/* STATS */}
+      <section className="flex justify-center gap-6 mt-12 flex-wrap">
+
+        {["250+ Students", "5000+ Questions", "95% Success"].map((item) => (
+          <div
+            key={item}
+            className="bg-white/15 backdrop-blur-md px-7 py-3 rounded-xl text-white font-semibold tracking-wide"
+          >
+            {item}
+          </div>
+        ))}
 
       </section>
 
       {/* FOOTER */}
-      <footer className="bg-black/40 mt-20 py-12 relative z-10">
-
-        <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-10">
-
-          <div>
-            <div className="flex gap-2 items-center mb-3">
-              <img src="/logo.png" className="h-10 w-10" />
-              <span className="text-white font-bold">MLT Prep</span>
-            </div>
-            <p className="text-white/60 text-sm">
-              India's leading MLT preparation platform.
-            </p>
-          </div>
-
-          <div>
-            <h4 className="text-white font-bold mb-3">Policies</h4>
-            <div className="flex flex-col gap-2 text-white/60 text-sm">
-              <button onClick={() => navigate("/contact-us")}>Contact Us</button>
-              <button onClick={() => navigate("/terms")}>Terms</button>
-              <button onClick={() => navigate("/privacy")}>Privacy Policy</button>
-              <button onClick={() => navigate("/refund-policy")}>Refund Policy</button>
-            </div>
-          </div>
-
-          <div>
-            <h4 className="text-white font-bold mb-3">Support</h4>
-            <p className="text-white/60 text-sm">support@mltprep.online</p>
-          </div>
-
-        </div>
-
-        <p className="text-center text-white/40 text-xs mt-8">
-          © 2026 MLTPREP.ONLINE
-        </p>
-
+      <footer className="mt-24 py-10 text-center text-white/50 text-sm">
+        © 2026 MLT Prep • All Rights Reserved
       </footer>
-
-      {/* TYPESCRIPT ERROR KILLER */}
-      <div className="hidden">
-        <CheckCircle />
-        <X />
-        <TrendingUp />
-        <Award />
-        <BookOpen />
-        <Phone />
-        <Mail />
-        <ShieldCheck />
-        <FileText />
-      </div>
 
     </div>
   );
