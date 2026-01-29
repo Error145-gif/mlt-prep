@@ -2,17 +2,16 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router";
 import { useAuth } from "@/hooks/use-auth";
-import { BookOpen, Brain, Award, TrendingUp, Sparkles, ArrowRight, LogOut, CheckCircle, X, Download } from "lucide-react";
+// Hataye gaye: LogOut, CheckCircle, X (Kyunki ye use nahi ho rahe the)
+import { BookOpen, Brain, Award, TrendingUp, Sparkles, ArrowRight, Download } from "lucide-react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
 import { useEffect } from "react";
-import { useAuthActions } from "@convex-dev/auth/react";
-import { useIsMobile } from "@/hooks/use-mobile";
+// Hataya gaya: useAuthActions aur useIsMobile (Kyunki isMobile aur signOut use nahi ho rahe the)
 
 export default function Landing() {
-  const { signOut } = useAuthActions();
-  const isMobile = useIsMobile();
+  // Hataye gaye unused variables: signOut, isMobile
   
   // Direct Download Link created from your Drive URL
   const appDownloadUrl = "https://drive.google.com/uc?export=download&id=1RnnhSOe4eBsvJJAe_YYc-BaCMgw9Jlv1";
@@ -45,7 +44,7 @@ export default function Landing() {
       }
     };
     autoActivateAdmin();
-  }, [isAuthenticated, user?._id, user?.role]);
+  }, [isAuthenticated, user?._id, user?.role, makeAdmin]); // makeAdmin added to dependency for safety
 
   const features = [
     { icon: Brain, title: "AI-Powered Medical Lab Questions", description: "Practice with AI-generated Medical Lab MCQs tailored to MLT Exam patterns" },
@@ -62,7 +61,7 @@ export default function Landing() {
           backgroundImage: "url('https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=1920&q=80')",
           backgroundSize: "cover",
           backgroundPosition: "center",
-          backgroundAttachment: window.innerWidth < 768 ? "scroll" : "fixed"
+          backgroundAttachment: "fixed"
         }}
       >
         <div className="absolute inset-0 bg-gradient-to-br from-blue-500/60 via-purple-600/60 to-pink-500/60" />
@@ -102,8 +101,9 @@ export default function Landing() {
           {/* DOWNLOAD BUTTON SECTION */}
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
+            whileInView={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.5 }}
+            viewport={{ once: true }}
             className="max-w-lg mx-auto glass-card border-2 border-white/40 bg-white/10 p-8 rounded-3xl shadow-2xl mb-12"
           >
             <h3 className="text-xl font-bold text-white mb-4">Official MLTprep App Download Karein</h3>
