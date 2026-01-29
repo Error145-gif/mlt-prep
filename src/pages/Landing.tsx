@@ -1,142 +1,157 @@
-import React from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { ArrowRight, Download } from "lucide-react";
+import { useEffect } from "react";
 
-const Landing = () => {
+export default function Landing() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    document.title = "MLT Prep - Medical Lab Technician Exam Preparation";
+
+    const meta = document.createElement("meta");
+    meta.name = "description";
+    meta.content =
+      "MLT Prep is India's leading platform for Medical Lab Technician exam preparation with mock tests, PYQs and AI practice.";
+    document.head.appendChild(meta);
+
+    return () => {
+      document.head.removeChild(meta);
+    };
+  }, []);
+
+  const downloadApp = () => {
+    window.location.href =
+      "https://drive.google.com/uc?export=download&id=1GYJUbNp9GJuEBYpkF3IwMy6YxvSl8gvz";
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500 text-white">
 
-      {/* HERO */}
-      <section className="px-5 pt-20 pb-16 text-center">
-
-        <span className="inline-block mb-4 px-4 py-2 bg-white/20 rounded-full backdrop-blur text-sm">
-          AI-Powered Medical Lab Technology Learning
-        </span>
-
-        <h1 className="text-3xl md:text-5xl font-bold leading-tight">
+      {/* HERO SECTION */}
+      <section className="px-5 pt-20 pb-14 text-center">
+        <h1 className="text-4xl font-bold leading-tight">
           Medical Lab Technician (MLT) Exam Preparation
         </h1>
 
-        <h2 className="text-yellow-300 text-xl md:text-2xl font-semibold mt-3">
-          with AI-Powered Mock Tests & PYQs
-        </h2>
-
-        <p className="text-white/80 mt-4 max-w-xl mx-auto">
-          Complete preparation for DMLT, BMLT and Lab Technician Government Exams
+        <p className="text-white/80 mt-4 text-sm">
+          Complete preparation for DMLT, BMLT & Government Lab Technician Exams
         </p>
 
-        <div className="mt-6 flex flex-col gap-4 items-center">
+        <div className="flex flex-col gap-4 mt-8 items-center">
 
-          <button className="bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-3 rounded-xl font-semibold w-full max-w-xs">
-            Start Learning →
-          </button>
-
-          <a
-            href="https://drive.google.com/uc?export=download&id=1GYJUbNp9GJuEBYpkF3IwMy6YxvSl8gvz"
-            className="bg-green-500 px-6 py-3 rounded-xl font-semibold w-full max-w-xs text-center"
+          <Button
+            onClick={() => navigate("/auth")}
+            className="w-full max-w-xs bg-gradient-to-r from-blue-600 to-purple-700"
           >
-            ⬇ Download MLT Prep App
-          </a>
+            Start Learning <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+
+          <Button
+            onClick={downloadApp}
+            className="w-full max-w-xs bg-green-600 hover:bg-green-700"
+          >
+            <Download className="mr-2 h-4 w-4" /> Download MLT Prep App
+          </Button>
 
         </div>
-
       </section>
 
-
       {/* FEATURES */}
-      <section className="px-5 py-10 space-y-6">
+      <section className="px-5 space-y-5 pb-16">
 
         {[
           {
-            title: "AI-Powered Medical Lab Questions",
-            desc: "Practice AI generated MCQs based on latest exam pattern"
+            title: "AI Powered Medical Lab Questions",
+            desc: "Practice AI generated MCQs based on real exam pattern",
           },
           {
             title: "Medical Lab PYQs",
-            desc: "Previous year questions with structured sets"
+            desc: "Previous year questions with structured sets",
           },
           {
             title: "MLT Mock Tests",
-            desc: "Full length mock tests for real exam practice"
+            desc: "Full length mock tests for real exam experience",
           },
           {
-            title: "Track Medical Lab Tech Progress",
-            desc: "Performance analytics & ranking system"
-          }
-        ].map((item, index) => (
+            title: "Track Medical Lab Progress",
+            desc: "Detailed analytics and performance tracking",
+          },
+        ].map((item, i) => (
           <div
-            key={index}
-            className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-5"
+            key={i}
+            className="bg-white/15 backdrop-blur-lg p-5 rounded-xl"
           >
             <h3 className="font-semibold text-lg">{item.title}</h3>
-            <p className="text-white/70 text-sm mt-1">{item.desc}</p>
+            <p className="text-sm text-white/70 mt-2">{item.desc}</p>
           </div>
         ))}
 
       </section>
 
-
       {/* CTA */}
-      <section className="px-5 py-16 text-center">
-
-        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-8">
-
-          <h2 className="text-2xl font-bold mb-3">
-            Ready to Start Your Journey?
-          </h2>
-
-          <p className="text-white/70 mb-5">
-            Join thousands of students preparing smarter with MLT Prep
+      <section className="px-5 pb-20">
+        <div className="bg-white/15 backdrop-blur-lg rounded-xl p-8 text-center">
+          <h2 className="text-2xl font-bold">Ready to Start Your Journey?</h2>
+          <p className="text-white/70 text-sm mt-3">
+            Join thousands of students preparing smarter
           </p>
 
-          <button className="bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-3 rounded-xl font-semibold">
-            Get Started Free →
-          </button>
-
+          <Button
+            onClick={() => navigate("/auth")}
+            className="mt-6 bg-gradient-to-r from-blue-600 to-purple-700"
+          >
+            Get Started Free <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
         </div>
-
       </section>
 
-
       {/* FOOTER */}
-      <footer className="bg-white/5 backdrop-blur-xl border-t border-white/10 py-12 px-5">
+      <footer className="bg-black/20 backdrop-blur-lg px-5 py-10">
 
-        <div className="max-w-5xl mx-auto grid md:grid-cols-3 gap-8">
+        <div className="space-y-8">
 
           <div>
-            <h3 className="font-semibold mb-3">MLT Prep</h3>
-            <p className="text-white/70 text-sm">
-              India's leading exam preparation platform for Medical Lab
-              Technicians.
+            <h3 className="font-semibold text-lg">MLT Prep</h3>
+            <p className="text-sm text-white/70 mt-2">
+              India's leading exam preparation platform for medical lab technicians.
             </p>
           </div>
 
           <div>
-            <h3 className="font-semibold mb-3">Quick Links</h3>
-            <ul className="text-white/70 text-sm space-y-2">
-              <li>Contact Us</li>
-              <li>Terms & Conditions</li>
-              <li>Privacy Policy</li>
+            <h3 className="font-semibold">Quick Links</h3>
+            <ul className="text-sm text-white/70 space-y-2 mt-2">
+              <li onClick={() => navigate("/contact-us")} className="cursor-pointer hover:text-white">Contact Us</li>
+              <li onClick={() => navigate("/terms")} className="cursor-pointer hover:text-white">Terms & Conditions</li>
+              <li onClick={() => navigate("/privacy")} className="cursor-pointer hover:text-white">Privacy Policy</li>
             </ul>
           </div>
 
           <div>
-            <h3 className="font-semibold mb-3">Exam Categories</h3>
-            <ul className="text-white/70 text-sm space-y-2">
-              <li>MLT Exam</li>
-              <li>DMLT Course</li>
-              <li>BMLT Course</li>
+            <h3 className="font-semibold">Medical Lab Exam</h3>
+            <ul className="text-sm text-white/70 space-y-2 mt-2">
+              <li onClick={() => navigate("/mlt-exam")} className="cursor-pointer hover:text-white">MLT Exam</li>
+              <li onClick={() => navigate("/lab-technician-exam")} className="cursor-pointer hover:text-white">Lab Technician Exam</li>
+              <li onClick={() => navigate("/dmlt-exam")} className="cursor-pointer hover:text-white">DMLT Course</li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="font-semibold">Policies</h3>
+            <ul className="text-sm text-white/70 space-y-2 mt-2">
+              <li onClick={() => navigate("/shipping-policy")} className="cursor-pointer hover:text-white">Shipping Policy</li>
+              <li onClick={() => navigate("/refund-policy")} className="cursor-pointer hover:text-white">Refund Policy</li>
             </ul>
           </div>
 
         </div>
 
-        <p className="text-center text-white/50 text-sm mt-10">
+        <div className="text-center text-xs text-white/60 mt-10 border-t border-white/20 pt-5">
           © 2024 MLT Prep. All rights reserved.
-        </p>
+        </div>
 
       </footer>
 
     </div>
   );
-};
-
-export default Landing;
+}
