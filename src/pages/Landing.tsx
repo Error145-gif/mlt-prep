@@ -15,7 +15,6 @@ export default function Landing() {
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    // Set meta tags for SEO
     document.title = "MLT Prep - AI-Powered Medical Lab Technology Learning";
 
     const metaDescription = document.querySelector('meta[name="description"]');
@@ -28,7 +27,6 @@ export default function Landing() {
       metaKeywords.setAttribute("content", "MLT, Medical Lab Technology, ESIC MLT, mock tests, PYQ, AI questions, exam preparation");
     }
 
-    // Add canonical tag
     let canonicalLink = document.querySelector('link[rel="canonical"]');
     if (!canonicalLink) {
       canonicalLink = document.createElement('link');
@@ -37,7 +35,6 @@ export default function Landing() {
     }
     canonicalLink.setAttribute('href', window.location.href);
 
-    // Add JSON-LD schema for homepage only
     try {
       let schemaScript = document.querySelector('script[type="application/ld+json"][data-page="landing"]');
       if (!schemaScript) {
@@ -58,7 +55,6 @@ export default function Landing() {
       console.error("Error adding JSON-LD schema:", e);
     }
 
-    // Cleanup function
     return () => {
       const schema = document.querySelector('script[type="application/ld+json"][data-page="landing"]');
       if (schema) {
@@ -71,7 +67,6 @@ export default function Landing() {
   const { isAuthenticated, user } = useAuth();
   const makeAdmin = useMutation(api.users.makeCurrentUserAdmin);
 
-  // Auto-activate admin for authorized emails - optimized to run only once
   useEffect(() => {
     const autoActivateAdmin = async () => {
       if (isAuthenticated && user && user.role !== "admin") {
@@ -81,7 +76,7 @@ export default function Landing() {
             await makeAdmin({});
             toast.success("Admin access activated!");
             setTimeout(() => window.location.reload(), 800);
-          } catch (error: any) {
+          } catch (error) {
             console.error("Auto-activation failed:", error);
           }
         }
@@ -89,14 +84,14 @@ export default function Landing() {
     };
 
     autoActivateAdmin();
-  }, [isAuthenticated, user?._id, user?.role]); // Only run when these specific values change
+  }, [isAuthenticated, user?._id, user?.role, makeAdmin]);
 
   const handleMakeAdmin = async () => {
     try {
       await makeAdmin({});
       toast.success("You are now an admin! Redirecting...");
       setTimeout(() => navigate("/admin"), 1000);
-    } catch (error: any) {
+    } catch (error) {
       toast.error(error.message || "Failed to make you an admin. Please try again.");
     }
   };
@@ -126,7 +121,6 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen relative overflow-x-hidden">
-      {/* Lab background image with gradient overlay */}
       <div 
         className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500"
         style={{
@@ -137,7 +131,6 @@ export default function Landing() {
           backgroundAttachment: window.innerWidth < 768 ? "scroll" : "fixed"
         }}
       >
-        {/* Gradient overlay with white touch for better text readability */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-500/60 via-purple-600/60 to-pink-500/60" />
         <div className="absolute inset-0 bg-white/10" />
 
@@ -145,7 +138,6 @@ export default function Landing() {
         <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-blue-500/30 rounded-full blur-3xl" />
         <div className="absolute top-1/2 left-1/2 w-[600px] h-[600px] bg-pink-400/20 rounded-full blur-3xl" />
 
-        {/* Floating Medical Icons - Hidden on mobile for performance */}
         <motion.div
           className="hidden md:block absolute top-20 left-10 text-6xl opacity-20"
           animate={{
@@ -210,7 +202,6 @@ export default function Landing() {
         </motion.div>
       </div>
 
-      {/* Navigation */}
       <nav className="glass-card border-b border-white/20 backdrop-blur-xl bg-white/10 sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3 cursor-pointer" onClick={() => navigate("/")}>
@@ -229,7 +220,6 @@ export default function Landing() {
             <span className="text-lg sm:text-2xl font-bold text-white drop-shadow-sm">MLT Prep</span>
           </div>
 
-          {/* Navigation */}
           <div className="flex items-center gap-2 sm:gap-4">
             {isAuthenticated ? (
               <>
@@ -276,7 +266,6 @@ export default function Landing() {
         </div>
       </nav>
 
-      {/* Hero Section */}
       <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-20">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -316,7 +305,6 @@ export default function Landing() {
             Complete Medical Lab Technician (MLT) Exam preparation for DMLT, BMLT, and Lab Technician Govt Exam with comprehensive MLT Mock Tests, Medical Lab PYQs, and AI-generated Medical Lab MCQs.
           </p>
 
-          {/* NEW: Social Proof Stats */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -337,14 +325,12 @@ export default function Landing() {
             </div>
           </motion.div>
 
-          {/* ENHANCED: Pricing Preview with Urgency */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
             className="glass-card border-2 border-orange-400/60 backdrop-blur-xl bg-gradient-to-r from-orange-500/30 to-red-500/30 p-5 rounded-2xl shadow-2xl relative overflow-hidden"
           >
-            {/* Animated Urgency Badge */}
             <motion.div
               className="absolute -top-1 -right-1 bg-red-600 text-white text-xs font-bold px-4 py-2 rounded-bl-xl shadow-lg"
               animate={{
@@ -390,7 +376,6 @@ export default function Landing() {
             <span>Lab Technician Govt Exam Prep</span>
           </div>
 
-          {/* BUTTONS CONTAINER WITH APK DOWNLOAD */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 pt-4">
             <motion.div
               whileHover={{ scale: 1.05 }}
@@ -412,7 +397,6 @@ export default function Landing() {
               </Button>
             </motion.div>
 
-            {/* APK DOWNLOAD BUTTON */}
             <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -447,7 +431,6 @@ export default function Landing() {
             </motion.div>
           </div>
 
-          {/* Enhanced Trust Badge with Urgency */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -476,7 +459,6 @@ export default function Landing() {
         </motion.div>
       </section>
 
-      {/* RBC Mascot Image Section */}
       <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pb-10 sm:pb-20">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -505,7 +487,6 @@ export default function Landing() {
             } : undefined}
           />
 
-          {/* Trust Badge Below Image */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -527,7 +508,6 @@ export default function Landing() {
         </motion.div>
       </section>
 
-      {/* Features Section */}
       <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-20">
         <motion.div
           initial={{ opacity: 0 }}
@@ -579,7 +559,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ENHANCED: Free vs Premium Comparison Section with Urgency */}
       <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-20">
         <motion.div
           initial={{ opacity: 0 }}
@@ -612,7 +591,6 @@ export default function Landing() {
           className="glass-card border border-white/30 backdrop-blur-xl bg-white/20 rounded-3xl overflow-hidden"
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
-            {/* Free Plan */}
             <div className="p-6 sm:p-8 border-b md:border-b-0 md:border-r border-white/20">
               <div className="text-center mb-6">
                 <h3 className="text-2xl font-bold text-white mb-2">Free Plan</h3>
@@ -646,7 +624,6 @@ export default function Landing() {
               </ul>
             </div>
 
-            {/* Premium Plan */}
             <div className="p-6 sm:p-8 bg-gradient-to-br from-purple-500/20 to-pink-500/20">
               <div className="text-center mb-6">
                 <div className="inline-block bg-gradient-to-r from-yellow-400 to-orange-400 text-purple-900 text-xs font-bold px-3 py-1 rounded-full mb-2">
@@ -708,7 +685,6 @@ export default function Landing() {
         </motion.div>
       </section>
 
-      {/* CTA Section */}
       <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-20">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
@@ -732,7 +708,6 @@ export default function Landing() {
         </motion.div>
       </section>
 
-      {/* SEO Block */}
       <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -758,7 +733,6 @@ export default function Landing() {
         </motion.div>
       </section>
 
-      {/* Footer */}
       <footer className="relative z-10 border-t border-white/20 backdrop-blur-xl bg-transparent py-6 sm:py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 mb-6">
@@ -799,3 +773,4 @@ export default function Landing() {
       </footer>
     </div>
   );
+}
