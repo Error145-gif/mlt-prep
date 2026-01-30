@@ -76,7 +76,7 @@ export default function Landing() {
             await makeAdmin({});
             toast.success("Admin access activated!");
             setTimeout(() => window.location.reload(), 800);
-          } catch (error) {
+          } catch (error: any) {
             console.error("Auto-activation failed:", error);
           }
         }
@@ -91,8 +91,8 @@ export default function Landing() {
       await makeAdmin({});
       toast.success("You are now an admin! Redirecting...");
       setTimeout(() => navigate("/admin"), 1000);
-    } catch (error) {
-      toast.error(error.message || "Failed to make you an admin. Please try again.");
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to make you an admin. Please try again.");
     }
   };
 
