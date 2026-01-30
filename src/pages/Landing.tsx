@@ -13,16 +13,16 @@ import { useIsMobile } from "@/hooks/use-mobile";
 export default function Landing() {
   const { signOut } = useAuthActions();
   const isMobile = useIsMobile();
-  
+
   useEffect(() => {
     // Set meta tags for SEO
     document.title = "MLT Prep - AI-Powered Medical Lab Technology Learning";
-    
+
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
       metaDescription.setAttribute("content", "Master MLT with AI-powered questions, previous year papers, mock tests, and progress tracking. 7-day free trial for medical lab technology students.");
     }
-    
+
     const metaKeywords = document.querySelector('meta[name="keywords"]');
     if (metaKeywords) {
       metaKeywords.setAttribute("content", "MLT, Medical Lab Technology, ESIC MLT, mock tests, PYQ, AI questions, exam preparation");
@@ -140,11 +140,11 @@ export default function Landing() {
         {/* Gradient overlay with white touch for better text readability */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-500/60 via-purple-600/60 to-pink-500/60" />
         <div className="absolute inset-0 bg-white/10" />
-        
+
         <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-purple-400/30 rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-blue-500/30 rounded-full blur-3xl" />
         <div className="absolute top-1/2 left-1/2 w-[600px] h-[600px] bg-pink-400/20 rounded-full blur-3xl" />
-        
+
         {/* Floating Medical Icons - Hidden on mobile for performance */}
         <motion.div
           className="hidden md:block absolute top-20 left-10 text-6xl opacity-20"
@@ -160,7 +160,7 @@ export default function Landing() {
         >
           💉
         </motion.div>
-        
+
         <motion.div
           className="hidden md:block absolute top-40 right-20 text-5xl opacity-20"
           animate={{
@@ -176,7 +176,7 @@ export default function Landing() {
         >
           🔬
         </motion.div>
-        
+
         <motion.div
           className="hidden md:block absolute bottom-32 left-1/4 text-5xl opacity-20"
           animate={{
@@ -192,7 +192,7 @@ export default function Landing() {
         >
           🧪
         </motion.div>
-        
+
         <motion.div
           className="hidden md:block absolute bottom-20 right-1/3 text-4xl opacity-20"
           animate={{
@@ -228,7 +228,7 @@ export default function Landing() {
             />
             <span className="text-lg sm:text-2xl font-bold text-white drop-shadow-sm">MLT Prep</span>
           </div>
-          
+
           {/* Navigation */}
           <div className="flex items-center gap-2 sm:gap-4">
             {isAuthenticated ? (
@@ -307,11 +307,11 @@ export default function Landing() {
             </motion.div>
             <span>AI-Powered Medical Lab Technology Learning</span>
           </motion.div>
-          
+
           <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold text-white tracking-tight">
             Medical Lab Technician (MLT) Exam Preparation with <span className="bg-gradient-to-r from-purple-600 via-blue-600 to-purple-700 bg-clip-text text-transparent">AI-Powered Mock Tests & PYQs</span>
           </h1>
-          
+
           <p className="text-base sm:text-xl text-white/90 max-w-2xl mx-auto lg:mx-0 mb-4">
             Complete Medical Lab Technician (MLT) Exam preparation for DMLT, BMLT, and Lab Technician Govt Exam with comprehensive MLT Mock Tests, Medical Lab PYQs, and AI-generated Medical Lab MCQs.
           </p>
@@ -379,7 +379,7 @@ export default function Landing() {
               </div>
             </div>
           </motion.div>
-          
+
           <div className="flex flex-wrap justify-center lg:justify-start gap-2 text-sm sm:text-base text-white/80 font-medium">
             <span>Medical Lab Mock Tests</span>
             <span>•</span>
@@ -389,8 +389,9 @@ export default function Landing() {
             <span>•</span>
             <span>Lab Technician Govt Exam Prep</span>
           </div>
-          
-          <div className="flex items-center justify-center gap-3 sm:gap-4 pt-4">
+
+          {/* BUTTONS CONTAINER WITH APK DOWNLOAD */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 pt-4">
             <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -408,6 +409,40 @@ export default function Landing() {
                 >
                   <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
                 </motion.div>
+              </Button>
+            </motion.div>
+
+            {/* APK DOWNLOAD BUTTON */}
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Button
+                onClick={() => {
+                  window.location.href = "https://drive.google.com/uc?export=download&id=1GYJUbNp9GJuEBYpkF3IwMy6YxvSl8gvz";
+                }}
+                size="lg"
+                className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white text-sm sm:text-lg px-6 sm:px-8 py-6 shadow-lg hover:shadow-2xl transition-shadow rounded-2xl w-full sm:w-auto"
+              >
+                <div className="flex flex-col items-center gap-1">
+                  <div className="flex items-center gap-2">
+                    <svg 
+                      className="h-5 w-5 sm:h-6 sm:w-6" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round" 
+                        strokeWidth={2} 
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" 
+                      />
+                    </svg>
+                    <span className="font-bold">Download MLTPrep APK</span>
+                  </div>
+                  <span className="text-xs text-white/90 font-normal">Android • Version 1.3</span>
+                </div>
               </Button>
             </motion.div>
           </div>
@@ -469,7 +504,7 @@ export default function Landing() {
               ease: "easeInOut",
             } : undefined}
           />
-          
+
           {/* Trust Badge Below Image */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -764,4 +799,3 @@ export default function Landing() {
       </footer>
     </div>
   );
-}
