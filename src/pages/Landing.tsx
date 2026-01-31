@@ -759,7 +759,6 @@ export default function Landing() {
               </div>
             </div>
             <div>
-              <h3 className="text-white font-semibold mb-3">Policies</h3>
               <div className="space-y-2">
                 <button onClick={() => navigate("/shipping-policy")} className="block text-white/60 hover:text-white text-sm transition-colors text-left w-full">Shipping Policy</button>
                 <button onClick={() => navigate("/refund-policy")} className="block text-white/60 hover:text-white text-sm transition-colors text-left w-full">Refund Policy</button>
