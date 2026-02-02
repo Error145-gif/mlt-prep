@@ -403,7 +403,7 @@ export default function Landing() {
             >
               <Button
                 onClick={() => {
-                  window.location.href = "https://drive.google.com/uc?id=11NBJL4ff4R4NIcGKqr4nSIjCELCl_V_l&export=download";
+                  window.location.href = "https://drive.google.com/uc?export=download&id=1d_rG4c-Sa7xF2ACZvs24FEkWQ5QbHbJ4";
                 }}
                 size="lg"
                 className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white text-sm sm:text-lg px-6 sm:px-8 py-6 shadow-lg hover:shadow-2xl transition-shadow rounded-2xl w-full sm:w-auto"
