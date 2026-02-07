@@ -747,7 +747,7 @@ export default function Landing() {
               <div className="space-y-2">
                 <button onClick={() => navigate("/contact-us")} className="block text-white/60 hover:text-white text-sm transition-colors text-left w-full">Contact Us</button>
                 <button onClick={() => navigate("/terms")} className="block text-white/60 hover:text-white text-sm transition-colors text-left w-full">Terms & Conditions</button>
-                <button onClick={() => navigate("/privacy")} className="block text-white/60 hover:text-white text-sm transition-colors text-left w-full">Privacy Policy</button>
+                <a href="/privacy" className="block text-white/60 hover:text-white text-sm">Privacy Policy</a>
               </div>
             </div>
             <div>
